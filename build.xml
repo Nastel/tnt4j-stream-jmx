@@ -1,0 +1,72 @@
+<project name="PingJMX" default="ping-jmx" basedir=".">
+
+  <echo message="Processing ${ant.project.name}${line.separator}" level="info"/>
+
+  <condition property="root" value="${basedir}/.">
+    <not><isset property="root"/></not>
+  </condition>
+  
+  <!-- Import default properties for jKool builds --> 
+  <import file="${root}/build-properties.xml"/>
+
+  <property name="src"       value="src"/>
+  <property name="lib"       value="lib"/>
+  <property name="bin"       value="${project-build}/bin"/>
+  <property name="jar"       value="${project-build}/tnt4j-ping-jmx.jar"/>
+
+  <target name="init">
+    <tstamp/>
+    <mkdir dir="${bin}"/>
+    <mkdir dir="${project-build}/lib"/>
+	<copy todir="${lib}" quiet="true" failonerror="false">
+      <fileset dir="${project-build}/../tnt4j">
+        <include name="tnt4j-api-final-all.jar"/>
+      </fileset>
+    </copy>
+	<copy todir="${project-build}/lib">
+      <fileset dir="${lib}">
+        <include name="*.jar"/>
+      </fileset>
+    </copy>
+  </target>
+
+  <!-- Compile into ${bin} directory -->
+  <target name="compile" depends="init" description="compile the source">
+    <javac destdir="${bin}" debug="true" debuglevel="${debuglevel}" source="${source}" target="${target}">
+      <src path="${src}"/>
+      <classpath>
+        <fileset dir="${project-build}/lib"/>
+      </classpath>
+    </javac>
+  </target>
+
+  <target name="clean" description="clean up">
+    <echo message="Clean of ${ant.project.name} Complete${line.separator}" level="info"/>
+    <delete dir="${project-build}"/>
+    <echo message="Deleting old archives" level="info"/>
+    <delete dir="${project-build}" includes="*.jar,*-all.zip"/>
+ </target>
+
+  <target name="ping-jmx" depends="init,compile" description="build PingJMX package">
+    <jar jarfile="${jar}" basedir="${bin}" update="false">
+      <manifest>
+        <attribute name="Implementation-Vendor" value="${vendor}"/>
+        <attribute name="Implementation-Title" value="${prodname}"/>
+        <attribute name="Implementation-Version" value="${version}"/>
+		<attribute name="Premain-Class" value="org.tnt4j.pingjmx.PlatformJmxPing"/>      	
+      </manifest>
+    </jar>
+	<copy todir="${project-build}">
+      <fileset dir="${lib}">
+        <include name="log4j.properties"/>
+        <include name="tnt4j.properties"/>
+        <include name="tnt4j-tokens.properties"/>
+        <include name="pinger.bat"/>
+      </fileset>
+    </copy>    
+    <echo message="Build of ${ant.project.name} Complete${line.separator}" level="info"/>
+  </target>
+
+  <target name="all" depends="ping-jmx" description="generate the distribution"/>
+  <target name="rebuild" depends="clean,all" description="clean and build"/>
+</project>
