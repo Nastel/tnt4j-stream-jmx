@@ -25,7 +25,6 @@ import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 
 public class PlatformJmxPing {
-
 	protected static PlatformJmxPing platformJmx;
 	
 	protected PingJmx pinger;
@@ -40,18 +39,18 @@ public class PlatformJmxPing {
 
 	public static void main(String[] args) throws InterruptedException, NumberFormatException, IOException {
 		if (args.length < 2) {
-			System.out.println("Usage: jmx-filter sample-ms");
+			System.out.println("Usage: jmx-filter sample-ms (e.g \"*:*\" 60000");
 		}
 		HashMap<MBeanServer, PlatformJmxPing> pingers = new HashMap<MBeanServer, PlatformJmxPing>(89);
 		String filter = args[0];
 		long period = Integer.parseInt(args[1]);
 		
-		// intialize ping with default MBeanServer
+		// initialize ping with default MBeanServer
 		platformJmx = newInstance();
 		platformJmx.scheduleJmxPing(filter, period);
 		pingers.put(platformJmx.getMBeanServer(), platformJmx);
 		
-		// find other registered MBeanServers
+		// find other registered mbean servers
 		ArrayList<MBeanServer> mlist = MBeanServerFactory.findMBeanServer(null);
 		for (MBeanServer server: mlist) {
 			PlatformJmxPing jmxp = pingers.get(server);
