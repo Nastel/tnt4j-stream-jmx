@@ -38,6 +38,7 @@ public class PingJmxListener implements ActivityListener {
 	long sampleCount = 0;
 	MBeanServer mbeanServer;
 	HashMap<ObjectName, MBeanInfo> mbeans = new HashMap<ObjectName, MBeanInfo>(89);
+	HashMap<MBeanAttributeInfo, MBeanAttributeInfo> excAttrs = new HashMap<MBeanAttributeInfo, MBeanAttributeInfo>(89);
 
 	public PingJmxListener(MBeanServer mserver, String filter) {
 		mbeanServer = mserver;
@@ -76,11 +77,12 @@ public class PingJmxListener implements ActivityListener {
 			PropertySnapshot snapshot = new PropertySnapshot(name.getDomain(), name.getCanonicalName());
 			for (int i = 0; i < attr.length; i++) {
 				MBeanAttributeInfo jinfo = attr[i];
-				if (jinfo.isReadable()) {
+				if (jinfo.isReadable() && !attrExcluded(jinfo)) {
 					try {
 						Object value = mbeanServer.getAttribute(name, jinfo.getName());
 						processJmxValue(snapshot, jinfo, jinfo.getName(), value);
 					} catch (Throwable ex) {
+						exclude(jinfo);
 						System.err.println("Skipping attribute=" + jinfo + ", reason=" + ex);
 					}
 				}
@@ -90,6 +92,14 @@ public class PingJmxListener implements ActivityListener {
 			}
 		}
 	}
+
+	private boolean attrExcluded(MBeanAttributeInfo jinfo) {
+	    return excAttrs.get(jinfo) != null;
+    }
+
+	private void exclude(MBeanAttributeInfo jinfo) {
+	    excAttrs.put(jinfo, jinfo);
+    }
 
 	private void processJmxValue(PropertySnapshot snapshot, MBeanAttributeInfo jinfo, String propName, Object value) {
 		if (value != null && !value.getClass().isArray()) {
@@ -125,11 +135,13 @@ public class PingJmxListener implements ActivityListener {
 		sampleMbeans(activity);		
 		finish(activity);		
 		
-		System.out.println("END: activity.id=" + activity.getTrackingId() 
-				+ ", activity.name=" + activity.getName() 
+		System.out.println(activity.getName()
+				+ ": activity.id=" + activity.getTrackingId() 
 				+ ", elasped.usec=" + activity.getElapsedTime() 
 				+ ", snap.count=" + activity.getSnapshotCount() 
 				+ ", id.count=" + activity.getIdCount()
+				+ ", mbeans.count=" + mbeans.size()
+				+ ", exclude.attrs=" + excAttrs.size()
 				);
 	}
 }

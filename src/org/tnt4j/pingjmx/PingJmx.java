@@ -15,6 +15,8 @@
  */
 package org.tnt4j.pingjmx;
 
+import java.util.concurrent.TimeUnit;
+
 import javax.management.MBeanServer;
 
 import com.nastel.jkool.tnt4j.ActivityScheduler;
@@ -29,5 +31,10 @@ public class PingJmx extends ActivityScheduler {
 	public PingJmx(String name, MBeanServer server, String filterList, long period) {
 	    super(name, new PingJmxListener(server, filterList));
 	    this.schedule(name, period);
+    }
+	
+	public PingJmx(String name, MBeanServer server, String filterList, long period, TimeUnit tunit) {
+	    super(name, new PingJmxListener(server, filterList));
+	    this.schedule(name, period, tunit);
     }
 }

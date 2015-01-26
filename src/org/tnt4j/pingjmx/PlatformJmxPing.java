@@ -20,6 +20,7 @@ import java.lang.instrument.Instrumentation;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
@@ -87,12 +88,16 @@ public class PlatformJmxPing {
 		return targetServer;
 	}
 	
-	protected void scheduleJmxPing(long period) throws IOException {
+	public void scheduleJmxPing(long period) throws IOException {
 		scheduleJmxPing(PingJmx.JMX_FILTER_ALL, period);
 	}
 
-	protected void scheduleJmxPing(String jmxFilter, long period) throws IOException {
-		pinger = new PingJmx(this.getClass().getName(), getMBeanServer(), jmxFilter, period);
+	public void scheduleJmxPing(String jmxFilter, long period) throws IOException {
+		scheduleJmxPing(jmxFilter, period, TimeUnit.MILLISECONDS);
+	}	
+
+	public void scheduleJmxPing(String jmxFilter, long period, TimeUnit tunit) throws IOException {
+		pinger = new PingJmx(this.getClass().getName(), getMBeanServer(), jmxFilter, period, tunit);
 		pinger.open();
 	}	
 }
