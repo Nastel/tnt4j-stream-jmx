@@ -27,6 +27,7 @@ import javax.management.MBeanServerFactory;
 
 public class PlatformJmxPing {
 	protected static PlatformJmxPing platformJmx;
+	protected static HashMap<MBeanServer, PlatformJmxPing> pingers = new HashMap<MBeanServer, PlatformJmxPing>(89);
 	
 	protected PingJmx pinger;
 	protected MBeanServer targetServer;
@@ -34,21 +35,36 @@ public class PlatformJmxPing {
 	public static void premain(String options, Instrumentation inst) throws IOException {
 		platformJmx = newInstance();
 		String jmxfilter = System.getProperty("org.tnt4j.jmx.ping.filter", PingJmx.JMX_FILTER_ALL);
-		int period = Integer.getInteger("org.tnt4j.jmx.ping.sample", 60000);
+		int period = Integer.getInteger("org.tnt4j.jmx.ping.sample", 30000);
 		platformJmx.scheduleJmxPing(jmxfilter, period);
 	}
 
 	public static void main(String[] args) throws InterruptedException, NumberFormatException, IOException {
 		if (args.length < 2) {
-			System.out.println("Usage: jmx-filter sample-ms (e.g \"*:*\" 60000");
+			System.out.println("Usage: jmx-filter sample-ms (e.g \"*:*\" 30000");
 		}
-		HashMap<MBeanServer, PlatformJmxPing> pingers = new HashMap<MBeanServer, PlatformJmxPing>(89);
-		String filter = args[0];
-		long period = Integer.parseInt(args[1]);
-		
+		pingJmx(args[0], Integer.parseInt(args[1]), TimeUnit.MILLISECONDS);
+		System.out.println("jmx.ping.list=" + pingers);
+		synchronized (platformJmx) {
+			platformJmx.wait();
+		}
+	}
+	
+	public static void pingJmx() throws IOException {
+		String jmxfilter = System.getProperty("org.tnt4j.jmx.ping.filter", PingJmx.JMX_FILTER_ALL);
+		int period = Integer.getInteger("org.tnt4j.jmx.ping.sample", 30000);
+		pingJmx(jmxfilter, period);
+	}
+	
+
+	public static void pingJmx(String jmxfilter, long period) throws IOException {
+		pingJmx(jmxfilter, period);
+	}
+	
+	public static void pingJmx(String jmxfilter, long period, TimeUnit tunit) throws IOException {
 		// initialize ping with default MBeanServer
 		platformJmx = newInstance();
-		platformJmx.scheduleJmxPing(filter, period);
+		platformJmx.scheduleJmxPing(jmxfilter, period);
 		pingers.put(platformJmx.getMBeanServer(), platformJmx);
 		
 		// find other registered mbean servers
@@ -57,17 +73,12 @@ public class PlatformJmxPing {
 			PlatformJmxPing jmxp = pingers.get(server);
 			if (jmxp == null) {
 				jmxp = newInstance(server);
-				jmxp.scheduleJmxPing(filter, period);
+				jmxp.scheduleJmxPing(jmxfilter, period);
 				pingers.put(platformJmx.getMBeanServer(), platformJmx);
-				System.out.println("Found mbean.server=" + server + ", jmx.ping=" + jmxp + ", filter=" + filter + ", period=" + period);
 			}
-		}
-		System.out.println("jmx.ping.list=" + pingers);
-		synchronized (platformJmx) {
-			platformJmx.wait();
-		}
+		}		
 	}
-	
+		
 	public PlatformJmxPing() {
 		this(ManagementFactory.getPlatformMBeanServer());
 	}
@@ -99,5 +110,9 @@ public class PlatformJmxPing {
 	public void scheduleJmxPing(String jmxFilter, long period, TimeUnit tunit) throws IOException {
 		pinger = new PingJmx(this.getClass().getName(), getMBeanServer(), jmxFilter, period, tunit);
 		pinger.open();
-	}	
+	}
+	
+	public void close() {
+		pinger.close();
+	}
 }
