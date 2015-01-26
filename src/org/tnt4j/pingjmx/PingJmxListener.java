@@ -68,7 +68,8 @@ public class PingJmxListener implements ActivityListener {
 		}
 	}
 
-	private void sampleMbeans(Activity activity) {
+	private int sampleMbeans(Activity activity) {
+		int pCount = 0;
 		for (Entry<ObjectName, MBeanInfo> entry: mbeans.entrySet()) {
 			ObjectName name = entry.getKey();
 			MBeanInfo info = entry.getValue();
@@ -89,8 +90,10 @@ public class PingJmxListener implements ActivityListener {
 			}
 			if (snapshot.size() > 0) {
 				activity.addSnapshot(snapshot);
+				pCount += snapshot.size();
 			}
 		}
+		return pCount;
 	}
 
 	private boolean attrExcluded(MBeanAttributeInfo jinfo) {
@@ -116,10 +119,11 @@ public class PingJmxListener implements ActivityListener {
 		}
 	}
 	
-	private void finish(Activity activity) {
+	private int finish(Activity activity) {
 		PropertySnapshot snapshot = new PropertySnapshot(activity.getName(), "SampleStats");
 		snapshot.add("sample.count", sampleCount);
 		activity.addSnapshot(snapshot);		
+		return snapshot.size();
 	}
 	
 	@Override
@@ -132,15 +136,18 @@ public class PingJmxListener implements ActivityListener {
 	@Override
 	public void stopped(Activity activity) {
 		sampleCount++;
-		sampleMbeans(activity);		
-		finish(activity);		
+		int metrics = sampleMbeans(activity);		
+		metrics += finish(activity);		
 		
 		System.out.println(activity.getName()
-				+ ": activity.id=" + activity.getTrackingId() 
+				+ ": id=" + activity.getTrackingId() 
+				+ ", mbean.server=" + mbeanServer
+				+ ", mbean.count=" + mbeanServer.getMBeanCount()
 				+ ", elasped.usec=" + activity.getElapsedTime() 
 				+ ", snap.count=" + activity.getSnapshotCount() 
 				+ ", id.count=" + activity.getIdCount()
-				+ ", mbeans.count=" + mbeans.size()
+				+ ", sampled.mbeans.count=" + mbeans.size()
+				+ ", sampled.metric.count=" + metrics
 				+ ", exclude.attrs=" + excAttrs.size()
 				);
 	}
