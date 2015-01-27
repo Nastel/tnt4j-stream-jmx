@@ -108,7 +108,9 @@ public class PlatformJmxPing {
 	}	
 
 	public void scheduleJmxPing(String jmxFilter, long period, TimeUnit tunit) throws IOException {
-		pinger = new PingJmx(this.getClass().getName(), getMBeanServer(), jmxFilter, period, tunit);
+		if (pinger == null) {
+			pinger = new PingJmx(this.getClass().getName(), getMBeanServer(), jmxFilter, period, tunit);
+		}
 		pinger.open();
 	}
 	
