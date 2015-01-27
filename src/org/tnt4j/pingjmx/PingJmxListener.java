@@ -42,18 +42,30 @@ import com.nastel.jkool.tnt4j.core.PropertySnapshot;
  * @version $Revision: 1 $
  */
 public class PingJmxListener implements ActivityListener {
-
 	String mbeanFilter;
 	long sampleCount = 0;
 	MBeanServer mbeanServer;
 	HashMap<ObjectName, MBeanInfo> mbeans = new HashMap<ObjectName, MBeanInfo>(89);
 	HashMap<MBeanAttributeInfo, MBeanAttributeInfo> excAttrs = new HashMap<MBeanAttributeInfo, MBeanAttributeInfo>(89);
 
+	/**
+	 * Create new instance of <code>PingJmxListener</code> with a given
+	 * mbean server and a set of filters.
+	 *
+	 * @param name name of assigned to the pinger
+	 * @param filter JMX filters semicolon separated
+	 *  
+	 */
 	public PingJmxListener(MBeanServer mserver, String filter) {
 		mbeanServer = mserver;
 		mbeanFilter = filter;
 	}
 
+	/**
+	 * Obtain associated mbean server instance.
+	 * 
+	 * @return mbean server instance associated with this listener 
+	 */
 	public MBeanServer getMBeanServer() {
 		return mbeanServer;
 	}

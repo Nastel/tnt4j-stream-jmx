@@ -33,15 +33,46 @@ import com.nastel.jkool.tnt4j.core.ActivityListener;
 public class PingJmx extends ActivityScheduler {
 	public static final String JMX_FILTER_ALL = "*:*";
 	
+	/**
+	 * Create new instance of <code>PingJmx</code> with a given
+	 * name, mbean server, sampling period. Filter is set to 
+	 * all mbeans.
+	 *
+	 * @param name name of assigned to the pinger
+	 * @param server MBean server instance
+	 * @param period sampling period in milliseconds
+	 *  
+	 */
 	public PingJmx(String name, MBeanServer server, long period) {
 		this(name, server, JMX_FILTER_ALL, period);
     }
 	
+	/**
+	 * Create new instance of <code>PingJmx</code> with a given
+	 * name, mbean server, filter list and sampling period.
+	 *
+	 * @param name name of assigned to the pinger
+	 * @param server MBean server instance
+	 * @param filterList JMX filters semicolon separated
+	 * @param period sampling period in milliseconds
+	 *  
+	 */
 	public PingJmx(String name, MBeanServer server, String filterList, long period) {
 	    super(name, newActivityListenerImpl(server, filterList));
 	    this.schedule(name, period);
     }
 	
+	/**
+	 * Create new instance of <code>PingJmx</code> with a given
+	 * name, mbean server, filter list and sampling period.
+	 *
+	 * @param name name of assigned to the pinger
+	 * @param server MBean server instance
+	 * @param filterList JMX filters semicolon separated
+	 * @param period sampling period
+	 * @param tunit time unit for the sampling period
+	 *  
+	 */
 	public PingJmx(String name, MBeanServer server, String filterList, long period, TimeUnit tunit) {
 	    super(name, newActivityListenerImpl(server, filterList));
 	    this.schedule(name, period, tunit);
