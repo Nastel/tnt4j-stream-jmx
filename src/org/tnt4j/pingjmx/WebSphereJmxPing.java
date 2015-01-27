@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Nastel Technologies, Inc.
+ * Copyright 2015 Nastel Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,17 @@ import java.lang.reflect.Method;
 
 import javax.management.MBeanServer;
 
+/**
+ * <p> 
+ * This class provides scheduled execution and sampling of JMX metrics
+ * for a WebSphere Application Server <code>MBeanServer</code> instance.
+ * </p>
+ * 
+ * 
+ * @version $Revision: 1 $
+ * 
+ * @see PlatformJmxPing
+ */
 public class WebSphereJmxPing extends PlatformJmxPing {
 	public static final String WAS_JMX_ADMIN_CLASS = "com.ibm.websphere.management.AdminServiceFactory";
 	

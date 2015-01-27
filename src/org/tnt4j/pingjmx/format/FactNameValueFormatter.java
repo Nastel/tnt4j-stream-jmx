@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Nastel Technologies, Inc.
+ * Copyright 2015 Nastel Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@ package org.tnt4j.pingjmx.format;
 
 import java.util.Collection;
 
+import org.tnt4j.pingjmx.PingJmx;
+
 import com.nastel.jkool.tnt4j.core.OpLevel;
 import com.nastel.jkool.tnt4j.core.Property;
 import com.nastel.jkool.tnt4j.core.Snapshot;
@@ -26,6 +28,18 @@ import com.nastel.jkool.tnt4j.tracker.TrackingActivity;
 import com.nastel.jkool.tnt4j.tracker.TrackingEvent;
 import com.nastel.jkool.tnt4j.utils.Utils;
 
+/**
+ * This class provides key/value formatting for tnt4j activities, events and
+ * snapshots. The output format follows the following format:
+ * <p>
+ * <code>"OBJ:name-value-prefix,name1=value1,....,nameN=valueN"</code>.
+ * </p> 
+ * Newline is added at the end of each line.
+ * 
+ * @version $Revision: 1 $
+ * 
+ * @see PingJmx
+ */
 public class FactNameValueFormatter extends DefaultFormatter {
 	public static final String FIELD_SEP = ",";
 	public static final String END_SEP = "\n";

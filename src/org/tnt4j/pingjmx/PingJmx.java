@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Nastel Technologies, Inc.
+ * Copyright 2015 Nastel Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,16 @@ import java.util.concurrent.TimeUnit;
 import javax.management.MBeanServer;
 
 import com.nastel.jkool.tnt4j.ActivityScheduler;
+import com.nastel.jkool.tnt4j.core.ActivityListener;
 
+/**
+ * <p> 
+ * This class provides scheduled ping/heart-beat for a given
+ * JMX <code>MBeanServer</code>. 
+ * </p>
+ * 
+ * @version $Revision: 1 $
+ */
 public class PingJmx extends ActivityScheduler {
 	public static final String JMX_FILTER_ALL = "*:*";
 	
@@ -29,12 +38,25 @@ public class PingJmx extends ActivityScheduler {
     }
 	
 	public PingJmx(String name, MBeanServer server, String filterList, long period) {
-	    super(name, new PingJmxListener(server, filterList));
+	    super(name, newActivityListenerImpl(server, filterList));
 	    this.schedule(name, period);
     }
 	
 	public PingJmx(String name, MBeanServer server, String filterList, long period, TimeUnit tunit) {
-	    super(name, new PingJmxListener(server, filterList));
+	    super(name, newActivityListenerImpl(server, filterList));
 	    this.schedule(name, period, tunit);
     }
+	
+	/**
+	 * Create new instance of <code>ActivityListener</code>
+	 * Override this call to return your instance of listener
+	 *
+	 * @param server MBean server instance
+	 * @param filterList JMX filters semicolon separated
+	 *  
+	 * @return new activity listener instance
+	 */
+	protected static ActivityListener newActivityListenerImpl(MBeanServer server, String filterList) {
+		return new PingJmxListener(server, filterList);
+	}
 }

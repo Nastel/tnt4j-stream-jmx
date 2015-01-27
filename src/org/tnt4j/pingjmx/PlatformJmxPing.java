@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Nastel Technologies, Inc.
+ * Copyright 2015 Nastel Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,18 @@ import java.util.concurrent.TimeUnit;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 
+/**
+ * <p> 
+ * This class provides scheduled execution and sampling of a JMX metrics
+ * for a given <code>MBeanServer</code> instance. By default the class will
+ * use <code>ManagementFactory.getPlatformMBeanServer()</code> instance.
+ * </p>
+ * 
+ * 
+ * @version $Revision: 1 $
+ * 
+ * @see PingJmx
+ */
 public class PlatformJmxPing {
 	protected static PlatformJmxPing platformJmx;
 	protected static HashMap<MBeanServer, PlatformJmxPing> pingers = new HashMap<MBeanServer, PlatformJmxPing>(89);
@@ -109,12 +121,31 @@ public class PlatformJmxPing {
 
 	public void scheduleJmxPing(String jmxFilter, long period, TimeUnit tunit) throws IOException {
 		if (pinger == null) {
-			pinger = new PingJmx(this.getClass().getName(), getMBeanServer(), jmxFilter, period, tunit);
+			pinger = newPingJmxImpl(getMBeanServer(), jmxFilter, period, tunit);
 		}
 		pinger.open();
 	}
 	
 	public void close() {
 		pinger.close();
+	}
+	
+	public PingJmx getPingerImpl() {
+		return pinger;
+	}
+	
+	/**
+	 * Create new instance of <code>PingJmx</code>
+	 * Override this call to return your instance of pinger
+	 *
+	 * @param server MBean server instance
+	 * @param jmxFilter JMX filters semicolon separated
+	 * @param period time period for sampling
+	 * @param tunit time units for period
+	 *  
+	 * @return new <code>PingJmx</code> instance
+	 */
+	protected PingJmx newPingJmxImpl(MBeanServer mserver, String jmxFilter, long period, TimeUnit tunit) {
+		return new PingJmx(this.getClass().getName(), mserver, jmxFilter, period, tunit);
 	}
 }
