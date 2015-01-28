@@ -38,7 +38,9 @@
 
 <p>It is simple, just imbed the following code into your application:</p>
 
-<div class="highlight highlight-java"><pre><span class="pl-stj">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-stj">DefaultPingFactory</span><span class="pl-k">.</span>getInstance()<span class="pl-c1">.</span>
+<div class="highlight highlight-java"><pre><span class="pl-c">// obtain PingFactory instance</span>
+<span class="pl-stj">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-stj">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
+<span class="pl-c">// create an instance of the pinger that will sample mbeans</span>
 <span class="pl-stj">PlatformJmxPing</span> platformJmx <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance();
 <span class="pl-c">//schedule jmx collection (ping) for given jmx filter and 30000 ms sampling period</span>
 platformJmx<span class="pl-k">.</span>scheduleJmxPing(<span class="pl-stj">PingJMX</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>);</pre></div>
@@ -46,14 +48,17 @@ platformJmx<span class="pl-k">.</span>scheduleJmxPing(<span class="pl-stj">PingJ
 <p>To schedule jmx collection for a specific mbean server:</p>
 
 <div class="highlight highlight-java"><pre><span class="pl-stj">MBeanServer</span> mserver <span class="pl-k">=</span> <span class="pl-stj">ManagementFactory</span><span class="pl-k">.</span>getPlatformMBeanServer();
-<span class="pl-stj">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-stj">DefaultPingFactory</span><span class="pl-k">.</span>getInstance()<span class="pl-c1">.</span>
+<span class="pl-c">// obtain PingFactory instance</span>
+<span class="pl-stj">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-stj">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
+<span class="pl-c">// create an instance of the pinger that will sample mbeans for a given MBeanServer</span>
 <span class="pl-stj">PlatformJmxPing</span> platformJmx <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance(mserver);
 <span class="pl-c">//schedule jmx collection (ping) for given jmx filter and 30000 ms sampling period</span>
 platformJmx<span class="pl-k">.</span>scheduleJmxPing(<span class="pl-stj">PingJMX</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>);</pre></div>
 
 <p>Below is an example of creating jmx collection for all registered mbean servers:</p>
 
-<div class="highlight highlight-java"><pre><span class="pl-stj">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-stj">DefaultPingFactory</span><span class="pl-k">.</span>getInstance()<span class="pl-c1">.</span>
+<div class="highlight highlight-java"><pre><span class="pl-c">// obtain PingFactory instance</span>
+<span class="pl-stj">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-stj">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
 <span class="pl-c">// find other registered mbean servers</span>
 <span class="pl-st">ArrayList&lt;<span class="pl-stj">MBeanServer</span>&gt;</span> mlist <span class="pl-k">=</span> <span class="pl-stj">MBeanServerFactory</span><span class="pl-k">.</span>findMBeanServer(<span class="pl-c1">null</span>);
 <span class="pl-k">for</span> (<span class="pl-stj">MBeanServer</span> server<span class="pl-k">:</span> mlist) {
@@ -61,7 +66,7 @@ platformJmx<span class="pl-k">.</span>scheduleJmxPing(<span class="pl-stj">PingJ
     jmxp<span class="pl-k">.</span>scheduleJmxPing(<span class="pl-stj">PingJMX</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>);
 }</pre></div>
 
-<p>All PingJMX output is written to underlying tnt4j event sink configured in <code>tnt4j.properties</code> file. Sink destinations could be a file, socket, log4j, user defined event sink implementations.</p>
+<p>All <code>PingJMX</code> output is written to underlying tnt4j event sink configured in <code>tnt4j.properties</code> file. Sink destinations could be a file, socket, log4j, user defined event sink implementations.</p>
 
 <h2>
 <a id="running-pingjmx-as-standalone-app" class="anchor" href="#running-pingjmx-as-standalone-app" aria-hidden="true"><span class="octicon octicon-link"></span></a>Running PingJMX as standalone app</h2>
@@ -77,6 +82,16 @@ platformJmx<span class="pl-k">.</span>scheduleJmxPing(<span class="pl-stj">PingJ
 <div class="highlight highlight-java"><pre>java <span class="pl-k">-</span>javaagent<span class="pl-k">:</span>tnt4j<span class="pl-k">-</span>ping<span class="pl-k">-</span>jmx<span class="pl-k">.</span>jar<span class="pl-k">=</span><span class="pl-s1"><span class="pl-pds">"</span>*:*!30000<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-stj">Dlog4j</span><span class="pl-k">.</span>configuration<span class="pl-k">=</span>file<span class="pl-k">:</span>log4j<span class="pl-k">.</span>properties <span class="pl-k">-</span><span class="pl-stj">Dtnt4j</span><span class="pl-k">.</span>config<span class="pl-k">=</span>tnt4j<span class="pl-k">.</span>properties <span class="pl-k">-</span>classpath <span class="pl-s1"><span class="pl-pds">"</span>tnt4j-ping-jmx.jar;lib/tnt4j-api-final-all.jar<span class="pl-pds">"</span></span> your<span class="pl-k">.</span>class<span class="pl-k">.</span>name your<span class="pl-k">-</span>args</pre></div>
 
 <p>The options are <code>-javaagent:tnt4j-ping-jmx.jar="mbean-filter!sample-time-ms"</code>, classpath must include pingjmx jar files as well as locations of log4j and tnt4j configuration files.</p>
+
+<h2>
+<a id="overriding-default-pingfactory" class="anchor" href="#overriding-default-pingfactory" aria-hidden="true"><span class="octicon octicon-link"></span></a>Overriding default <code>PingFactory</code>
+</h2>
+
+<p>User may want to override default <code>PingFactory</code> with their own by specifying <code>-Dorg.tnt4j.ping.factory=org.tnt4j.pingjmx.PlatformPingFactory</code>. <code>PingFactory</code> is used to generate instances of the underlying pinger implementatons (objects that provide sampling of underlying mbeans).</p>
+
+<div class="highlight highlight-java"><pre><span class="pl-c">// return default or user defined PingFactory implementation</span>
+<span class="pl-stj">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-stj">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
+<span class="pl-c1">...</span></pre></div>
 
 <h1>
 <a id="project-dependencies" class="anchor" href="#project-dependencies" aria-hidden="true"><span class="octicon octicon-link"></span></a>Project Dependencies</h1>
