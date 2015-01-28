@@ -35,7 +35,7 @@ for (MBeanServer server: mlist) {
 All `PingJMX` output is written to underlying tnt4j event sink configured in `tnt4j.properties` file. Sink destinations could be a file, socket, log4j, user defined event sink implementations.
 
 ## Running PingJMX as standalone app
-```
+```java
 java -Dlog4j.configuration=file:log4j.properties -classpath "tnt4j-ping-jmx.jar;lib/tnt4j-api-final-all.jar" org.tnt4j.pingjmx.PingAgent "*:*" 10000 
 ```
 
