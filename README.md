@@ -41,6 +41,13 @@ java -javaagent:tnt4j-ping-jmx.jar="*:*!30000" -Dlog4j.configuration=file:log4j.
 ```
 The options are `-javaagent:tnt4j-ping-jmx.jar="mbean-filter!sample-time-ms"`, classpath must include pingjmx jar files as well as locations of log4j and tnt4j configuration files.
 
+## Overriding default `PingFactory`
+User may want to override default `PingFactory` with their own by specifying `-Dorg.tnt4j.ping.factory=org.tnt4j.pingjmx.PlatformPingFactory`. `PingFactory` is used to generate instances of the underlying pinger implementatons (objects that provide sampling of underlying mbeans).
+```java
+// return default or user defined PingFactory implementation
+PingFactory factory = DefaultPingFactory.getInstance();
+...
+```
 # Project Dependencies
 PingJMX requires the following:
 * TNT4J (https://github.com/Nastel/TNT4J)
