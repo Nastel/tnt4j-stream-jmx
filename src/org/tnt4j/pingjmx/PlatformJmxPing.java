@@ -53,7 +53,7 @@ public class PlatformJmxPing {
 		String [] args = options.split("!");
 		String jmxfilter = System.getProperty("org.tnt4j.jmx.ping.filter", PingJmx.JMX_FILTER_ALL);
 		int period = Integer.getInteger("org.tnt4j.jmx.ping.sample", 30000);
-		if (args.length > 2) {
+		if (args.length >= 2) {
 			jmxfilter = args[0];
 			period = Integer.parseInt(args[1]);
 		}
