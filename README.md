@@ -4,7 +4,9 @@ Framework to monitor JMX or any other metrics and write to TNT4J event sink: fil
 # Using PingJMX
 It is simple, just imbed the following code into your application:
 ```java
-PingFactory factory = DefaultPingFactory.getInstance().
+// obtain PingFactory instance
+PingFactory factory = DefaultPingFactory.getInstance();
+// create an instance of the pinger that will sample mbeans
 PlatformJmxPing platformJmx = factory.newInstance();
 //schedule jmx collection (ping) for given jmx filter and 30000 ms sampling period
 platformJmx.scheduleJmxPing(PingJMX.JMX_FILTER_ALL, 30000);
@@ -12,14 +14,17 @@ platformJmx.scheduleJmxPing(PingJMX.JMX_FILTER_ALL, 30000);
 To schedule jmx collection for a specific mbean server:
 ```java
 MBeanServer mserver = ManagementFactory.getPlatformMBeanServer();
-PingFactory factory = DefaultPingFactory.getInstance().
+// obtain PingFactory instance
+PingFactory factory = DefaultPingFactory.getInstance();
+// create an instance of the pinger that will sample mbeans for a given MBeanServer
 PlatformJmxPing platformJmx = factory.newInstance(mserver);
 //schedule jmx collection (ping) for given jmx filter and 30000 ms sampling period
 platformJmx.scheduleJmxPing(PingJMX.JMX_FILTER_ALL, 30000);
 ```
 Below is an example of creating jmx collection for all registered mbean servers:
 ```java
-PingFactory factory = DefaultPingFactory.getInstance().
+// obtain PingFactory instance
+PingFactory factory = DefaultPingFactory.getInstance();
 // find other registered mbean servers
 ArrayList<MBeanServer> mlist = MBeanServerFactory.findMBeanServer(null);
 for (MBeanServer server: mlist) {
@@ -27,7 +32,7 @@ for (MBeanServer server: mlist) {
 	jmxp.scheduleJmxPing(PingJMX.JMX_FILTER_ALL, 30000);
 }
 ```
-All PingJMX output is written to underlying tnt4j event sink configured in `tnt4j.properties` file. Sink destinations could be a file, socket, log4j, user defined event sink implementations.
+All `PingJMX` output is written to underlying tnt4j event sink configured in `tnt4j.properties` file. Sink destinations could be a file, socket, log4j, user defined event sink implementations.
 
 ## Running PingJMX as standalone app
 ```
