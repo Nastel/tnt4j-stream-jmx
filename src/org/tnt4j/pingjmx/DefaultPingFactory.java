@@ -15,8 +15,30 @@
  */
 package org.tnt4j.pingjmx;
 
+/**
+ * <p> 
+ * This class provides a generic way to get a default <code>PingFactory</code>
+ * instance.
+ * </p>
+ * 
+ * @version $Revision: 1 $
+ * 
+ * @see PingFactory
+ */
 public class DefaultPingFactory {
-	private static final PingFactory defaultFactory = new PlatformPingFactory();
+	public static final String DEFAULT_PING_FACTORY = "org.tnt4j.pingjmx.PlatformPingFactory";
+	private static PingFactory defaultFactory;
+	
+	static {
+		String factoryClassName = System.getProperty("org.tnt4j.ping.factory", DEFAULT_PING_FACTORY);
+		try {
+			Class<?> factoryClass = Class.forName(factoryClassName);
+			defaultFactory = (PingFactory) factoryClass.newInstance();
+		} catch (Throwable ex) {
+			defaultFactory = new PlatformPingFactory();			
+			ex.printStackTrace();
+		}
+	}
 	
 	private DefaultPingFactory() {}
 	

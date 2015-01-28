@@ -17,6 +17,16 @@ package org.tnt4j.pingjmx;
 
 import javax.management.MBeanServer;
 
+/**
+ * <p> 
+ * This interface defines a way to obtain underlying implementation 
+ * of the pinger object that actually samples underlying MBeans.
+ * </p>
+ * 
+ * @version $Revision: 1 $
+ * 
+ * @see PlatformJmxPing
+ */
 public interface PingFactory {
 	
 	/**

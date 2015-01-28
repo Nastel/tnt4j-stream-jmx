@@ -17,6 +17,16 @@ package org.tnt4j.pingjmx;
 
 import javax.management.MBeanServer;
 
+/**
+ * <p> 
+ * This class provides a <code>PingFactory</code> implementation
+ * with <code>PlatformJmxPing</code> as underlying pinger implementation.
+ * </p>
+ * 
+ * @version $Revision: 1 $
+ * 
+ * @see PlatformJmxPing
+ */
 public class PlatformPingFactory implements PingFactory {
 	
 	@Override
