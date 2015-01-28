@@ -86,7 +86,11 @@ platformJmx<span class="pl-k">.</span>scheduleJmxPing(<span class="pl-stj">PingJ
 <a id="overriding-default-pingfactory" class="anchor" href="#overriding-default-pingfactory" aria-hidden="true"><span class="octicon octicon-link"></span></a>Overriding default <code>PingFactory</code>
 </h2>
 
-<p>User may want to override default <code>PingFactory</code> with their own by specifying <code>-Dorg.tnt4j.ping.factory=org.tnt4j.pingjmx.PlatformPingFactory</code>. <code>PingFactory</code> is used to generate instances of the underlying pinger implementatons (objects that provide sampling of underlying mbeans).</p>
+<p>User may want to override default <code>PingFactory</code> with their own by specifying </p>
+
+<div class="highlight highlight-java"><pre><span class="pl-k">-</span><span class="pl-stj">Dorg</span><span class="pl-k">.</span>tnt4j<span class="pl-k">.</span>ping<span class="pl-k">.</span>factory<span class="pl-k">=</span><span class="pl-stj">org.tnt4j.pingjmx<span class="pl-k">.</span>PlatformPingFactory</span>` <span class="pl-c1">...</span></pre></div>
+
+<p><code>PingFactory</code> is used to generate instances of the underlying pinger implementatons (objects that provide sampling of underlying mbeans).</p>
 
 <div class="highlight highlight-java"><pre><span class="pl-c">// return default or user defined PingFactory implementation</span>
 <span class="pl-stj">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-stj">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
