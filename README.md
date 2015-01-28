@@ -57,6 +57,7 @@ User may want to override default `PingFactory` with their own by specifying
 PingFactory factory = DefaultPingFactory.getInstance();
 ...
 ```
+
 # Project Dependencies
 PingJMX requires the following:
 * TNT4J (https://github.com/Nastel/TNT4J)
