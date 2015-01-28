@@ -34,6 +34,13 @@ import javax.management.MBeanServer;
 public class WebSphereJmxPing extends PlatformJmxPing {
 	public static final String WAS_JMX_ADMIN_CLASS = "com.ibm.websphere.management.AdminServiceFactory";
 	
+	/**
+	 * Dynamically identify and load WebSphere JMX MBean Server
+	 * <code>com.ibm.websphere.management.AdminServiceFactory</code>.
+	 * Use <code>ManagementFactory.getPlatformMBeanServer()</code> if none found.
+	 * 
+	 * @return WebSphere JMX MBean server instance
+	 */
 	protected static MBeanServer getWasAdminServer()  {
 		try {
 			Class<?> adminClass = Class.forName(WAS_JMX_ADMIN_CLASS);
@@ -49,6 +56,10 @@ public class WebSphereJmxPing extends PlatformJmxPing {
 		return ManagementFactory.getPlatformMBeanServer();
 	}
 	
+	/**
+	 * Create an instance with WebSphere MBean Server instance
+	 * 
+	 */
 	public WebSphereJmxPing() {
 		super(getWasAdminServer());
 	}

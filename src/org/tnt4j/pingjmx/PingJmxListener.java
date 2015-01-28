@@ -50,7 +50,7 @@ public class PingJmxListener implements ActivityListener {
 
 	/**
 	 * Create new instance of <code>PingJmxListener</code> with a given
-	 * mbean server and a set of filters.
+	 * MBean server and a set of filters.
 	 *
 	 * @param name name of assigned to the pinger
 	 * @param filter JMX filters semicolon separated
@@ -70,6 +70,10 @@ public class PingJmxListener implements ActivityListener {
 		return mbeanServer;
 	}
 
+	/**
+	 * Load JMX beans based on a configured JMX filter list.
+	 * All loaded MBeans are stored in <code>HashMap</code>.
+	 */
 	private void loadJmxBeans() {
 		try {
 			StringTokenizer tk = new StringTokenizer(mbeanFilter, ";");
@@ -89,6 +93,13 @@ public class PingJmxListener implements ActivityListener {
 		}
 	}
 
+	/**
+	 * Sample jmx beans based on a configured jmx filter list
+	 * and store within given activity as snapshots.
+	 * 
+	 * @param activity instance where sampled mbeans attributes are stored
+	 * @return number of metrics loaded from all mbeans
+	 */
 	private int sampleMbeans(Activity activity) {
 		int pCount = 0;
 		for (Entry<ObjectName, MBeanInfo> entry: mbeans.entrySet()) {
@@ -117,14 +128,33 @@ public class PingJmxListener implements ActivityListener {
 		return pCount;
 	}
 
+	/**
+	 * Determine if a given attribute to be excluded from sampling.	
+	 * 
+	 * @param jinfo attribute info
+	 * @return true when attribute should be excluded, false otherwise
+	 */
 	private boolean attrExcluded(MBeanAttributeInfo jinfo) {
 	    return excAttrs.get(jinfo) != null;
     }
 
+	/**
+	 * Mark a given attribute to be excluded from sampling.	
+	 * 
+	 * @param jinfo attribute info
+	 */
 	private void exclude(MBeanAttributeInfo jinfo) {
 	    excAttrs.put(jinfo, jinfo);
     }
 
+	/**
+	 * Process/extract value from a given MBean attribute
+	 * 
+	 * @param snapshot instance where extracted attribute is stored
+	 * @param jinfo attribute info
+	 * @param property name to be assigned to given attribute value
+	 * @param value associated with attribute
+	 */
 	private void processJmxValue(PropertySnapshot snapshot, MBeanAttributeInfo jinfo, String propName, Object value) {
 		if (value != null && !value.getClass().isArray()) {
 			if (value instanceof CompositeData) {
@@ -140,6 +170,11 @@ public class PingJmxListener implements ActivityListener {
 		}
 	}
 	
+	/**
+	 * Finish processing of the activity sampling
+	 * 
+	 * @param activity instance
+	 */
 	private int finish(Activity activity) {
 		PropertySnapshot snapshot = new PropertySnapshot(activity.getName(), "SampleStats");
 		snapshot.add("sample.count", sampleCount);
