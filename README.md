@@ -4,22 +4,38 @@ Framework to monitor JMX or any other metrics and write to TNT4J event sink: fil
 # Using PingJMX
 It is simple, just imbed the following code into your application:
 ```java
+<<<<<<< HEAD
 PingFactory factory = DefaultPingFactory.getInstance().
 Pinger platformJmx = factory.newInstance();
+=======
+// obtain PingFactory instance
+PingFactory factory = DefaultPingFactory.getInstance();
+// create an instance of the pinger that will sample mbeans
+PlatformJmxPing platformJmx = factory.newInstance();
+>>>>>>> origin/master
 //schedule jmx collection (ping) for given jmx filter and 30000 ms sampling period
 platformJmx.scheduleJmxPing(PingJMX.JMX_FILTER_ALL, 30000);
 ```
 To schedule jmx collection for a specific mbean server:
 ```java
 MBeanServer mserver = ManagementFactory.getPlatformMBeanServer();
+<<<<<<< HEAD
 PingFactory factory = DefaultPingFactory.getInstance().
 Pinger platformJmx = factory.newInstance(mserver);
+=======
+// obtain PingFactory instance
+PingFactory factory = DefaultPingFactory.getInstance();
+// create an instance of the pinger that will sample mbeans for a given MBeanServer
+PlatformJmxPing platformJmx = factory.newInstance(mserver);
+>>>>>>> origin/master
 //schedule jmx collection (ping) for given jmx filter and 30000 ms sampling period
 platformJmx.scheduleJmxPing(PingJMX.JMX_FILTER_ALL, 30000);
 ```
 Below is an example of creating jmx collection for all registered mbean servers:
 ```java
 PingFactory factory = DefaultPingFactory.getInstance().
+// obtain PingFactory instance
+PingFactory factory = DefaultPingFactory.getInstance();
 // find other registered mbean servers
 ArrayList<MBeanServer> mlist = MBeanServerFactory.findMBeanServer(null);
 for (MBeanServer server: mlist) {
@@ -28,6 +44,7 @@ for (MBeanServer server: mlist) {
 }
 ```
 All PingJMX output is written to underlying tnt4j event sink configured in `tnt4j.properties` file. Sink destinations could be a file, socket, log4j, user defined event sink implementations.
+All `PingJMX` output is written to underlying tnt4j event sink configured in `tnt4j.properties` file. Sink destinations could be a file, socket, log4j, user defined event sink implementations.
 
 ## Running PingJMX as standalone app
 ```
@@ -41,6 +58,13 @@ java -javaagent:tnt4j-ping-jmx.jar="*:*!30000" -Dlog4j.configuration=file:log4j.
 ```
 The options are `-javaagent:tnt4j-ping-jmx.jar="mbean-filter!sample-time-ms"`, classpath must include pingjmx jar files as well as locations of log4j and tnt4j configuration files.
 
+## Overriding default `PingFactory`
+User may want to override default `PingFactory` with their own by specifying `-Dorg.tnt4j.ping.factory=org.tnt4j.pingjmx.PlatformPingFactory`. `PingFactory` is used to generate instances of the underlying pinger implementatons (objects that provide sampling of underlying mbeans).
+```java
+// return default or user defined PingFactory implementation
+PingFactory factory = DefaultPingFactory.getInstance();
+...
+```
 # Project Dependencies
 PingJMX requires the following:
 * TNT4J (https://github.com/Nastel/TNT4J)
