@@ -33,7 +33,6 @@ platformJmx.scheduleJmxPing(PingJMX.JMX_FILTER_ALL, 30000);
 ```
 Below is an example of creating jmx collection for all registered mbean servers:
 ```java
-PingFactory factory = DefaultPingFactory.getInstance().
 // obtain PingFactory instance
 PingFactory factory = DefaultPingFactory.getInstance();
 // find other registered mbean servers
@@ -43,7 +42,6 @@ for (MBeanServer server: mlist) {
 	jmxp.scheduleJmxPing(PingJMX.JMX_FILTER_ALL, 30000);
 }
 ```
-All PingJMX output is written to underlying tnt4j event sink configured in `tnt4j.properties` file. Sink destinations could be a file, socket, log4j, user defined event sink implementations.
 All `PingJMX` output is written to underlying tnt4j event sink configured in `tnt4j.properties` file. Sink destinations could be a file, socket, log4j, user defined event sink implementations.
 
 ## Running PingJMX as standalone app
