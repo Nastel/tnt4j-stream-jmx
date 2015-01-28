@@ -160,8 +160,8 @@ public class PlatformJmxPing {
 	 * 
 	 * @param mserver MBean server instance
 	 */
-	public static PlatformJmxPing newInstance(MBeanServer server) {
-		return new PlatformJmxPing(server);
+	public static PlatformJmxPing newInstance(MBeanServer mserver) {
+		return new PlatformJmxPing(mserver);
 	}
 
 	/**
@@ -191,8 +191,8 @@ public class PlatformJmxPing {
 	 * @param period sampling time in milliseconds
 	 * 
 	 */
-	public void scheduleJmxPing(String jmxFilter, long period) throws IOException {
-		scheduleJmxPing(jmxFilter, period, TimeUnit.MILLISECONDS);
+	public void scheduleJmxPing(String jmxfilter, long period) throws IOException {
+		scheduleJmxPing(jmxfilter, period, TimeUnit.MILLISECONDS);
 	}	
 
 	/**
@@ -203,9 +203,9 @@ public class PlatformJmxPing {
 	 * @param tunit time units for sampling period
 	 * 
 	 */
-	public void scheduleJmxPing(String jmxFilter, long period, TimeUnit tunit) throws IOException {
+	public void scheduleJmxPing(String jmxfilter, long period, TimeUnit tunit) throws IOException {
 		if (pinger == null) {
-			pinger = newPingJmxImpl(getMBeanServer(), jmxFilter, period, tunit);
+			pinger = newPingJmxImpl(getMBeanServer(), jmxfilter, period, tunit);
 		}
 		pinger.open();
 	}
@@ -232,7 +232,7 @@ public class PlatformJmxPing {
 	 * Create new instance of <code>PingJmx</code>
 	 * Override this call to return your instance of pinger
 	 *
-	 * @param server MBean server instance
+	 * @param mserver MBean server instance
 	 * @param jmxFilter JMX filters semicolon separated
 	 * @param period time period for sampling
 	 * @param tunit time units for period

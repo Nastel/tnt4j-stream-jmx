@@ -52,7 +52,7 @@ public class PingJmxListener implements ActivityListener {
 	 * Create new instance of <code>PingJmxListener</code> with a given
 	 * MBean server and a set of filters.
 	 *
-	 * @param name name of assigned to the pinger
+	 * @param mserver MBean server instance
 	 * @param filter JMX filters semicolon separated
 	 *  
 	 */
