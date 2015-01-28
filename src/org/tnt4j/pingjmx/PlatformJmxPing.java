@@ -45,7 +45,8 @@ public class PlatformJmxPing {
 	protected MBeanServer targetServer;
 	
 	/**
-	 * Entry point to be loaded as -agent:jarpath=filter!sample.ms command line
+	 * Entry point to be loaded as -agent:jarpath=mbean-filter!sample.ms command line.
+	 * Example: -agent:tnt4j-ping-jmx.jar="*:*!30000"
 	 * 
 	 */
 	public static void premain(String options, Instrumentation inst) throws IOException {
@@ -63,11 +64,11 @@ public class PlatformJmxPing {
 	/**
 	 * Main entry point for running as a standalone application (test only).
 	 * 
-	 * @param args argument list: jmxfilter sample_time_ms
+	 * @param args argument list: mbean-filter sample_time_ms
 	 */
 	public static void main(String[] args) throws InterruptedException, NumberFormatException, IOException {
 		if (args.length < 2) {
-			System.out.println("Usage: jmx-filter sample-ms (e.g \"*:*\" 30000");
+			System.out.println("Usage: mbean-filter sample-ms (e.g \"*:*\" 30000");
 		}
 		pingJmx(args[0], Integer.parseInt(args[1]), TimeUnit.MILLISECONDS);
 		System.out.println("jmx.ping.list=" + pingers);
@@ -122,7 +123,7 @@ public class PlatformJmxPing {
 			if (jmxp == null) {
 				jmxp = newInstance(server);
 				jmxp.scheduleJmxPing(jmxfilter, period);
-				pingers.put(platformJmx.getMBeanServer(), platformJmx);
+				pingers.put(jmxp.getMBeanServer(), jmxp);
 			}
 		}		
 	}
