@@ -25,18 +25,19 @@ import javax.management.MBeanServer;
  * 
  * @version $Revision: 1 $
  * 
+ * @see Pinger
  * @see WASJmxPing
  * @see PlatformJmxPing
  */
 public class WASPingFactory implements PingFactory {
 	
 	@Override
-	public PlatformJmxPing newInstance() {
+	public Pinger newInstance() {
 		return new WASJmxPing();
 	}
 
 	@Override
-	public PlatformJmxPing newInstance(MBeanServer mserver) {
+	public Pinger newInstance(MBeanServer mserver) {
 		return new WASJmxPing(mserver);
 	}
 }

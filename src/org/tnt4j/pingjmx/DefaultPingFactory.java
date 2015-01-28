@@ -42,6 +42,11 @@ public class DefaultPingFactory {
 	
 	private DefaultPingFactory() {}
 	
+	/**
+	 * Obtain a default instance of <code>PingFactory</code>
+	 *
+	 * @return default ping factory instance
+	 */
 	public static PingFactory getInstance() {
 		return defaultFactory;
 	}

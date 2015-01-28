@@ -62,9 +62,9 @@ public class PingJmxListener implements ActivityListener {
 	}
 
 	/**
-	 * Obtain associated mbean server instance.
+	 * Obtain associated MBean server instance.
 	 * 
-	 * @return mbean server instance associated with this listener 
+	 * @return MBean server instance associated with this listener 
 	 */
 	public MBeanServer getMBeanServer() {
 		return mbeanServer;

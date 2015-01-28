@@ -25,7 +25,7 @@ import javax.management.MBeanServer;
  * 
  * @version $Revision: 1 $
  * 
- * @see PlatformJmxPing
+ * @see Pinger
  */
 public interface PingFactory {
 	
@@ -33,13 +33,15 @@ public interface PingFactory {
 	 * Create a default instance with default MBean server instance
 	 * <code>ManagementFactory.getPlatformMBeanServer()</code>
 	 * 
+	 * @see Pinger
 	 */
-	public PlatformJmxPing newInstance();
+	public Pinger newInstance();
 
 	/**
 	 * Create a default instance with a given MBean server instance
 	 * 
 	 * @param mserver MBean server instance
+	 * @see Pinger
 	 */
-	public PlatformJmxPing newInstance(MBeanServer mserver);
+	public Pinger newInstance(MBeanServer mserver);
 }

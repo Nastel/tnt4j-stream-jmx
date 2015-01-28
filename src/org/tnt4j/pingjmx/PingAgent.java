@@ -35,8 +35,8 @@ import javax.management.MBeanServerFactory;
  * @see PingFactory
  */
 public class PingAgent {
-	protected static PlatformJmxPing platformJmx;
-	protected static HashMap<MBeanServer, PlatformJmxPing> pingers = new HashMap<MBeanServer, PlatformJmxPing>(89);
+	protected static Pinger platformJmx;
+	protected static HashMap<MBeanServer, Pinger> pingers = new HashMap<MBeanServer, Pinger>(89);
 
 	/**
 	 * Entry point to be loaded as -javaagent:jarpath="mbean-filter!sample.ms" command line.
@@ -118,7 +118,7 @@ public class PingAgent {
 		// find other registered mbean servers
 		ArrayList<MBeanServer> mlist = MBeanServerFactory.findMBeanServer(null);
 		for (MBeanServer server: mlist) {
-			PlatformJmxPing jmxp = pingers.get(server);
+			Pinger jmxp = pingers.get(server);
 			if (jmxp == null) {
 				jmxp = pFactory.newInstance(server);
 				jmxp.scheduleJmxPing(jmxfilter, period);

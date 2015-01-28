@@ -33,7 +33,7 @@ import javax.management.MBeanServer;
  * 
  * @see PingJmx
  */
-public class PlatformJmxPing {	
+public class PlatformJmxPing implements Pinger {	
 	protected PingJmx pinger;
 	protected MBeanServer targetServer;
 	
@@ -55,58 +55,31 @@ public class PlatformJmxPing {
 		targetServer = mserver;
 	}
 	
-	/**
-	 * Obtain MBean server associated with this object
-	 * 
-	 * @return MBean server instance
-	 */
+	@Override
 	public MBeanServer getMBeanServer() {
 		return targetServer;
 	}
 	
-	/**
-	 * Schedule JMX ping with associated MBean server instance
-	 * and all MBeans.
-	 *  
-	 * @param period sampling time in milliseconds
-	 * 
-	 */
+	@Override
 	public void scheduleJmxPing(long period) throws IOException {
 		scheduleJmxPing(PingJmx.JMX_FILTER_ALL, period);
 	}
 
-	/**
-	 * Schedule JMX ping with associated MBean server instance
-	 *  
-	 * @param jmxfilter semicolon separated filter list
-	 * @param period sampling time in milliseconds
-	 * 
-	 */
+	@Override
 	public void scheduleJmxPing(String jmxfilter, long period) throws IOException {
 		scheduleJmxPing(jmxfilter, period, TimeUnit.MILLISECONDS);
 	}	
 
-	/**
-	 * Schedule JMX ping with associated MBean server instance
-	 *  
-	 * @param jmxfilter semicolon separated filter list
-	 * @param period sampling time
-	 * @param tunit time units for sampling period
-	 * 
-	 */
+	@Override
 	public void scheduleJmxPing(String jmxfilter, long period, TimeUnit tunit) throws IOException {
 		if (pinger == null) {
 			pinger = newPingJmxImpl(getMBeanServer(), jmxfilter, period, tunit);
 		}
 		pinger.open();
 	}
-	
-	/**
-	 * Close this object instance and cancel all outstanding
-	 * or scheduled samplers.
-	 * 
-	 */
-	public void close() {
+
+	@Override
+	public void cancel() {
 		pinger.close();
 	}
 	

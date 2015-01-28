@@ -25,17 +25,18 @@ import javax.management.MBeanServer;
  * 
  * @version $Revision: 1 $
  * 
+ * @see Pinger
  * @see PlatformJmxPing
  */
 public class PlatformPingFactory implements PingFactory {
 	
 	@Override
-	public PlatformJmxPing newInstance() {
+	public Pinger newInstance() {
 		return new PlatformJmxPing();
 	}
 
 	@Override
-	public PlatformJmxPing newInstance(MBeanServer mserver) {
+	public Pinger newInstance(MBeanServer mserver) {
 		return new PlatformJmxPing(mserver);
 	}
 }
