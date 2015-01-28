@@ -24,6 +24,16 @@ import java.util.concurrent.TimeUnit;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 
+/**
+ * <p> 
+ * This class provides java agent implementation as well as <code>main()</code>
+ * entry point to run as a standalone application.
+ * </p>
+ * 
+ * @version $Revision: 1 $
+ * 
+ * @see PingFactory
+ */
 public class PingAgent {
 	protected static PlatformJmxPing platformJmx;
 	protected static HashMap<MBeanServer, PlatformJmxPing> pingers = new HashMap<MBeanServer, PlatformJmxPing>(89);
@@ -46,7 +56,7 @@ public class PingAgent {
 			}
 		}
 		pingJmx(jmxfilter, period, TimeUnit.MILLISECONDS);
-		System.out.println("jmx.ping.list=" + pingers);
+		System.out.println("PingAgent: filter=" + jmxfilter + ", sample.ms=" + period + ", jmx.ping.list=" + pingers);
 	}
 
 	/**
@@ -59,7 +69,7 @@ public class PingAgent {
 			System.out.println("Usage: mbean-filter sample-ms (e.g \"*:*\" 30000");
 		}
 		pingJmx(args[0], Integer.parseInt(args[1]), TimeUnit.MILLISECONDS);
-		System.out.println("jmx.ping.list=" + pingers);
+		System.out.println("PingAgent: filter=" + args[0] + ", sample.ms=" + args[1] + ", jmx.ping.list=" + pingers);
 		synchronized (platformJmx) {
 			platformJmx.wait();
 		}
@@ -116,6 +126,4 @@ public class PingAgent {
 			}
 		}		
 	}
-		
-
 }

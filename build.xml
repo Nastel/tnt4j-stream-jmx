@@ -83,7 +83,7 @@
 				<attribute name="Implementation-Vendor" value="${vendor}"/>
 				<attribute name="Implementation-Title" value="${prodname}"/>
 				<attribute name="Implementation-Version" value="${version}"/>
-				<attribute name="Premain-Class" value="org.tnt4j.pingjmx.PlatformJmxPing"/>
+				<attribute name="Premain-Class" value="org.tnt4j.pingjmx.PingAgent"/>
 			</manifest>
 		</jar>
 		<copy todir="${project-build}">

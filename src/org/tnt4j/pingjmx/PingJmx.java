@@ -35,8 +35,8 @@ public class PingJmx extends ActivityScheduler {
 	
 	/**
 	 * Create new instance of <code>PingJmx</code> with a given
-	 * name, mbean server, sampling period. Filter is set to 
-	 * all mbeans.
+	 * name, MBean server, sampling period. Filter is set to 
+	 * all MBeans.
 	 *
 	 * @param name name of assigned to the pinger
 	 * @param server MBean server instance
@@ -49,7 +49,7 @@ public class PingJmx extends ActivityScheduler {
 	
 	/**
 	 * Create new instance of <code>PingJmx</code> with a given
-	 * name, mbean server, filter list and sampling period.
+	 * name, MBean server, filter list and sampling period.
 	 *
 	 * @param name name of assigned to the pinger
 	 * @param server MBean server instance
@@ -64,7 +64,7 @@ public class PingJmx extends ActivityScheduler {
 	
 	/**
 	 * Create new instance of <code>PingJmx</code> with a given
-	 * name, mbean server, filter list and sampling period.
+	 * name, MBean server, filter list and sampling period.
 	 *
 	 * @param name name of assigned to the pinger
 	 * @param server MBean server instance
