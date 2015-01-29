@@ -63,7 +63,7 @@ For more information on TNT4J and `tnt4j.properties` see (https://github.com/Nas
 
 ## Running PingJMX as standalone app
 ```java
-java -Dlog4j.configuration=file:log4j.properties -classpath "tnt4j-ping-jmx.jar;lib/tnt4j-api-final-all.jar" org.tnt4j.pingjmx.PingAgent "*:*" 10000 
+java -Dlog4j.configuration=file:log4j.properties -classpath "tnt4j-ping-jmx.jar;lib/tnt4j-api-final-all.jar" org.tnt4j.pingjmx.PingAgent "*:*" 10000 60000
 ```
 
 ## Running PingJMX as -javaagent
