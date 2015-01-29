@@ -1,6 +1,5 @@
 # PingJMX
-Lightweight framework to stream JMX metrics put of the JVM container into user defined event sinks such as: 
-file, socket, log4j, montoring tools, user defined event sinks.
+Lightweight framework to stream JMX metrics into event sinks such as: file, socket, log4j, monitoring tools, user defined.
 
 These metrics can be used to monitor health, performance and availability of your JVMs and applications.
 Use PingJMX to imbed a monitoring agent within your application and monitor memory, GC activity, CPU as
