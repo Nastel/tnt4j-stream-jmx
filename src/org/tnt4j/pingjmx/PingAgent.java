@@ -55,7 +55,7 @@ public class PingAgent {
 				period = Integer.parseInt(args[1]);
 			}
 		}
-		pingJmx(jmxfilter, period, TimeUnit.MILLISECONDS);
+		ping(jmxfilter, period, TimeUnit.MILLISECONDS);
 		System.out.println("PingAgent: filter=" + jmxfilter + ", sample.ms=" + period + ", jmx.ping.list=" + pingers);
 	}
 
@@ -68,7 +68,7 @@ public class PingAgent {
 		if (args.length < 2) {
 			System.out.println("Usage: mbean-filter sample-ms (e.g \"*:*\" 30000");
 		}
-		pingJmx(args[0], Integer.parseInt(args[1]), TimeUnit.MILLISECONDS);
+		ping(args[0], Integer.parseInt(args[1]), TimeUnit.MILLISECONDS);
 		System.out.println("PingAgent: filter=" + args[0] + ", sample.ms=" + args[1] + ", jmx.ping.list=" + pingers);
 		synchronized (platformJmx) {
 			platformJmx.wait();
@@ -76,27 +76,27 @@ public class PingAgent {
 	}
 	
 	/**
-	 * Schedule JMX ping with default MBean server instance as well
+	 * Schedule ping with default MBean server instance as well
 	 * as all registered MBean servers within the JVM.
 	 * 
 	 */
-	public static void pingJmx() throws IOException {
+	public static void ping() throws IOException {
 		String jmxfilter = System.getProperty("org.tnt4j.jmx.ping.filter", PingJmx.JMX_FILTER_ALL);
 		int period = Integer.getInteger("org.tnt4j.jmx.ping.sample", 30000);
-		pingJmx(jmxfilter, period);
+		ping(jmxfilter, period);
 	}
 	
 
 	/**
-	 * Schedule JMX ping with default MBean server instance as well
+	 * Schedule ping with default MBean server instance as well
 	 * as all registered MBean servers within the JVM.
 	 * 
 	 * @param jmxfilter semicolon separated filter list
 	 * @param period sampling in milliseconds.
 	 * 
 	 */
-	public static void pingJmx(String jmxfilter, long period) throws IOException {
-		pingJmx(jmxfilter, period);
+	public static void ping(String jmxfilter, long period) throws IOException {
+		ping(jmxfilter, period);
 	}
 	
 	/**
@@ -108,7 +108,7 @@ public class PingAgent {
 	 * @param tunit time units for sampling period
 	 * 
 	 */
-	public static void pingJmx(String jmxfilter, long period, TimeUnit tunit) throws IOException {
+	public static void ping(String jmxfilter, long period, TimeUnit tunit) throws IOException {
 		// initialize ping with default MBeanServer
 		PingFactory pFactory = DefaultPingFactory.getInstance();
 		platformJmx = pFactory.newInstance();
