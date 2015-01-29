@@ -7,12 +7,12 @@ Use PingJMX to imbed a monitoring agent within your application and monitor memo
 well as user defined MBeans.
 
 # Why PingJMX
-PingJMX provides and easy, lightweight and secure way to stream and monitor JMX metrics out of the
+PingJMX provides and easy, lightweight and secure way to stream and monitor JMX metrics from within
 java runtime containers.
 
 * Stream JMX metrics out of the JVM container (vs. polling from outside/remote)
 * Makes it easy to monitor farms of JMVs, application servers
-* No need to enable each JVM for remote JMX, SSL, security
+* No need to enable each JVM for remote JMX, SSL, security, ports, firewalls
 * Integration with monitoring tools for alerting, pro-active monitoring (AutoPilot M6)
 * Integration with cloud analytics tools (https://www.jkoolcloud.com)
 * Integration with log4j (via TNT4J event sinks)
@@ -62,6 +62,78 @@ PingJMX can be invoked as a a javaagent using `-javaagent` command line:
 java -javaagent:tnt4j-ping-jmx.jar="*:*!30000" -Dlog4j.configuration=file:log4j.properties -Dtnt4j.config=tnt4j.properties -classpath "tnt4j-ping-jmx.jar;lib/tnt4j-api-final-all.jar" your.class.name your-args
 ```
 The options are `-javaagent:tnt4j-ping-jmx.jar="mbean-filter!sample-time-ms"`, classpath must include pingjmx jar files as well as locations of log4j and tnt4j configuration files.
+
+## Where do the streams go?
+PingJMX streams all collected metrics based on a scheduled interval via TNT4J event streaming framework.
+All streams are written into TNT4J event sinks defined in `tnt4j.properties` file which is defined by `-Dtnt4j.config=tnt4j.properties` property. 
+
+Below is an example of TNT4J stream definition where all PingJMX streams are written into a socket event sink
+`com.nastel.jkool.tnt4j.sink.SocketEventSinkFactory`, formatted by `org.tnt4j.pingjmx.format.FactNameValueFormatter` :
+```
+;Stanza used for PingJMX sources
+{
+	source: org.tnt4j.pingjmx
+	
+	source.factory: com.nastel.jkool.tnt4j.source.SourceFactoryImpl
+	source.factory.GEOADDR: NewYork
+	source.factory.DATACENTER: NastelDC
+	source.factory.RootFQN: SERVER=?#DATACENTER=?#GEOADDR=?	
+	
+	tracker.factory: com.nastel.jkool.tnt4j.tracker.DefaultTrackerFactory
+	dump.sink.factory: com.nastel.jkool.tnt4j.dump.DefaultDumpSinkFactory
+
+	; Event sink definition where all streams are recorded
+	event.sink.factory: com.nastel.jkool.tnt4j.sink.BufferedEventSinkFactory
+	event.sink.factory.EventSinkFactory: com.nastel.jkool.tnt4j.sink.SocketEventSinkFactory
+	event.sink.factory.EventSinkFactory.eventSinkFactory: com.nastel.jkool.tnt4j.sink.NullEventSinkFactory
+	event.sink.factory.EventSinkFactory.Host: localhost
+	event.sink.factory.EventSinkFactory.Port: 6060
+
+	; Configure default sink filter 
+	event.sink.factory.Filter: com.nastel.jkool.tnt4j.filters.EventLevelTimeFilter
+	event.sink.factory.Filter.Level: TRACE
+	
+	event.formatter: org.tnt4j.pingjmx.format.FactNameValueFormatter
+	tracking.selector: com.nastel.jkool.tnt4j.selector.DefaultTrackingSelector
+	tracking.selector.Repository: com.nastel.jkool.tnt4j.repository.FileTokenRepository
+}
+```
+To stream PingJMX into a log file:
+```
+;Stanza used for PingJMX sources
+{
+	source: org.tnt4j.pingjmx
+	
+	source.factory: com.nastel.jkool.tnt4j.source.SourceFactoryImpl
+	source.factory.GEOADDR: NewYork
+	source.factory.DATACENTER: NastelDC
+	source.factory.RootFQN: SERVER=?#DATACENTER=?#GEOADDR=?	
+	
+	tracker.factory: com.nastel.jkool.tnt4j.tracker.DefaultTrackerFactory
+	dump.sink.factory: com.nastel.jkool.tnt4j.dump.DefaultDumpSinkFactory
+
+	; Event sink definition where all streams are recorded
+	event.sink.factory: com.nastel.jkool.tnt4j.sink.BufferedEventSinkFactory
+	event.sink.factory.EventSinkFactory: com.nastel.jkool.tnt4j.sink.FileEventSinkFactory
+	event.sink.factory.EventSinkFactory.FileName: MyStream.log
+
+	; Configure default sink filter 
+	event.sink.factory.Filter: com.nastel.jkool.tnt4j.filters.EventLevelTimeFilter
+	event.sink.factory.Filter.Level: TRACE
+	
+	event.formatter: org.tnt4j.pingjmx.format.FactNameValueFormatter
+	tracking.selector: com.nastel.jkool.tnt4j.selector.DefaultTrackingSelector
+	tracking.selector.Repository: com.nastel.jkool.tnt4j.repository.FileTokenRepository
+}
+```
+You can write your own custom event sinks (HTTPS, HTTP, etc) and your own stream formatters without having to change PingJMX
+code or your application. TNT4J comes with a set of built-in event sink implementations such as: 
+
+* `com.nastel.jkool.tnt4j.logger.Log4JEventSinkFactory` -- log4j destinations
+* `com.nastel.jkool.tnt4j.sink.BufferedEventSinkFactory` -- buffred sink, coupled with another stream
+* `com.nastel.jkool.tnt4j.sink.FileEventSinkFactory` - standard log file
+* `com.nastel.jkool.tnt4j.sink.SocketEventSinkFactory` -- socket (tcp/ip)
+* `com.nastel.jkool.tnt4j.sink.NullEventSinkFactory` -- null (empty)
 
 ## Auto-generating application state dump on VM shutdown
 PingJMX is utilizing TNT4J state dump capability to generate application state dumps on VM shutdown. To enable state dump generation add the following to your java command line: 
