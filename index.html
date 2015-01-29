@@ -82,6 +82,15 @@ platformJmx<span class="pl-k">.</span>schedule(<span class="pl-stj">PingJMX</spa
 <p>The options are <code>-javaagent:tnt4j-ping-jmx.jar="mbean-filter!sample-time-ms"</code>, classpath must include pingjmx jar files as well as locations of log4j and tnt4j configuration files.</p>
 
 <h2>
+<a id="auto-generating-application-state-dump-on-vm-shutdown" class="anchor" href="#auto-generating-application-state-dump-on-vm-shutdown" aria-hidden="true"><span class="octicon octicon-link"></span></a>Auto-generating application state dump on VM shutdown</h2>
+
+<p>PingJMX is utilizing TNT4J state dump capability to generate application state dumps on VM shutdown. To enable state dump generation add the following to your java command line: </p>
+
+<div class="highlight highlight-java"><pre>java <span class="pl-k">-</span><span class="pl-stj">Dtnt4j</span><span class="pl-k">.</span>dump<span class="pl-k">.</span>on<span class="pl-k">.</span>vm<span class="pl-k">.</span>shutdown<span class="pl-k">=</span><span class="pl-c1">true</span> <span class="pl-k">-</span><span class="pl-stj">Dtnt4j</span><span class="pl-k">.</span>dump<span class="pl-k">.</span>provider<span class="pl-k">.</span><span class="pl-k">default</span><span class="pl-k">=</span><span class="pl-c1">true</span> <span class="pl-k">-</span><span class="pl-stj">Dtnt4j</span><span class="pl-k">.</span>dump<span class="pl-k">.</span>folder<span class="pl-k">=</span><span class="pl-c1">.</span><span class="pl-k">/</span> <span class="pl-c1">...</span></pre></div>
+
+<p><code>-Dtnt4j.dump.folder=./</code> specifies the destination folder where dump (.dump) files will be created (default is current working directory).</p>
+
+<h2>
 <a id="overriding-default-pingfactory" class="anchor" href="#overriding-default-pingfactory" aria-hidden="true"><span class="octicon octicon-link"></span></a>Overriding default <code>PingFactory</code>
 </h2>
 
