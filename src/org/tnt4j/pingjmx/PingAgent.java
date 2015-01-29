@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import javax.management.MBeanServer;
@@ -36,7 +38,7 @@ import javax.management.MBeanServerFactory;
  */
 public class PingAgent {
 	protected static Pinger platformJmx;
-	protected static HashMap<MBeanServer, Pinger> pingers = new HashMap<MBeanServer, Pinger>(89);
+	protected static ConcurrentHashMap<MBeanServer, Pinger> pingers = new ConcurrentHashMap<MBeanServer, Pinger>(89);
 
 	/**
 	 * Entry point to be loaded as -javaagent:jarpath="mbean-filter!sample.ms" command line.
@@ -47,7 +49,7 @@ public class PingAgent {
 	 */
 	public static void premain(String options, Instrumentation inst) throws IOException {
 		String jmxfilter = System.getProperty("org.tnt4j.jmx.ping.filter", PingJmx.JMX_FILTER_ALL);
-		int period = Integer.getInteger("org.tnt4j.jmx.ping.sample", 30000);
+		int period = Integer.getInteger("org.tnt4j.jmx.ping.period", 30000);
 		if (options != null) {
 			String [] args = options.split("!");
 			if (args.length >= 2) {
@@ -82,7 +84,7 @@ public class PingAgent {
 	 */
 	public static void ping() throws IOException {
 		String jmxfilter = System.getProperty("org.tnt4j.jmx.ping.filter", PingJmx.JMX_FILTER_ALL);
-		int period = Integer.getInteger("org.tnt4j.jmx.ping.sample", 30000);
+		int period = Integer.getInteger("org.tnt4j.jmx.ping.period", 30000);
 		ping(jmxfilter, period);
 	}
 	
@@ -100,7 +102,7 @@ public class PingAgent {
 	}
 	
 	/**
-	 * Schedule JMX ping with default MBean server instance as well
+	 * Schedule ping with default MBean server instance as well
 	 * as all registered MBean servers within the JVM.
 	 * 
 	 * @param jmxfilter semicolon separated filter list
@@ -109,13 +111,19 @@ public class PingAgent {
 	 * 
 	 */
 	public static void ping(String jmxfilter, long period, TimeUnit tunit) throws IOException {
-		// initialize ping with default MBeanServer
+		// obtain a default ping factory
 		PingFactory pFactory = DefaultPingFactory.getInstance();
-		platformJmx = pFactory.newInstance();
-		platformJmx.schedule(jmxfilter, period);
-		pingers.put(platformJmx.getMBeanServer(), platformJmx);
 		
-		// find other registered mbean servers
+		if (platformJmx == null) {
+			// create new pinger with default MBeanServer instance
+			platformJmx = pFactory.newInstance();
+		
+			// schedule ping with a given filter and sampling period
+			platformJmx.schedule(jmxfilter, period);
+			pingers.put(platformJmx.getMBeanServer(), platformJmx);
+		}
+		
+		// find other registered MBean servers and initiate sampling for all
 		ArrayList<MBeanServer> mlist = MBeanServerFactory.findMBeanServer(null);
 		for (MBeanServer server: mlist) {
 			Pinger jmxp = pingers.get(server);
@@ -125,5 +133,41 @@ public class PingAgent {
 				pingers.put(jmxp.getMBeanServer(), jmxp);
 			}
 		}		
+	}
+	
+	/**
+	 * Obtain a map of all scheduled MBeanServers and associated ping
+	 * references.
+	 * 
+	 * @return map of all scheduled MBeanServers and associated ping references.
+	 */
+	public static Map<MBeanServer, Pinger> getPingers() {
+		HashMap<MBeanServer, Pinger> copy = new HashMap<MBeanServer, Pinger>(89);
+		copy.putAll(pingers);
+		return copy;
+	}
+	
+	/**
+	 * Cancel and close all outstanding <code>Pinger</code> 
+	 * instances and stop all sampling for all <code>MBeanServer</code>
+	 * instances.
+	 *  
+	 */
+	public static void cancel() {
+		for (Pinger pinger: pingers.values()) {
+			pinger.cancel();
+		}
+		pingers.clear();
+	}
+
+	/**
+	 * Cancel and close all sampling for a given <code>MBeanServer</code>
+	 * instance.
+	 *  
+	 * @param mserver MBeanServer instance
+	 */
+	public static void cancel(MBeanServer mserver) {
+		Pinger pinger = pingers.remove(mserver);
+		if (pinger != null) pinger.cancel();
 	}
 }

@@ -116,7 +116,6 @@ public class PingJmxListener implements ActivityListener {
 						processJmxValue(snapshot, jinfo, jinfo.getName(), value);
 					} catch (Throwable ex) {
 						exclude(jinfo);
-						System.err.println("Skipping attribute=" + jinfo + ", reason=" + ex);
 					}
 				}
 			}
@@ -196,8 +195,7 @@ public class PingJmxListener implements ActivityListener {
 		metrics += finish(activity);		
 		
 		System.out.println(activity.getName()
-				+ ": id=" + activity.getTrackingId() 
-				+ ", mbean.server=" + mbeanServer
+				+ ": sample.count=" + sampleCount
 				+ ", mbean.count=" + mbeanServer.getMBeanCount()
 				+ ", elasped.usec=" + activity.getElapsedTime() 
 				+ ", snap.count=" + activity.getSnapshotCount() 
@@ -205,6 +203,8 @@ public class PingJmxListener implements ActivityListener {
 				+ ", sampled.mbeans.count=" + mbeans.size()
 				+ ", sampled.metric.count=" + metrics
 				+ ", exclude.attrs=" + excAttrs.size()
+				+ ", trackind.id=" + activity.getTrackingId() 
+				+ ", mbean.server=" + mbeanServer
 				);
 	}
 }
