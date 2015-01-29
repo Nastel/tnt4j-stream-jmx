@@ -82,6 +82,7 @@ Below is an example of TNT4J stream definition where all PingJMX streams are wri
 	dump.sink.factory: com.nastel.jkool.tnt4j.dump.DefaultDumpSinkFactory
 
 	; Event sink definition where all streams are recorded
+
 	event.sink.factory: com.nastel.jkool.tnt4j.sink.BufferedEventSinkFactory
 	event.sink.factory.EventSinkFactory: com.nastel.jkool.tnt4j.sink.SocketEventSinkFactory
 	event.sink.factory.EventSinkFactory.eventSinkFactory: com.nastel.jkool.tnt4j.sink.NullEventSinkFactory
