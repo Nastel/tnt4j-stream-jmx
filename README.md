@@ -141,10 +141,16 @@ code or your application. TNT4J comes with a set of built-in event sink implemen
 * `com.nastel.jkool.tnt4j.sink.SocketEventSinkFactory` -- socket (tcp/ip)
 * `com.nastel.jkool.tnt4j.sink.NullEventSinkFactory` -- null (empty)
 
-## Auto-generating application state dump on VM shutdown
-PingJMX is utilizing TNT4J state dump capability to generate application state dumps on VM shutdown. To enable state dump generation add the following to your java command line: 
+## Auto-generating application state dump
+PingJMX is utilizing TNT4J state dump capability to generate application state dumps
+
+(1) Dump on VM shutdown:
 ```java
 java -Dtnt4j.dump.on.vm.shutdown=true -Dtnt4j.dump.provider.default=true -Dtnt4j.dump.folder=./ ...
+```
+(2) Dump on uncaught thread exceptions:
+```java
+java -Dtnt4j.dump.on.exceptionn=true -Dtnt4j.dump.provider.default=true -Dtnt4j.dump.folder=./ ...
 ```
 `-Dtnt4j.dump.folder=./` specifies the destination folder where dump (.dump) files will be created (default is current working directory).
 
