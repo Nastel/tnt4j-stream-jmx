@@ -165,3 +165,9 @@ PingFactory factory = DefaultPingFactory.getInstance();
 PingJMX requires the following:
 * JDK 1.6+
 * TNT4J (https://github.com/Nastel/TNT4J)
+
+# Available Integrations
+* TNT4J (https://github.com/Nastel/TNT4J)
+* Log4J (http://logging.apache.org/log4j/1.2/)
+* jkoolcloud.com (https://www.jkoolcloud.com)
+* AutoPilot M6 (http://www.nastel.com/products/autopilot-m6.html)
