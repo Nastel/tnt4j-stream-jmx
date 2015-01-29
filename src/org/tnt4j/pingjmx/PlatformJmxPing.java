@@ -61,17 +61,17 @@ public class PlatformJmxPing implements Pinger {
 	}
 	
 	@Override
-	public void scheduleJmxPing(long period) throws IOException {
-		scheduleJmxPing(PingJmx.JMX_FILTER_ALL, period);
+	public void schedule(long period) throws IOException {
+		schedule(PingJmx.JMX_FILTER_ALL, period);
 	}
 
 	@Override
-	public void scheduleJmxPing(String jmxfilter, long period) throws IOException {
-		scheduleJmxPing(jmxfilter, period, TimeUnit.MILLISECONDS);
+	public void schedule(String jmxfilter, long period) throws IOException {
+		schedule(jmxfilter, period, TimeUnit.MILLISECONDS);
 	}	
 
 	@Override
-	public void scheduleJmxPing(String jmxfilter, long period, TimeUnit tunit) throws IOException {
+	public void schedule(String jmxfilter, long period, TimeUnit tunit) throws IOException {
 		if (pinger == null) {
 			pinger = newPingJmxImpl(getMBeanServer(), jmxfilter, period, tunit);
 		}

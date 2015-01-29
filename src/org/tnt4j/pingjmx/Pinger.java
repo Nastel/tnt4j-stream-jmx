@@ -39,32 +39,32 @@ public interface Pinger {
 	public MBeanServer getMBeanServer();
 	
 	/**
-	 * Schedule JMX ping with associated MBean server instance
+	 * Schedule ping with associated MBean server instance
 	 * and all MBeans.
 	 *  
 	 * @param period sampling time in milliseconds
 	 * 
 	 */
-	public void scheduleJmxPing(long period) throws IOException;
+	public void schedule(long period) throws IOException;
 
 	/**
-	 * Schedule JMX ping with associated MBean server instance
+	 * Schedule ping with associated MBean server instance
 	 *  
 	 * @param jmxfilter semicolon separated filter list
 	 * @param period sampling time in milliseconds
 	 * 
 	 */
-	public void scheduleJmxPing(String jmxfilter, long period) throws IOException;	
+	public void schedule(String jmxfilter, long period) throws IOException;	
 
 	/**
-	 * Schedule JMX ping with associated MBean server instance
+	 * Schedule ping with associated MBean server instance
 	 *  
 	 * @param jmxfilter semicolon separated filter list
 	 * @param period sampling time
 	 * @param tunit time units for sampling period
 	 * 
 	 */
-	public void scheduleJmxPing(String jmxfilter, long period, TimeUnit tunit) throws IOException;
+	public void schedule(String jmxfilter, long period, TimeUnit tunit) throws IOException;
 	
 	/**
 	 * Cancel/close this object instance and cancel all outstanding

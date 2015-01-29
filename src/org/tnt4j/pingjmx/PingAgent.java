@@ -112,7 +112,7 @@ public class PingAgent {
 		// initialize ping with default MBeanServer
 		PingFactory pFactory = DefaultPingFactory.getInstance();
 		platformJmx = pFactory.newInstance();
-		platformJmx.scheduleJmxPing(jmxfilter, period);
+		platformJmx.schedule(jmxfilter, period);
 		pingers.put(platformJmx.getMBeanServer(), platformJmx);
 		
 		// find other registered mbean servers
@@ -121,7 +121,7 @@ public class PingAgent {
 			Pinger jmxp = pingers.get(server);
 			if (jmxp == null) {
 				jmxp = pFactory.newInstance(server);
-				jmxp.scheduleJmxPing(jmxfilter, period);
+				jmxp.schedule(jmxfilter, period);
 				pingers.put(jmxp.getMBeanServer(), jmxp);
 			}
 		}		

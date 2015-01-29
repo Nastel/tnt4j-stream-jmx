@@ -9,7 +9,7 @@ PingFactory factory = DefaultPingFactory.getInstance().
 // create an instance of the pinger that will sample mbeans
 Pinger platformJmx = factory.newInstance();
 //schedule jmx collection (ping) for given jmx filter and 30000 ms sampling period
-platformJmx.scheduleJmxPing(PingJMX.JMX_FILTER_ALL, 30000);
+platformJmx.schedule(PingJMX.JMX_FILTER_ALL, 30000);
 ```
 To schedule jmx collection for a specific mbean server:
 ```java
@@ -19,7 +19,7 @@ PingFactory factory = DefaultPingFactory.getInstance().
 // create an instance of the pinger that will sample mbeans
 Pinger platformJmx = factory.newInstance(mserver);
 //schedule jmx collection (ping) for given jmx filter and 30000 ms sampling period
-platformJmx.scheduleJmxPing(PingJMX.JMX_FILTER_ALL, 30000);
+platformJmx.schedule(PingJMX.JMX_FILTER_ALL, 30000);
 ```
 Below is an example of creating jmx collection for all registered mbean servers:
 ```java
@@ -29,7 +29,7 @@ PingFactory factory = DefaultPingFactory.getInstance();
 ArrayList<MBeanServer> mlist = MBeanServerFactory.findMBeanServer(null);
 for (MBeanServer server: mlist) {
 	Pinger jmxp = factory.newInstance(server);
-	jmxp.scheduleJmxPing(PingJMX.JMX_FILTER_ALL, 30000);
+	jmxp.schedule(PingJMX.JMX_FILTER_ALL, 30000);
 }
 ```
 All `PingJMX` output is written to underlying tnt4j event sink configured in `tnt4j.properties` file. Sink destinations could be a file, socket, log4j, user defined event sink implementations.
