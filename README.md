@@ -73,10 +73,9 @@ Below is an example of TNT4J stream definition where all PingJMX streams are wri
 ;Stanza used for PingJMX sources
 {
 	source: org.tnt4j.pingjmx
-	
 	source.factory: com.nastel.jkool.tnt4j.source.SourceFactoryImpl
 	source.factory.GEOADDR: NewYork
-	source.factory.DATACENTER: NastelDC
+	source.factory.DATACENTER: YourDC
 	source.factory.RootFQN: SERVER=?#DATACENTER=?#GEOADDR=?	
 	
 	tracker.factory: com.nastel.jkool.tnt4j.tracker.DefaultTrackerFactory
@@ -103,10 +102,9 @@ To stream PingJMX into a log file:
 ;Stanza used for PingJMX sources
 {
 	source: org.tnt4j.pingjmx
-	
 	source.factory: com.nastel.jkool.tnt4j.source.SourceFactoryImpl
 	source.factory.GEOADDR: NewYork
-	source.factory.DATACENTER: NastelDC
+	source.factory.DATACENTER: YourDC
 	source.factory.RootFQN: SERVER=?#DATACENTER=?#GEOADDR=?	
 	
 	tracker.factory: com.nastel.jkool.tnt4j.tracker.DefaultTrackerFactory
