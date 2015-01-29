@@ -87,7 +87,7 @@
 			</manifest>
 		</jar>
 		<copy todir="${project-build}">
-			<fileset dir="${lib}">
+			<fileset dir="${root}">
 				<include name="log4j.properties"/>
 				<include name="tnt4j.properties"/>
 				<include name="tnt4j-tokens.properties"/>
