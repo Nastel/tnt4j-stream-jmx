@@ -5,6 +5,14 @@ These metrics can be used to monitor health, performance and availability of you
 Use PingJMX to imbed a monitoring agent within your application and monitor memory, GC activity, CPU as
 well as user defined MBeans.
 
+Here is what you can do with PingJMX:
+* Periodic JVM heartbeat
+* Monitor memory utilization, GC activity, memory leaks
+* High/Low, normal vs. abnormal CPU usage
+* Monitor threading, runtime and other JVM performance metrics
+* Monitor standard and custom MBean attributes
+* Application state dumps on VM shutdown for diagnostics
+
 # Why PingJMX
 PingJMX provides and easy, lightweight and secure way to stream and monitor JMX metrics from within
 java runtime containers.
