@@ -20,6 +20,8 @@ import java.util.concurrent.TimeUnit;
 
 import javax.management.MBeanServer;
 
+import com.nastel.jkool.tnt4j.TrackingLogger;
+
 /**
  * <p> 
  * This interface defines <code>Pinger</code> which allows sampling
@@ -36,7 +38,14 @@ public interface Pinger {
 	 * 
 	 * @return MBean server instance
 	 */
-	public MBeanServer getMBeanServer();
+	MBeanServer getMBeanServer();
+	
+	/**
+	 * Obtain <code>TrackingLogger</code> instance for logging
+	 * 
+	 * @return tracking logger instance associated with this pinger
+	 */
+	TrackingLogger getLogger();
 	
 	/**
 	 * Schedule ping with associated MBean server instance
@@ -45,7 +54,7 @@ public interface Pinger {
 	 * @param period sampling time in milliseconds
 	 * 
 	 */
-	public void schedule(long period) throws IOException;
+	void schedule(long period) throws IOException;
 
 	/**
 	 * Schedule ping with associated MBean server instance
@@ -54,7 +63,7 @@ public interface Pinger {
 	 * @param period sampling time in milliseconds
 	 * 
 	 */
-	public void schedule(String jmxfilter, long period) throws IOException;	
+	void schedule(String jmxfilter, long period) throws IOException;	
 
 	/**
 	 * Schedule ping with associated MBean server instance
@@ -64,11 +73,11 @@ public interface Pinger {
 	 * @param tunit time units for sampling period
 	 * 
 	 */
-	public void schedule(String jmxfilter, long period, TimeUnit tunit) throws IOException;
+	void schedule(String jmxfilter, long period, TimeUnit tunit) throws IOException;
 	
 	/**
 	 * Cancel/close this object instance and cancel all outstanding
 	 * or scheduled samplers.
 	 */
-	public void cancel();
+	void cancel();
 }

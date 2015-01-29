@@ -24,6 +24,8 @@ import javax.management.MBeanServer;
 import org.tnt4j.pingjmx.PingJmx;
 import org.tnt4j.pingjmx.Pinger;
 
+import com.nastel.jkool.tnt4j.TrackingLogger;
+
 /**
  * <p> 
  * This class provides scheduled execution and sampling of a JMX metrics
@@ -63,6 +65,11 @@ public class PlatformJmxPing implements Pinger {
 		return targetServer;
 	}
 	
+	@Override
+    public TrackingLogger getLogger() {
+	    return pinger.getLogger();
+    }
+
 	@Override
 	public void schedule(long period) throws IOException {
 		schedule(PingJmx.JMX_FILTER_ALL, period);
