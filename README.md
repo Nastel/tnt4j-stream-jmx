@@ -170,7 +170,7 @@ You may create your own dump providers and handlers (https://github.com/Nastel/T
 `PingFactory` instances are used to generate `Pinger` implementation for a specific runtime environment. PingJMX supplies pinger and ping factories for standard JVMs, JBoss,
 WebSphere Application Server. You may want to override default `PingFactory` with your own or an altenative by specifying:
 ```java
--Dorg.tnt4j.ping.factory=org.tnt4j.pingjmx.PlatformPingFactory` ...
+java -Dorg.tnt4j.ping.factory=org.tnt4j.pingjmx.PlatformPingFactory ...
 ```
 `PingFactory` is used to generate instances of the underlying pinger implementatons (objects that provide sampling of underlying mbeans).
 ```java
