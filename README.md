@@ -13,11 +13,10 @@ platformJmx.schedule(PingJMX.JMX_FILTER_ALL, 30000);
 ```
 To schedule jmx collection for a specific mbean server:
 ```java
-MBeanServer mserver = ManagementFactory.getPlatformMBeanServer();
 // obtain PingFactory instance
 PingFactory factory = DefaultPingFactory.getInstance();
 // create an instance of the pinger that will sample mbeans
-Pinger platformJmx = factory.newInstance(mserver);
+Pinger platformJmx = factory.newInstance(ManagementFactory.getPlatformMBeanServer());
 //schedule jmx collection (ping) for given jmx filter and 30000 ms sampling period
 platformJmx.schedule(PingJMX.JMX_FILTER_ALL, 30000);
 ```
