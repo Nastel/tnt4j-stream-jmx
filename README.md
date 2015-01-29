@@ -12,6 +12,7 @@ Here is what you can do with PingJMX:
 * Monitor threading, runtime and other JVM performance metrics
 * Monitor standard and custom MBean attributes
 * Application state dumps on VM shutdown for diagnostics
+* Conditional streaming based on custom filters
 
 # Why PingJMX
 PingJMX provides and easy, lightweight and secure way to stream and monitor JMX metrics from within
@@ -56,7 +57,9 @@ for (MBeanServer server: mlist) {
 	jmxp.schedule(PingJMX.JMX_FILTER_ALL, 30000);
 }
 ```
-All `PingJMX` output is written to underlying tnt4j event sink configured in `tnt4j.properties` file. Sink destinations could be a file, socket, log4j, user defined event sink implementations.
+All `PingJMX` output is written to underlying tnt4j event sink configured in `tnt4j.properties` file. Sink destinations could be a file, socket, log4j, user defined event sink implementations. 
+
+For more information on TNT4J and `tnt4j.properties` see (https://github.com/Nastel/TNT4J/wiki/Getting-Started).
 
 ## Running PingJMX as standalone app
 ```java
