@@ -1,5 +1,8 @@
 # PingJMX
-Framework to monitor JMX or any other metrics and write to TNT4J event sink: file, socket, other TNT4J event sinks.
+Framework to monitor JMX metrics and write to user defined event sinks: file, socket, user defined event sinks.
+These metrics can be used to monitor health, performance and availability of your JVMs and applications.
+Use PingJMX to imbed a monitoring agent within your application and monitor memory, GC activity, CPU as
+well as user defined MBeans.
 
 # Using PingJMX
 It is simple, just imbed the following code into your application:
@@ -53,7 +56,8 @@ java -Dtnt4j.dump.on.vm.shutdown=true -Dtnt4j.dump.provider.default=true -Dtnt4j
 `-Dtnt4j.dump.folder=./` specifies the destination folder where dump (.dump) files will be created (default is current working directory).
 
 ## Overriding default `PingFactory`
-User may want to override default `PingFactory` with their own by specifying 
+`PingFactory` instances are used to generate `Pinger` implementation for a specific runtime environment. PingJMX supplies pinger and ping factories for standard JVMs, JBoss,
+WebSphere Application Server. You may want to override default `PingFactory` with your own or an altenative by specifying:
 ```java
 -Dorg.tnt4j.ping.factory=org.tnt4j.pingjmx.PlatformPingFactory` ...
 ```
