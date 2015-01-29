@@ -67,13 +67,13 @@ public class PingAgent {
 	 * @param args argument list: mbean-filter sample_time_ms
 	 */
 	public static void main(String[] args) throws InterruptedException, NumberFormatException, IOException {
-		if (args.length < 2) {
-			System.out.println("Usage: mbean-filter sample-ms (e.g \"*:*\" 30000");
+		if (args.length < 3) {
+			System.out.println("Usage: mbean-filter sample-ms wait-ms(e.g \"*:*\" 30000");
 		}
 		ping(args[0], Integer.parseInt(args[1]), TimeUnit.MILLISECONDS);
 		System.out.println("PingAgent: filter=" + args[0] + ", sample.ms=" + args[1] + ", jmx.ping.list=" + pingers);
 		synchronized (platformJmx) {
-			platformJmx.wait();
+			platformJmx.wait(Long.parseLong(args[2]));
 		}
 	}
 	
