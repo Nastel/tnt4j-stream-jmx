@@ -45,6 +45,13 @@ java -javaagent:tnt4j-ping-jmx.jar="*:*!30000" -Dlog4j.configuration=file:log4j.
 ```
 The options are `-javaagent:tnt4j-ping-jmx.jar="mbean-filter!sample-time-ms"`, classpath must include pingjmx jar files as well as locations of log4j and tnt4j configuration files.
 
+## Auto-generating application state dump on VM shutdown
+PingJMX is utilizing TNT4J state dump capability to generate application state dumps on VM shutdown. To enable state dump generation add the following to your java command line: 
+```java
+java -Dtnt4j.dump.on.vm.shutdown=true -Dtnt4j.dump.provider.default=true -Dtnt4j.dump.folder=./ ...
+```
+`-Dtnt4j.dump.folder=./` specifies the destination folder where dump (.dump) files will be created (default is current working directory).
+
 ## Overriding default `PingFactory`
 User may want to override default `PingFactory` with their own by specifying 
 ```java
