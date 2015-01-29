@@ -5,7 +5,7 @@ Framework to monitor JMX or any other metrics and write to TNT4J event sink: fil
 It is simple, just imbed the following code into your application:
 ```java
 // obtain PingFactory instance
-PingFactory factory = DefaultPingFactory.getInstance().
+PingFactory factory = DefaultPingFactory.getInstance();
 // create an instance of the pinger that will sample mbeans
 Pinger platformJmx = factory.newInstance();
 //schedule jmx collection (ping) for given jmx filter and 30000 ms sampling period
@@ -15,7 +15,7 @@ To schedule jmx collection for a specific mbean server:
 ```java
 MBeanServer mserver = ManagementFactory.getPlatformMBeanServer();
 // obtain PingFactory instance
-PingFactory factory = DefaultPingFactory.getInstance().
+PingFactory factory = DefaultPingFactory.getInstance();
 // create an instance of the pinger that will sample mbeans
 Pinger platformJmx = factory.newInstance(mserver);
 //schedule jmx collection (ping) for given jmx filter and 30000 ms sampling period
