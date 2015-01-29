@@ -13,30 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.tnt4j.pingjmx;
+package org.tnt4j.pingjmx.impl;
 
 import javax.management.MBeanServer;
+
+import org.tnt4j.pingjmx.PingFactory;
+import org.tnt4j.pingjmx.Pinger;
 
 /**
  * <p> 
  * This class provides a <code>PingFactory</code> implementation
- * with <code>PlatformJmxPing</code> as underlying pinger implementation.
+ * with <code>WASJmxPing</code> as underlying pinger implementation.
  * </p>
  * 
  * @version $Revision: 1 $
  * 
  * @see Pinger
- * @see PlatformJmxPing
+ * @see WASJmxPing
  */
-public class PlatformPingFactory implements PingFactory {
+public class WASPingFactory implements PingFactory {
 	
 	@Override
 	public Pinger newInstance() {
-		return new PlatformJmxPing();
+		return new WASJmxPing();
 	}
 
 	@Override
 	public Pinger newInstance(MBeanServer mserver) {
-		return new PlatformJmxPing(mserver);
+		return new WASJmxPing(mserver);
 	}
 }

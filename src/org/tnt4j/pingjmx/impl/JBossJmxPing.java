@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.tnt4j.pingjmx;
+package org.tnt4j.pingjmx.impl;
 
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Method;
@@ -23,7 +23,7 @@ import javax.management.MBeanServer;
 /**
  * <p> 
  * This class provides scheduled execution and sampling of JMX metrics
- * for a WebSphere Application Server <code>MBeanServer</code> instance.
+ * for a JBoss Application Server <code>MBeanServer</code> instance.
  * </p>
  * 
  * 
@@ -31,24 +31,21 @@ import javax.management.MBeanServer;
  * 
  * @see PlatformJmxPing
  */
-public class WASJmxPing extends PlatformJmxPing {
-	public static final String WAS_JMX_ADMIN_CLASS = "com.ibm.websphere.management.AdminServiceFactory";
-	
+public class JBossJmxPing extends PlatformJmxPing {
+	public static final String JBOSS_JMX_ADMIN_CLASS = "org.jboss.mx.util.MBeanServerLocator";
 	/**
-	 * Dynamically identify and load WebSphere JMX MBean Server
-	 * <code>com.ibm.websphere.management.AdminServiceFactory</code>.
+	 * Dynamically identify and load JBoss MBean Server
+	 * <code>org.jboss.mx.util.MBeanServerLocator.locate()</code>.
 	 * Use <code>ManagementFactory.getPlatformMBeanServer()</code> if none found.
 	 * 
-	 * @return WebSphere JMX MBean server instance
+	 * @return JBoss JMX MBean server instance
 	 */
-	protected static MBeanServer getWasAdminServer()  {
+	protected static MBeanServer getAdminServer()  {
 		try {
-			Class<?> adminClass = Class.forName(WAS_JMX_ADMIN_CLASS);
-			Method getMbeanFactory = adminClass.getDeclaredMethod("getMBeanFactory", (Class<?>) null);
-			Object mbeanFactory = getMbeanFactory.invoke(null);
-			if (mbeanFactory != null) {
-				Method mserverMethod = mbeanFactory.getClass().getMethod("getMBeanServer", (Class<?>) null);
-				return (MBeanServer) mserverMethod.invoke(mbeanFactory);			
+			Class<?> adminClass = Class.forName(JBOSS_JMX_ADMIN_CLASS);
+			Method mserverMethod = adminClass.getMethod("locate", (Class<?>) null);
+			if (mserverMethod != null) {
+				return (MBeanServer) mserverMethod.invoke(null);			
 			}
 		} catch (Throwable ex) {
 			ex.printStackTrace();
@@ -57,11 +54,11 @@ public class WASJmxPing extends PlatformJmxPing {
 	}
 
 	/**
-	 * Create an instance with WebSphere MBean Server instance
+	 * Create an instance with JBoss MBean Server instance
 	 * 
 	 */
-	protected WASJmxPing() {
-		super(getWasAdminServer());
+	protected JBossJmxPing() {
+		super(getAdminServer());
 	}
 	
 	/**
@@ -69,7 +66,7 @@ public class WASJmxPing extends PlatformJmxPing {
 	 * 
 	 * @param mserver MBean server instance
 	 */
-	protected WASJmxPing(MBeanServer mserver) {
+	protected JBossJmxPing(MBeanServer mserver) {
 		super(mserver);
 	}
 }

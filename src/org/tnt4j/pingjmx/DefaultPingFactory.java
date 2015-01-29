@@ -15,6 +15,8 @@
  */
 package org.tnt4j.pingjmx;
 
+import org.tnt4j.pingjmx.impl.PlatformPingFactory;
+
 /**
  * <p> 
  * This class provides a generic way to get a default <code>PingFactory</code>
@@ -26,7 +28,7 @@ package org.tnt4j.pingjmx;
  * @see PingFactory
  */
 public class DefaultPingFactory {
-	public static final String DEFAULT_PING_FACTORY = "org.tnt4j.pingjmx.PlatformPingFactory";
+	public static final String DEFAULT_PING_FACTORY = "org.tnt4j.pingjmx.impl.PlatformPingFactory";
 	private static PingFactory defaultFactory;
 	
 	static {

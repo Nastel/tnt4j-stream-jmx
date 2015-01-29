@@ -13,13 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.tnt4j.pingjmx;
+package org.tnt4j.pingjmx.impl;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.concurrent.TimeUnit;
 
 import javax.management.MBeanServer;
+
+import org.tnt4j.pingjmx.PingJmx;
+import org.tnt4j.pingjmx.Pinger;
 
 /**
  * <p> 
@@ -97,13 +100,13 @@ public class PlatformJmxPing implements Pinger {
 	 * Override this call to return your instance of pinger
 	 *
 	 * @param mserver MBean server instance
-	 * @param jmxFilter JMX filters semicolon separated
+	 * @param filter MBean filters semicolon separated
 	 * @param period time period for sampling
 	 * @param tunit time units for period
 	 *  
 	 * @return new <code>PingJmx</code> instance
 	 */
-	protected PingJmx newPingJmxImpl(MBeanServer mserver, String jmxFilter, long period, TimeUnit tunit) {
-		return new PingJmx(this.getClass().getName(), mserver, jmxFilter, period, tunit);
+	protected PingJmx newPingJmxImpl(MBeanServer mserver, String filter, long period, TimeUnit tunit) {
+		return new PingJmx(this.getClass().getName(), mserver, filter, period, tunit);
 	}
 }
