@@ -46,6 +46,7 @@ well as user defined MBeans.</p>
 <li>Monitor threading, runtime and other JVM performance metrics</li>
 <li>Monitor standard and custom MBean attributes</li>
 <li>Application state dumps on VM shutdown for diagnostics</li>
+<li>Conditional streaming based on custom filters</li>
 </ul>
 
 <h1>
@@ -97,7 +98,9 @@ platformJmx<span class="pl-k">.</span>schedule(<span class="pl-stj">PingJMX</spa
     jmxp<span class="pl-k">.</span>schedule(<span class="pl-stj">PingJMX</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>);
 }</pre></div>
 
-<p>All <code>PingJMX</code> output is written to underlying tnt4j event sink configured in <code>tnt4j.properties</code> file. Sink destinations could be a file, socket, log4j, user defined event sink implementations.</p>
+<p>All <code>PingJMX</code> output is written to underlying tnt4j event sink configured in <code>tnt4j.properties</code> file. Sink destinations could be a file, socket, log4j, user defined event sink implementations. </p>
+
+<p>For more information on TNT4J and <code>tnt4j.properties</code> see (<a href="https://github.com/Nastel/TNT4J/wiki/Getting-Started">https://github.com/Nastel/TNT4J/wiki/Getting-Started</a>).</p>
 
 <h2>
 <a id="running-pingjmx-as-standalone-app" class="anchor" href="#running-pingjmx-as-standalone-app" aria-hidden="true"><span class="octicon octicon-link"></span></a>Running PingJMX as standalone app</h2>
@@ -196,13 +199,36 @@ code or your application. TNT4J comes with a set of built-in event sink implemen
 </ul>
 
 <h2>
-<a id="auto-generating-application-state-dump-on-vm-shutdown" class="anchor" href="#auto-generating-application-state-dump-on-vm-shutdown" aria-hidden="true"><span class="octicon octicon-link"></span></a>Auto-generating application state dump on VM shutdown</h2>
+<a id="auto-generating-application-state-dump" class="anchor" href="#auto-generating-application-state-dump" aria-hidden="true"><span class="octicon octicon-link"></span></a>Auto-generating application state dump</h2>
 
-<p>PingJMX is utilizing TNT4J state dump capability to generate application state dumps on VM shutdown. To enable state dump generation add the following to your java command line: </p>
+<p>PingJMX is utilizing TNT4J state dump capability to generate application state dumps</p>
+
+<p>(1) Dump on VM shutdown:</p>
 
 <div class="highlight highlight-java"><pre>java <span class="pl-k">-</span><span class="pl-stj">Dtnt4j</span><span class="pl-k">.</span>dump<span class="pl-k">.</span>on<span class="pl-k">.</span>vm<span class="pl-k">.</span>shutdown<span class="pl-k">=</span><span class="pl-c1">true</span> <span class="pl-k">-</span><span class="pl-stj">Dtnt4j</span><span class="pl-k">.</span>dump<span class="pl-k">.</span>provider<span class="pl-k">.</span><span class="pl-k">default</span><span class="pl-k">=</span><span class="pl-c1">true</span> <span class="pl-k">-</span><span class="pl-stj">Dtnt4j</span><span class="pl-k">.</span>dump<span class="pl-k">.</span>folder<span class="pl-k">=</span><span class="pl-c1">.</span><span class="pl-k">/</span> <span class="pl-c1">...</span></pre></div>
 
+<p>(2) Dump on uncaught thread exceptions:</p>
+
+<div class="highlight highlight-java"><pre>java <span class="pl-k">-</span><span class="pl-stj">Dtnt4j</span><span class="pl-k">.</span>dump<span class="pl-k">.</span>on<span class="pl-k">.</span>exceptionn<span class="pl-k">=</span><span class="pl-c1">true</span> <span class="pl-k">-</span><span class="pl-stj">Dtnt4j</span><span class="pl-k">.</span>dump<span class="pl-k">.</span>provider<span class="pl-k">.</span><span class="pl-k">default</span><span class="pl-k">=</span><span class="pl-c1">true</span> <span class="pl-k">-</span><span class="pl-stj">Dtnt4j</span><span class="pl-k">.</span>dump<span class="pl-k">.</span>folder<span class="pl-k">=</span><span class="pl-c1">.</span><span class="pl-k">/</span> <span class="pl-c1">...</span></pre></div>
+
 <p><code>-Dtnt4j.dump.folder=./</code> specifies the destination folder where dump (.dump) files will be created (default is current working directory).</p>
+
+<p>By default PingJMX will generate dumps with the following info:</p>
+
+<ul>
+<li>Java Properties Dump -- <code>PropertiesDumpProvider</code>
+</li>
+<li>Java Runtime Dump -- <code>MXBeanDumpProvider</code>
+</li>
+<li>Thread Stack Dump -- <code>ThreadDumpProvider</code>
+</li>
+<li>Thread Deadlock Dump -- <code>ThreadDumpProvider</code>
+</li>
+<li>Logging Stats Dump -- <code>LoggerDumpProvider</code>
+</li>
+</ul>
+
+<p>You may create your own dump providers and handlers (<a href="https://github.com/Nastel/TNT4J/wiki/Getting-Started#application-state-dumps">https://github.com/Nastel/TNT4J/wiki/Getting-Started#application-state-dumps</a>)</p>
 
 <h2>
 <a id="overriding-default-pingfactory" class="anchor" href="#overriding-default-pingfactory" aria-hidden="true"><span class="octicon octicon-link"></span></a>Overriding default <code>PingFactory</code>
