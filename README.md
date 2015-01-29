@@ -17,6 +17,7 @@ java runtime containers.
 * Integration with cloud analytics tools (https://www.jkoolcloud.com)
 * Integration with log4j (via TNT4J event sinks)
 * Imbedded application state dump framework for diagnostics
+* Easily build your own extensions, monitors
 
 # Using PingJMX
 It is simple, just imbed the following code into your application:
