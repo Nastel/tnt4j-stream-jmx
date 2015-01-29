@@ -154,6 +154,15 @@ java -Dtnt4j.dump.on.exceptionn=true -Dtnt4j.dump.provider.default=true -Dtnt4j.
 ```
 `-Dtnt4j.dump.folder=./` specifies the destination folder where dump (.dump) files will be created (default is current working directory).
 
+By default PingJMX will generate dumps with the following info:
+
+* Java Properties Dump -- `PropertiesDumpProvider`
+* Java Runtime Dump -- `MXBeanDumpProvider`
+* Thread Stack Dump -- `ThreadDumpProvider`
+* Thread Deadlock Dump -- `ThreadDumpProvider`
+* Logging Stats Dump -- `LoggerDumpProvider`
+
+You may create your own dump providers and handlers (https://github.com/Nastel/TNT4J/wiki/Getting-Started#application-state-dumps)
 ## Overriding default `PingFactory`
 `PingFactory` instances are used to generate `Pinger` implementation for a specific runtime environment. PingJMX supplies pinger and ping factories for standard JVMs, JBoss,
 WebSphere Application Server. You may want to override default `PingFactory` with your own or an altenative by specifying:
