@@ -105,7 +105,7 @@ platformJmx<span class="pl-k">.</span>schedule(<span class="pl-stj">PingJMX</spa
 <h2>
 <a id="running-pingjmx-as-standalone-app" class="anchor" href="#running-pingjmx-as-standalone-app" aria-hidden="true"><span class="octicon octicon-link"></span></a>Running PingJMX as standalone app</h2>
 
-<div class="highlight highlight-java"><pre>java <span class="pl-k">-</span><span class="pl-stj">Dlog4j</span><span class="pl-k">.</span>configuration<span class="pl-k">=</span>file<span class="pl-k">:</span>log4j<span class="pl-k">.</span>properties <span class="pl-k">-</span>classpath <span class="pl-s1"><span class="pl-pds">"</span>tnt4j-ping-jmx.jar;lib/tnt4j-api-final-all.jar<span class="pl-pds">"</span></span> <span class="pl-stj">org.tnt4j.pingjmx<span class="pl-k">.</span>PingAgent</span> <span class="pl-s1"><span class="pl-pds">"</span>*:*<span class="pl-pds">"</span></span> <span class="pl-c1">10000</span> </pre></div>
+<div class="highlight highlight-java"><pre>java <span class="pl-k">-</span><span class="pl-stj">Dlog4j</span><span class="pl-k">.</span>configuration<span class="pl-k">=</span>file<span class="pl-k">:</span>log4j<span class="pl-k">.</span>properties <span class="pl-k">-</span>classpath <span class="pl-s1"><span class="pl-pds">"</span>tnt4j-ping-jmx.jar;lib/tnt4j-api-final-all.jar<span class="pl-pds">"</span></span> <span class="pl-stj">org.tnt4j.pingjmx<span class="pl-k">.</span>PingAgent</span> <span class="pl-s1"><span class="pl-pds">"</span>*:*<span class="pl-pds">"</span></span> <span class="pl-c1">10000</span> <span class="pl-c1">60000</span></pre></div>
 
 <h2>
 <a id="running-pingjmx-as--javaagent" class="anchor" href="#running-pingjmx-as--javaagent" aria-hidden="true"><span class="octicon octicon-link"></span></a>Running PingJMX as -javaagent</h2>
@@ -237,7 +237,7 @@ code or your application. TNT4J comes with a set of built-in event sink implemen
 <p><code>PingFactory</code> instances are used to generate <code>Pinger</code> implementation for a specific runtime environment. PingJMX supplies pinger and ping factories for standard JVMs, JBoss,
 WebSphere Application Server. You may want to override default <code>PingFactory</code> with your own or an altenative by specifying:</p>
 
-<div class="highlight highlight-java"><pre><span class="pl-k">-</span><span class="pl-stj">Dorg</span><span class="pl-k">.</span>tnt4j<span class="pl-k">.</span>ping<span class="pl-k">.</span>factory<span class="pl-k">=</span><span class="pl-stj">org.tnt4j.pingjmx<span class="pl-k">.</span>PlatformPingFactory</span>` <span class="pl-c1">...</span></pre></div>
+<div class="highlight highlight-java"><pre>java <span class="pl-k">-</span><span class="pl-stj">Dorg</span><span class="pl-k">.</span>tnt4j<span class="pl-k">.</span>ping<span class="pl-k">.</span>factory<span class="pl-k">=</span><span class="pl-stj">org.tnt4j.pingjmx<span class="pl-k">.</span>PlatformPingFactory</span> <span class="pl-c1">...</span></pre></div>
 
 <p><code>PingFactory</code> is used to generate instances of the underlying pinger implementatons (objects that provide sampling of underlying mbeans).</p>
 
