@@ -3,32 +3,32 @@
   <head>
     <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+
     <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
     <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen">
     <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
-
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
 
     <title>PingJMX by Nastel</title>
   </head>
 
   <body>
+
     <header>
-      <div class="inner">
+      <div class="container">
         <h1>PingJMX</h1>
         <h2>Framework to monitor JMX or any other metrics and write to TNT4J event sink: file, socket</h2>
-        <a href="https://github.com/Nastel/PingJMX" class="button"><small>View project on</small> GitHub</a>
+
+        <section id="downloads">
+          <a href="https://github.com/Nastel/PingJMX/zipball/master" class="btn">Download as .zip</a>
+          <a href="https://github.com/Nastel/PingJMX/tarball/master" class="btn">Download as .tar.gz</a>
+          <a href="https://github.com/Nastel/PingJMX" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+        </section>
       </div>
     </header>
 
-    <div id="content-wrapper">
-      <div class="inner clearfix">
-        <section id="main-content">
-          <h1>
+    <div class="container">
+      <section id="main_content">
+        <h1>
 <a id="pingjmx" class="anchor" href="#pingjmx" aria-hidden="true"><span class="octicon octicon-link"></span></a>PingJMX</h1>
 
 <p>Framework to monitor JMX or any other metrics and write to TNT4J event sink: file, socket, other TNT4J event sinks.</p>
@@ -39,7 +39,7 @@
 <p>It is simple, just imbed the following code into your application:</p>
 
 <div class="highlight highlight-java"><pre><span class="pl-c">// obtain PingFactory instance</span>
-<span class="pl-stj">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-stj">DefaultPingFactory</span><span class="pl-k">.</span>getInstance()<span class="pl-c1">.</span>
+<span class="pl-stj">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-stj">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
 <span class="pl-c">// create an instance of the pinger that will sample mbeans</span>
 <span class="pl-stj">Pinger</span> platformJmx <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance();
 <span class="pl-c">//schedule jmx collection (ping) for given jmx filter and 30000 ms sampling period</span>
@@ -47,11 +47,10 @@ platformJmx<span class="pl-k">.</span>schedule(<span class="pl-stj">PingJMX</spa
 
 <p>To schedule jmx collection for a specific mbean server:</p>
 
-<div class="highlight highlight-java"><pre><span class="pl-stj">MBeanServer</span> mserver <span class="pl-k">=</span> <span class="pl-stj">ManagementFactory</span><span class="pl-k">.</span>getPlatformMBeanServer();
-<span class="pl-c">// obtain PingFactory instance</span>
-<span class="pl-stj">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-stj">DefaultPingFactory</span><span class="pl-k">.</span>getInstance()<span class="pl-c1">.</span>
+<div class="highlight highlight-java"><pre><span class="pl-c">// obtain PingFactory instance</span>
+<span class="pl-stj">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-stj">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
 <span class="pl-c">// create an instance of the pinger that will sample mbeans</span>
-<span class="pl-stj">Pinger</span> platformJmx <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance(mserver);
+<span class="pl-stj">Pinger</span> platformJmx <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance(<span class="pl-stj">ManagementFactory</span><span class="pl-k">.</span>getPlatformMBeanServer());
 <span class="pl-c">//schedule jmx collection (ping) for given jmx filter and 30000 ms sampling period</span>
 platformJmx<span class="pl-k">.</span>schedule(<span class="pl-stj">PingJMX</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>);</pre></div>
 
@@ -104,25 +103,9 @@ platformJmx<span class="pl-k">.</span>schedule(<span class="pl-stj">PingJMX</spa
 <ul>
 <li>TNT4J (<a href="https://github.com/Nastel/TNT4J">https://github.com/Nastel/TNT4J</a>)</li>
 </ul>
-        </section>
-
-        <aside id="sidebar">
-          <a href="https://github.com/Nastel/PingJMX/zipball/master" class="button">
-            <small>Download</small>
-            .zip file
-          </a>
-          <a href="https://github.com/Nastel/PingJMX/tarball/master" class="button">
-            <small>Download</small>
-            .tar.gz file
-          </a>
-
-          <p class="repo-owner"><a href="https://github.com/Nastel/PingJMX"></a> is maintained by <a href="https://github.com/Nastel">Nastel</a>.</p>
-
-          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
-        </aside>
-      </div>
+      </section>
     </div>
 
-  
+    
   </body>
 </html>
