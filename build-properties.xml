@@ -1,5 +1,4 @@
-<!-- This file is intended to be included by all build.xml files for each
-     project.  Each build project MUST set the property "janusroot"
+<!-- This file is intended to be included by all build.xml files for each project.
 -->
 <project name="PingJmxBuildProps">
   <!-- Installation package directories -->
@@ -7,8 +6,8 @@
   <property name="project-install"     value="${project-build}/install"/>
   
   <!-- Default compilation settings -->
-  <property name="target"     value="1.7"/>
-  <property name="source"     value="1.7"/>
+  <property name="target"     value="1.6"/>
+  <property name="source"     value="1.6"/>
   <property name="debuglevel" value="source,lines,vars"/>
 
   <!-- loads project version and build information -->
