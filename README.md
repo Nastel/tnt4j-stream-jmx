@@ -135,7 +135,7 @@ To stream PingJMX into a log file:
 You can write your own custom event sinks (HTTPS, HTTP, etc) and your own stream formatters without having to change PingJMX
 code or your application. TNT4J comes with a set of built-in event sink implementations such as: 
 
-* `com.nastel.jkool.tnt4j.logger.Log4JEventSinkFactory` -- log4j destinations
+* `com.nastel.jkool.tnt4j.logger.Log4JEventSinkFactory` -- log4j
 * `com.nastel.jkool.tnt4j.sink.BufferedEventSinkFactory` -- buffered sink
 * `com.nastel.jkool.tnt4j.sink.FileEventSinkFactory` - standard log file
 * `com.nastel.jkool.tnt4j.sink.SocketEventSinkFactory` -- socket (tcp/ip)
