@@ -163,5 +163,5 @@ PingFactory factory = DefaultPingFactory.getInstance();
 
 # Project Dependencies
 PingJMX requires the following:
+* JDK 1.6+
 * TNT4J (https://github.com/Nastel/TNT4J)
-* JDK 1.7 (should work with 1.6 as well)
