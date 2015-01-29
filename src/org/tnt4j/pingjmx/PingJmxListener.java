@@ -53,7 +53,7 @@ public class PingJmxListener implements ActivityListener {
 	 * MBean server and a set of filters.
 	 *
 	 * @param mserver MBean server instance
-	 * @param filter JMX filters semicolon separated
+	 * @param filter MBean filters semicolon separated
 	 *  
 	 */
 	public PingJmxListener(MBeanServer mserver, String filter) {
@@ -71,7 +71,7 @@ public class PingJmxListener implements ActivityListener {
 	}
 
 	/**
-	 * Load JMX beans based on a configured JMX filter list.
+	 * Load JMX beans based on a configured MBean filter list.
 	 * All loaded MBeans are stored in <code>HashMap</code>.
 	 */
 	private void loadJmxBeans() {
@@ -94,11 +94,11 @@ public class PingJmxListener implements ActivityListener {
 	}
 
 	/**
-	 * Sample jmx beans based on a configured jmx filter list
+	 * Sample jmx beans based on a configured MBean filter list
 	 * and store within given activity as snapshots.
 	 * 
-	 * @param activity instance where sampled mbeans attributes are stored
-	 * @return number of metrics loaded from all mbeans
+	 * @param activity instance where sampled MBean attributes are stored
+	 * @return number of metrics loaded from all MBeans
 	 */
 	private int sampleMbeans(Activity activity) {
 		int pCount = 0;
