@@ -43,7 +43,7 @@
 <span class="pl-c">// create an instance of the pinger that will sample mbeans</span>
 <span class="pl-stj">Pinger</span> platformJmx <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance();
 <span class="pl-c">//schedule jmx collection (ping) for given jmx filter and 30000 ms sampling period</span>
-platformJmx<span class="pl-k">.</span>scheduleJmxPing(<span class="pl-stj">PingJMX</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>);</pre></div>
+platformJmx<span class="pl-k">.</span>schedule(<span class="pl-stj">PingJMX</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>);</pre></div>
 
 <p>To schedule jmx collection for a specific mbean server:</p>
 
@@ -53,7 +53,7 @@ platformJmx<span class="pl-k">.</span>scheduleJmxPing(<span class="pl-stj">PingJ
 <span class="pl-c">// create an instance of the pinger that will sample mbeans</span>
 <span class="pl-stj">Pinger</span> platformJmx <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance(mserver);
 <span class="pl-c">//schedule jmx collection (ping) for given jmx filter and 30000 ms sampling period</span>
-platformJmx<span class="pl-k">.</span>scheduleJmxPing(<span class="pl-stj">PingJMX</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>);</pre></div>
+platformJmx<span class="pl-k">.</span>schedule(<span class="pl-stj">PingJMX</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>);</pre></div>
 
 <p>Below is an example of creating jmx collection for all registered mbean servers:</p>
 
@@ -63,7 +63,7 @@ platformJmx<span class="pl-k">.</span>scheduleJmxPing(<span class="pl-stj">PingJ
 <span class="pl-st">ArrayList&lt;<span class="pl-stj">MBeanServer</span>&gt;</span> mlist <span class="pl-k">=</span> <span class="pl-stj">MBeanServerFactory</span><span class="pl-k">.</span>findMBeanServer(<span class="pl-c1">null</span>);
 <span class="pl-k">for</span> (<span class="pl-stj">MBeanServer</span> server<span class="pl-k">:</span> mlist) {
     <span class="pl-stj">Pinger</span> jmxp <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance(server);
-    jmxp<span class="pl-k">.</span>scheduleJmxPing(<span class="pl-stj">PingJMX</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>);
+    jmxp<span class="pl-k">.</span>schedule(<span class="pl-stj">PingJMX</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>);
 }</pre></div>
 
 <p>All <code>PingJMX</code> output is written to underlying tnt4j event sink configured in <code>tnt4j.properties</code> file. Sink destinations could be a file, socket, log4j, user defined event sink implementations.</p>
