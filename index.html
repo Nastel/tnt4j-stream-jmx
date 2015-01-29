@@ -31,7 +31,10 @@
         <h1>
 <a id="pingjmx" class="anchor" href="#pingjmx" aria-hidden="true"><span class="octicon octicon-link"></span></a>PingJMX</h1>
 
-<p>Framework to monitor JMX or any other metrics and write to TNT4J event sink: file, socket, other TNT4J event sinks.</p>
+<p>Framework to monitor JMX metrics and write to user defined event sinks: file, socket, user defined event sinks.
+These metrics can be used to monitor health, performance and availability of your JVMs and applications.
+Use PingJMX to imbed a monitoring agent within your application and monitor memory, GC activity, CPU as
+well as user defined MBeans.</p>
 
 <h1>
 <a id="using-pingjmx" class="anchor" href="#using-pingjmx" aria-hidden="true"><span class="octicon octicon-link"></span></a>Using PingJMX</h1>
@@ -94,7 +97,8 @@ platformJmx<span class="pl-k">.</span>schedule(<span class="pl-stj">PingJMX</spa
 <a id="overriding-default-pingfactory" class="anchor" href="#overriding-default-pingfactory" aria-hidden="true"><span class="octicon octicon-link"></span></a>Overriding default <code>PingFactory</code>
 </h2>
 
-<p>User may want to override default <code>PingFactory</code> with their own by specifying </p>
+<p><code>PingFactory</code> instances are used to generate <code>Pinger</code> implementation for a specific runtime environment. PingJMX supplies pinger and ping factories for standard JVMs, JBoss,
+WebSphere Application Server. You may want to override default <code>PingFactory</code> with your own or an altenative by specifying:</p>
 
 <div class="highlight highlight-java"><pre><span class="pl-k">-</span><span class="pl-stj">Dorg</span><span class="pl-k">.</span>tnt4j<span class="pl-k">.</span>ping<span class="pl-k">.</span>factory<span class="pl-k">=</span><span class="pl-stj">org.tnt4j.pingjmx<span class="pl-k">.</span>PlatformPingFactory</span>` <span class="pl-c1">...</span></pre></div>
 
