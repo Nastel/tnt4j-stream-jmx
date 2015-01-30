@@ -193,6 +193,7 @@ public class PingJmxListener implements ActivityListener {
 	public void stopped(Activity activity) {
 		sampleCount++;
 		int metrics = sampleMbeans(activity);		
+		int metrics = sampleMBeans(activity);		
 		metrics += finish(activity);		
 		
 		System.out.println(activity.getName()
