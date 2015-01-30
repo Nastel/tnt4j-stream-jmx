@@ -101,6 +101,7 @@ public class PingJmxListener implements ActivityListener {
 	 * @return number of metrics loaded from all MBeans
 	 */
 	private int sampleMbeans(Activity activity) {
+	private int sampleMBeans(Activity activity) {
 		int pCount = 0;
 		for (Entry<ObjectName, MBeanInfo> entry: mbeans.entrySet()) {
 			ObjectName name = entry.getKey();
