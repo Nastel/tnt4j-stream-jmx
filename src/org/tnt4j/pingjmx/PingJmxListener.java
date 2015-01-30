@@ -100,7 +100,6 @@ public class PingJmxListener implements ActivityListener {
 	 * @param activity instance where sampled MBean attributes are stored
 	 * @return number of metrics loaded from all MBeans
 	 */
-	private int sampleMbeans(Activity activity) {
 	private int sampleMBeans(Activity activity) {
 		int pCount = 0;
 		for (Entry<ObjectName, MBeanInfo> entry: mbeans.entrySet()) {
@@ -192,7 +191,6 @@ public class PingJmxListener implements ActivityListener {
 	@Override
 	public void stopped(Activity activity) {
 		sampleCount++;
-		int metrics = sampleMbeans(activity);		
 		int metrics = sampleMBeans(activity);		
 		metrics += finish(activity);		
 		
