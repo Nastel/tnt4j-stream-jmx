@@ -17,6 +17,8 @@ package org.tnt4j.pingjmx;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -28,8 +30,12 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.management.openmbean.CompositeData;
 
+import org.tnt4j.pingjmx.conditions.Condition;
+import org.tnt4j.pingjmx.conditions.ConditionalListener;
+import org.tnt4j.pingjmx.conditions.AttributeAction;
+import org.tnt4j.pingjmx.conditions.NoopAction;
+
 import com.nastel.jkool.tnt4j.core.Activity;
-import com.nastel.jkool.tnt4j.core.ActivityListener;
 import com.nastel.jkool.tnt4j.core.PropertySnapshot;
 
 /**
@@ -39,12 +45,15 @@ import com.nastel.jkool.tnt4j.core.PropertySnapshot;
  * </p>
  * 
  * @see PingJmx
+ * @see PingSample
+ * 
  * @version $Revision: 1 $
  */
-public class PingJmxListener implements ActivityListener {
+public class PingJmxListener implements ConditionalListener {
 	String mbeanFilter;
 	long sampleCount = 0;
 	MBeanServer mbeanServer;
+	Map<Condition, AttributeAction> conditions = new LinkedHashMap<Condition, AttributeAction>(89);
 	HashMap<ObjectName, MBeanInfo> mbeans = new HashMap<ObjectName, MBeanInfo>(89);
 	HashMap<MBeanAttributeInfo, MBeanAttributeInfo> excAttrs = new HashMap<MBeanAttributeInfo, MBeanAttributeInfo>(89);
 
@@ -111,11 +120,14 @@ public class PingJmxListener implements ActivityListener {
 			for (int i = 0; i < attr.length; i++) {
 				MBeanAttributeInfo jinfo = attr[i];
 				if (jinfo.isReadable() && !attrExcluded(jinfo)) {
+					PingSample sample = new PingSample(activity, mbeanServer, name, jinfo);
 					try {
-						Object value = mbeanServer.getAttribute(name, jinfo.getName());
-						processJmxValue(snapshot, jinfo, jinfo.getName(), value);
+						sample.sample(); // obtain a sample
+						processJmxValue(snapshot, jinfo, jinfo.getName(), sample.get());
 					} catch (Throwable ex) {
 						exclude(jinfo);
+					} finally {
+						evaluateAttrConditions(sample);						
 					}
 				}
 			}
@@ -125,6 +137,21 @@ public class PingJmxListener implements ActivityListener {
 			}
 		}
 		return pCount;
+	}
+
+	/**
+	 * Run and evaluate all registered conditions and invoke
+	 * associated <code>MBeanAction</code> instances.
+	 * 
+	 * @param sample MBean sample instance
+	 * @see PingSample
+	 */
+	protected void evaluateAttrConditions(PingSample sample) {
+		for (Map.Entry<Condition, AttributeAction> entry: conditions.entrySet()) {
+			if (entry.getKey().evaluate(sample)) {
+				entry.getValue().action(entry.getKey(), sample);
+			}
+		}
 	}
 
 	/**
@@ -206,5 +233,15 @@ public class PingJmxListener implements ActivityListener {
 				+ ", trackind.id=" + activity.getTrackingId() 
 				+ ", mbean.server=" + mbeanServer
 				);
+	}
+
+	@Override
+	public void register(Condition cond, AttributeAction action) {
+		conditions.put(cond, (action == null? NoopAction.NOOP: action));
+	}
+
+	@Override
+	public void register(Condition cond) {
+		register(cond, NoopAction.NOOP);
 	}
 }
