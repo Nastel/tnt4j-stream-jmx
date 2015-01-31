@@ -178,6 +178,32 @@ java -Dorg.tnt4j.ping.factory=org.tnt4j.pingjmx.PlatformPingFactory ...
 PingFactory factory = DefaultPingFactory.getInstance();
 ...
 ```
+## Conditions and Actions
+PingJMX allows you to associate condtions with user defined actions based on values of MBean attributes on each sampling
+interval. For example, what if you wanted to setup an action when a specific mbean attribute exceeds a certain threashold?
+PingJMX `Condition` and `AttributeAction` interfaces allow you to call your action at runtime every time a condition is evaluated to true. See example below:
+```java
+// return default or user defined PingFactory implementation
+PingFactory factory = DefaultPingFactory.getInstance();
+// create an instance of the pinger that will sample mbeans
+Pinger platformJmx = factory.newInstance();
+// create a condition when ThreadCount > 100
+Condition myCondition = new SimpleCondition("java.lang:type=Threading", "ThreadCount", 100, ">");
+AttributeAction myAction = new MyAttributeAction();
+pinger.register(myCondition, myAction);
+//schedule jmx collection (ping) for given jmx filter and 30000 ms sampling period
+platformJmx.schedule(PingJMX.JMX_FILTER_ALL, 30000);
+```
+Below is a sample of what `MyAttributeAction` may look like:
+```java
+public class MyAttributeAction implements AttributeAction {
+	@Override
+	public Object action(Condition cond, PingSample sample) {
+		System.out.println("Myaction called with value=" + sample.get());
+		return null;
+	}
+}
+```
 
 # Project Dependencies
 PingJMX requires the following:
