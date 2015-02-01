@@ -30,10 +30,10 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.management.openmbean.CompositeData;
 
+import org.tnt4j.pingjmx.conditions.AttributeSample;
 import org.tnt4j.pingjmx.conditions.Condition;
 import org.tnt4j.pingjmx.conditions.ConditionalListener;
 import org.tnt4j.pingjmx.conditions.AttributeAction;
-import org.tnt4j.pingjmx.conditions.NoopAction;
 
 import com.nastel.jkool.tnt4j.core.Activity;
 import com.nastel.jkool.tnt4j.core.PropertySnapshot;
@@ -45,7 +45,7 @@ import com.nastel.jkool.tnt4j.core.PropertySnapshot;
  * </p>
  * 
  * @see PingJmx
- * @see PingSample
+ * @see AttributeSample
  * 
  * @version $Revision: 1 $
  */
@@ -120,14 +120,14 @@ public class PingJmxListener implements ConditionalListener {
 			for (int i = 0; i < attr.length; i++) {
 				MBeanAttributeInfo jinfo = attr[i];
 				if (jinfo.isReadable() && !attrExcluded(jinfo)) {
-					PingSample sample = new PingSample(activity, mbeanServer, name, jinfo);
+					AttributeSample sample = new AttributeSample(activity, mbeanServer, name, jinfo);
 					try {
 						sample.sample(); // obtain a sample
 						processJmxValue(snapshot, jinfo, jinfo.getName(), sample.get());
 					} catch (Throwable ex) {
 						exclude(jinfo);
 					} finally {
-						evaluateAttrConditions(sample);						
+						evalAttrConditions(sample);						
 					}
 				}
 			}
@@ -144,9 +144,9 @@ public class PingJmxListener implements ConditionalListener {
 	 * associated <code>MBeanAction</code> instances.
 	 * 
 	 * @param sample MBean sample instance
-	 * @see PingSample
+	 * @see AttributeSample
 	 */
-	protected void evaluateAttrConditions(PingSample sample) {
+	protected void evalAttrConditions(AttributeSample sample) {
 		for (Map.Entry<Condition, AttributeAction> entry: conditions.entrySet()) {
 			if (entry.getKey().evaluate(sample)) {
 				entry.getValue().action(entry.getKey(), sample);

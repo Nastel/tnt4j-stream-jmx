@@ -15,7 +15,6 @@
  */
 package org.tnt4j.pingjmx.conditions;
 
-import org.tnt4j.pingjmx.PingSample;
 
 /**
  * <p> 
@@ -24,7 +23,7 @@ import org.tnt4j.pingjmx.PingSample;
  * </p>
  * 
  * @see Condition
- * @see PingSample
+ * @see AttributeSample
  * @version $Revision: 1 $
  * 
  */
@@ -35,6 +34,16 @@ public class SimpleCondition implements Condition {
 	Number value;
 	String op;
 	
+	/**
+	 * Create a condition on a numeric object/attribute and
+	 * a given numeric value by applying an operator.
+	 * 
+	 * @param objName canonical MBean object name
+	 * @param attrName attribute name
+	 * @param value numeric value to apply operator
+	 * @param op operator to apply ( =, !=, >, >=, <, <=)
+	 * 
+	 */
 	public SimpleCondition(String objName, 
 			String attrName, Number value, String op) {
 		this.objName = objName;
@@ -45,12 +54,17 @@ public class SimpleCondition implements Condition {
 	}
 	
 	@Override
+	public String toString() {
+		return getName() + " " + op + " " + value;
+	}
+
+	@Override
 	public String getName() {
 		return name;
 	}
 
 	@Override
-	public boolean evaluate(PingSample sample) {
+	public boolean evaluate(AttributeSample sample) {
 		if (sample.getAttributeInfo().getName().equals(attrName)
 				&& sample.getObjetName().getCanonicalName().equals(objName)) {
 			if (op.endsWith("=")) {

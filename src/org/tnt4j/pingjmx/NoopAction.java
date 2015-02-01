@@ -13,9 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.tnt4j.pingjmx.conditions;
+package org.tnt4j.pingjmx;
 
-import org.tnt4j.pingjmx.PingSample;
+import org.tnt4j.pingjmx.conditions.AttributeAction;
+import org.tnt4j.pingjmx.conditions.AttributeSample;
+import org.tnt4j.pingjmx.conditions.Condition;
+
 
 /**
  * <p> 
@@ -23,7 +26,7 @@ import org.tnt4j.pingjmx.PingSample;
  * </p>
  * 
  * @see Condition
- * @see PingSample
+ * @see AttributeSample
  * @see AttributeAction
  * @version $Revision: 1 $
  * 
@@ -32,7 +35,7 @@ public class NoopAction implements AttributeAction {
 	public static final NoopAction NOOP = new NoopAction();
 	
 	@Override
-	public Object action(Condition cond, PingSample sample) {
+	public Object action(Condition cond, AttributeSample sample) {
 		return null;
 	}
 }

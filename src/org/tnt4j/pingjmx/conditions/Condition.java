@@ -15,7 +15,6 @@
  */
 package org.tnt4j.pingjmx.conditions;
 
-import org.tnt4j.pingjmx.PingSample;
 
 
 /**
@@ -24,7 +23,7 @@ import org.tnt4j.pingjmx.PingSample;
  * a way to evaluate user defined conditions.
  * </p>
  * 
- * @see PingSample
+ * @see AttributeSample
  * @version $Revision: 1 $
  * 
  */
@@ -42,5 +41,5 @@ public interface Condition {
 	 * @param sample current sample that was evaluated
 	 * @return true if condition evaluated, false otherwise
 	 */
-	boolean evaluate(PingSample sample);
+	boolean evaluate(AttributeSample sample);
 }
