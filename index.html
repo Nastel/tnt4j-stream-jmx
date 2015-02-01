@@ -267,7 +267,7 @@ platformJmx<span class="pl-k">.</span>schedule(<span class="pl-stj">PingJMX</spa
 
 <div class="highlight highlight-java"><pre><span class="pl-s">public</span> <span class="pl-s">class</span> <span class="pl-en">MyAttributeAction</span> <span class="pl-s">implements</span> <span class="pl-e">AttributeAction</span> {
     <span class="pl-st">@Override</span>
-    <span class="pl-s">public</span> <span class="pl-stj">Object</span> <span class="pl-en">action</span>(<span class="pl-stj">Condition</span> <span class="pl-v">cond</span>, <span class="pl-stj">PingSample</span> <span class="pl-v">sample</span>) {
+    <span class="pl-s">public</span> <span class="pl-stj">Object</span> <span class="pl-en">action</span>(<span class="pl-stj">Condition</span> <span class="pl-v">cond</span>, <span class="pl-stj">AttributeSample</span> <span class="pl-v">sample</span>) {
         <span class="pl-stj">System</span><span class="pl-k">.</span>out<span class="pl-k">.</span>println(<span class="pl-s1"><span class="pl-pds">"</span>Myaction called with value=<span class="pl-pds">"</span></span> <span class="pl-k">+</span> sample<span class="pl-k">.</span>get());
         <span class="pl-k">return</span> <span class="pl-c1">null</span>;
     }
