@@ -178,6 +178,45 @@ java -Dorg.tnt4j.ping.factory=org.tnt4j.pingjmx.PlatformPingFactory ...
 PingFactory factory = DefaultPingFactory.getInstance();
 ...
 ```
+## Sampling Listeners
+PingJMX provides a way to intercept sampling events such as pre, during an post for each sample run. See `SamplingListener` interface for more details. Applications may register more than one listener per `Pinger`. Each listener is called in registration order.
+In addition to intercepting sampling events, applications may want to control weather attribute is sampled and whether the sample is reported/logged. See example below:
+```java
+// return default or user defined PingFactory implementation
+PingFactory factory = DefaultPingFactory.getInstance();
+// create an instance of the pinger that will sample mbeans
+Pinger platformJmx = factory.newInstance();
+platformJmx.setSchedule(PingJMX.JMX_FILTER_ALL, 30000).addListener(new MySampleListener())).run();
+```
+Below is a sample of what `MySampleListener` may look like:
+```java
+	@Override
+	public void pre(SampleStats stats, Activity activity) {
+		// set activity to NOOP to disable further sampling
+		// no other attrubute will be sampled during this sample
+		if (some-condition) {
+			activity.setType(OpType.NOOP);
+		}
+	}
+
+	@Override
+	public boolean sample(SampleStats stats, AttributeSample sample) {
+		// return false to skip this attribute from sampling collection
+		if (some-condition) {
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+	public void post(SampleStats stats, Activity activity) {
+		// set activity to NOOP to disable sampling reporting
+		if (some-condition) {
+			activity.setType(OpType.NOOP);
+		}
+	}
+
+```
 ## Conditions and Actions
 PingJMX allows you to associate condtions with user defined actions based on values of MBean attributes on each sampling
 interval. For example, what if you wanted to setup an action when a specific mbean attribute exceeds a certain threashold?
