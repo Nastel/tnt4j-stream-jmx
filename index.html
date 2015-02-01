@@ -75,19 +75,19 @@ java runtime containers.</p>
 <span class="pl-stj">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-stj">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
 <span class="pl-c">// create an instance of the pinger that will sample mbeans</span>
 <span class="pl-stj">Pinger</span> platformJmx <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance();
-<span class="pl-c">//schedule jmx collection (ping) for given jmx filter and 30000 ms sampling period</span>
-platformJmx<span class="pl-k">.</span>schedule(<span class="pl-stj">PingJMX</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>);</pre></div>
+<span class="pl-c">//schedule collection (ping) for given MBean filter and 30000 ms sampling period</span>
+platformJmx<span class="pl-k">.</span>setSchedule(<span class="pl-stj">PingJMX</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>run();</pre></div>
 
-<p>To schedule jmx collection for a specific mbean server:</p>
+<p>To schedule metric collection for a specific MBean server:</p>
 
 <div class="highlight highlight-java"><pre><span class="pl-c">// obtain PingFactory instance</span>
 <span class="pl-stj">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-stj">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
 <span class="pl-c">// create an instance of the pinger that will sample mbeans</span>
 <span class="pl-stj">Pinger</span> platformJmx <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance(<span class="pl-stj">ManagementFactory</span><span class="pl-k">.</span>getPlatformMBeanServer());
-<span class="pl-c">//schedule jmx collection (ping) for given jmx filter and 30000 ms sampling period</span>
-platformJmx<span class="pl-k">.</span>schedule(<span class="pl-stj">PingJMX</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>);</pre></div>
+<span class="pl-c">//schedule collection (ping) for given MBean filter and 30000 ms sampling period</span>
+platformJmx<span class="pl-k">.</span>setSchedule(<span class="pl-stj">PingJMX</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>run();</pre></div>
 
-<p>Below is an example of creating jmx collection for all registered mbean servers:</p>
+<p>Below is an example of creating collection for all registered mbean servers:</p>
 
 <div class="highlight highlight-java"><pre><span class="pl-c">// obtain PingFactory instance</span>
 <span class="pl-stj">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-stj">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
@@ -95,7 +95,7 @@ platformJmx<span class="pl-k">.</span>schedule(<span class="pl-stj">PingJMX</spa
 <span class="pl-st">ArrayList&lt;<span class="pl-stj">MBeanServer</span>&gt;</span> mlist <span class="pl-k">=</span> <span class="pl-stj">MBeanServerFactory</span><span class="pl-k">.</span>findMBeanServer(<span class="pl-c1">null</span>);
 <span class="pl-k">for</span> (<span class="pl-stj">MBeanServer</span> server<span class="pl-k">:</span> mlist) {
     <span class="pl-stj">Pinger</span> jmxp <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance(server);
-    jmxp<span class="pl-k">.</span>schedule(<span class="pl-stj">PingJMX</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>);
+    jmxp<span class="pl-k">.</span>setSchedule(<span class="pl-stj">PingJMX</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>run();
 }</pre></div>
 
 <p>All <code>PingJMX</code> output is written to underlying tnt4j event sink configured in <code>tnt4j.properties</code> file. Sink destinations could be a file, socket, log4j, user defined event sink implementations. </p>
@@ -258,10 +258,8 @@ PingJMX <code>Condition</code> and <code>AttributeAction</code> interfaces allow
 <span class="pl-stj">Pinger</span> platformJmx <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance();
 <span class="pl-c">// create a condition when ThreadCount &gt; 100</span>
 <span class="pl-stj">Condition</span> myCondition <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-stj">SimpleCondition</span>(<span class="pl-s1"><span class="pl-pds">"</span>java.lang:type=Threading<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>ThreadCount<span class="pl-pds">"</span></span>, <span class="pl-c1">100</span>, <span class="pl-s1"><span class="pl-pds">"</span>&gt;<span class="pl-pds">"</span></span>);
-<span class="pl-stj">AttributeAction</span> myAction <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-stj">MyAttributeAction</span>();
-pinger<span class="pl-k">.</span>register(myCondition, myAction);
-<span class="pl-c">//schedule jmx collection (ping) for given jmx filter and 30000 ms sampling period</span>
-platformJmx<span class="pl-k">.</span>schedule(<span class="pl-stj">PingJMX</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>);</pre></div>
+<span class="pl-c">//schedule collection (ping) for given MBean filter and 30000 ms sampling period</span>
+platformJmx<span class="pl-k">.</span>setSchedule(<span class="pl-stj">PingJMX</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>register(myCondition, <span class="pl-k">new</span> <span class="pl-stj">MyAttributeAction</span>())<span class="pl-k">.</span>run();</pre></div>
 
 <p>Below is a sample of what <code>MyAttributeAction</code> may look like:</p>
 
