@@ -15,6 +15,10 @@
  */
 package org.tnt4j.pingjmx.conditions;
 
+import org.tnt4j.pingjmx.NestedHandler;
+import org.tnt4j.pingjmx.SampleListener;
+import org.tnt4j.pingjmx.SampleStats;
+
 import com.nastel.jkool.tnt4j.core.ActivityListener;
 
 /**
@@ -28,13 +32,13 @@ import com.nastel.jkool.tnt4j.core.ActivityListener;
  * @version $Revision: 1 $
  * 
  */
-public interface ConditionalListener extends ActivityListener {
+public interface ConditionalListener extends ActivityListener, NestedHandler<ConditionalListener, SampleListener> {
 	/**
 	 * Register and associate condition with an action
 	 * 
 	 * @param cond user defined condition with <code>NoopAction</code>
 	 */
-	void register(Condition cond);
+	ConditionalListener register(Condition cond);
 	
 	/**
 	 * Register and associate condition with an action
@@ -42,5 +46,13 @@ public interface ConditionalListener extends ActivityListener {
 	 * @param cond user defined condition
 	 * @param action action to be triggered when condition evaluates to true
 	 */
-	void register(Condition cond, AttributeAction action);
+	ConditionalListener register(Condition cond, AttributeAction action);	
+	
+	/**
+	 * Obtain latest sampling statistics for current instance
+	 *
+	 * @return latest sampling statistics
+	 *  
+	 */
+	SampleStats getStats();	
 }

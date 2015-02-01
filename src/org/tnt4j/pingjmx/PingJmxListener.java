@@ -49,10 +49,11 @@ import com.nastel.jkool.tnt4j.core.PropertySnapshot;
  * 
  * @version $Revision: 1 $
  */
-public class PingJmxListener implements ConditionalListener {
+public class PingJmxListener implements ConditionalListener, SampleStats {
 	String mbeanFilter;
-	long sampleCount = 0;
+	long sampleCount = 0, totalMetricCount = 0, lastMetricCount = 0, noopCount = 0;
 	MBeanServer mbeanServer;
+	Vector<SampleListener> listeners = new Vector<SampleListener>(5, 5);
 	Map<Condition, AttributeAction> conditions = new LinkedHashMap<Condition, AttributeAction>(89);
 	HashMap<ObjectName, MBeanInfo> mbeans = new HashMap<ObjectName, MBeanInfo>(89);
 	HashMap<MBeanAttributeInfo, MBeanAttributeInfo> excAttrs = new HashMap<MBeanAttributeInfo, MBeanAttributeInfo>(89);
@@ -70,11 +71,7 @@ public class PingJmxListener implements ConditionalListener {
 		mbeanFilter = filter;
 	}
 
-	/**
-	 * Obtain associated MBean server instance.
-	 * 
-	 * @return MBean server instance associated with this listener 
-	 */
+	@Override
 	public MBeanServer getMBeanServer() {
 		return mbeanServer;
 	}
@@ -123,7 +120,9 @@ public class PingJmxListener implements ConditionalListener {
 					AttributeSample sample = new AttributeSample(activity, mbeanServer, name, jinfo);
 					try {
 						sample.sample(); // obtain a sample
-						processJmxValue(snapshot, jinfo, jinfo.getName(), sample.get());
+						if (doSample(sample)) {
+							processJmxValue(snapshot, jinfo, jinfo.getName(), sample.get());
+						}
 					} catch (Throwable ex) {
 						exclude(jinfo);
 					} finally {
@@ -204,44 +203,121 @@ public class PingJmxListener implements ConditionalListener {
 	private int finish(Activity activity) {
 		PropertySnapshot snapshot = new PropertySnapshot(activity.getName(), "SampleStats");
 		snapshot.add("sample.count", sampleCount);
+		snapshot.add("noop.count", noopCount);
+		snapshot.add("sample.metric.count", lastMetricCount);
+		snapshot.add("total.metric.count", totalMetricCount);
 		activity.addSnapshot(snapshot);		
 		return snapshot.size();
 	}
 	
 	@Override
 	public void started(Activity activity) {
-		if (mbeans.size() == 0) {
+		runPre(activity);
+		if ((!activity.isNoop()) && (mbeans.size() == 0)) {
 			loadJmxBeans();
+		} else if (activity.isNoop()) {
+			noopCount++;
 		}
 	}
 
 	@Override
 	public void stopped(Activity activity) {
-		sampleCount++;
-		int metrics = sampleMBeans(activity);		
-		metrics += finish(activity);		
-		
-		System.out.println(activity.getName()
-				+ ": sample.count=" + sampleCount
-				+ ", mbean.count=" + mbeanServer.getMBeanCount()
-				+ ", elasped.usec=" + activity.getElapsedTime() 
-				+ ", snap.count=" + activity.getSnapshotCount() 
-				+ ", id.count=" + activity.getIdCount()
-				+ ", sampled.mbeans.count=" + mbeans.size()
-				+ ", sampled.metric.count=" + metrics
-				+ ", exclude.attrs=" + excAttrs.size()
-				+ ", trackind.id=" + activity.getTrackingId() 
-				+ ", mbean.server=" + mbeanServer
-				);
+		if (!activity.isNoop()) {
+			sampleCount++;
+			lastMetricCount = sampleMBeans(activity);		
+			lastMetricCount += finish(activity);		
+			totalMetricCount += lastMetricCount;
+			runPost(activity);		
+			if (activity.isNoop()) {
+				noopCount++;
+			}
+		}
+	}
+
+	private void runPost(Activity activity) {
+		synchronized (this.listeners) {
+			for (SampleListener lst: listeners) {
+				lst.post(this, activity);
+			}
+		} 
+	}
+
+	private void runPre(Activity activity) {
+		synchronized (this.listeners) {
+			for (SampleListener lst: listeners) {
+				lst.pre(this, activity);
+			}
+		} 
+	}
+
+	private boolean doSample(AttributeSample sample) {
+		boolean result = true;
+		synchronized (this.listeners) {
+			for (SampleListener lst: listeners) {
+				boolean last = lst.sample(this, sample);
+				result = result && last;
+			}
+		} 
+		return result;
 	}
 
 	@Override
-	public void register(Condition cond, AttributeAction action) {
+	public ConditionalListener register(Condition cond, AttributeAction action) {
 		conditions.put(cond, (action == null? NoopAction.NOOP: action));
+		return this;
 	}
 
 	@Override
-	public void register(Condition cond) {
+	public ConditionalListener register(Condition cond) {
 		register(cond, NoopAction.NOOP);
+		return this;
+	}
+
+
+	@Override
+	public ConditionalListener addListener(SampleListener listener) {
+		listeners.add(listener);
+		return this;
+	}
+
+	@Override
+	public ConditionalListener removeListener(SampleListener listener) {
+		listeners.remove(listener);
+		return this;
+	}
+
+	@Override
+	public long getSampleCount() {
+		return sampleCount;
+	}
+
+	@Override
+	public long getMBeanCount() {
+		return mbeans.size();
+	}
+
+	@Override
+	public long getExclAttrCount() {
+		return excAttrs.size();
+	}
+
+	@Override
+	public long getTotalMetricCount() {
+		return totalMetricCount;
+	}
+
+	@Override
+	public long getLastMetricCount() {
+		return lastMetricCount;
+	}
+
+	@Override
+	public long getTotalNoopCount() {
+		return noopCount;
+	}
+
+	@Override
+	public SampleStats getStats() {
+		return this;
 	}
 }

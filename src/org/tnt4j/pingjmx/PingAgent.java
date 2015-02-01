@@ -26,6 +26,10 @@ import java.util.concurrent.TimeUnit;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 
+import org.tnt4j.pingjmx.conditions.AttributeSample;
+
+import com.nastel.jkool.tnt4j.core.Activity;
+
 /**
  * <p> 
  * This class provides java agent implementation as well as <code>main()</code>
@@ -117,9 +121,8 @@ public class PingAgent {
 		if (platformJmx == null) {
 			// create new pinger with default MBeanServer instance
 			platformJmx = pFactory.newInstance();
-		
 			// schedule ping with a given filter and sampling period
-			platformJmx.schedule(jmxfilter, period);
+			platformJmx.setSchedule(jmxfilter, period).addListener(new AgentSampleListener()).run();
 			pingers.put(platformJmx.getMBeanServer(), platformJmx);
 		}
 		
@@ -129,7 +132,7 @@ public class PingAgent {
 			Pinger jmxp = pingers.get(server);
 			if (jmxp == null) {
 				jmxp = pFactory.newInstance(server);
-				jmxp.schedule(jmxfilter, period);
+				jmxp.setSchedule(jmxfilter, period).addListener(new AgentSampleListener()).run();
 				pingers.put(jmxp.getMBeanServer(), jmxp);
 			}
 		}		
@@ -170,4 +173,33 @@ public class PingAgent {
 		Pinger pinger = pingers.remove(mserver);
 		if (pinger != null) pinger.cancel();
 	}
+}
+
+class AgentSampleListener implements SampleListener {
+	@Override
+	public void pre(SampleStats stats, Activity activity) {
+	}
+
+	@Override
+	public boolean sample(SampleStats stats, AttributeSample sample) {
+		return true;
+	}
+
+	@Override
+	public void post(SampleStats stats, Activity activity) {
+		System.out.println(activity.getName()
+				+ ": sample.count=" + stats.getSampleCount()
+				+ ", mbean.count=" + stats.getMBeanServer().getMBeanCount()
+				+ ", elasped.usec=" + activity.getElapsedTime() 
+				+ ", snap.count=" + activity.getSnapshotCount() 
+				+ ", id.count=" + activity.getIdCount()
+				+ ", noop.count=" + stats.getTotalNoopCount()
+				+ ", sampled.mbeans.count=" + stats.getMBeanCount()
+				+ ", sampled.metric.count=" + stats.getLastMetricCount()
+				+ ", exclude.attrs=" + stats.getExclAttrCount()
+				+ ", trackind.id=" + activity.getTrackingId() 
+				+ ", mbean.server=" + stats.getMBeanServer()
+				);
+	}
+	
 }

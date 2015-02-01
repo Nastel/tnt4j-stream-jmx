@@ -23,6 +23,10 @@ import javax.management.MBeanServer;
 
 import org.tnt4j.pingjmx.PingJmx;
 import org.tnt4j.pingjmx.Pinger;
+import org.tnt4j.pingjmx.SampleListener;
+import org.tnt4j.pingjmx.SampleStats;
+import org.tnt4j.pingjmx.conditions.AttributeAction;
+import org.tnt4j.pingjmx.conditions.Condition;
 
 import com.nastel.jkool.tnt4j.TrackingLogger;
 
@@ -67,29 +71,36 @@ public class PlatformJmxPing implements Pinger {
 	
 	@Override
     public TrackingLogger getLogger() {
+		if (pinger == null) {
+			throw new IllegalStateException("no schedule set: call setSchedule() first");
+		}
 	    return pinger.getLogger();
     }
 
 	@Override
-	public void schedule(long period) throws IOException {
-		schedule(PingJmx.JMX_FILTER_ALL, period);
+	public Pinger setSchedule(long period) throws IOException {
+		return setSchedule(PingJmx.JMX_FILTER_ALL, period);
 	}
 
 	@Override
-	public void schedule(String jmxfilter, long period) throws IOException {
-		schedule(jmxfilter, period, TimeUnit.MILLISECONDS);
+	public Pinger setSchedule(String jmxfilter, long period) throws IOException {
+		return setSchedule(jmxfilter, period, TimeUnit.MILLISECONDS);
 	}	
 
 	@Override
-	public void schedule(String jmxfilter, long period, TimeUnit tunit) throws IOException {
+	public Pinger setSchedule(String jmxfilter, long period, TimeUnit tunit) throws IOException {
 		if (pinger == null) {
 			pinger = newPingJmxImpl(getMBeanServer(), jmxfilter, period, tunit);
 		}
 		pinger.open();
+		return this;
 	}
 
 	@Override
 	public void cancel() {
+		if (pinger == null) {
+			throw new IllegalStateException("no schedule set: call setSchedule() first");
+		}
 		pinger.close();
 	}
 	
@@ -115,5 +126,48 @@ public class PlatformJmxPing implements Pinger {
 	 */
 	protected PingJmx newPingJmxImpl(MBeanServer mserver, String filter, long period, TimeUnit tunit) {
 		return new PingJmx(this.getClass().getName(), mserver, filter, period, tunit);
+	}
+
+	@Override
+	public Pinger addListener(SampleListener listener) {
+		if (pinger == null) {
+			throw new IllegalStateException("no schedule set: call setSchedule() first");
+		}
+		pinger.getConditionalListener().addListener(listener);
+		return this;
+	}
+
+	@Override
+	public Pinger removeListener(SampleListener listener) {
+		if (pinger == null) {
+			throw new IllegalStateException("no schedule set: call setSchedule() first");
+		}
+		pinger.getConditionalListener().removeListener(listener);
+		return this;
+	}
+
+	@Override
+	public Pinger register(Condition cond, AttributeAction action) {
+		if (pinger == null) {
+			throw new IllegalStateException("no schedule set: call setSchedule() first");
+		}
+		pinger.register(cond, action);
+		return this;
+	}
+
+	@Override
+	public void run() {
+		if (pinger == null) {
+			throw new IllegalStateException("no schedule set: call setSchedule() first");
+		}
+		pinger.run();
+	}
+
+	@Override
+	public SampleStats getStats() {
+		if (pinger == null) {
+			throw new IllegalStateException("no schedule set: call setSchedule() first");
+		}
+		return pinger.getConditionalListener().getStats();
 	}
 }

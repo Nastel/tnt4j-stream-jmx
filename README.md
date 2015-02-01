@@ -34,19 +34,19 @@ It is simple, just imbed the following code into your application:
 PingFactory factory = DefaultPingFactory.getInstance();
 // create an instance of the pinger that will sample mbeans
 Pinger platformJmx = factory.newInstance();
-//schedule jmx collection (ping) for given jmx filter and 30000 ms sampling period
-platformJmx.schedule(PingJMX.JMX_FILTER_ALL, 30000);
+//schedule collection (ping) for given MBean filter and 30000 ms sampling period
+platformJmx.setSchedule(PingJMX.JMX_FILTER_ALL, 30000).run();
 ```
-To schedule jmx collection for a specific mbean server:
+To schedule metric collection for a specific MBean server:
 ```java
 // obtain PingFactory instance
 PingFactory factory = DefaultPingFactory.getInstance();
 // create an instance of the pinger that will sample mbeans
 Pinger platformJmx = factory.newInstance(ManagementFactory.getPlatformMBeanServer());
-//schedule jmx collection (ping) for given jmx filter and 30000 ms sampling period
-platformJmx.schedule(PingJMX.JMX_FILTER_ALL, 30000);
+//schedule collection (ping) for given MBean filter and 30000 ms sampling period
+platformJmx.setSchedule(PingJMX.JMX_FILTER_ALL, 30000).run();
 ```
-Below is an example of creating jmx collection for all registered mbean servers:
+Below is an example of creating collection for all registered mbean servers:
 ```java
 // obtain PingFactory instance
 PingFactory factory = DefaultPingFactory.getInstance();
@@ -54,7 +54,7 @@ PingFactory factory = DefaultPingFactory.getInstance();
 ArrayList<MBeanServer> mlist = MBeanServerFactory.findMBeanServer(null);
 for (MBeanServer server: mlist) {
 	Pinger jmxp = factory.newInstance(server);
-	jmxp.schedule(PingJMX.JMX_FILTER_ALL, 30000);
+	jmxp.setSchedule(PingJMX.JMX_FILTER_ALL, 30000).run();
 }
 ```
 All `PingJMX` output is written to underlying tnt4j event sink configured in `tnt4j.properties` file. Sink destinations could be a file, socket, log4j, user defined event sink implementations. 
@@ -189,10 +189,8 @@ PingFactory factory = DefaultPingFactory.getInstance();
 Pinger platformJmx = factory.newInstance();
 // create a condition when ThreadCount > 100
 Condition myCondition = new SimpleCondition("java.lang:type=Threading", "ThreadCount", 100, ">");
-AttributeAction myAction = new MyAttributeAction();
-pinger.register(myCondition, myAction);
-//schedule jmx collection (ping) for given jmx filter and 30000 ms sampling period
-platformJmx.schedule(PingJMX.JMX_FILTER_ALL, 30000);
+//schedule collection (ping) for given MBean filter and 30000 ms sampling period
+platformJmx.setSchedule(PingJMX.JMX_FILTER_ALL, 30000).register(myCondition, new MyAttributeAction()).run();
 ```
 Below is a sample of what `MyAttributeAction` may look like:
 ```java

@@ -26,88 +26,121 @@ import org.tnt4j.pingjmx.conditions.ConditionalListener;
 import com.nastel.jkool.tnt4j.ActivityScheduler;
 
 /**
- * <p> 
- * This class provides scheduled ping/heart-beat for a given
- * JMX <code>MBeanServer</code>. 
+ * <p>
+ * This class provides scheduled ping/heart-beat for a given JMX
+ * <code>MBeanServer</code>.
  * </p>
  * 
  * @version $Revision: 1 $
  */
-public class PingJmx extends ActivityScheduler {
+public class PingJmx extends ActivityScheduler implements Runnable {
 	public static final String JMX_FILTER_ALL = "*:*";
-	
+
 	protected ConditionalListener listener;
-	
+	protected long period;
+	protected TimeUnit timeUnit;
+
 	/**
-	 * Create new instance of <code>PingJmx</code> with a given
-	 * name, MBean server, sampling period. Filter is set to 
-	 * all MBeans.
+	 * Create new instance of <code>PingJmx</code> with a given name, MBean
+	 * server, sampling period. Filter is set to all MBeans.
 	 *
-	 * @param name name of assigned to the pinger
-	 * @param server MBean server instance
-	 * @param period sampling period in milliseconds
-	 *  
+	 * @param name
+	 *            name of assigned to the pinger
+	 * @param server
+	 *            MBean server instance
+	 * @param period
+	 *            sampling period in milliseconds
+	 * 
 	 */
 	public PingJmx(String name, MBeanServer server, long period) {
 		this(name, server, JMX_FILTER_ALL, period);
-    }
-	
+	}
+
 	/**
-	 * Create new instance of <code>PingJmx</code> with a given
-	 * name, MBean server, filter list and sampling period.
+	 * Create new instance of <code>PingJmx</code> with a given name, MBean
+	 * server, filter list and sampling period.
 	 *
-	 * @param name name of assigned to the pinger
-	 * @param server MBean server instance
-	 * @param filterList JMX filters semicolon separated
-	 * @param period sampling period in milliseconds
-	 *  
+	 * @param name
+	 *            name of assigned to the pinger
+	 * @param server
+	 *            MBean server instance
+	 * @param filterList
+	 *            JMX filters semicolon separated
+	 * @param period
+	 *            sampling period in milliseconds
+	 * 
 	 */
-	public PingJmx(String name, MBeanServer server, String filterList, long period) {
-	    super(name, newListenerImpl(server, filterList));
-	    this.schedule(name, period);
-	    this.listener = (ConditionalListener) this.getListener();
-    }
-	
+	public PingJmx(String name, MBeanServer server, String filterList,
+			long period) {
+		this(name, server, filterList, period, TimeUnit.MILLISECONDS);
+	}
+
 	/**
-	 * Create new instance of <code>PingJmx</code> with a given
-	 * name, MBean server, filter list and sampling period.
+	 * Create new instance of <code>PingJmx</code> with a given name, MBean
+	 * server, filter list and sampling period.
 	 *
-	 * @param name name of assigned to the pinger
-	 * @param server MBean server instance
-	 * @param filterList JMX filters semicolon separated
-	 * @param period sampling period
-	 * @param tunit time unit for the sampling period
-	 *  
+	 * @param name
+	 *            name of assigned to the pinger
+	 * @param server
+	 *            MBean server instance
+	 * @param filterList
+	 *            JMX filters semicolon separated
+	 * @param period
+	 *            sampling period
+	 * @param tunit
+	 *            time unit for the sampling period
+	 * 
 	 */
-	public PingJmx(String name, MBeanServer server, String filterList, long period, TimeUnit tunit) {
-	    super(name, newListenerImpl(server, filterList));
-	    this.schedule(name, period, tunit);
-	    this.listener = (ConditionalListener) this.getListener();
-    }
-	
+	public PingJmx(String name, MBeanServer server, String filterList,
+			long period, TimeUnit tunit) {
+		super(name, newListenerImpl(server, filterList));
+		this.listener = (ConditionalListener) this.getListener();
+		this.period = period;
+		this.timeUnit = tunit;
+	}
+
 	/**
-	 * Register a condition/action pair which will
-	 * be evaluated every sampling interval.
+	 * Register a condition/action pair which will be evaluated every sampling
+	 * interval.
 	 *
-	 * @param cond user defined condition
-	 * @param action user defined action
-	 *  
+	 * @param cond
+	 *            user defined condition
+	 * @param action
+	 *            user defined action
+	 * 
 	 */
 	public void register(Condition cond, AttributeAction action) {
 		listener.register(cond, action);
 	}
 
 	/**
-	 * Create new instance of <code>ActivityListener</code>
-	 * Override this call to return your instance of listener
+	 * Obtain conditional listener instance which is triggered on every sample.
 	 *
-	 * @param server MBean server instance
-	 * @param filterList JMX filters semicolon separated
-	 *  
+	 * @return conditional listener instance
+	 */
+	public ConditionalListener getConditionalListener() {
+		return listener;
+	}
+
+	/**
+	 * Create new instance of <code>ActivityListener</code> Override this call
+	 * to return your instance of listener
+	 *
+	 * @param server
+	 *            MBean server instance
+	 * @param filterList
+	 *            JMX filters semicolon separated
+	 * 
 	 * @see ConditionalListener
 	 * @return new conditional listener instance
 	 */
-	protected static ConditionalListener newListenerImpl(MBeanServer server, String filterList) {
+	protected static ConditionalListener newListenerImpl(MBeanServer server,
+			String filterList) {
 		return new PingJmxListener(server, filterList);
+	}
+
+	@Override
+	public void run() {
+		this.schedule(this.getName(), period, timeUnit);
 	}	
 }

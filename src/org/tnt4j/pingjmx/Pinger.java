@@ -20,6 +20,9 @@ import java.util.concurrent.TimeUnit;
 
 import javax.management.MBeanServer;
 
+import org.tnt4j.pingjmx.conditions.AttributeAction;
+import org.tnt4j.pingjmx.conditions.Condition;
+
 import com.nastel.jkool.tnt4j.TrackingLogger;
 
 /**
@@ -32,7 +35,7 @@ import com.nastel.jkool.tnt4j.TrackingLogger;
  * @version $Revision: 1 $
  * 
  */
-public interface Pinger {
+public interface Pinger extends NestedHandler<Pinger, SampleListener>, Runnable {
 	/**
 	 * Obtain MBean server associated with this object
 	 * 
@@ -54,7 +57,7 @@ public interface Pinger {
 	 * @param period sampling time in milliseconds
 	 * 
 	 */
-	void schedule(long period) throws IOException;
+	Pinger setSchedule(long period) throws IOException;
 
 	/**
 	 * Schedule ping with associated MBean server instance
@@ -63,7 +66,7 @@ public interface Pinger {
 	 * @param period sampling time in milliseconds
 	 * 
 	 */
-	void schedule(String jmxfilter, long period) throws IOException;	
+	Pinger setSchedule(String jmxfilter, long period) throws IOException;	
 
 	/**
 	 * Schedule ping with associated MBean server instance
@@ -73,8 +76,27 @@ public interface Pinger {
 	 * @param tunit time units for sampling period
 	 * 
 	 */
-	void schedule(String jmxfilter, long period, TimeUnit tunit) throws IOException;
+	Pinger setSchedule(String jmxfilter, long period, TimeUnit tunit) throws IOException;
 	
+	
+	/**
+	 * Register a condition/action pair which will
+	 * be evaluated every sampling interval.
+	 *
+	 * @param cond user defined condition
+	 * @param action user defined action
+	 *  
+	 */
+	Pinger register(Condition cond, AttributeAction action);
+
+	/**
+	 * Obtain latest sampling statistics for current instance
+	 *
+	 * @return latest sampling statistics
+	 *  
+	 */
+	SampleStats getStats();
+
 	/**
 	 * Cancel/close this object instance and cancel all outstanding
 	 * or scheduled samplers.
