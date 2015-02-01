@@ -52,7 +52,7 @@ public class PingAgent {
 	 * @param inst instrumentation handle
 	 */
 	public static void premain(String options, Instrumentation inst) throws IOException {
-		String jmxfilter = System.getProperty("org.tnt4j.jmx.ping.filter", PingJmx.JMX_FILTER_ALL);
+		String jmxfilter = System.getProperty("org.tnt4j.jmx.ping.filter", Pinger.JMX_FILTER_ALL);
 		int period = Integer.getInteger("org.tnt4j.jmx.ping.period", 30000);
 		if (options != null) {
 			String [] args = options.split("!");
@@ -87,7 +87,7 @@ public class PingAgent {
 	 * 
 	 */
 	public static void ping() throws IOException {
-		String jmxfilter = System.getProperty("org.tnt4j.jmx.ping.filter", PingJmx.JMX_FILTER_ALL);
+		String jmxfilter = System.getProperty("org.tnt4j.jmx.ping.filter", Pinger.JMX_FILTER_ALL);
 		int period = Integer.getInteger("org.tnt4j.jmx.ping.period", 30000);
 		ping(jmxfilter, period);
 	}
@@ -102,7 +102,7 @@ public class PingAgent {
 	 * 
 	 */
 	public static void ping(String jmxfilter, long period) throws IOException {
-		ping(jmxfilter, period);
+		ping(jmxfilter, period, TimeUnit.MILLISECONDS);
 	}
 	
 	/**
@@ -201,5 +201,4 @@ class AgentSampleListener implements SampleListener {
 				+ ", mbean.server=" + stats.getMBeanServer()
 				);
 	}
-	
 }

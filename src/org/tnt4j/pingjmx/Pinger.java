@@ -36,6 +36,7 @@ import com.nastel.jkool.tnt4j.TrackingLogger;
  * 
  */
 public interface Pinger extends NestedHandler<Pinger, SampleListener>, Runnable {
+	public static final String JMX_FILTER_ALL = "*:*";
 	/**
 	 * Obtain MBean server associated with this object
 	 * 

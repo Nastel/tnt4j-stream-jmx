@@ -34,8 +34,6 @@ import com.nastel.jkool.tnt4j.ActivityScheduler;
  * @version $Revision: 1 $
  */
 public class PingJmx extends ActivityScheduler implements Runnable {
-	public static final String JMX_FILTER_ALL = "*:*";
-
 	protected ConditionalListener listener;
 	protected long period;
 	protected TimeUnit timeUnit;
@@ -53,7 +51,7 @@ public class PingJmx extends ActivityScheduler implements Runnable {
 	 * 
 	 */
 	public PingJmx(String name, MBeanServer server, long period) {
-		this(name, server, JMX_FILTER_ALL, period);
+		this(name, server, Pinger.JMX_FILTER_ALL, period);
 	}
 
 	/**
