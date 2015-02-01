@@ -198,7 +198,7 @@ Below is a sample of what `MyAttributeAction` may look like:
 ```java
 public class MyAttributeAction implements AttributeAction {
 	@Override
-	public Object action(Condition cond, PingSample sample) {
+	public Object action(Condition cond, AttributeSample sample) {
 		System.out.println("Myaction called with value=" + sample.get());
 		return null;
 	}
