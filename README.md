@@ -35,8 +35,11 @@ PingFactory factory = DefaultPingFactory.getInstance();
 // create an instance of the pinger that will sample mbeans
 Pinger platformJmx = factory.newInstance();
 //schedule collection (ping) for given MBean filter and 30000 ms sampling period
-platformJmx.setSchedule(PingJMX.JMX_FILTER_ALL, 30000).run();
+platformJmx.setSchedule(Pinger.JMX_FILTER_ALL, 30000).run();
 ```
+<b>Note that `setSchedule(..).run()` sequence must be called to run the schedule. `setSchedule(..)` just sets the
+scheduling parameters, `run()` executes the schedule.</b>
+
 To schedule metric collection for a specific MBean server:
 ```java
 // obtain PingFactory instance
@@ -44,7 +47,7 @@ PingFactory factory = DefaultPingFactory.getInstance();
 // create an instance of the pinger that will sample mbeans
 Pinger platformJmx = factory.newInstance(ManagementFactory.getPlatformMBeanServer());
 //schedule collection (ping) for given MBean filter and 30000 ms sampling period
-platformJmx.setSchedule(PingJMX.JMX_FILTER_ALL, 30000).run();
+platformJmx.setSchedule(Pinger.JMX_FILTER_ALL, 30000).run();
 ```
 Below is an example of creating collection for all registered mbean servers:
 ```java
@@ -54,9 +57,14 @@ PingFactory factory = DefaultPingFactory.getInstance();
 ArrayList<MBeanServer> mlist = MBeanServerFactory.findMBeanServer(null);
 for (MBeanServer server: mlist) {
 	Pinger jmxp = factory.newInstance(server);
-	jmxp.setSchedule(PingJMX.JMX_FILTER_ALL, 30000).run();
+	jmxp.setSchedule(Pinger.JMX_FILTER_ALL, 30000).run();
 }
 ```
+PingJMX provides a helper class `PingAgent` that lets you schedule sampling for all registered `MBeanServer` instances.
+```java
+PingAgent.ping(Pinger.JMX_FILTER_ALL, 60000, TimeUnit.MILLISECONDS);
+```
+
 All `PingJMX` output is written to underlying tnt4j event sink configured in `tnt4j.properties` file. Sink destinations could be a file, socket, log4j, user defined event sink implementations. 
 
 For more information on TNT4J and `tnt4j.properties` see (https://github.com/Nastel/TNT4J/wiki/Getting-Started).
@@ -178,20 +186,21 @@ java -Dorg.tnt4j.ping.factory=org.tnt4j.pingjmx.PlatformPingFactory ...
 PingFactory factory = DefaultPingFactory.getInstance();
 ...
 ```
-## Sampling Listeners
-PingJMX provides a way to intercept sampling events such as pre, during an post for each sample run. See `SamplingListener` interface for more details. Applications may register more than one listener per `Pinger`. Each listener is called in registration order.
-In addition to intercepting sampling events, applications may want to control weather attribute is sampled and whether the sample is reported/logged. See example below:
+## Managing Sample Behavior
+PingJMX provides a way to intercept sampling events such as pre, during an post for each sample run and control sample behavior. See `SamplingListener` interface for more details. Applications may register more than one listener per `Pinger`. Each listener is called in registration order.
+In addition to intercepting sample events, applications may want to control weather how one ore more attributes are sampled and whether the sample is reported/logged. See example below:
 ```java
 // return default or user defined PingFactory implementation
 PingFactory factory = DefaultPingFactory.getInstance();
 // create an instance of the pinger that will sample mbeans
 Pinger platformJmx = factory.newInstance();
-platformJmx.setSchedule(PingJMX.JMX_FILTER_ALL, 30000).addListener(new MySampleListener())).run();
+platformJmx.setSchedule(Pinger.JMX_FILTER_ALL, 30000).addListener(new MySampleListener())).run();
 ```
 Below is a sample of what `MySampleListener` may look like:
 ```java
 	@Override
 	public void pre(SampleStats stats, Activity activity) {
+		// called once per sample, begining of each sample
 		// set activity to NOOP to disable further sampling
 		// no other attrubute will be sampled during this sample
 		if (some-condition) {
@@ -201,6 +210,7 @@ Below is a sample of what `MySampleListener` may look like:
 
 	@Override
 	public boolean sample(SampleStats stats, AttributeSample sample) {
+		// called once per sampled attribute
 		// return false to skip this attribute from sampling collection
 		if (some-condition) {
 			return false;
@@ -210,6 +220,7 @@ Below is a sample of what `MySampleListener` may look like:
 
 	@Override
 	public void post(SampleStats stats, Activity activity) {
+		// called once per sample, end of each sample
 		// set activity to NOOP to disable sampling reporting
 		if (some-condition) {
 			activity.setType(OpType.NOOP);
@@ -229,7 +240,7 @@ Pinger platformJmx = factory.newInstance();
 // create a condition when ThreadCount > 100
 Condition myCondition = new SimpleCondition("java.lang:type=Threading", "ThreadCount", 100, ">");
 //schedule collection (ping) for given MBean filter and 30000 ms sampling period
-platformJmx.setSchedule(PingJMX.JMX_FILTER_ALL, 30000).register(myCondition, new MyAttributeAction()).run();
+platformJmx.setSchedule(Pinger.JMX_FILTER_ALL, 30000).register(myCondition, new MyAttributeAction()).run();
 ```
 Below is a sample of what `MyAttributeAction` may look like:
 ```java
