@@ -85,8 +85,8 @@ java runtime containers.</p>
 <span class="pl-c">//schedule collection (ping) for given MBean filter and 30000 ms sampling period</span>
 platformJmx<span class="pl-k">.</span>setSchedule(<span class="pl-stj">Pinger</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>run();</pre></div>
 
-<p><b>Note that <code>setSchedule(..).run()</code> sequence must be called to run the schedule. <code>setSchedule(..)</code> just sets the
-scheduling parameters, <code>run()</code> executes the schedule.</b></p>
+<p><b>NOTE:</b> <code>setSchedule(..).run()</code> sequence must be called to run the schedule. <code>setSchedule(..)</code> just sets the
+scheduling parameters, <code>run()</code> executes the schedule.</p>
 
 <p>To schedule metric collection for a specific MBean server:</p>
 
@@ -128,7 +128,7 @@ platformJmx<span class="pl-k">.</span>setSchedule(<span class="pl-stj">Pinger</s
 <h2>
 <a id="running-pingjmx-as--javaagent" class="anchor" href="#running-pingjmx-as--javaagent" aria-hidden="true"><span class="octicon octicon-link"></span></a>Running PingJMX as -javaagent</h2>
 
-<p>PingJMX can be invoked as a a javaagent using <code>-javaagent</code> command line:</p>
+<p>PingJMX can be invoked as <code>-javaagent</code> without changing your application code:</p>
 
 <div class="highlight highlight-java"><pre>java <span class="pl-k">-</span>javaagent<span class="pl-k">:</span>tnt4j<span class="pl-k">-</span>ping<span class="pl-k">-</span>jmx<span class="pl-k">.</span>jar<span class="pl-k">=</span><span class="pl-s1"><span class="pl-pds">"</span>*:*!30000<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-stj">Dlog4j</span><span class="pl-k">.</span>configuration<span class="pl-k">=</span>file<span class="pl-k">:</span>log4j<span class="pl-k">.</span>properties <span class="pl-k">-</span><span class="pl-stj">Dtnt4j</span><span class="pl-k">.</span>config<span class="pl-k">=</span>tnt4j<span class="pl-k">.</span>properties <span class="pl-k">-</span>classpath <span class="pl-s1"><span class="pl-pds">"</span>tnt4j-ping-jmx.jar;lib/tnt4j-api-final-all.jar<span class="pl-pds">"</span></span> your<span class="pl-k">.</span>class<span class="pl-k">.</span>name your<span class="pl-k">-</span>args</pre></div>
 
