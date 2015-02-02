@@ -45,8 +45,9 @@ well as user defined MBeans.</p>
 <li>High/Low, normal vs. abnormal CPU usage</li>
 <li>Monitor threading, runtime and other JVM performance metrics</li>
 <li>Monitor standard and custom MBean attributes</li>
-<li>Application state dumps on VM shutdown for diagnostics</li>
+<li>Conditional actions based on MBean attribute values</li>
 <li>Conditional streaming based on custom filters</li>
+<li>Application state dumps on VM shutdown for diagnostics</li>
 </ul>
 
 <h1>
@@ -69,7 +70,13 @@ java runtime containers.</p>
 <h1>
 <a id="using-pingjmx" class="anchor" href="#using-pingjmx" aria-hidden="true"><span class="octicon octicon-link"></span></a>Using PingJMX</h1>
 
-<p>It is simple, just imbed the following code into your application:</p>
+<p>It is simple: (1) run PingJMX as a <code>-javaagent</code> or (2) imbed PingJMX code into your application.</p>
+
+<p>Running PingJMX as javaagent:</p>
+
+<div class="highlight highlight-java"><pre>java <span class="pl-k">-</span>javaagent<span class="pl-k">:</span>tnt4j<span class="pl-k">-</span>ping<span class="pl-k">-</span>jmx<span class="pl-k">.</span>jar<span class="pl-k">=</span><span class="pl-s1"><span class="pl-pds">"</span>*:*!30000<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-stj">Dlog4j</span><span class="pl-k">.</span>configuration<span class="pl-k">=</span>file<span class="pl-k">:</span>log4j<span class="pl-k">.</span>properties <span class="pl-k">-</span><span class="pl-stj">Dtnt4j</span><span class="pl-k">.</span>config<span class="pl-k">=</span>tnt4j<span class="pl-k">.</span>properties <span class="pl-k">-</span>classpath <span class="pl-s1"><span class="pl-pds">"</span>tnt4j-ping-jmx.jar;lib/tnt4j-api-final-all.jar<span class="pl-pds">"</span></span> your<span class="pl-k">.</span>class<span class="pl-k">.</span>name your<span class="pl-k">-</span>args</pre></div>
+
+<p>Imbed PingJMX code into your application:</p>
 
 <div class="highlight highlight-java"><pre><span class="pl-c">// obtain PingFactory instance</span>
 <span class="pl-stj">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-stj">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
@@ -90,7 +97,7 @@ scheduling parameters, <code>run()</code> executes the schedule.</b></p>
 <span class="pl-c">//schedule collection (ping) for given MBean filter and 30000 ms sampling period</span>
 platformJmx<span class="pl-k">.</span>setSchedule(<span class="pl-stj">Pinger</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>run();</pre></div>
 
-<p>Below is an example of creating collection for all registered mbean servers:</p>
+<p>Below is an example of how to sample all registered mbean servers:</p>
 
 <div class="highlight highlight-java"><pre><span class="pl-c">// obtain PingFactory instance</span>
 <span class="pl-stj">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-stj">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
@@ -101,7 +108,7 @@ platformJmx<span class="pl-k">.</span>setSchedule(<span class="pl-stj">Pinger</s
     jmxp<span class="pl-k">.</span>setSchedule(<span class="pl-stj">Pinger</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>run();
 }</pre></div>
 
-<p>PingJMX provides a helper class <code>PingAgent</code> that lets you schedule sampling for all registered <code>MBeanServer</code> instances.</p>
+<p>Alternatively, PingJMX provides a helper class <code>PingAgent</code> that lets you schedule sampling for all registered <code>MBeanServer</code> instances.</p>
 
 <div class="highlight highlight-java"><pre><span class="pl-stj">PingAgent</span><span class="pl-k">.</span>ping(<span class="pl-stj">Pinger</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">60000</span>, <span class="pl-stj">TimeUnit</span><span class="pl-c1"><span class="pl-k">.</span>MILLISECONDS</span>);</pre></div>
 
@@ -114,7 +121,9 @@ platformJmx<span class="pl-k">.</span>setSchedule(<span class="pl-stj">Pinger</s
 <h2>
 <a id="running-pingjmx-as-standalone-app" class="anchor" href="#running-pingjmx-as-standalone-app" aria-hidden="true"><span class="octicon octicon-link"></span></a>Running PingJMX as standalone app</h2>
 
-<div class="highlight highlight-java"><pre>java <span class="pl-k">-</span><span class="pl-stj">Dlog4j</span><span class="pl-k">.</span>configuration<span class="pl-k">=</span>file<span class="pl-k">:</span>log4j<span class="pl-k">.</span>properties <span class="pl-k">-</span>classpath <span class="pl-s1"><span class="pl-pds">"</span>tnt4j-ping-jmx.jar;lib/tnt4j-api-final-all.jar<span class="pl-pds">"</span></span> <span class="pl-stj">org.tnt4j.pingjmx<span class="pl-k">.</span>PingAgent</span> <span class="pl-s1"><span class="pl-pds">"</span>*:*<span class="pl-pds">"</span></span> <span class="pl-c1">10000</span> <span class="pl-c1">60000</span></pre></div>
+<p>Example below runs <code>PingAgent</code> helper class as a standalone java application with a given MBean filter <code>"*:*"</code>, sampling period in milliseconds (<code>10000</code>), and time to run in milliseconds (<code>60000</code>):</p>
+
+<div class="highlight highlight-java"><pre>java <span class="pl-k">-</span><span class="pl-stj">Dlog4j</span><span class="pl-k">.</span>configuration<span class="pl-k">=</span>file<span class="pl-k">:</span>log4j<span class="pl-k">.</span>properties <span class="pl-k">-</span><span class="pl-stj">Dorg</span><span class="pl-k">.</span>tnt4j<span class="pl-k">.</span>pingagent<span class="pl-k">.</span>trace<span class="pl-k">=</span><span class="pl-c1">true</span> <span class="pl-k">-</span>classpath <span class="pl-s1"><span class="pl-pds">"</span>tnt4j-ping-jmx.jar;lib/tnt4j-api-final-all.jar<span class="pl-pds">"</span></span> <span class="pl-stj">org.tnt4j.pingjmx<span class="pl-k">.</span>PingAgent</span> <span class="pl-s1"><span class="pl-pds">"</span>*:*<span class="pl-pds">"</span></span> <span class="pl-c1">10000</span> <span class="pl-c1">60000</span></pre></div>
 
 <h2>
 <a id="running-pingjmx-as--javaagent" class="anchor" href="#running-pingjmx-as--javaagent" aria-hidden="true"><span class="octicon octicon-link"></span></a>Running PingJMX as -javaagent</h2>
