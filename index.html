@@ -266,8 +266,9 @@ WebSphere Application Server. You may want to override default <code>PingFactory
 <h2>
 <a id="managing-sample-behavior" class="anchor" href="#managing-sample-behavior" aria-hidden="true"><span class="octicon octicon-link"></span></a>Managing Sample Behavior</h2>
 
-<p>PingJMX provides a way to intercept sampling events such as pre, during an post for each sample run and control sample behavior. See <code>SampleListener</code> interface for more details. Applications may register more than one listener per <code>Pinger</code>. Each listener is called in registration order.
-In addition to intercepting sample events, applications may want to control weather how one ore more attributes are sampled and whether the sample is reported/logged. See example below:</p>
+<p>PingJMX provides a way to intercept sampling events such as pre, during an post for each sample run and control sample behavior. See <code>SampleListener</code> interface for more details. Applications may register more than one listener per <code>Pinger</code>. Each listener is called in registration order.</p>
+
+<p>In addition to intercepting sample events, applications may want to control how one ore more attributes are sampled and whether each sample is reported/logged. See example below:</p>
 
 <div class="highlight highlight-java"><pre><span class="pl-c">// return default or user defined PingFactory implementation</span>
 <span class="pl-stj">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-stj">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
@@ -312,8 +313,9 @@ sampler<span class="pl-k">.</span>setSchedule(<span class="pl-stj">Pinger</span>
 <a id="conditions-and-actions" class="anchor" href="#conditions-and-actions" aria-hidden="true"><span class="octicon octicon-link"></span></a>Conditions and Actions</h2>
 
 <p>PingJMX allows you to associate condtions with user defined actions based on values of MBean attributes on each sampling
-interval. For example, what if you wanted to setup an action when a specific mbean attribute exceeds a certain threashold?
-PingJMX <code>Condition</code> and <code>AttributeAction</code> interfaces allow you to call your action at runtime every time a condition is evaluated to true. See example below:</p>
+interval. For example, what if you wanted to setup an action when a specific mbean attribute exceeds a certain threashold?</p>
+
+<p>PingJMX <code>Condition</code> and <code>AttributeAction</code> interfaces allow you to call your action at runtime every time a condition is evaluated to true. See example below:</p>
 
 <div class="highlight highlight-java"><pre><span class="pl-c">// return default or user defined PingFactory implementation</span>
 <span class="pl-stj">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-stj">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
