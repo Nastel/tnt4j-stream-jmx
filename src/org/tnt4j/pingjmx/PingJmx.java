@@ -63,7 +63,7 @@ public class PingJmx extends ActivityScheduler implements Runnable {
 	 * @param server
 	 *            MBean server instance
 	 * @param filterList
-	 *            JMX filters semicolon separated
+	 *            MBean filters semicolon separated
 	 * @param period
 	 *            sampling period in milliseconds
 	 * 
@@ -82,7 +82,7 @@ public class PingJmx extends ActivityScheduler implements Runnable {
 	 * @param server
 	 *            MBean server instance
 	 * @param filterList
-	 *            JMX filters semicolon separated
+	 *            MBean filters semicolon separated
 	 * @param period
 	 *            sampling period
 	 * @param tunit
@@ -127,7 +127,7 @@ public class PingJmx extends ActivityScheduler implements Runnable {
 	 * @param server
 	 *            MBean server instance
 	 * @param filterList
-	 *            JMX filters semicolon separated
+	 *            MBean filters semicolon separated
 	 * 
 	 * @see ConditionalListener
 	 * @return new conditional listener instance

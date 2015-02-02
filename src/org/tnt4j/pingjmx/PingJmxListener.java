@@ -49,10 +49,14 @@ import com.nastel.jkool.tnt4j.core.PropertySnapshot;
  * 
  * @version $Revision: 1 $
  */
-public class PingJmxListener implements ConditionalListener, SampleStats {
+public class PingJmxListener implements ConditionalListener {
 	String mbeanFilter;
-	long sampleCount = 0, totalMetricCount = 0, lastMetricCount = 0, noopCount = 0;
+	long sampleCount = 0, totalMetricCount = 0;
+	long lastMetricCount = 0, noopCount = 0;
+	
 	MBeanServer mbeanServer;
+	SampleStats statsHandle;
+	
 	Vector<SampleListener> listeners = new Vector<SampleListener>(5, 5);
 	Map<Condition, AttributeAction> conditions = new LinkedHashMap<Condition, AttributeAction>(89);
 	HashMap<ObjectName, MBeanInfo> mbeans = new HashMap<ObjectName, MBeanInfo>(89);
@@ -69,18 +73,14 @@ public class PingJmxListener implements ConditionalListener, SampleStats {
 	public PingJmxListener(MBeanServer mserver, String filter) {
 		mbeanServer = mserver;
 		mbeanFilter = filter;
-	}
-
-	@Override
-	public MBeanServer getMBeanServer() {
-		return mbeanServer;
+		statsHandle = new PingSampleStatsImpl(this);
 	}
 
 	/**
 	 * Load JMX beans based on a configured MBean filter list.
 	 * All loaded MBeans are stored in <code>HashMap</code>.
 	 */
-	private void loadJmxBeans() {
+	private void loadMBeans() {
 		try {
 			StringTokenizer tk = new StringTokenizer(mbeanFilter, ";");
 			Vector<ObjectName> nFilters = new Vector<ObjectName>(5);
@@ -214,7 +214,7 @@ public class PingJmxListener implements ConditionalListener, SampleStats {
 	public void started(Activity activity) {
 		runPre(activity);
 		if ((!activity.isNoop()) && (mbeans.size() == 0)) {
-			loadJmxBeans();
+			loadMBeans();
 		} else if (activity.isNoop()) {
 			noopCount++;
 		}
@@ -237,7 +237,7 @@ public class PingJmxListener implements ConditionalListener, SampleStats {
 	private void runPost(Activity activity) {
 		synchronized (this.listeners) {
 			for (SampleListener lst: listeners) {
-				lst.post(this, activity);
+				lst.post(statsHandle, activity);
 			}
 		} 
 	}
@@ -245,7 +245,7 @@ public class PingJmxListener implements ConditionalListener, SampleStats {
 	private void runPre(Activity activity) {
 		synchronized (this.listeners) {
 			for (SampleListener lst: listeners) {
-				lst.pre(this, activity);
+				lst.pre(statsHandle, activity);
 			}
 		} 
 	}
@@ -254,7 +254,7 @@ public class PingJmxListener implements ConditionalListener, SampleStats {
 		boolean result = true;
 		synchronized (this.listeners) {
 			for (SampleListener lst: listeners) {
-				boolean last = lst.sample(this, sample);
+				boolean last = lst.sample(statsHandle, sample);
 				result = result && last;
 			}
 		} 
@@ -287,37 +287,50 @@ public class PingJmxListener implements ConditionalListener, SampleStats {
 	}
 
 	@Override
+	public SampleStats getStats() {
+		return statsHandle;
+	}
+}
+
+class PingSampleStatsImpl implements SampleStats {
+	PingJmxListener handle;
+
+	PingSampleStatsImpl(PingJmxListener lst) {
+		handle = lst;
+	}
+	
+	@Override
+	public MBeanServer getMBeanServer() {
+		return handle.mbeanServer;
+	}
+
+	@Override
 	public long getSampleCount() {
-		return sampleCount;
+		return handle.sampleCount;
 	}
 
 	@Override
 	public long getMBeanCount() {
-		return mbeans.size();
+		return handle.mbeans.size();
 	}
 
 	@Override
 	public long getExclAttrCount() {
-		return excAttrs.size();
+		return handle.excAttrs.size();
 	}
 
 	@Override
 	public long getTotalMetricCount() {
-		return totalMetricCount;
+		return handle.totalMetricCount;
 	}
 
 	@Override
 	public long getLastMetricCount() {
-		return lastMetricCount;
+		return handle.lastMetricCount;
 	}
 
 	@Override
 	public long getTotalNoopCount() {
-		return noopCount;
-	}
-
-	@Override
-	public SampleStats getStats() {
-		return this;
+		return handle.noopCount;
 	}
 }
