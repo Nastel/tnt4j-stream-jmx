@@ -43,7 +43,7 @@ import com.nastel.jkool.tnt4j.core.Activity;
 public class PingAgent {
 	protected static Pinger platformJmx;
 	protected static ConcurrentHashMap<MBeanServer, Pinger> pingers = new ConcurrentHashMap<MBeanServer, Pinger>(89);
-
+	protected static boolean TRACE = Boolean.getBoolean("org.tnt4j.pingagent.trace");
 	/**
 	 * Entry point to be loaded as -javaagent:jarpath="mbean-filter!sample.ms" command line.
 	 * Example: -javaagent:tnt4j-ping-jmx.jar="*:*!30000"
@@ -187,7 +187,8 @@ class AgentSampleListener implements SampleListener {
 
 	@Override
 	public void post(SampleStats stats, Activity activity) {
-		System.out.println(activity.getName()
+		if (PingAgent.TRACE) {
+			System.out.println(activity.getName()
 				+ ": sample.count=" + stats.getSampleCount()
 				+ ", mbean.count=" + stats.getMBeanServer().getMBeanCount()
 				+ ", elasped.usec=" + activity.getElapsedTime() 
@@ -200,5 +201,6 @@ class AgentSampleListener implements SampleListener {
 				+ ", trackind.id=" + activity.getTrackingId() 
 				+ ", mbean.server=" + stats.getMBeanServer()
 				);
+		}
 	}
 }
