@@ -79,7 +79,7 @@ public class PlatformJmxPing implements Pinger {
 
 	@Override
 	public Pinger setSchedule(long period) throws IOException {
-		return setSchedule(PingJmx.JMX_FILTER_ALL, period);
+		return setSchedule(JMX_FILTER_ALL, period);
 	}
 
 	@Override

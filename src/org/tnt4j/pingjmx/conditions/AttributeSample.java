@@ -24,6 +24,7 @@ import javax.management.ObjectName;
 import javax.management.ReflectionException;
 
 import com.nastel.jkool.tnt4j.core.Activity;
+import com.nastel.jkool.tnt4j.utils.Utils;
 
 /**
  * <p> 
@@ -39,6 +40,7 @@ public class AttributeSample {
 	MBeanServer server;
 	ObjectName name;
 	MBeanAttributeInfo ainfo;
+	long timeStamp = 0;
 	Object value;
 	
 	/**
@@ -65,6 +67,7 @@ public class AttributeSample {
 	 */
 	public Object sample() throws AttributeNotFoundException, InstanceNotFoundException, MBeanException, ReflectionException {
 		value = server.getAttribute(name, ainfo.getName());
+		timeStamp = Utils.currentTimeUsec();
 		return value;
 	}
 	
@@ -114,5 +117,16 @@ public class AttributeSample {
 	 */
 	public Object get() {
 		return value;
+	}
+	
+	/**
+	 * Obtain age in microseconds since last sampled value. {@link #sample()} must 
+	 * be called prior to calling this call, otherwise -1 is returned.
+	 * 
+	 * @return get in microseconds since last sampled value, -1 if no sample was taken.
+	 * 			see {@link #sample()}
+	 */
+	public long ageUsec() {
+		return timeStamp > 0? (Utils.currentTimeUsec() - timeStamp): -1;
 	}
 }
