@@ -330,7 +330,7 @@ sampler<span class="pl-k">.</span>setSchedule(<span class="pl-stj">Pinger</span>
     <span class="pl-st">@Override</span>
     <span class="pl-s">public</span> <span class="pl-stj">Object</span> <span class="pl-en">action</span>(<span class="pl-stj">Condition</span> <span class="pl-v">cond</span>, <span class="pl-stj">AttributeSample</span> <span class="pl-v">sample</span>) {
         <span class="pl-stj">Activity</span> activity <span class="pl-k">=</span> sample<span class="pl-k">.</span>getActivity();
-        <span class="pl-c">// onbtain a collection of all sampled metrics</span>
+        <span class="pl-c">// obtain a collection of all sampled metrics</span>
         <span class="pl-st">Collection&lt;<span class="pl-stj">Snapshot</span>&gt;</span> metrics <span class="pl-k">=</span> activity<span class="pl-k">.</span>getSnapshots();
         <span class="pl-stj">System</span><span class="pl-k">.</span>out<span class="pl-k">.</span>println(<span class="pl-s1"><span class="pl-pds">"</span>Myaction called with value=<span class="pl-pds">"</span></span> <span class="pl-k">+</span> sample<span class="pl-k">.</span>get()
             <span class="pl-k">+</span> <span class="pl-s1"><span class="pl-pds">"</span>, age.usec=<span class="pl-pds">"</span></span> <span class="pl-k">+</span> sample<span class="pl-k">.</span>ageUsec()
