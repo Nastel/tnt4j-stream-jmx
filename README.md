@@ -249,7 +249,11 @@ Below is a sample of what `MyAttributeAction` may look like:
 public class MyAttributeAction implements AttributeAction {
 	@Override
 	public Object action(Condition cond, AttributeSample sample) {
-		System.out.println("Myaction called with value=" + sample.get());
+		Activity activity = sample.getActivity();
+		Collection<Snapshot> metrics = activity.getSnapshots();
+		System.out.println("Myaction called with value=" + sample.get()
+			+ ", age.usec=" + sample.ageUsec()
+			+ ", count=" + metrics.size());
 		return null;
 	}
 }
