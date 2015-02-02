@@ -84,7 +84,7 @@ java -Dlog4j.configuration=file:log4j.properties -Dorg.tnt4j.pingagent.trace=tru
 ```
 
 ## Running PingJMX as -javaagent
-PingJMX can be invoked as a a javaagent using `-javaagent` command line:
+PingJMX can be invoked as `-javaagent` without changing your application code:
 ```java
 java -javaagent:tnt4j-ping-jmx.jar="*:*!30000" -Dlog4j.configuration=file:log4j.properties -Dtnt4j.config=tnt4j.properties -classpath "tnt4j-ping-jmx.jar;lib/tnt4j-api-final-all.jar" your.class.name your-args
 ```
