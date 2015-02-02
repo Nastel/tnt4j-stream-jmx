@@ -258,7 +258,7 @@ public class MyAttributeAction implements AttributeAction {
 	@Override
 	public Object action(Condition cond, AttributeSample sample) {
 		Activity activity = sample.getActivity();
-		// onbtain a collection of all sampled metrics
+		// obtain a collection of all sampled metrics
 		Collection<Snapshot> metrics = activity.getSnapshots();
 		System.out.println("Myaction called with value=" + sample.get()
 			+ ", age.usec=" + sample.ageUsec()
