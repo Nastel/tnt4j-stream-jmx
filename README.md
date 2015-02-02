@@ -125,7 +125,7 @@ Below is an example of TNT4J stream definition where all PingJMX streams are wri
 	tracking.selector.Repository: com.nastel.jkool.tnt4j.repository.FileTokenRepository
 }
 ```
-To stream PingJMX into a log file:
+To stream PingJMX into a log file `MyStream.log`:
 ```
 ;Stanza used for PingJMX sources
 {
