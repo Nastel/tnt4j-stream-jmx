@@ -44,8 +44,8 @@ Pinger platformJmx = factory.newInstance();
 //schedule collection (ping) for given MBean filter and 30000 ms sampling period
 platformJmx.setSchedule(Pinger.JMX_FILTER_ALL, 30000).run();
 ```
-<b>Note that `setSchedule(..).run()` sequence must be called to run the schedule. `setSchedule(..)` just sets the
-scheduling parameters, `run()` executes the schedule.</b>
+<b>NOTE:</b> `setSchedule(..).run()` sequence must be called to run the schedule. `setSchedule(..)` just sets the
+scheduling parameters, `run()` executes the schedule.
 
 To schedule metric collection for a specific MBean server:
 ```java
