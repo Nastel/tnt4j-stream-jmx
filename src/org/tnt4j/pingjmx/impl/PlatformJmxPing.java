@@ -24,7 +24,7 @@ import javax.management.MBeanServer;
 import org.tnt4j.pingjmx.PingJmx;
 import org.tnt4j.pingjmx.Pinger;
 import org.tnt4j.pingjmx.SampleListener;
-import org.tnt4j.pingjmx.SampleStats;
+import org.tnt4j.pingjmx.SampleContext;
 import org.tnt4j.pingjmx.conditions.AttributeAction;
 import org.tnt4j.pingjmx.conditions.Condition;
 
@@ -164,7 +164,7 @@ public class PlatformJmxPing implements Pinger {
 	}
 
 	@Override
-	public SampleStats getStats() {
+	public SampleContext getStats() {
 		if (pinger == null) {
 			throw new IllegalStateException("no schedule set: call setSchedule() first");
 		}

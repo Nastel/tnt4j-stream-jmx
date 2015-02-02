@@ -96,7 +96,7 @@ public interface Pinger extends NestedHandler<Pinger, SampleListener>, Runnable 
 	 * @return latest sampling statistics
 	 *  
 	 */
-	SampleStats getStats();
+	SampleContext getStats();
 
 	/**
 	 * Cancel/close this object instance and cancel all outstanding

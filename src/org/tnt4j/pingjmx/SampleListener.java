@@ -27,7 +27,7 @@ import com.nastel.jkool.tnt4j.core.Activity;
  * 
  * @see Pinger
  * @see NestedHandler
- * @see SampleStats
+ * @see SampleContext
  * 
  * @version $Revision: 1 $
  */
@@ -38,20 +38,20 @@ public interface SampleListener {
 	 * activity reporting. Setting this to NOOP at pre stage
 	 * cancels current sample.
 	 * 
-	 * @param stats sample statistics
+	 * @param context current sample context
 	 * @param activity instance
 	 */
-	void pre(SampleStats stats, Activity activity);
+	void pre(SampleContext context, Activity activity);
 	
 	/**
 	 * This method is called for each sampled attribute.
 	 * Throw a runtime exception if you want samples to halt.
 	 * 
-	 * @param stats sample statistics
+	 * @param context current sample context
 	 * @param sample attribute sample object
 	 * @return true of current sampled metric should be included, false otherwise (excluded)
 	 */
-	boolean sample(SampleStats stats, AttributeSample sample);
+	boolean sample(SampleContext context, AttributeSample sample);
 
 	/**
 	 * This method is called after current sample is completed
@@ -59,8 +59,8 @@ public interface SampleListener {
 	 * activity reporting. Setting this to NOOP at post stage
 	 * cancels reporting of the current sample.
 	 * 
-	 * @param stats sample statistics
+	 * @param context current sample context
 	 * @param activity instance
 	 */
-	void post(SampleStats stats, Activity activity);
+	void post(SampleContext context, Activity activity);
 }

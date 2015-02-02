@@ -19,16 +19,16 @@ import javax.management.MBeanServer;
 
 /**
  * <p> 
- * This interface provides a way to obtain sample statistics.
+ * This interface provides a way to obtain sample context.
  * </p>
  * 
  * @see Pinger
  * @see NestedHandler
- * @see SampleStats
+ * @see SampleContext
  * 
  * @version $Revision: 1 $
  */
-public interface SampleStats {
+public interface SampleContext {
 	/**
 	 * Obtain associated MBean server instance.
 	 * 

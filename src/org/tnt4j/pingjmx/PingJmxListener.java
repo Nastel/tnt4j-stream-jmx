@@ -55,7 +55,7 @@ public class PingJmxListener implements ConditionalListener {
 	long lastMetricCount = 0, noopCount = 0;
 	
 	MBeanServer mbeanServer;
-	SampleStats statsHandle;
+	SampleContext statsHandle;
 	
 	Vector<SampleListener> listeners = new Vector<SampleListener>(5, 5);
 	Map<Condition, AttributeAction> conditions = new LinkedHashMap<Condition, AttributeAction>(89);
@@ -73,7 +73,7 @@ public class PingJmxListener implements ConditionalListener {
 	public PingJmxListener(MBeanServer mserver, String filter) {
 		mbeanServer = mserver;
 		mbeanFilter = filter;
-		statsHandle = new PingSampleStatsImpl(this);
+		statsHandle = new PingSampleContextImpl(this);
 	}
 
 	/**
@@ -201,7 +201,7 @@ public class PingJmxListener implements ConditionalListener {
 	 * @param activity instance
 	 */
 	private int finish(Activity activity) {
-		PropertySnapshot snapshot = new PropertySnapshot(activity.getName(), "SampleStats");
+		PropertySnapshot snapshot = new PropertySnapshot(activity.getName(), "SampleContext");
 		snapshot.add("sample.count", sampleCount);
 		snapshot.add("noop.count", noopCount);
 		snapshot.add("sample.metric.count", lastMetricCount);
@@ -287,15 +287,15 @@ public class PingJmxListener implements ConditionalListener {
 	}
 
 	@Override
-	public SampleStats getStats() {
+	public SampleContext getStats() {
 		return statsHandle;
 	}
 }
 
-class PingSampleStatsImpl implements SampleStats {
+class PingSampleContextImpl implements SampleContext {
 	PingJmxListener handle;
-
-	PingSampleStatsImpl(PingJmxListener lst) {
+	
+	PingSampleContextImpl(PingJmxListener lst) {
 		handle = lst;
 	}
 	

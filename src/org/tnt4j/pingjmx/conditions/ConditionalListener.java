@@ -17,7 +17,7 @@ package org.tnt4j.pingjmx.conditions;
 
 import org.tnt4j.pingjmx.NestedHandler;
 import org.tnt4j.pingjmx.SampleListener;
-import org.tnt4j.pingjmx.SampleStats;
+import org.tnt4j.pingjmx.SampleContext;
 
 import com.nastel.jkool.tnt4j.core.ActivityListener;
 
@@ -54,5 +54,5 @@ public interface ConditionalListener extends ActivityListener, NestedHandler<Con
 	 * @return latest sampling statistics
 	 *  
 	 */
-	SampleStats getStats();	
+	SampleContext getStats();	
 }

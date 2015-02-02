@@ -40,9 +40,9 @@ Imbed PingJMX code into your application:
 // obtain PingFactory instance
 PingFactory factory = DefaultPingFactory.getInstance();
 // create an instance of the pinger that will sample mbeans
-Pinger platformJmx = factory.newInstance();
+Pinger sampler = factory.newInstance();
 //schedule collection (ping) for given MBean filter and 30000 ms sampling period
-platformJmx.setSchedule(Pinger.JMX_FILTER_ALL, 30000).run();
+sampler.setSchedule(Pinger.JMX_FILTER_ALL, 30000).run();
 ```
 <b>NOTE:</b> `setSchedule(..).run()` sequence must be called to run the schedule. `setSchedule(..)` just sets the
 scheduling parameters, `run()` executes the schedule.
@@ -52,9 +52,9 @@ To schedule metric collection for a specific MBean server:
 // obtain PingFactory instance
 PingFactory factory = DefaultPingFactory.getInstance();
 // create an instance of the pinger that will sample mbeans
-Pinger platformJmx = factory.newInstance(ManagementFactory.getPlatformMBeanServer());
+Pinger sampler = factory.newInstance(ManagementFactory.getPlatformMBeanServer());
 //schedule collection (ping) for given MBean filter and 30000 ms sampling period
-platformJmx.setSchedule(Pinger.JMX_FILTER_ALL, 30000).run();
+sampler.setSchedule(Pinger.JMX_FILTER_ALL, 30000).run();
 ```
 Below is an example of how to sample all registered mbean servers:
 ```java
@@ -202,14 +202,14 @@ In addition to intercepting sample events, applications may want to control weat
 // return default or user defined PingFactory implementation
 PingFactory factory = DefaultPingFactory.getInstance();
 // create an instance of the pinger that will sample mbeans
-Pinger platformJmx = factory.newInstance();
-platformJmx.setSchedule(Pinger.JMX_FILTER_ALL, 30000).addListener(new MySampleListener())).run();
+Pinger sampler = factory.newInstance();
+sampler.setSchedule(Pinger.JMX_FILTER_ALL, 30000).addListener(new MySampleListener())).run();
 ```
 Below is a sample of what `MySampleListener` may look like:
 ```java
 class MySampleListener implements SampleListener {
 	@Override
-	public void pre(SampleStats stats, Activity activity) {
+	public void pre(SampleContext context, Activity activity) {
 		// called once per sample, begining of each sample
 		// set activity to NOOP to disable further sampling
 		// no other attrubute will be sampled during this sample
@@ -219,7 +219,7 @@ class MySampleListener implements SampleListener {
 	}
 
 	@Override
-	public boolean sample(SampleStats stats, AttributeSample sample) {
+	public boolean sample(SampleContext context, AttributeSample sample) {
 		// called once per sampled attribute
 		// return false to skip this attribute from sampling collection
 		if (some-condition) {
@@ -229,7 +229,7 @@ class MySampleListener implements SampleListener {
 	}
 
 	@Override
-	public void post(SampleStats stats, Activity activity) {
+	public void post(SampleContext context, Activity activity) {
 		// called once per sample, end of each sample
 		// set activity to NOOP to disable sampling reporting
 		if (some-condition) {
@@ -246,11 +246,11 @@ PingJMX `Condition` and `AttributeAction` interfaces allow you to call your acti
 // return default or user defined PingFactory implementation
 PingFactory factory = DefaultPingFactory.getInstance();
 // create an instance of the pinger that will sample mbeans
-Pinger platformJmx = factory.newInstance();
+Pinger sampler = factory.newInstance();
 // create a condition when ThreadCount > 100
 Condition myCondition = new SimpleCondition("java.lang:type=Threading", "ThreadCount", 100, ">");
 //schedule collection (ping) for given MBean filter and 30000 ms sampling period
-platformJmx.setSchedule(Pinger.JMX_FILTER_ALL, 30000).register(myCondition, new MyAttributeAction()).run();
+sampler.setSchedule(Pinger.JMX_FILTER_ALL, 30000).register(myCondition, new MyAttributeAction()).run();
 ```
 Below is a sample of what `MyAttributeAction` may look like:
 ```java
@@ -258,6 +258,7 @@ public class MyAttributeAction implements AttributeAction {
 	@Override
 	public Object action(Condition cond, AttributeSample sample) {
 		Activity activity = sample.getActivity();
+		// onbtain a collection of all sampled metrics
 		Collection<Snapshot> metrics = activity.getSnapshots();
 		System.out.println("Myaction called with value=" + sample.get()
 			+ ", age.usec=" + sample.ageUsec()

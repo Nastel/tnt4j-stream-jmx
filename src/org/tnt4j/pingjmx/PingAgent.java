@@ -177,29 +177,29 @@ public class PingAgent {
 
 class AgentSampleListener implements SampleListener {
 	@Override
-	public void pre(SampleStats stats, Activity activity) {
+	public void pre(SampleContext context, Activity activity) {
 	}
 
 	@Override
-	public boolean sample(SampleStats stats, AttributeSample sample) {
+	public boolean sample(SampleContext context, AttributeSample sample) {
 		return true;
 	}
 
 	@Override
-	public void post(SampleStats stats, Activity activity) {
+	public void post(SampleContext context, Activity activity) {
 		if (PingAgent.TRACE) {
 			System.out.println(activity.getName()
-				+ ": sample.count=" + stats.getSampleCount()
-				+ ", mbean.count=" + stats.getMBeanServer().getMBeanCount()
+				+ ": sample.count=" + context.getSampleCount()
+				+ ", mbean.count=" + context.getMBeanServer().getMBeanCount()
 				+ ", elasped.usec=" + activity.getElapsedTime() 
 				+ ", snap.count=" + activity.getSnapshotCount() 
 				+ ", id.count=" + activity.getIdCount()
-				+ ", noop.count=" + stats.getTotalNoopCount()
-				+ ", sampled.mbeans.count=" + stats.getMBeanCount()
-				+ ", sampled.metric.count=" + stats.getLastMetricCount()
-				+ ", exclude.attrs=" + stats.getExclAttrCount()
+				+ ", noop.count=" + context.getTotalNoopCount()
+				+ ", sampled.mbeans.count=" + context.getMBeanCount()
+				+ ", sampled.metric.count=" + context.getLastMetricCount()
+				+ ", exclude.attrs=" + context.getExclAttrCount()
 				+ ", trackind.id=" + activity.getTrackingId() 
-				+ ", mbean.server=" + stats.getMBeanServer()
+				+ ", mbean.server=" + context.getMBeanServer()
 				);
 		}
 	}
