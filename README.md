@@ -197,7 +197,8 @@ PingFactory factory = DefaultPingFactory.getInstance();
 ```
 ## Managing Sample Behavior
 PingJMX provides a way to intercept sampling events such as pre, during an post for each sample run and control sample behavior. See `SampleListener` interface for more details. Applications may register more than one listener per `Pinger`. Each listener is called in registration order.
-In addition to intercepting sample events, applications may want to control weather how one ore more attributes are sampled and whether the sample is reported/logged. See example below:
+
+In addition to intercepting sample events, applications may want to control how one ore more attributes are sampled and whether each sample is reported/logged. See example below:
 ```java
 // return default or user defined PingFactory implementation
 PingFactory factory = DefaultPingFactory.getInstance();
@@ -241,6 +242,7 @@ class MySampleListener implements SampleListener {
 ## Conditions and Actions
 PingJMX allows you to associate condtions with user defined actions based on values of MBean attributes on each sampling
 interval. For example, what if you wanted to setup an action when a specific mbean attribute exceeds a certain threashold?
+
 PingJMX `Condition` and `AttributeAction` interfaces allow you to call your action at runtime every time a condition is evaluated to true. See example below:
 ```java
 // return default or user defined PingFactory implementation
