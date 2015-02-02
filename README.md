@@ -11,8 +11,9 @@ Here is what you can do with PingJMX:
 * High/Low, normal vs. abnormal CPU usage
 * Monitor threading, runtime and other JVM performance metrics
 * Monitor standard and custom MBean attributes
-* Application state dumps on VM shutdown for diagnostics
+* Conditional actions based on MBean attribute values
 * Conditional streaming based on custom filters
+* Application state dumps on VM shutdown for diagnostics
 
 # Why PingJMX
 PingJMX provides and easy, lightweight and secure way to stream and monitor JMX metrics from within
@@ -28,7 +29,13 @@ java runtime containers.
 * Easily build your own extensions, monitors
 
 # Using PingJMX
-It is simple, just imbed the following code into your application:
+It is simple: (1) run PingJMX as a `-javaagent` or (2) imbed PingJMX code into your application.
+
+Running PingJMX as javaagent:
+```java
+java -javaagent:tnt4j-ping-jmx.jar="*:*!30000" -Dlog4j.configuration=file:log4j.properties -Dtnt4j.config=tnt4j.properties -classpath "tnt4j-ping-jmx.jar;lib/tnt4j-api-final-all.jar" your.class.name your-args
+```
+Imbed PingJMX code into your application:
 ```java
 // obtain PingFactory instance
 PingFactory factory = DefaultPingFactory.getInstance();
@@ -49,7 +56,7 @@ Pinger platformJmx = factory.newInstance(ManagementFactory.getPlatformMBeanServe
 //schedule collection (ping) for given MBean filter and 30000 ms sampling period
 platformJmx.setSchedule(Pinger.JMX_FILTER_ALL, 30000).run();
 ```
-Below is an example of creating collection for all registered mbean servers:
+Below is an example of how to sample all registered mbean servers:
 ```java
 // obtain PingFactory instance
 PingFactory factory = DefaultPingFactory.getInstance();
@@ -60,7 +67,7 @@ for (MBeanServer server: mlist) {
 	jmxp.setSchedule(Pinger.JMX_FILTER_ALL, 30000).run();
 }
 ```
-PingJMX provides a helper class `PingAgent` that lets you schedule sampling for all registered `MBeanServer` instances.
+Alternatively, PingJMX provides a helper class `PingAgent` that lets you schedule sampling for all registered `MBeanServer` instances.
 ```java
 PingAgent.ping(Pinger.JMX_FILTER_ALL, 60000, TimeUnit.MILLISECONDS);
 ```
@@ -71,8 +78,9 @@ PingAgent.ping(Pinger.JMX_FILTER_ALL, 60000, TimeUnit.MILLISECONDS);
 For more information on TNT4J and `tnt4j.properties` see (https://github.com/Nastel/TNT4J/wiki/Getting-Started).
 
 ## Running PingJMX as standalone app
+Example below runs `PingAgent` helper class as a standalone java application with a given MBean filter `"*:*"`, sampling period in milliseconds (`10000`), and time to run in milliseconds (`60000`):
 ```java
-java -Dlog4j.configuration=file:log4j.properties -classpath "tnt4j-ping-jmx.jar;lib/tnt4j-api-final-all.jar" org.tnt4j.pingjmx.PingAgent "*:*" 10000 60000
+java -Dlog4j.configuration=file:log4j.properties -Dorg.tnt4j.pingagent.trace=true -classpath "tnt4j-ping-jmx.jar;lib/tnt4j-api-final-all.jar" org.tnt4j.pingjmx.PingAgent "*:*" 10000 60000
 ```
 
 ## Running PingJMX as -javaagent
