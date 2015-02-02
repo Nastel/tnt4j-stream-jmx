@@ -81,9 +81,9 @@ java runtime containers.</p>
 <div class="highlight highlight-java"><pre><span class="pl-c">// obtain PingFactory instance</span>
 <span class="pl-stj">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-stj">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
 <span class="pl-c">// create an instance of the pinger that will sample mbeans</span>
-<span class="pl-stj">Pinger</span> platformJmx <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance();
+<span class="pl-stj">Pinger</span> sampler <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance();
 <span class="pl-c">//schedule collection (ping) for given MBean filter and 30000 ms sampling period</span>
-platformJmx<span class="pl-k">.</span>setSchedule(<span class="pl-stj">Pinger</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>run();</pre></div>
+sampler<span class="pl-k">.</span>setSchedule(<span class="pl-stj">Pinger</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>run();</pre></div>
 
 <p><b>NOTE:</b> <code>setSchedule(..).run()</code> sequence must be called to run the schedule. <code>setSchedule(..)</code> just sets the
 scheduling parameters, <code>run()</code> executes the schedule.</p>
@@ -93,9 +93,9 @@ scheduling parameters, <code>run()</code> executes the schedule.</p>
 <div class="highlight highlight-java"><pre><span class="pl-c">// obtain PingFactory instance</span>
 <span class="pl-stj">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-stj">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
 <span class="pl-c">// create an instance of the pinger that will sample mbeans</span>
-<span class="pl-stj">Pinger</span> platformJmx <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance(<span class="pl-stj">ManagementFactory</span><span class="pl-k">.</span>getPlatformMBeanServer());
+<span class="pl-stj">Pinger</span> sampler <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance(<span class="pl-stj">ManagementFactory</span><span class="pl-k">.</span>getPlatformMBeanServer());
 <span class="pl-c">//schedule collection (ping) for given MBean filter and 30000 ms sampling period</span>
-platformJmx<span class="pl-k">.</span>setSchedule(<span class="pl-stj">Pinger</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>run();</pre></div>
+sampler<span class="pl-k">.</span>setSchedule(<span class="pl-stj">Pinger</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>run();</pre></div>
 
 <p>Below is an example of how to sample all registered mbean servers:</p>
 
@@ -272,14 +272,14 @@ In addition to intercepting sample events, applications may want to control weat
 <div class="highlight highlight-java"><pre><span class="pl-c">// return default or user defined PingFactory implementation</span>
 <span class="pl-stj">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-stj">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
 <span class="pl-c">// create an instance of the pinger that will sample mbeans</span>
-<span class="pl-stj">Pinger</span> platformJmx <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance();
-platformJmx<span class="pl-k">.</span>setSchedule(<span class="pl-stj">Pinger</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>addListener(<span class="pl-k">new</span> <span class="pl-stj">MySampleListener</span>()))<span class="pl-k">.</span>run();</pre></div>
+<span class="pl-stj">Pinger</span> sampler <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance();
+sampler<span class="pl-k">.</span>setSchedule(<span class="pl-stj">Pinger</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>addListener(<span class="pl-k">new</span> <span class="pl-stj">MySampleListener</span>()))<span class="pl-k">.</span>run();</pre></div>
 
 <p>Below is a sample of what <code>MySampleListener</code> may look like:</p>
 
 <div class="highlight highlight-java"><pre><span class="pl-s">class</span> <span class="pl-en">MySampleListener</span> <span class="pl-s">implements</span> <span class="pl-e">SampleListener</span> {
     <span class="pl-st">@Override</span>
-    <span class="pl-s">public</span> <span class="pl-st">void</span> <span class="pl-en">pre</span>(<span class="pl-stj">SampleStats</span> <span class="pl-v">stats</span>, <span class="pl-stj">Activity</span> <span class="pl-v">activity</span>) {
+    <span class="pl-s">public</span> <span class="pl-st">void</span> <span class="pl-en">pre</span>(<span class="pl-stj">SampleContext</span> <span class="pl-v">context</span>, <span class="pl-stj">Activity</span> <span class="pl-v">activity</span>) {
         <span class="pl-c">// called once per sample, begining of each sample</span>
         <span class="pl-c">// set activity to NOOP to disable further sampling</span>
         <span class="pl-c">// no other attrubute will be sampled during this sample</span>
@@ -289,7 +289,7 @@ platformJmx<span class="pl-k">.</span>setSchedule(<span class="pl-stj">Pinger</s
     }
 
     <span class="pl-st">@Override</span>
-    <span class="pl-s">public</span> <span class="pl-st">boolean</span> <span class="pl-en">sample</span>(<span class="pl-stj">SampleStats</span> <span class="pl-v">stats</span>, <span class="pl-stj">AttributeSample</span> <span class="pl-v">sample</span>) {
+    <span class="pl-s">public</span> <span class="pl-st">boolean</span> <span class="pl-en">sample</span>(<span class="pl-stj">SampleContext</span> <span class="pl-v">context</span>, <span class="pl-stj">AttributeSample</span> <span class="pl-v">sample</span>) {
         <span class="pl-c">// called once per sampled attribute</span>
         <span class="pl-c">// return false to skip this attribute from sampling collection</span>
         <span class="pl-k">if</span> (some<span class="pl-k">-</span>condition) {
@@ -299,7 +299,7 @@ platformJmx<span class="pl-k">.</span>setSchedule(<span class="pl-stj">Pinger</s
     }
 
     <span class="pl-st">@Override</span>
-    <span class="pl-s">public</span> <span class="pl-st">void</span> <span class="pl-en">post</span>(<span class="pl-stj">SampleStats</span> <span class="pl-v">stats</span>, <span class="pl-stj">Activity</span> <span class="pl-v">activity</span>) {
+    <span class="pl-s">public</span> <span class="pl-st">void</span> <span class="pl-en">post</span>(<span class="pl-stj">SampleContext</span> <span class="pl-v">context</span>, <span class="pl-stj">Activity</span> <span class="pl-v">activity</span>) {
         <span class="pl-c">// called once per sample, end of each sample</span>
         <span class="pl-c">// set activity to NOOP to disable sampling reporting</span>
         <span class="pl-k">if</span> (some<span class="pl-k">-</span>condition) {
@@ -318,11 +318,11 @@ PingJMX <code>Condition</code> and <code>AttributeAction</code> interfaces allow
 <div class="highlight highlight-java"><pre><span class="pl-c">// return default or user defined PingFactory implementation</span>
 <span class="pl-stj">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-stj">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
 <span class="pl-c">// create an instance of the pinger that will sample mbeans</span>
-<span class="pl-stj">Pinger</span> platformJmx <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance();
+<span class="pl-stj">Pinger</span> sampler <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance();
 <span class="pl-c">// create a condition when ThreadCount &gt; 100</span>
 <span class="pl-stj">Condition</span> myCondition <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-stj">SimpleCondition</span>(<span class="pl-s1"><span class="pl-pds">"</span>java.lang:type=Threading<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>ThreadCount<span class="pl-pds">"</span></span>, <span class="pl-c1">100</span>, <span class="pl-s1"><span class="pl-pds">"</span>&gt;<span class="pl-pds">"</span></span>);
 <span class="pl-c">//schedule collection (ping) for given MBean filter and 30000 ms sampling period</span>
-platformJmx<span class="pl-k">.</span>setSchedule(<span class="pl-stj">Pinger</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>register(myCondition, <span class="pl-k">new</span> <span class="pl-stj">MyAttributeAction</span>())<span class="pl-k">.</span>run();</pre></div>
+sampler<span class="pl-k">.</span>setSchedule(<span class="pl-stj">Pinger</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>register(myCondition, <span class="pl-k">new</span> <span class="pl-stj">MyAttributeAction</span>())<span class="pl-k">.</span>run();</pre></div>
 
 <p>Below is a sample of what <code>MyAttributeAction</code> may look like:</p>
 
@@ -330,6 +330,7 @@ platformJmx<span class="pl-k">.</span>setSchedule(<span class="pl-stj">Pinger</s
     <span class="pl-st">@Override</span>
     <span class="pl-s">public</span> <span class="pl-stj">Object</span> <span class="pl-en">action</span>(<span class="pl-stj">Condition</span> <span class="pl-v">cond</span>, <span class="pl-stj">AttributeSample</span> <span class="pl-v">sample</span>) {
         <span class="pl-stj">Activity</span> activity <span class="pl-k">=</span> sample<span class="pl-k">.</span>getActivity();
+        <span class="pl-c">// onbtain a collection of all sampled metrics</span>
         <span class="pl-st">Collection&lt;<span class="pl-stj">Snapshot</span>&gt;</span> metrics <span class="pl-k">=</span> activity<span class="pl-k">.</span>getSnapshots();
         <span class="pl-stj">System</span><span class="pl-k">.</span>out<span class="pl-k">.</span>println(<span class="pl-s1"><span class="pl-pds">"</span>Myaction called with value=<span class="pl-pds">"</span></span> <span class="pl-k">+</span> sample<span class="pl-k">.</span>get()
             <span class="pl-k">+</span> <span class="pl-s1"><span class="pl-pds">"</span>, age.usec=<span class="pl-pds">"</span></span> <span class="pl-k">+</span> sample<span class="pl-k">.</span>ageUsec()
