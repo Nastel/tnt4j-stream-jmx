@@ -64,8 +64,9 @@ PingJMX provides a helper class `PingAgent` that lets you schedule sampling for 
 ```java
 PingAgent.ping(Pinger.JMX_FILTER_ALL, 60000, TimeUnit.MILLISECONDS);
 ```
+<b>NOTE:</b> Sampled MBean attributes and associated values are stored in a collection of `Snapshot` objects stored within `Activity` instance. Current `Activity` instance can be obtained via `AttributeSample` passed when calling listeners such as `Condition`, `SampleListener`. Snapshots can be accessed using `Activity.getSnapshots()` method call.
 
-All `PingJMX` output is written to underlying tnt4j event sink configured in `tnt4j.properties` file. Sink destinations could be a file, socket, log4j, user defined event sink implementations. 
+<b>NOTE:</b> Sampled output is written to underlying tnt4j event sink configured in `tnt4j.properties` file. Sink destinations could be a file, socket, log4j, user defined event sink implementations. 
 
 For more information on TNT4J and `tnt4j.properties` see (https://github.com/Nastel/TNT4J/wiki/Getting-Started).
 
@@ -187,7 +188,7 @@ PingFactory factory = DefaultPingFactory.getInstance();
 ...
 ```
 ## Managing Sample Behavior
-PingJMX provides a way to intercept sampling events such as pre, during an post for each sample run and control sample behavior. See `SamplingListener` interface for more details. Applications may register more than one listener per `Pinger`. Each listener is called in registration order.
+PingJMX provides a way to intercept sampling events such as pre, during an post for each sample run and control sample behavior. See `SampleListener` interface for more details. Applications may register more than one listener per `Pinger`. Each listener is called in registration order.
 In addition to intercepting sample events, applications may want to control weather how one ore more attributes are sampled and whether the sample is reported/logged. See example below:
 ```java
 // return default or user defined PingFactory implementation
@@ -198,6 +199,7 @@ platformJmx.setSchedule(Pinger.JMX_FILTER_ALL, 30000).addListener(new MySampleLi
 ```
 Below is a sample of what `MySampleListener` may look like:
 ```java
+class MySampleListener implements SampleListener {
 	@Override
 	public void pre(SampleStats stats, Activity activity) {
 		// called once per sample, begining of each sample
@@ -226,7 +228,7 @@ Below is a sample of what `MySampleListener` may look like:
 			activity.setType(OpType.NOOP);
 		}
 	}
-
+}
 ```
 ## Conditions and Actions
 PingJMX allows you to associate condtions with user defined actions based on values of MBean attributes on each sampling
