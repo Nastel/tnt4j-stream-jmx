@@ -6,7 +6,7 @@
 # Eclipse project files
 .project
 .classpath
-.settings/
+/.settings/
 
 # Package Files #
 *.jar
