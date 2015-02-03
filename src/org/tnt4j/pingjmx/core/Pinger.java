@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 import javax.management.MBeanServer;
 
 import org.tnt4j.pingjmx.conditions.AttributeAction;
-import org.tnt4j.pingjmx.conditions.Condition;
+import org.tnt4j.pingjmx.conditions.AttributeCondition;
 import org.tnt4j.pingjmx.conditions.NestedHandler;
 
 import com.nastel.jkool.tnt4j.TrackingLogger;
@@ -122,7 +122,7 @@ public interface Pinger extends NestedHandler<Pinger, SampleListener>, Runnable 
 	 * @throws IllegalStateException if setSchedule is not called first
 	 *  
 	 */
-	Pinger register(Condition cond, AttributeAction action);
+	Pinger register(AttributeCondition cond, AttributeAction action);
 
 	/**
 	 * Obtain latest sampling statistics for current instance

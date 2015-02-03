@@ -37,5 +37,5 @@ public interface AttributeAction {
 	 * @param sample current sample that was evaluated
 	 * @return a user defined return value
 	 */
-	Object action(SampleContext context, Condition cond, AttributeSample sample);
+	Object action(SampleContext context, AttributeCondition cond, AttributeSample sample);
 }

@@ -19,15 +19,15 @@ package org.tnt4j.pingjmx.conditions;
 
 /**
  * <p> 
- * This interface defines <code>Condition</code> which provides
- * a way to evaluate user defined conditions.
+ * This interface defines <code>AttributeCondition</code> which provides
+ * a way to evaluate user defined conditions for a given attribute sample.
  * </p>
  * 
  * @see AttributeSample
  * @version $Revision: 1 $
  * 
  */
-public interface Condition {
+public interface AttributeCondition {
 	/**
 	 * Name associated with this condition
 	 * 

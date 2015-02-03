@@ -22,12 +22,12 @@ package org.tnt4j.pingjmx.conditions;
  * operators for a given JMX object, property.
  * </p>
  * 
- * @see Condition
+ * @see AttributeCondition
  * @see AttributeSample
  * @version $Revision: 1 $
  * 
  */
-public class SimpleCondition implements Condition {
+public class SimpleCondition implements AttributeCondition {
 	String name;
 	String objName;
 	String attrName;

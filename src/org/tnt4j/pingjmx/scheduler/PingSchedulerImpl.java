@@ -20,8 +20,8 @@ import java.util.concurrent.TimeUnit;
 import javax.management.MBeanServer;
 
 import org.tnt4j.pingjmx.conditions.AttributeAction;
-import org.tnt4j.pingjmx.conditions.Condition;
-import org.tnt4j.pingjmx.conditions.ConditionalListener;
+import org.tnt4j.pingjmx.conditions.AttributeCondition;
+import org.tnt4j.pingjmx.conditions.SampleHandler;
 import org.tnt4j.pingjmx.core.Pinger;
 
 import com.nastel.jkool.tnt4j.ActivityScheduler;
@@ -35,7 +35,7 @@ import com.nastel.jkool.tnt4j.ActivityScheduler;
  * @version $Revision: 1 $
  */
 public class PingSchedulerImpl extends ActivityScheduler implements PingScheduler {
-	protected ConditionalListener listener;
+	protected SampleHandler listener;
 	protected long period;
 	protected TimeUnit timeUnit;
 	protected String filter;
@@ -93,37 +93,37 @@ public class PingSchedulerImpl extends ActivityScheduler implements PingSchedule
 	 */
 	public PingSchedulerImpl(String name, MBeanServer server, String filterList,
 			long period, TimeUnit tunit) {
-		super(name, newListenerImpl(server, filterList));
-		this.listener = (ConditionalListener) this.getListener();
+		super(name, newSampleHandlerImpl(server, filterList));
+		this.listener = (SampleHandler) this.getListener();
 		this.period = period;
 		this.timeUnit = tunit;
 		this.filter = filterList;
 	}
 
 	/**
-	 * Create new instance of <code>ActivityListener</code> Override this call
-	 * to return your instance of listener
+	 * Create new instance of <code>SampleHandler</code> Override this call
+	 * to return your instance of the sample handler implementation.
 	 *
 	 * @param server
 	 *            MBean server instance
 	 * @param filterList
 	 *            MBean filters semicolon separated
 	 * 
-	 * @see ConditionalListener
-	 * @return new conditional listener instance
+	 * @see SampleHandler
+	 * @return new sample handler implementation instance
 	 */
-	protected static ConditionalListener newListenerImpl(MBeanServer server,
+	protected static SampleHandler newSampleHandlerImpl(MBeanServer server,
 			String filterList) {
-		return new PingJmxListener(server, filterList);
+		return new PingSampleHandlerImpl(server, filterList);
 	}
 
 	@Override
-	public void register(Condition cond, AttributeAction action) {
+	public void register(AttributeCondition cond, AttributeAction action) {
 		listener.register(cond, action);
 	}
 
 	@Override
-	public ConditionalListener getConditionalListener() {
+	public SampleHandler getSampleHandler() {
 		return listener;
 	}
 

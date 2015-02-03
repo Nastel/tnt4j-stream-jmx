@@ -76,7 +76,7 @@ Alternatively, PingJMX provides a helper class `PingAgent` that lets you schedul
 ```java
 PingAgent.ping(Pinger.JMX_FILTER_ALL, 60000, TimeUnit.MILLISECONDS);
 ```
-<b>NOTE:</b> Sampled MBean attributes and associated values are stored in a collection of `Snapshot` objects stored within `Activity` instance. Current `Activity` instance can be obtained via `AttributeSample` passed when calling listeners such as `Condition`, `SampleListener`. Snapshots can be accessed using `Activity.getSnapshots()` method call.
+<b>NOTE:</b> Sampled MBean attributes and associated values are stored in a collection of `Snapshot` objects stored within `Activity` instance. Current `Activity` instance can be obtained via `AttributeSample` passed when calling listeners such as `AttributeCondition`, `SampleListener`. Snapshots can be accessed using `Activity.getSnapshots()` method call.
 
 <b>NOTE:</b> Sampled output is written to underlying tnt4j event sink configured in `tnt4j.properties` file. Sink destinations could be a file, socket, log4j, user defined event sink implementations. 
 
@@ -255,14 +255,14 @@ class MySampleListener implements SampleListener {
 PingJMX allows you to associate condtions with user defined actions based on values of MBean attributes on each sampling
 interval. For example, what if you wanted to setup an action when a specific mbean attribute exceeds a certain threashold?
 
-PingJMX `Condition` and `AttributeAction` interfaces allow you to call your action at runtime every time a condition is evaluated to true. See example below:
+PingJMX `AttributeCondition` and `AttributeAction` interfaces allow you to call your action at runtime every time a condition is evaluated to true. See example below:
 ```java
 // return default or user defined PingFactory implementation
 PingFactory factory = DefaultPingFactory.getInstance();
 // create an instance of the pinger that will sample mbeans
 Pinger sampler = factory.newInstance();
 // create a condition when ThreadCount > 100
-Condition myCondition = new SimpleCondition("java.lang:type=Threading", "ThreadCount", 100, ">");
+AttributeCondition myCondition = new SimpleCondition("java.lang:type=Threading", "ThreadCount", 100, ">");
 // schedule collection (ping) for given MBean filter and 30000 ms sampling period
 sampler.setSchedule(Pinger.JMX_FILTER_ALL, 30000).register(myCondition, new MyAttributeAction()).run();
 ```
@@ -270,7 +270,7 @@ Below is a sample of what `MyAttributeAction` may look like:
 ```java
 public class MyAttributeAction implements AttributeAction {
 	@Override
-	public Object action(SampleContext context, Condition cond, AttributeSample sample) {
+	public Object action(SampleContext context, AttributeCondition cond, AttributeSample sample) {
 		Activity activity = sample.getActivity();
 		// obtain a collection of all sampled metrics
 		Collection<Snapshot> metrics = activity.getSnapshots();

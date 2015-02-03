@@ -22,22 +22,22 @@ import com.nastel.jkool.tnt4j.core.ActivityListener;
 
 /**
  * <p> 
- * This interface defines <code>ConditionalListener</code> which provides
+ * This interface defines <code>SampleHandler</code> which provides
  * a way to conditionally process activities.
  * </p>
  * 
- * @see Condition
+ * @see AttributeCondition
  * @see AttributeAction
  * @version $Revision: 1 $
  * 
  */
-public interface ConditionalListener extends ActivityListener, NestedHandler<ConditionalListener, SampleListener> {
+public interface SampleHandler extends ActivityListener, NestedHandler<SampleHandler, SampleListener> {
 	/**
 	 * Register and associate condition with an action
 	 * 
 	 * @param cond user defined condition with <code>NoopAction</code>
 	 */
-	ConditionalListener register(Condition cond);
+	SampleHandler register(AttributeCondition cond);
 	
 	/**
 	 * Register and associate condition with an action
@@ -45,7 +45,7 @@ public interface ConditionalListener extends ActivityListener, NestedHandler<Con
 	 * @param cond user defined condition
 	 * @param action action to be triggered when condition evaluates to true
 	 */
-	ConditionalListener register(Condition cond, AttributeAction action);	
+	SampleHandler register(AttributeCondition cond, AttributeAction action);	
 	
 	/**
 	 * Obtain latest sampling statistics for current instance

@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 import javax.management.MBeanServer;
 
 import org.tnt4j.pingjmx.conditions.AttributeAction;
-import org.tnt4j.pingjmx.conditions.Condition;
+import org.tnt4j.pingjmx.conditions.AttributeCondition;
 import org.tnt4j.pingjmx.core.Pinger;
 import org.tnt4j.pingjmx.core.SampleContext;
 import org.tnt4j.pingjmx.core.SampleListener;
@@ -130,7 +130,7 @@ public class PlatformJmxPing implements Pinger {
 		if (pinger == null) {
 			throw new IllegalStateException("no schedule set: call setSchedule() first");
 		}
-		pinger.getConditionalListener().addListener(listener);
+		pinger.getSampleHandler().addListener(listener);
 		return this;
 	}
 
@@ -139,12 +139,12 @@ public class PlatformJmxPing implements Pinger {
 		if (pinger == null) {
 			throw new IllegalStateException("no schedule set: call setSchedule() first");
 		}
-		pinger.getConditionalListener().removeListener(listener);
+		pinger.getSampleHandler().removeListener(listener);
 		return this;
 	}
 
 	@Override
-	public Pinger register(Condition cond, AttributeAction action) {
+	public Pinger register(AttributeCondition cond, AttributeAction action) {
 		if (pinger == null) {
 			throw new IllegalStateException("no schedule set: call setSchedule() first");
 		}
@@ -165,7 +165,7 @@ public class PlatformJmxPing implements Pinger {
 		if (pinger == null) {
 			throw new IllegalStateException("no schedule set: call setSchedule() first");
 		}
-		return pinger.getConditionalListener().getStats();
+		return pinger.getSampleHandler().getStats();
 	}
 
 	@Override

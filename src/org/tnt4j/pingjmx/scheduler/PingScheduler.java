@@ -18,8 +18,8 @@ package org.tnt4j.pingjmx.scheduler;
 import java.io.IOException;
 
 import org.tnt4j.pingjmx.conditions.AttributeAction;
-import org.tnt4j.pingjmx.conditions.Condition;
-import org.tnt4j.pingjmx.conditions.ConditionalListener;
+import org.tnt4j.pingjmx.conditions.AttributeCondition;
+import org.tnt4j.pingjmx.conditions.SampleHandler;
 
 import com.nastel.jkool.tnt4j.TrackingLogger;
 
@@ -69,14 +69,16 @@ public interface PingScheduler extends Runnable {
 	 *            user defined action
 	 * 
 	 */
-	void register(Condition cond, AttributeAction action);
+	void register(AttributeCondition cond, AttributeAction action);
 
 	/**
-	 * Obtain conditional listener instance which is triggered on every sample.
+	 * Obtain sample handler instance which is triggered on every sample.
+	 * Sample handler instance is invoked on every sample and handles
+	 * all metric collection.
 	 *
 	 * @return conditional listener instance
 	 */
-	ConditionalListener getConditionalListener();
+	SampleHandler getSampleHandler();
 	
 	/**
 	 * MBean filter associated with this pinger
