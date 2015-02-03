@@ -203,4 +203,9 @@ class AgentSampleListener implements SampleListener {
 				);
 		}
 	}
+
+	@Override
+    public void error(SampleContext context, AttributeSample sample) {
+		System.err.println("Failed to sample: " + sample.getAttributeInfo() + ", ex=" + sample.getError());
+    }
 }

@@ -37,6 +37,13 @@ public interface SampleContext {
 	MBeanServer getMBeanServer();
 
 	/**
+	 * Obtain last error exception occurred during last sample
+	 * 
+	 * @return last error exception occurred during last sample
+	 */
+	Throwable getLastError();
+
+	/**
 	 * Obtain number of executed samples
 	 * 
 	 * @return number of executed samples 

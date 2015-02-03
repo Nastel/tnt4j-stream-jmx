@@ -56,6 +56,7 @@ public class PingJmxListener implements ConditionalListener {
 	
 	MBeanServer mbeanServer;
 	SampleContext statsHandle;
+	Throwable lastError;
 	
 	Vector<SampleListener> listeners = new Vector<SampleListener>(5, 5);
 	Map<Condition, AttributeAction> conditions = new LinkedHashMap<Condition, AttributeAction>(89);
@@ -95,6 +96,7 @@ public class PingJmxListener implements ConditionalListener {
 				}
 			}
 		} catch (Exception ex) {
+			lastError = ex;
 			ex.printStackTrace();
 		}
 	}
@@ -124,7 +126,9 @@ public class PingJmxListener implements ConditionalListener {
 							processJmxValue(snapshot, jinfo, jinfo.getName(), sample.get());
 						}
 					} catch (Throwable ex) {
+						lastError = ex;
 						exclude(jinfo);
+						doError(sample, ex);
 					} finally {
 						evalAttrConditions(sample);						
 					}
@@ -212,6 +216,7 @@ public class PingJmxListener implements ConditionalListener {
 	
 	@Override
 	public void started(Activity activity) {
+		lastError = null; // reset last sample error
 		runPre(activity);
 		if ((!activity.isNoop()) && (mbeans.size() == 0)) {
 			loadMBeans();
@@ -259,6 +264,15 @@ public class PingJmxListener implements ConditionalListener {
 			}
 		} 
 		return result;
+	}
+
+	private void doError(AttributeSample sample, Throwable ex) {
+		sample.setError(ex);
+		synchronized (this.listeners) {
+			for (SampleListener lst: listeners) {
+				lst.error(statsHandle, sample);
+			}
+		} 
 	}
 
 	@Override
@@ -333,4 +347,9 @@ class PingSampleContextImpl implements SampleContext {
 	public long getTotalNoopCount() {
 		return handle.noopCount;
 	}
+
+	@Override
+    public Throwable getLastError() {
+		return handle.lastError;
+    }
 }

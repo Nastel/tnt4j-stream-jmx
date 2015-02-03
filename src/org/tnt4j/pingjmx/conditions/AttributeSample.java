@@ -42,6 +42,7 @@ public class AttributeSample {
 	MBeanAttributeInfo ainfo;
 	long timeStamp = 0;
 	Object value;
+	Throwable ex;
 	
 	/**
 	 * Create an attribute sample
@@ -72,12 +73,41 @@ public class AttributeSample {
 	}
 	
 	/**
+	 * Returns true if sample failed with error, false otherwise.
+	 * Call {@link #getError()} to obtain <code>Throwable</code>
+	 * instance when true.
+	 * 
+	 * @return true if sample failed with error, false otherwise
+	 */
+	public boolean isError(Throwable error) {
+		return ex != null;
+	}
+	
+	/**
+	 * Set error associated with this sample
+	 * 
+	 * @param error associated with this sample
+	 */
+	public void setError(Throwable error) {
+		ex = error;
+	}
+	
+	/**
 	 * Obtain MBean attribute handle associated with this sample
 	 * 
 	 * @return MBean attribute handle associated with this sample
 	 */
 	public MBeanAttributeInfo getAttributeInfo() {
 		return ainfo;
+	}
+	
+	/**
+	 * Obtain exception (if any) that occurred during sample
+	 * 
+	 * @return exception (if any) that occurred during sample, null otherwise
+	 */
+	public Throwable getError() {
+		return ex;
 	}
 	
 	/**

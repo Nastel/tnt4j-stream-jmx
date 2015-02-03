@@ -230,6 +230,13 @@ class MySampleListener implements SampleListener {
 	}
 
 	@Override
+	void error(SampleContext context, AttributeSample sample) {
+		// called once for every exception that occurs during each sample
+		Throwable ex = sample.getError();
+		ex.printStackTrace();
+	}
+	
+	@Override
 	public void post(SampleContext context, Activity activity) {
 		// called once per sample, end of each sample
 		// set activity to NOOP to disable sampling reporting

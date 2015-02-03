@@ -48,10 +48,18 @@ public interface SampleListener {
 	 * Throw a runtime exception if you want samples to halt.
 	 * 
 	 * @param context current sample context
-	 * @param sample attribute sample object
+	 * @param sample current attribute sample
 	 * @return true of current sampled metric should be included, false otherwise (excluded)
 	 */
 	boolean sample(SampleContext context, AttributeSample sample);
+
+	/**
+	 * This method is called if sample fails with exception.
+	 * 
+	 * @param context current sample context
+	 * @param sample current attribute sample
+	 */
+	void error(SampleContext context, AttributeSample sample);
 
 	/**
 	 * This method is called after current sample is completed
