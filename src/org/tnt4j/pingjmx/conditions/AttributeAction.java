@@ -15,7 +15,7 @@
  */
 package org.tnt4j.pingjmx.conditions;
 
-import org.tnt4j.pingjmx.SampleContext;
+import org.tnt4j.pingjmx.core.SampleContext;
 
 
 /**

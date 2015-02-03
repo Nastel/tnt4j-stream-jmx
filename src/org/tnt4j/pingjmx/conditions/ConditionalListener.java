@@ -15,9 +15,8 @@
  */
 package org.tnt4j.pingjmx.conditions;
 
-import org.tnt4j.pingjmx.NestedHandler;
-import org.tnt4j.pingjmx.SampleListener;
-import org.tnt4j.pingjmx.SampleContext;
+import org.tnt4j.pingjmx.core.SampleContext;
+import org.tnt4j.pingjmx.core.SampleListener;
 
 import com.nastel.jkool.tnt4j.core.ActivityListener;
 

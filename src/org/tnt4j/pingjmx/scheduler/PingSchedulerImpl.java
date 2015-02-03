@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.tnt4j.pingjmx;
+package org.tnt4j.pingjmx.scheduler;
 
 import java.util.concurrent.TimeUnit;
 
@@ -22,6 +22,7 @@ import javax.management.MBeanServer;
 import org.tnt4j.pingjmx.conditions.AttributeAction;
 import org.tnt4j.pingjmx.conditions.Condition;
 import org.tnt4j.pingjmx.conditions.ConditionalListener;
+import org.tnt4j.pingjmx.core.Pinger;
 
 import com.nastel.jkool.tnt4j.ActivityScheduler;
 
@@ -33,14 +34,14 @@ import com.nastel.jkool.tnt4j.ActivityScheduler;
  * 
  * @version $Revision: 1 $
  */
-public class PingJmx extends ActivityScheduler implements Runnable {
+public class PingSchedulerImpl extends ActivityScheduler implements PingScheduler {
 	protected ConditionalListener listener;
 	protected long period;
 	protected TimeUnit timeUnit;
 	protected String filter;
 
 	/**
-	 * Create new instance of <code>PingJmx</code> with a given name, MBean
+	 * Create new instance of <code>PingSchedulerImpl</code> with a given name, MBean
 	 * server, sampling period. Filter is set to all MBeans.
 	 *
 	 * @param name
@@ -51,12 +52,12 @@ public class PingJmx extends ActivityScheduler implements Runnable {
 	 *            sampling period in milliseconds
 	 * 
 	 */
-	public PingJmx(String name, MBeanServer server, long period) {
+	public PingSchedulerImpl(String name, MBeanServer server, long period) {
 		this(name, server, Pinger.JMX_FILTER_ALL, period);
 	}
 
 	/**
-	 * Create new instance of <code>PingJmx</code> with a given name, MBean
+	 * Create new instance of <code>PingSchedulerImpl</code> with a given name, MBean
 	 * server, filter list and sampling period.
 	 *
 	 * @param name
@@ -69,13 +70,13 @@ public class PingJmx extends ActivityScheduler implements Runnable {
 	 *            sampling period in milliseconds
 	 * 
 	 */
-	public PingJmx(String name, MBeanServer server, String filterList,
+	public PingSchedulerImpl(String name, MBeanServer server, String filterList,
 			long period) {
 		this(name, server, filterList, period, TimeUnit.MILLISECONDS);
 	}
 
 	/**
-	 * Create new instance of <code>PingJmx</code> with a given name, MBean
+	 * Create new instance of <code>PingSchedulerImpl</code> with a given name, MBean
 	 * server, filter list and sampling period.
 	 *
 	 * @param name
@@ -90,36 +91,13 @@ public class PingJmx extends ActivityScheduler implements Runnable {
 	 *            time unit for the sampling period
 	 * 
 	 */
-	public PingJmx(String name, MBeanServer server, String filterList,
+	public PingSchedulerImpl(String name, MBeanServer server, String filterList,
 			long period, TimeUnit tunit) {
 		super(name, newListenerImpl(server, filterList));
 		this.listener = (ConditionalListener) this.getListener();
 		this.period = period;
 		this.timeUnit = tunit;
 		this.filter = filterList;
-	}
-
-	/**
-	 * Register a condition/action pair which will be evaluated every sampling
-	 * interval.
-	 *
-	 * @param cond
-	 *            user defined condition
-	 * @param action
-	 *            user defined action
-	 * 
-	 */
-	public void register(Condition cond, AttributeAction action) {
-		listener.register(cond, action);
-	}
-
-	/**
-	 * Obtain conditional listener instance which is triggered on every sample.
-	 *
-	 * @return conditional listener instance
-	 */
-	public ConditionalListener getConditionalListener() {
-		return listener;
 	}
 
 	/**
@@ -139,20 +117,22 @@ public class PingJmx extends ActivityScheduler implements Runnable {
 		return new PingJmxListener(server, filterList);
 	}
 
-	/**
-	 * MBean filter associated with this pinger
-	 * 
-	 * @return filter list
-	 */
+	@Override
+	public void register(Condition cond, AttributeAction action) {
+		listener.register(cond, action);
+	}
+
+	@Override
+	public ConditionalListener getConditionalListener() {
+		return listener;
+	}
+
+	@Override
 	public String getFilter() {
 		return filter;
 	}
 	
-	/**
-	 * Sampling period in milliseconds
-	 * 
-	 * @return Sampling period in milliseconds
-	 */
+	@Override
 	public long getPeriod() {
 		return TimeUnit.MILLISECONDS.convert(period, timeUnit);
 	}

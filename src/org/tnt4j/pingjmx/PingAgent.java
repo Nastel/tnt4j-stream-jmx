@@ -27,6 +27,11 @@ import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 
 import org.tnt4j.pingjmx.conditions.AttributeSample;
+import org.tnt4j.pingjmx.core.Pinger;
+import org.tnt4j.pingjmx.core.SampleContext;
+import org.tnt4j.pingjmx.core.SampleListener;
+import org.tnt4j.pingjmx.factory.DefaultPingFactory;
+import org.tnt4j.pingjmx.factory.PingFactory;
 
 import com.nastel.jkool.tnt4j.core.Activity;
 

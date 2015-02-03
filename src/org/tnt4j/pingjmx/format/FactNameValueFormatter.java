@@ -17,7 +17,7 @@ package org.tnt4j.pingjmx.format;
 
 import java.util.Collection;
 
-import org.tnt4j.pingjmx.PingJmx;
+import org.tnt4j.pingjmx.scheduler.PingSchedulerImpl;
 
 import com.nastel.jkool.tnt4j.core.OpLevel;
 import com.nastel.jkool.tnt4j.core.Property;
@@ -38,7 +38,7 @@ import com.nastel.jkool.tnt4j.utils.Utils;
  * 
  * @version $Revision: 1 $
  * 
- * @see PingJmx
+ * @see PingSchedulerImpl
  */
 public class FactNameValueFormatter extends DefaultFormatter {
 	public static final String FIELD_SEP = ",";

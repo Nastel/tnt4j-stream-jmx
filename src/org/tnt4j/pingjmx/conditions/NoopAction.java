@@ -13,11 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.tnt4j.pingjmx;
+package org.tnt4j.pingjmx.conditions;
 
-import org.tnt4j.pingjmx.conditions.AttributeAction;
-import org.tnt4j.pingjmx.conditions.AttributeSample;
-import org.tnt4j.pingjmx.conditions.Condition;
+import org.tnt4j.pingjmx.core.SampleContext;
 
 
 /**

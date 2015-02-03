@@ -21,12 +21,13 @@ import java.util.concurrent.TimeUnit;
 
 import javax.management.MBeanServer;
 
-import org.tnt4j.pingjmx.PingJmx;
-import org.tnt4j.pingjmx.Pinger;
-import org.tnt4j.pingjmx.SampleListener;
-import org.tnt4j.pingjmx.SampleContext;
 import org.tnt4j.pingjmx.conditions.AttributeAction;
 import org.tnt4j.pingjmx.conditions.Condition;
+import org.tnt4j.pingjmx.core.Pinger;
+import org.tnt4j.pingjmx.core.SampleContext;
+import org.tnt4j.pingjmx.core.SampleListener;
+import org.tnt4j.pingjmx.scheduler.PingScheduler;
+import org.tnt4j.pingjmx.scheduler.PingSchedulerImpl;
 
 import com.nastel.jkool.tnt4j.TrackingLogger;
 
@@ -40,10 +41,11 @@ import com.nastel.jkool.tnt4j.TrackingLogger;
  * 
  * @version $Revision: 1 $
  * 
- * @see PingJmx
+ * @see PingScheduler
+ * @see PingSchedulerImpl
  */
 public class PlatformJmxPing implements Pinger {	
-	protected PingJmx pinger;
+	protected PingScheduler pinger;
 	protected MBeanServer targetServer;
 	
 	/**
@@ -90,7 +92,7 @@ public class PlatformJmxPing implements Pinger {
 	@Override
 	public synchronized Pinger setSchedule(String jmxfilter, long period, TimeUnit tunit) throws IOException {
 		if (pinger == null) {
-			pinger = newPingJmxImpl(getMBeanServer(), jmxfilter, period, tunit);
+			pinger = newPingScheduler(getMBeanServer(), jmxfilter, period, tunit);
 			pinger.open();
 			return this;
 		} else {
@@ -107,29 +109,20 @@ public class PlatformJmxPing implements Pinger {
 			pinger = null;
 		}
 	}
-	
+		
 	/**
-	 * Obtain underlying instance of the <code>PingJmx</code>
-	 * that actually runs/schedules sampling.
-	 * 
-	 */
-	public PingJmx getPingerImpl() {
-		return pinger;
-	}
-	
-	/**
-	 * Create new instance of <code>PingJmx</code>
-	 * Override this call to return your instance of pinger
+	 * Create new instance of <code>PingScheduler</code>
+	 * Override this call to return your instance of <code>PingScheduler</code>.
 	 *
 	 * @param mserver MBean server instance
 	 * @param filter MBean filters semicolon separated
 	 * @param period time period for sampling
 	 * @param tunit time units for period
 	 *  
-	 * @return new <code>PingJmx</code> instance
+	 * @return new <code>PingScheduler</code> instance
 	 */
-	protected PingJmx newPingJmxImpl(MBeanServer mserver, String filter, long period, TimeUnit tunit) {
-		return new PingJmx(this.getClass().getName(), mserver, filter, period, tunit);
+	protected PingScheduler newPingScheduler(MBeanServer mserver, String filter, long period, TimeUnit tunit) {
+		return new PingSchedulerImpl(this.getClass().getName(), mserver, filter, period, tunit);
 	}
 
 	@Override

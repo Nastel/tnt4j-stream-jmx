@@ -17,8 +17,8 @@ package org.tnt4j.pingjmx.impl;
 
 import javax.management.MBeanServer;
 
-import org.tnt4j.pingjmx.PingFactory;
-import org.tnt4j.pingjmx.Pinger;
+import org.tnt4j.pingjmx.core.Pinger;
+import org.tnt4j.pingjmx.factory.PingFactory;
 
 /**
  * <p> 

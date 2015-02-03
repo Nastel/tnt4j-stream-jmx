@@ -1,7 +1,5 @@
 /**
- * JMX and metric collection framework allowing developers to 
- * include simple pinger within java applications for monitoring
- * JVM, application performance and behavior.
+ * JMX and metric collection -javagent implementation
  * 
  * @author albert
  * @version 1.0

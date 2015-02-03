@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.tnt4j.pingjmx;
+package org.tnt4j.pingjmx.core;
 
 import javax.management.MBeanServer;
+
+import org.tnt4j.pingjmx.conditions.NestedHandler;
 
 /**
  * <p> 
