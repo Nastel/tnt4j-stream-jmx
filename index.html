@@ -120,7 +120,7 @@ sampler<span class="pl-k">.</span>setSchedule(<span class="pl-stj">Pinger</span>
 
 <div class="highlight highlight-java"><pre><span class="pl-stj">PingAgent</span><span class="pl-k">.</span>ping(<span class="pl-stj">Pinger</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">60000</span>, <span class="pl-stj">TimeUnit</span><span class="pl-c1"><span class="pl-k">.</span>MILLISECONDS</span>);</pre></div>
 
-<p><b>NOTE:</b> Sampled MBean attributes and associated values are stored in a collection of <code>Snapshot</code> objects stored within <code>Activity</code> instance. Current <code>Activity</code> instance can be obtained via <code>AttributeSample</code> passed when calling listeners such as <code>Condition</code>, <code>SampleListener</code>. Snapshots can be accessed using <code>Activity.getSnapshots()</code> method call.</p>
+<p><b>NOTE:</b> Sampled MBean attributes and associated values are stored in a collection of <code>Snapshot</code> objects stored within <code>Activity</code> instance. Current <code>Activity</code> instance can be obtained via <code>AttributeSample</code> passed when calling listeners such as <code>AttributeCondition</code>, <code>SampleListener</code>. Snapshots can be accessed using <code>Activity.getSnapshots()</code> method call.</p>
 
 <p><b>NOTE:</b> Sampled output is written to underlying tnt4j event sink configured in <code>tnt4j.properties</code> file. Sink destinations could be a file, socket, log4j, user defined event sink implementations. </p>
 
@@ -330,14 +330,14 @@ sampler<span class="pl-k">.</span>setSchedule(<span class="pl-stj">Pinger</span>
 <p>PingJMX allows you to associate condtions with user defined actions based on values of MBean attributes on each sampling
 interval. For example, what if you wanted to setup an action when a specific mbean attribute exceeds a certain threashold?</p>
 
-<p>PingJMX <code>Condition</code> and <code>AttributeAction</code> interfaces allow you to call your action at runtime every time a condition is evaluated to true. See example below:</p>
+<p>PingJMX <code>AttributeCondition</code> and <code>AttributeAction</code> interfaces allow you to call your action at runtime every time a condition is evaluated to true. See example below:</p>
 
 <div class="highlight highlight-java"><pre><span class="pl-c">// return default or user defined PingFactory implementation</span>
 <span class="pl-stj">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-stj">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
 <span class="pl-c">// create an instance of the pinger that will sample mbeans</span>
 <span class="pl-stj">Pinger</span> sampler <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance();
 <span class="pl-c">// create a condition when ThreadCount &gt; 100</span>
-<span class="pl-stj">Condition</span> myCondition <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-stj">SimpleCondition</span>(<span class="pl-s1"><span class="pl-pds">"</span>java.lang:type=Threading<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>ThreadCount<span class="pl-pds">"</span></span>, <span class="pl-c1">100</span>, <span class="pl-s1"><span class="pl-pds">"</span>&gt;<span class="pl-pds">"</span></span>);
+<span class="pl-stj">AttributeCondition</span> myCondition <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-stj">SimpleCondition</span>(<span class="pl-s1"><span class="pl-pds">"</span>java.lang:type=Threading<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>ThreadCount<span class="pl-pds">"</span></span>, <span class="pl-c1">100</span>, <span class="pl-s1"><span class="pl-pds">"</span>&gt;<span class="pl-pds">"</span></span>);
 <span class="pl-c">// schedule collection (ping) for given MBean filter and 30000 ms sampling period</span>
 sampler<span class="pl-k">.</span>setSchedule(<span class="pl-stj">Pinger</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>register(myCondition, <span class="pl-k">new</span> <span class="pl-stj">MyAttributeAction</span>())<span class="pl-k">.</span>run();</pre></div>
 
@@ -345,7 +345,7 @@ sampler<span class="pl-k">.</span>setSchedule(<span class="pl-stj">Pinger</span>
 
 <div class="highlight highlight-java"><pre><span class="pl-s">public</span> <span class="pl-s">class</span> <span class="pl-en">MyAttributeAction</span> <span class="pl-s">implements</span> <span class="pl-e">AttributeAction</span> {
     <span class="pl-st">@Override</span>
-    <span class="pl-s">public</span> <span class="pl-stj">Object</span> <span class="pl-en">action</span>(<span class="pl-stj">SampleContext</span> <span class="pl-v">context</span>, <span class="pl-stj">Condition</span> <span class="pl-v">cond</span>, <span class="pl-stj">AttributeSample</span> <span class="pl-v">sample</span>) {
+    <span class="pl-s">public</span> <span class="pl-stj">Object</span> <span class="pl-en">action</span>(<span class="pl-stj">SampleContext</span> <span class="pl-v">context</span>, <span class="pl-stj">AttributeCondition</span> <span class="pl-v">cond</span>, <span class="pl-stj">AttributeSample</span> <span class="pl-v">sample</span>) {
         <span class="pl-stj">Activity</span> activity <span class="pl-k">=</span> sample<span class="pl-k">.</span>getActivity();
         <span class="pl-c">// obtain a collection of all sampled metrics</span>
         <span class="pl-st">Collection&lt;<span class="pl-stj">Snapshot</span>&gt;</span> metrics <span class="pl-k">=</span> activity<span class="pl-k">.</span>getSnapshots();
