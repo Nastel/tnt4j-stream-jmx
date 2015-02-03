@@ -55,7 +55,7 @@ public class PingJmxListener implements ConditionalListener {
 	long lastMetricCount = 0, noopCount = 0;
 	
 	MBeanServer mbeanServer;
-	SampleContext statsHandle;
+	SampleContext context;
 	Throwable lastError;
 	
 	Vector<SampleListener> listeners = new Vector<SampleListener>(5, 5);
@@ -74,7 +74,7 @@ public class PingJmxListener implements ConditionalListener {
 	public PingJmxListener(MBeanServer mserver, String filter) {
 		mbeanServer = mserver;
 		mbeanFilter = filter;
-		statsHandle = new PingSampleContextImpl(this);
+		context = new PingSampleContextImpl(this);
 	}
 
 	/**
@@ -152,7 +152,7 @@ public class PingJmxListener implements ConditionalListener {
 	protected void evalAttrConditions(AttributeSample sample) {
 		for (Map.Entry<Condition, AttributeAction> entry: conditions.entrySet()) {
 			if (entry.getKey().evaluate(sample)) {
-				entry.getValue().action(entry.getKey(), sample);
+				entry.getValue().action(context, entry.getKey(), sample);
 			}
 		}
 	}
@@ -242,7 +242,7 @@ public class PingJmxListener implements ConditionalListener {
 	private void runPost(Activity activity) {
 		synchronized (this.listeners) {
 			for (SampleListener lst: listeners) {
-				lst.post(statsHandle, activity);
+				lst.post(context, activity);
 			}
 		} 
 	}
@@ -250,7 +250,7 @@ public class PingJmxListener implements ConditionalListener {
 	private void runPre(Activity activity) {
 		synchronized (this.listeners) {
 			for (SampleListener lst: listeners) {
-				lst.pre(statsHandle, activity);
+				lst.pre(context, activity);
 			}
 		} 
 	}
@@ -259,7 +259,7 @@ public class PingJmxListener implements ConditionalListener {
 		boolean result = true;
 		synchronized (this.listeners) {
 			for (SampleListener lst: listeners) {
-				boolean last = lst.sample(statsHandle, sample);
+				boolean last = lst.sample(context, sample);
 				result = result && last;
 			}
 		} 
@@ -270,7 +270,7 @@ public class PingJmxListener implements ConditionalListener {
 		sample.setError(ex);
 		synchronized (this.listeners) {
 			for (SampleListener lst: listeners) {
-				lst.error(statsHandle, sample);
+				lst.error(context, sample);
 			}
 		} 
 	}
@@ -302,7 +302,7 @@ public class PingJmxListener implements ConditionalListener {
 
 	@Override
 	public SampleContext getStats() {
-		return statsHandle;
+		return context;
 	}
 }
 

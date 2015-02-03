@@ -26,6 +26,7 @@ import org.tnt4j.pingjmx.conditions.Condition;
  * </p>
  * 
  * @see Condition
+ * @see SampleContext
  * @see AttributeSample
  * @see AttributeAction
  * @version $Revision: 1 $
@@ -35,7 +36,7 @@ public class NoopAction implements AttributeAction {
 	public static final NoopAction NOOP = new NoopAction();
 	
 	@Override
-	public Object action(Condition cond, AttributeSample sample) {
+	public Object action(SampleContext context, Condition cond, AttributeSample sample) {
 		return null;
 	}
 }

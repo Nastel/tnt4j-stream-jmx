@@ -15,6 +15,8 @@
  */
 package org.tnt4j.pingjmx.conditions;
 
+import org.tnt4j.pingjmx.SampleContext;
+
 
 /**
  * <p> 
@@ -30,9 +32,10 @@ public interface AttributeAction {
 	/**
 	 * Run action instance
 	 * 
+	 * @param context current sample context
 	 * @param cond condition that triggered this action
 	 * @param sample current sample that was evaluated
 	 * @return a user defined return value
 	 */
-	Object action(Condition cond, AttributeSample sample);
+	Object action(SampleContext context, Condition cond, AttributeSample sample);
 }
