@@ -88,20 +88,24 @@ public class PlatformJmxPing implements Pinger {
 	}	
 
 	@Override
-	public Pinger setSchedule(String jmxfilter, long period, TimeUnit tunit) throws IOException {
+	public synchronized Pinger setSchedule(String jmxfilter, long period, TimeUnit tunit) throws IOException {
 		if (pinger == null) {
 			pinger = newPingJmxImpl(getMBeanServer(), jmxfilter, period, tunit);
+			pinger.open();
+			return this;
+		} else {
+			throw new IllegalStateException("setSchedule() already called");			
 		}
-		pinger.open();
-		return this;
 	}
 
 	@Override
-	public void cancel() {
+	public synchronized void cancel() {
 		if (pinger == null) {
 			throw new IllegalStateException("no schedule set: call setSchedule() first");
+		} else {
+			pinger.close();
+			pinger = null;
 		}
-		pinger.close();
 	}
 	
 	/**
@@ -170,4 +174,28 @@ public class PlatformJmxPing implements Pinger {
 		}
 		return pinger.getConditionalListener().getStats();
 	}
+
+	@Override
+    public String getName() {
+		if (pinger == null) {
+			throw new IllegalStateException("no schedule set: call setSchedule() first");
+		}
+	    return pinger.getName();
+    }
+
+	@Override
+    public String getFilter() {
+		if (pinger == null) {
+			throw new IllegalStateException("no schedule set: call setSchedule() first");
+		}
+	    return pinger.getFilter();
+    }
+
+	@Override
+    public long getPeriod() {
+		if (pinger == null) {
+			throw new IllegalStateException("no schedule set: call setSchedule() first");
+		}
+	    return pinger.getPeriod();
+    }
 }

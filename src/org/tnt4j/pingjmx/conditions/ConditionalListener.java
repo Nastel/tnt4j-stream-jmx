@@ -54,5 +54,5 @@ public interface ConditionalListener extends ActivityListener, NestedHandler<Con
 	 * @return latest sampling statistics
 	 *  
 	 */
-	SampleContext getStats();	
+	SampleContext getStats();		
 }

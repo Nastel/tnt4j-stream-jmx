@@ -37,6 +37,7 @@ public class PingJmx extends ActivityScheduler implements Runnable {
 	protected ConditionalListener listener;
 	protected long period;
 	protected TimeUnit timeUnit;
+	protected String filter;
 
 	/**
 	 * Create new instance of <code>PingJmx</code> with a given name, MBean
@@ -95,6 +96,7 @@ public class PingJmx extends ActivityScheduler implements Runnable {
 		this.listener = (ConditionalListener) this.getListener();
 		this.period = period;
 		this.timeUnit = tunit;
+		this.filter = filterList;
 	}
 
 	/**
@@ -137,6 +139,24 @@ public class PingJmx extends ActivityScheduler implements Runnable {
 		return new PingJmxListener(server, filterList);
 	}
 
+	/**
+	 * MBean filter associated with this pinger
+	 * 
+	 * @return filter list
+	 */
+	public String getFilter() {
+		return filter;
+	}
+	
+	/**
+	 * Sampling period in milliseconds
+	 * 
+	 * @return Sampling period in milliseconds
+	 */
+	public long getPeriod() {
+		return TimeUnit.MILLISECONDS.convert(period, timeUnit);
+	}
+	
 	@Override
 	public void run() {
 		this.schedule(this.getName(), period, timeUnit);

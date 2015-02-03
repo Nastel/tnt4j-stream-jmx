@@ -37,7 +37,32 @@ import com.nastel.jkool.tnt4j.TrackingLogger;
  */
 public interface Pinger extends NestedHandler<Pinger, SampleListener>, Runnable {
 	public static final String JMX_FILTER_ALL = "*:*";
+
 	/**
+	 * Name associated with this Pinger
+	 * 
+	 * @return condition name
+	 * @throws IllegalStateException if setSchedule is not called first
+	 */
+	String getName();
+	
+	/**
+	 * MBean filter associated with this pinger
+	 * 
+	 * @return filter list
+	 * @throws IllegalStateException if setSchedule is not called first
+	 */
+	String getFilter();
+	
+	/**
+	 * Sampling period in milliseconds
+	 * 
+	 * @return Sampling period in milliseconds
+	 * @throws IllegalStateException if setSchedule is not called first
+	 */
+	long getPeriod();
+
+		/**
 	 * Obtain MBean server associated with this object
 	 * 
 	 * @return MBean server instance
@@ -48,36 +73,43 @@ public interface Pinger extends NestedHandler<Pinger, SampleListener>, Runnable 
 	 * Obtain <code>TrackingLogger</code> instance for logging
 	 * 
 	 * @return tracking logger instance associated with this pinger
+	 * @throws IllegalStateException if setSchedule is not called first
 	 */
 	TrackingLogger getLogger();
 	
 	/**
-	 * Schedule ping with associated MBean server instance
+	 * Set schedule ping with associated MBean server instance
 	 * and all MBeans.
 	 *  
 	 * @param period sampling time in milliseconds
+	 * @throws IOException 
+	 * @throws IllegalStateException if setSchedule is not called first
 	 * 
 	 */
 	Pinger setSchedule(long period) throws IOException;
 
 	/**
-	 * Schedule ping with associated MBean server instance
+	 * Set schedule ping with associated MBean server instance
 	 *  
-	 * @param jmxfilter semicolon separated filter list
+	 * @param mbeanFilter semicolon separated filter list
 	 * @param period sampling time in milliseconds
+	 * @throws IOException 
+	 * @throws IllegalStateException if setSchedule is not called first
 	 * 
 	 */
-	Pinger setSchedule(String jmxfilter, long period) throws IOException;	
+	Pinger setSchedule(String mbeanFilter, long period) throws IOException ;	
 
 	/**
-	 * Schedule ping with associated MBean server instance
+	 * Set schedule ping with associated MBean server instance
 	 *  
-	 * @param jmxfilter semicolon separated filter list
+	 * @param mbeanFilter semicolon separated filter list
 	 * @param period sampling time
 	 * @param tunit time units for sampling period
+	 * @throws IOException 
+	 * @throws IllegalStateException if setSchedule is not called first
 	 * 
 	 */
-	Pinger setSchedule(String jmxfilter, long period, TimeUnit tunit) throws IOException;
+	Pinger setSchedule(String mbeanFilter, long period, TimeUnit tunit) throws IOException ;
 	
 	
 	/**
@@ -86,6 +118,7 @@ public interface Pinger extends NestedHandler<Pinger, SampleListener>, Runnable 
 	 *
 	 * @param cond user defined condition
 	 * @param action user defined action
+	 * @throws IllegalStateException if setSchedule is not called first
 	 *  
 	 */
 	Pinger register(Condition cond, AttributeAction action);
@@ -94,6 +127,7 @@ public interface Pinger extends NestedHandler<Pinger, SampleListener>, Runnable 
 	 * Obtain latest sampling statistics for current instance
 	 *
 	 * @return latest sampling statistics
+	 * @throws IllegalStateException if setSchedule is not called first
 	 *  
 	 */
 	SampleContext getStats();
@@ -101,6 +135,7 @@ public interface Pinger extends NestedHandler<Pinger, SampleListener>, Runnable 
 	/**
 	 * Cancel/close this object instance and cancel all outstanding
 	 * or scheduled samplers.
+	 * @throws IllegalStateException if setSchedule is not called first
 	 */
 	void cancel();
 }
