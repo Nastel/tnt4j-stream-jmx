@@ -1,5 +1,10 @@
 # PingJMX
-Lightweight framework to stream JMX metrics into event sinks such as: file, socket, log4j, monitoring tools, user defined.
+A Lightweight framework to stream and monitor JMX metrics. 
+
+Stream JMX metrics to: 
+* Central monitoring server
+* File, socket, log4j
+* User defined destination
 
 These metrics can be used to monitor health, performance and availability of your JVMs and applications.
 Use PingJMX to imbed a monitoring agent within your application and monitor memory, GC activity, CPU as
@@ -21,7 +26,7 @@ java runtime containers.
 
 * Stream JMX metrics out of the JVM container (vs. polling from outside/remote)
 * Makes it easy to monitor farms of JMVs, application servers
-* No need to enable each JVM for remote JMX, SSL, security, ports, firewalls
+* Reduce cyber security risk: No need to enable remote JMX, SSL, security, ports, firewalls
 * Integration with monitoring tools for alerting, pro-active monitoring (AutoPilot M6)
 * Integration with cloud analytics tools (https://www.jkoolcloud.com)
 * Integration with log4j (via TNT4J event sinks)
@@ -213,7 +218,7 @@ class MySampleListener implements SampleListener {
 	public void pre(SampleContext context, Activity activity) {
 		// called once per sample, begining of each sample
 		// set activity to NOOP to disable further sampling
-		// no other attrubute will be sampled during this sample
+		// no other attribute will be sampled during current sample
 		if (some-condition) {
 			activity.setType(OpType.NOOP);
 		}
