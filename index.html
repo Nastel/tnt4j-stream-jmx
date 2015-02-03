@@ -90,7 +90,7 @@ java runtime containers.</p>
 <span class="pl-stj">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-stj">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
 <span class="pl-c">// create an instance of the pinger that will sample mbeans</span>
 <span class="pl-stj">Pinger</span> sampler <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance();
-<span class="pl-c">//schedule collection (ping) for given MBean filter and 30000 ms sampling period</span>
+<span class="pl-c">// schedule collection (ping) for given MBean filter and 30000 ms sampling period</span>
 sampler<span class="pl-k">.</span>setSchedule(<span class="pl-stj">Pinger</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>run();</pre></div>
 
 <p><b>NOTE:</b> <code>setSchedule(..).run()</code> sequence must be called to run the schedule. <code>setSchedule(..)</code> just sets the
@@ -102,7 +102,7 @@ scheduling parameters, <code>run()</code> executes the schedule.</p>
 <span class="pl-stj">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-stj">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
 <span class="pl-c">// create an instance of the pinger that will sample mbeans</span>
 <span class="pl-stj">Pinger</span> sampler <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance(<span class="pl-stj">ManagementFactory</span><span class="pl-k">.</span>getPlatformMBeanServer());
-<span class="pl-c">//schedule collection (ping) for given MBean filter and 30000 ms sampling period</span>
+<span class="pl-c">// schedule collection (ping) for given MBean filter and 30000 ms sampling period</span>
 sampler<span class="pl-k">.</span>setSchedule(<span class="pl-stj">Pinger</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>run();</pre></div>
 
 <p>Below is an example of how to sample all registered mbean servers:</p>
@@ -338,7 +338,7 @@ interval. For example, what if you wanted to setup an action when a specific mbe
 <span class="pl-stj">Pinger</span> sampler <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance();
 <span class="pl-c">// create a condition when ThreadCount &gt; 100</span>
 <span class="pl-stj">Condition</span> myCondition <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-stj">SimpleCondition</span>(<span class="pl-s1"><span class="pl-pds">"</span>java.lang:type=Threading<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>ThreadCount<span class="pl-pds">"</span></span>, <span class="pl-c1">100</span>, <span class="pl-s1"><span class="pl-pds">"</span>&gt;<span class="pl-pds">"</span></span>);
-<span class="pl-c">//schedule collection (ping) for given MBean filter and 30000 ms sampling period</span>
+<span class="pl-c">// schedule collection (ping) for given MBean filter and 30000 ms sampling period</span>
 sampler<span class="pl-k">.</span>setSchedule(<span class="pl-stj">Pinger</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>register(myCondition, <span class="pl-k">new</span> <span class="pl-stj">MyAttributeAction</span>())<span class="pl-k">.</span>run();</pre></div>
 
 <p>Below is a sample of what <code>MyAttributeAction</code> may look like:</p>
