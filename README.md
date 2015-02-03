@@ -46,7 +46,7 @@ Imbed PingJMX code into your application:
 PingFactory factory = DefaultPingFactory.getInstance();
 // create an instance of the pinger that will sample mbeans
 Pinger sampler = factory.newInstance();
-//schedule collection (ping) for given MBean filter and 30000 ms sampling period
+// schedule collection (ping) for given MBean filter and 30000 ms sampling period
 sampler.setSchedule(Pinger.JMX_FILTER_ALL, 30000).run();
 ```
 <b>NOTE:</b> `setSchedule(..).run()` sequence must be called to run the schedule. `setSchedule(..)` just sets the
@@ -58,7 +58,7 @@ To schedule metric collection for a specific MBean server:
 PingFactory factory = DefaultPingFactory.getInstance();
 // create an instance of the pinger that will sample mbeans
 Pinger sampler = factory.newInstance(ManagementFactory.getPlatformMBeanServer());
-//schedule collection (ping) for given MBean filter and 30000 ms sampling period
+// schedule collection (ping) for given MBean filter and 30000 ms sampling period
 sampler.setSchedule(Pinger.JMX_FILTER_ALL, 30000).run();
 ```
 Below is an example of how to sample all registered mbean servers:
@@ -263,7 +263,7 @@ PingFactory factory = DefaultPingFactory.getInstance();
 Pinger sampler = factory.newInstance();
 // create a condition when ThreadCount > 100
 Condition myCondition = new SimpleCondition("java.lang:type=Threading", "ThreadCount", 100, ">");
-//schedule collection (ping) for given MBean filter and 30000 ms sampling period
+// schedule collection (ping) for given MBean filter and 30000 ms sampling period
 sampler.setSchedule(Pinger.JMX_FILTER_ALL, 30000).register(myCondition, new MyAttributeAction()).run();
 ```
 Below is a sample of what `MyAttributeAction` may look like:
