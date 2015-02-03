@@ -337,7 +337,7 @@ sampler<span class="pl-k">.</span>setSchedule(<span class="pl-stj">Pinger</span>
 
 <div class="highlight highlight-java"><pre><span class="pl-s">public</span> <span class="pl-s">class</span> <span class="pl-en">MyAttributeAction</span> <span class="pl-s">implements</span> <span class="pl-e">AttributeAction</span> {
     <span class="pl-st">@Override</span>
-    <span class="pl-s">public</span> <span class="pl-stj">Object</span> <span class="pl-en">action</span>(<span class="pl-stj">Condition</span> <span class="pl-v">cond</span>, <span class="pl-stj">AttributeSample</span> <span class="pl-v">sample</span>) {
+    <span class="pl-s">public</span> <span class="pl-stj">Object</span> <span class="pl-en">action</span>(<span class="pl-stj">SampleContext</span> <span class="pl-v">context</span>, <span class="pl-stj">Condition</span> <span class="pl-v">cond</span>, <span class="pl-stj">AttributeSample</span> <span class="pl-v">sample</span>) {
         <span class="pl-stj">Activity</span> activity <span class="pl-k">=</span> sample<span class="pl-k">.</span>getActivity();
         <span class="pl-c">// obtain a collection of all sampled metrics</span>
         <span class="pl-st">Collection&lt;<span class="pl-stj">Snapshot</span>&gt;</span> metrics <span class="pl-k">=</span> activity<span class="pl-k">.</span>getSnapshots();
