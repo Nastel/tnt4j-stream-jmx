@@ -230,7 +230,7 @@ class MySampleListener implements SampleListener {
 	}
 
 	@Override
-	void error(SampleContext context, AttributeSample sample) {
+	public void error(SampleContext context, AttributeSample sample) {
 		// called once for every exception that occurs during each sample
 		Throwable ex = sample.getError();
 		ex.printStackTrace();
