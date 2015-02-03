@@ -300,7 +300,7 @@ sampler<span class="pl-k">.</span>setSchedule(<span class="pl-stj">Pinger</span>
     }
 
     <span class="pl-st">@Override</span>
-    <span class="pl-st">void</span> <span class="pl-en">error</span>(<span class="pl-stj">SampleContext</span> <span class="pl-v">context</span>, <span class="pl-stj">AttributeSample</span> <span class="pl-v">sample</span>) {
+    <span class="pl-s">public</span> <span class="pl-st">void</span> <span class="pl-en">error</span>(<span class="pl-stj">SampleContext</span> <span class="pl-v">context</span>, <span class="pl-stj">AttributeSample</span> <span class="pl-v">sample</span>) {
         <span class="pl-c">// called once for every exception that occurs during each sample</span>
         <span class="pl-stj">Throwable</span> ex <span class="pl-k">=</span> sample<span class="pl-k">.</span>getError();
         ex<span class="pl-k">.</span>printStackTrace();
