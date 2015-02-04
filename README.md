@@ -287,6 +287,9 @@ PingJMX requires the following:
 * JDK 1.6+
 * TNT4J (https://github.com/Nastel/TNT4J)
 
+# Related Projects
+* TrackingFilter (http://nastel.github.io/TrackingFilter/)
+
 # Available Integrations
 * TNT4J (https://github.com/Nastel/TNT4J)
 * Log4J (http://logging.apache.org/log4j/1.2/)
