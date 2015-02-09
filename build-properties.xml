@@ -2,7 +2,7 @@
 -->
 <project name="PingJmxBuildProps">
   <!-- Installation package directories -->
-  <property name="project-build"       value="${basedir}/../build/PingJMX"/>
+  <property name="project-build"       value="${basedir}/../build/pingjmx"/>
   <property name="project-install"     value="${project-build}/install"/>
   
   <!-- Default compilation settings -->
