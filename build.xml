@@ -13,14 +13,15 @@
 
 	<property name="src"       value="src"/>
 	<property name="lib"       value="lib"/>
+	<property name="classes"   value="classes"/>
 	<property name="doc"       value="${project-build}/doc"/>
-	<property name="docpkg"    value="org.tnt4j.pingjmx.*"/>
 	<property name="bin"       value="${project-build}/bin"/>
 	<property name="jar"       value="${project-build}/tnt4j-ping-jmx.jar"/>
+	<property name="docpkg"    value="org.tnt4j.pingjmx.*"/>
 
 	<target name="init">
 		<tstamp/>
-		<mkdir dir="${bin}"/>
+		<mkdir dir="${classes}"/>
 		<mkdir dir="${project-build}/lib"/>
 		<copy todir="${lib}" quiet="true" failonerror="false">
 			<fileset dir="${project-build}/../tnt4j">
@@ -60,9 +61,9 @@
 		</javadoc>
 	</target>
 
-	<!-- Compile into ${bin} directory -->
+	<!-- Compile into ${classes} directory -->
 	<target name="compile" depends="init" description="compile the source">
-		<javac destdir="${bin}" debug="true" debuglevel="${debuglevel}" source="${source}" target="${target}">
+		<javac destdir="${classes}" debug="true" debuglevel="${debuglevel}" source="${source}" target="${target}">
 			<src path="${src}"/>
 			<classpath>
 				<fileset dir="${project-build}/lib"/>
@@ -78,7 +79,7 @@
 	</target>
 
 	<target name="ping-jmx" depends="init,compile" description="build PingJMX package">
-		<jar jarfile="${jar}" basedir="${bin}" update="false">
+		<jar jarfile="${jar}" basedir="${classes}" update="false">
 			<manifest>
 				<attribute name="Implementation-Vendor" value="${vendor}"/>
 				<attribute name="Implementation-Title" value="${prodname}"/>
@@ -86,12 +87,16 @@
 				<attribute name="Premain-Class" value="org.tnt4j.pingjmx.PingAgent"/>
 			</manifest>
 		</jar>
-		<copy todir="${project-build}">
-			<fileset dir="${root}">
+		<copy todir="${project-build}/config">
+			<fileset dir="${root}/config">
 				<include name="log4j.properties"/>
 				<include name="tnt4j.properties"/>
 				<include name="tnt4j-tokens.properties"/>
-				<include name="pinger.bat"/>
+			</fileset>
+		</copy>
+		<copy todir="${bin}">
+			<fileset dir="${root}/bin">
+				<include name="pinger.*"/>
 			</fileset>
 		</copy>
 		<echo message="Build of ${ant.project.name} Complete${line.separator}" level="info"/>
