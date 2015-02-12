@@ -223,15 +223,20 @@ public class PingSampleHandlerImpl implements SampleHandler {
 	 * Finish processing of the activity sampling
 	 * 
 	 * @param activity instance
+	 * @return snapshot instance containing finish stats
 	 */
-	private int finish(Activity activity) {
+	private PropertySnapshot finish(Activity activity) {
 		PropertySnapshot snapshot = new PropertySnapshot(activity.getName(), "SampleContext");
-		snapshot.add("sample.count", sampleCount);
 		snapshot.add("noop.count", noopCount);
-		snapshot.add("sample.metric.count", lastMetricCount);
+		snapshot.add("sample.count", sampleCount);
+		snapshot.add("mbean.count", mbeans.size());
+		snapshot.add("condition.count", conditions.size());
+		snapshot.add("listener.count", listeners.size());
+		snapshot.add("exclude.metric.count", excAttrs.size());
 		snapshot.add("total.metric.count", totalMetricCount);
+		snapshot.add("last.metric.count", lastMetricCount);
 		activity.addSnapshot(snapshot);		
-		return snapshot.size();
+		return snapshot;
 	}
 	
 	@Override
@@ -250,12 +255,14 @@ public class PingSampleHandlerImpl implements SampleHandler {
 		if (!activity.isNoop()) {
 			sampleCount++;
 			lastMetricCount = sampleMBeans(activity);		
-			lastMetricCount += finish(activity);		
-			totalMetricCount += lastMetricCount;
+			totalMetricCount += lastMetricCount;			
+			/// run post listeners
 			runPost(activity);		
 			if (activity.isNoop()) {
 				noopCount++;
 			}
+			// compute sampling statistics
+			finish(activity);
 		}
 	}
 
