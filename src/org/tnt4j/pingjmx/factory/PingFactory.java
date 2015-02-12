@@ -37,7 +37,7 @@ public interface PingFactory {
 	 * 
 	 * @see Pinger
 	 */
-	public Pinger newInstance();
+	Pinger newInstance();
 
 	/**
 	 * Create a default instance with a given MBean server instance
@@ -45,5 +45,5 @@ public interface PingFactory {
 	 * @param mserver MBean server instance
 	 * @see Pinger
 	 */
-	public Pinger newInstance(MBeanServer mserver);
+	Pinger newInstance(MBeanServer mserver);
 }

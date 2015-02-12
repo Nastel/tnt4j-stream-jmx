@@ -48,9 +48,9 @@ public interface SampleHandler extends ActivityListener, NestedHandler<SampleHan
 	SampleHandler register(AttributeCondition cond, AttributeAction action);	
 	
 	/**
-	 * Obtain latest sampling statistics for current instance
+	 * Obtain sample context associated with the handler
 	 *
-	 * @return latest sampling statistics
+	 * @return sample context associated with the handler
 	 *  
 	 */
 	SampleContext getContext();		

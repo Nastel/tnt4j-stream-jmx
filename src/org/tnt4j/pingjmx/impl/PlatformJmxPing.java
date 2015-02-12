@@ -41,6 +41,7 @@ import com.nastel.jkool.tnt4j.TrackingLogger;
  * 
  * @version $Revision: 1 $
  * 
+ * @see Pinger
  * @see PingScheduler
  * @see PingSchedulerImpl
  */
