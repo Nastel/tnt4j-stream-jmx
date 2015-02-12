@@ -235,6 +235,7 @@ public class PingSampleHandlerImpl implements SampleHandler {
 		snapshot.add("exclude.metric.count", excAttrs.size());
 		snapshot.add("total.metric.count", totalMetricCount);
 		snapshot.add("last.metric.count", lastMetricCount);
+		snapshot.add("sample.time.usec", activity.getElapsedTime());
 		activity.addSnapshot(snapshot);		
 		return snapshot;
 	}
