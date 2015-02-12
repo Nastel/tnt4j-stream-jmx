@@ -37,6 +37,7 @@ import org.tnt4j.pingjmx.conditions.AttributeAction;
 import org.tnt4j.pingjmx.conditions.NoopAction;
 import org.tnt4j.pingjmx.core.SampleContext;
 import org.tnt4j.pingjmx.core.SampleListener;
+import org.tnt4j.pingjmx.core.UnsupportedAttributeException;
 
 import com.nastel.jkool.tnt4j.core.Activity;
 import com.nastel.jkool.tnt4j.core.PropertySnapshot;
@@ -187,8 +188,9 @@ public class PingSampleHandlerImpl implements SampleHandler {
 	 * @param jinfo attribute info
 	 * @param property name to be assigned to given attribute value
 	 * @param value associated with attribute
+	 * @throws UnsupportedAttributeException if provided attribute not supported
 	 */
-	private void processJmxValue(PropertySnapshot snapshot, MBeanAttributeInfo jinfo, String propName, Object value) {
+	private void processJmxValue(PropertySnapshot snapshot, MBeanAttributeInfo jinfo, String propName, Object value) throws UnsupportedAttributeException {
 		if (value != null && !value.getClass().isArray()) {
 			if (value instanceof CompositeData) {
 				CompositeData cdata = (CompositeData) value;
@@ -197,10 +199,22 @@ public class PingSampleHandlerImpl implements SampleHandler {
 					Object cval = cdata.get(key);
 					processJmxValue(snapshot, jinfo, propName + "\\" + key, cval);
 				}
-			} else {
+			} else if (typeSupported(value)) {
 				snapshot.add(propName, value);
+			} else {
+				throw new UnsupportedAttributeException("Unsupported type=" + value.getClass(), jinfo, value);
 			}
 		}
+	}
+	
+	/**
+	 * Determine if a given value and its type are supported
+	 * 
+	 * @param value value to test for support
+	 * @return true if a given value and its type are supported, false otherwise
+	 */
+	protected boolean typeSupported(Object value) {
+		 return (value.getClass().isPrimitive() || (value instanceof String) || (value instanceof Number) || (value instanceof Boolean));
 	}
 	
 	/**
