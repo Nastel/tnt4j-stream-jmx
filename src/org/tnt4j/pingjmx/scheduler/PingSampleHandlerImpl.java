@@ -30,11 +30,11 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.management.openmbean.CompositeData;
 
-import org.tnt4j.pingjmx.conditions.AttributeSample;
-import org.tnt4j.pingjmx.conditions.AttributeCondition;
-import org.tnt4j.pingjmx.conditions.SampleHandler;
 import org.tnt4j.pingjmx.conditions.AttributeAction;
+import org.tnt4j.pingjmx.conditions.AttributeCondition;
+import org.tnt4j.pingjmx.conditions.AttributeSample;
 import org.tnt4j.pingjmx.conditions.NoopAction;
+import org.tnt4j.pingjmx.conditions.SampleHandler;
 import org.tnt4j.pingjmx.core.SampleContext;
 import org.tnt4j.pingjmx.core.SampleListener;
 import org.tnt4j.pingjmx.core.UnsupportedAttributeException;
@@ -107,7 +107,7 @@ public class PingSampleHandlerImpl implements SampleHandler {
 	}
 
 	/**
-	 * Sample jmx beans based on a configured MBean filter list
+	 * Sample  MBeans based on a configured MBean filter list
 	 * and store within given activity as snapshots.
 	 * 
 	 * @param activity instance where sampled MBean attributes are stored
@@ -189,8 +189,9 @@ public class PingSampleHandlerImpl implements SampleHandler {
 	 * @param property name to be assigned to given attribute value
 	 * @param value associated with attribute
 	 * @throws UnsupportedAttributeException if provided attribute not supported
+	 * @return snapshot instance where all attributes are contained
 	 */
-	private void processJmxValue(PropertySnapshot snapshot, MBeanAttributeInfo jinfo, String propName, Object value) throws UnsupportedAttributeException {
+	private PropertySnapshot processJmxValue(PropertySnapshot snapshot, MBeanAttributeInfo jinfo, String propName, Object value) throws UnsupportedAttributeException {
 		if (value != null && !value.getClass().isArray()) {
 			if (value instanceof CompositeData) {
 				CompositeData cdata = (CompositeData) value;
@@ -205,6 +206,7 @@ public class PingSampleHandlerImpl implements SampleHandler {
 				throw new UnsupportedAttributeException("Unsupported type=" + value.getClass(), jinfo, value);
 			}
 		}
+		return snapshot;
 	}
 	
 	/**
