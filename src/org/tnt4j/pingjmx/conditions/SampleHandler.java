@@ -53,5 +53,5 @@ public interface SampleHandler extends ActivityListener, NestedHandler<SampleHan
 	 * @return latest sampling statistics
 	 *  
 	 */
-	SampleContext getStats();		
+	SampleContext getContext();		
 }

@@ -125,13 +125,12 @@ public interface Pinger extends NestedHandler<Pinger, SampleListener>, Runnable 
 	Pinger register(AttributeCondition cond, AttributeAction action);
 
 	/**
-	 * Obtain latest sampling statistics for current instance
+	 * Obtain sample context associated with the handler
 	 *
-	 * @return latest sampling statistics
+	 * @return sample context associated with the handler
 	 * @throws IllegalStateException if setSchedule is not called first
-	 *  
 	 */
-	SampleContext getStats();
+	SampleContext getContext();
 
 	/**
 	 * Cancel/close this object instance and cancel all outstanding

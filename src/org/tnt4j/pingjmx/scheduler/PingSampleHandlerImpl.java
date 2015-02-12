@@ -328,7 +328,7 @@ public class PingSampleHandlerImpl implements SampleHandler {
 	}
 
 	@Override
-	public SampleContext getStats() {
+	public SampleContext getContext() {
 		return context;
 	}
 }

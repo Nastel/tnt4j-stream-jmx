@@ -161,11 +161,11 @@ public class PlatformJmxPing implements Pinger {
 	}
 
 	@Override
-	public SampleContext getStats() {
+	public SampleContext getContext() {
 		if (pinger == null) {
 			throw new IllegalStateException("no schedule set: call setSchedule() first");
 		}
-		return pinger.getSampleHandler().getStats();
+		return pinger.getSampleHandler().getContext();
 	}
 
 	@Override
