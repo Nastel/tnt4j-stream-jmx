@@ -20,7 +20,7 @@ import javax.management.MBeanAttributeInfo;
 
 /**
  * <p> 
- * This exception is thrown when attribute type is not supprted by the
+ * This exception is thrown when attribute type is not supported by the
  * underlying sampler.
  * </p>
  * 
