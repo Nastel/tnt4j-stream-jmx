@@ -74,6 +74,13 @@ public interface SampleContext {
 	long getLastMetricCount();
 	
 	/**
+	 * Obtain time in microseconds it took to take a last sample
+	 * 
+	 * @return number of samples metrics during last sample
+	 */
+	long getLastSampleUsec();
+	
+	/**
 	 * Obtain number of sampled MBeans
 	 * 
 	 * @return number of sampled MBeans 

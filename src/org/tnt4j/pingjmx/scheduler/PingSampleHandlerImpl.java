@@ -70,7 +70,7 @@ public class PingSampleHandlerImpl implements SampleHandler {
 	
 	String mbeanFilter;
 	long sampleCount = 0, totalMetricCount = 0, totalActionCount = 0;
-	long lastMetricCount = 0, noopCount = 0;
+	long lastMetricCount = 0, lastSampleTimeUsec = 0, noopCount = 0;
 	
 	MBeanServer mbeanServer;
 	SampleContext context;
@@ -250,7 +250,7 @@ public class PingSampleHandlerImpl implements SampleHandler {
 		snapshot.add(STAT_TOTAL_ACTION_COUNT, totalActionCount);
 		snapshot.add(STAT_TOTAL_METRIC_COUNT, totalMetricCount);
 		snapshot.add(STAT_LAST_METRIC_COUNT, lastMetricCount);
-		snapshot.add(STAT_SAMPLE_TIME_USEC, activity.getElapsedTime());
+		snapshot.add(STAT_SAMPLE_TIME_USEC, lastSampleTimeUsec);
 		activity.addSnapshot(snapshot);		
 		return snapshot;
 	}
@@ -269,16 +269,22 @@ public class PingSampleHandlerImpl implements SampleHandler {
 	@Override
 	public void stopped(Activity activity) {
 		if (!activity.isNoop()) {
-			sampleCount++;
-			lastMetricCount = sampleMBeans(activity);		
-			totalMetricCount += lastMetricCount;			
-			/// run post listeners
-			runPost(activity);		
-			if (activity.isNoop()) {
-				noopCount++;
+			try {
+				long started = System.nanoTime();
+				sampleCount++;
+				lastMetricCount = sampleMBeans(activity);		
+				totalMetricCount += lastMetricCount;			
+				lastSampleTimeUsec = (System.nanoTime() - started)/1000;
+				
+				// run post listeners
+				runPost(activity);		
+				if (activity.isNoop()) {
+					noopCount++;
+				}
+			} finally {
+				// compute sampling statistics
+				finish(activity);
 			}
-			// compute sampling statistics
-			finish(activity);
 		}
 	}
 
@@ -394,5 +400,10 @@ class PingSampleContextImpl implements SampleContext {
 	@Override
     public Throwable getLastError() {
 		return handle.lastError;
+    }
+
+	@Override
+    public long getLastSampleUsec() {
+	    return handle.lastSampleTimeUsec;
     }
 }
