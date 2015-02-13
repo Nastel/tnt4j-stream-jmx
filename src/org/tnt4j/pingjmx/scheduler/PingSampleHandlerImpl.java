@@ -50,13 +50,26 @@ import com.nastel.jkool.tnt4j.core.PropertySnapshot;
  * </p>
  * 
  * @see PingScheduler
+ * @see SampleHandler
  * @see AttributeSample
+ * @see AttributeCondition
  * 
  * @version $Revision: 1 $
  */
 public class PingSampleHandlerImpl implements SampleHandler {
+	public static String STAT_NOOP_COUNT = "noop.count";
+	public static String STAT_SAMPLE_COUNT = "sample.count";
+	public static String STAT_MBEAN_COUNT = "mbean.count";
+	public static String STAT_CONDITION_COUNT = "condition.count";
+	public static String STAT_LISTENER_COUNT = "listener.count";
+	public static String STAT_EXCLUDE_COUNT = "exclude.metric.count";
+	public static String STAT_TOTAL_ACTION_COUNT = "total.action.count";
+	public static String STAT_TOTAL_METRIC_COUNT = "total.metric.count";
+	public static String STAT_LAST_METRIC_COUNT = "last.metric.count";
+	public static String STAT_SAMPLE_TIME_USEC = "sample.time.usec";
+	
 	String mbeanFilter;
-	long sampleCount = 0, totalMetricCount = 0;
+	long sampleCount = 0, totalMetricCount = 0, totalActionCount = 0;
 	long lastMetricCount = 0, noopCount = 0;
 	
 	MBeanServer mbeanServer;
@@ -157,6 +170,7 @@ public class PingSampleHandlerImpl implements SampleHandler {
 	protected void evalAttrConditions(AttributeSample sample) {
 		for (Map.Entry<AttributeCondition, AttributeAction> entry: conditions.entrySet()) {
 			if (entry.getKey().evaluate(sample)) {
+				totalActionCount++;
 				entry.getValue().action(context, entry.getKey(), sample);
 			}
 		}
@@ -227,15 +241,16 @@ public class PingSampleHandlerImpl implements SampleHandler {
 	 */
 	private PropertySnapshot finish(Activity activity) {
 		PropertySnapshot snapshot = new PropertySnapshot(activity.getName(), "SampleContext");
-		snapshot.add("noop.count", noopCount);
-		snapshot.add("sample.count", sampleCount);
-		snapshot.add("mbean.count", mbeans.size());
-		snapshot.add("condition.count", conditions.size());
-		snapshot.add("listener.count", listeners.size());
-		snapshot.add("exclude.metric.count", excAttrs.size());
-		snapshot.add("total.metric.count", totalMetricCount);
-		snapshot.add("last.metric.count", lastMetricCount);
-		snapshot.add("sample.time.usec", activity.getElapsedTime());
+		snapshot.add(STAT_NOOP_COUNT, noopCount);
+		snapshot.add(STAT_SAMPLE_COUNT, sampleCount);
+		snapshot.add(STAT_MBEAN_COUNT, mbeans.size());
+		snapshot.add(STAT_CONDITION_COUNT, conditions.size());
+		snapshot.add(STAT_LISTENER_COUNT, listeners.size());
+		snapshot.add(STAT_EXCLUDE_COUNT, excAttrs.size());
+		snapshot.add(STAT_TOTAL_ACTION_COUNT, totalActionCount);
+		snapshot.add(STAT_TOTAL_METRIC_COUNT, totalMetricCount);
+		snapshot.add(STAT_LAST_METRIC_COUNT, lastMetricCount);
+		snapshot.add(STAT_SAMPLE_TIME_USEC, activity.getElapsedTime());
 		activity.addSnapshot(snapshot);		
 		return snapshot;
 	}
