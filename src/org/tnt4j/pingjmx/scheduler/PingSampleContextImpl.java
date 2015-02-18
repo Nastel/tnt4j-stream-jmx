@@ -32,7 +32,7 @@ import org.tnt4j.pingjmx.core.SampleContext;
 public class PingSampleContextImpl implements SampleContext {
 	PingSampleHandlerImpl handle;
 	
-	PingSampleContextImpl(PingSampleHandlerImpl lst) {
+	protected PingSampleContextImpl(PingSampleHandlerImpl lst) {
 		handle = lst;
 	}
 	
@@ -79,5 +79,11 @@ public class PingSampleContextImpl implements SampleContext {
 	@Override
     public long getLastSampleUsec() {
 	    return handle.lastSampleTimeUsec;
+    }
+
+	@Override
+    public SampleContext resetCounters() {
+	    handle.resetCounters();
+	    return this;
     }
 }

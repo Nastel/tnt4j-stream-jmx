@@ -23,6 +23,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanInfo;
@@ -67,6 +68,8 @@ public class PingSampleHandlerImpl implements SampleHandler {
 	public static String STAT_TOTAL_METRIC_COUNT = "total.metric.count";
 	public static String STAT_LAST_METRIC_COUNT = "last.metric.count";
 	public static String STAT_SAMPLE_TIME_USEC = "sample.time.usec";
+	
+	private final ReentrantLock lock = new ReentrantLock();
 	
 	String mbeanFilter;
 	long sampleCount = 0, totalMetricCount = 0, totalActionCount = 0;
@@ -257,18 +260,24 @@ public class PingSampleHandlerImpl implements SampleHandler {
 	
 	@Override
 	public void started(Activity activity) {
-		lastError = null; // reset last sample error
-		runPre(activity);
-		if ((!activity.isNoop()) && (mbeans.size() == 0)) {
-			loadMBeans();
-		} else if (activity.isNoop()) {
-			noopCount++;
+		lock.lock();
+		try {
+			lastError = null; // reset last sample error
+			runPre(activity);
+			if ((!activity.isNoop()) && (mbeans.size() == 0)) {
+				loadMBeans();
+			} else if (activity.isNoop()) {
+				noopCount++;
+			}
+		} finally {
+			lock.unlock();
 		}
 	}
 
 	@Override
 	public void stopped(Activity activity) {
 		if (!activity.isNoop()) {
+			lock.lock();
 			try {
 				long started = System.nanoTime();
 				sampleCount++;
@@ -281,12 +290,34 @@ public class PingSampleHandlerImpl implements SampleHandler {
 				if (activity.isNoop()) {
 					noopCount++;
 				}
-			} finally {
 				// compute sampling statistics
 				finish(activity);
+			} finally {
+				lock.unlock();
 			}
 		}
 	}
+
+	/**
+	 * Reset all counters maintained by sampling handler
+	 * 
+	 * @return instance to the sampling context
+	 */
+	public SampleContext resetCounters() {
+		lock.lock();
+		try {
+			sampleCount = 0;
+			totalMetricCount = 0;
+			totalActionCount = 0;
+			lastMetricCount = 0;
+			lastSampleTimeUsec = 0;
+			noopCount = 0;
+			lastError = null;
+			return context;
+		} finally {
+			lock.unlock();
+		}
+    }
 
 	private void runPost(Activity activity) {
 		synchronized (this.listeners) {

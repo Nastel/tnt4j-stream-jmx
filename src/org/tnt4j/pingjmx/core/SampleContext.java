@@ -39,6 +39,14 @@ public interface SampleContext {
 	MBeanServer getMBeanServer();
 
 	/**
+	 * Reset all counters maintained by this context
+	 * 
+	 * @return instance to the same context
+	 */
+	SampleContext resetCounters();
+
+
+	/**
 	 * Obtain last error exception occurred during last sample
 	 * 
 	 * @return last error exception occurred during last sample
