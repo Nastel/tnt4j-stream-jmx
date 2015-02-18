@@ -45,7 +45,6 @@ public interface SampleContext {
 	 */
 	SampleContext resetCounters();
 
-
 	/**
 	 * Obtain last error exception occurred during last sample
 	 * 
