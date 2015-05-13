@@ -87,6 +87,12 @@
 				<attribute name="Premain-Class" value="org.tnt4j.pingjmx.PingAgent"/>
 			</manifest>
 		</jar>
+		<copy todir="${project-build}">
+			<fileset dir="${root}">
+				<include name="README.md"/>
+				<include name="LICENSE"/>
+			</fileset>
+		</copy>
 		<copy todir="${project-build}/config">
 			<fileset dir="${root}/config">
 				<include name="log4j.properties"/>
