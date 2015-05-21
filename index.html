@@ -1,34 +1,25 @@
 <!DOCTYPE html>
-<html>
+<html lang="en-us">
   <head>
-    <meta charset='utf-8'>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
-
+    <meta charset="UTF-8">
     <title>PingJMX by Nastel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
   </head>
-
   <body>
+    <section class="page-header">
+      <h1 class="project-name">PingJMX</h1>
+      <h2 class="project-tagline">A Lightweight framework to stream and monitor JMX metrics</h2>
+      <a href="https://github.com/Nastel/PingJMX" class="btn">View on GitHub</a>
+      <a href="https://github.com/Nastel/PingJMX/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/Nastel/PingJMX/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
 
-    <header>
-      <div class="container">
-        <h1>PingJMX</h1>
-        <h2>A Lightweight framework to stream and monitor JMX metrics</h2>
-
-        <section id="downloads">
-          <a href="https://github.com/Nastel/PingJMX/zipball/master" class="btn">Download as .zip</a>
-          <a href="https://github.com/Nastel/PingJMX/tarball/master" class="btn">Download as .tar.gz</a>
-          <a href="https://github.com/Nastel/PingJMX" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
-        </section>
-      </div>
-    </header>
-
-    <div class="container">
-      <section id="main_content">
-        <h1>
+    <section class="main-content">
+      <h1>
 <a id="pingjmx" class="anchor" href="#pingjmx" aria-hidden="true"><span class="octicon octicon-link"></span></a>PingJMX</h1>
 
 <p>A Lightweight framework to stream and monitor JMX metrics. </p>
@@ -85,16 +76,16 @@ For more information on JESL visit: <a href="http://nastel.github.io/JESL/">http
 
 <p>Running PingJMX as javaagent:</p>
 
-<div class="highlight highlight-java"><pre>java <span class="pl-k">-</span>javaagent<span class="pl-k">:</span>tnt4j<span class="pl-k">-</span>ping<span class="pl-k">-</span>jmx<span class="pl-k">.</span>jar<span class="pl-k">=</span><span class="pl-s1"><span class="pl-pds">"</span>*:*!30000<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-stj">Dlog4j</span><span class="pl-k">.</span>configuration<span class="pl-k">=</span>file<span class="pl-k">:</span>log4j<span class="pl-k">.</span>properties <span class="pl-k">-</span><span class="pl-stj">Dtnt4j</span><span class="pl-k">.</span>config<span class="pl-k">=</span>tnt4j<span class="pl-k">.</span>properties <span class="pl-k">-</span>classpath <span class="pl-s1"><span class="pl-pds">"</span>tnt4j-ping-jmx.jar;lib/tnt4j-api-final-all.jar<span class="pl-pds">"</span></span> your<span class="pl-k">.</span>class<span class="pl-k">.</span>name your<span class="pl-k">-</span>args</pre></div>
+<div class="highlight highlight-java"><pre>java <span class="pl-k">-</span>javaagent<span class="pl-k">:</span>tnt4j<span class="pl-k">-</span>ping<span class="pl-k">-</span>jmx<span class="pl-k">.</span>jar<span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>*:*!30000<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-smi">Dlog4j</span><span class="pl-k">.</span>configuration<span class="pl-k">=</span>file<span class="pl-k">:</span>log4j<span class="pl-k">.</span>properties <span class="pl-k">-</span><span class="pl-smi">Dtnt4j</span><span class="pl-k">.</span>config<span class="pl-k">=</span>tnt4j<span class="pl-k">.</span>properties <span class="pl-k">-</span>classpath <span class="pl-s"><span class="pl-pds">"</span>tnt4j-ping-jmx.jar;lib/tnt4j-api-final-all.jar<span class="pl-pds">"</span></span> your<span class="pl-k">.</span>class<span class="pl-k">.</span>name your<span class="pl-k">-</span>args</pre></div>
 
 <p>Imbed PingJMX code into your application:</p>
 
 <div class="highlight highlight-java"><pre><span class="pl-c">// obtain PingFactory instance</span>
-<span class="pl-stj">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-stj">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
+<span class="pl-smi">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-smi">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
 <span class="pl-c">// create an instance of the pinger that will sample mbeans</span>
-<span class="pl-stj">Pinger</span> sampler <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance();
+<span class="pl-smi">Pinger</span> sampler <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance();
 <span class="pl-c">// schedule collection (ping) for given MBean filter and 30000 ms sampling period</span>
-sampler<span class="pl-k">.</span>setSchedule(<span class="pl-stj">Pinger</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>run();</pre></div>
+sampler<span class="pl-k">.</span>setSchedule(<span class="pl-smi">Pinger</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>run();</pre></div>
 
 <p><b>NOTE:</b> <code>setSchedule(..).run()</code> sequence must be called to run the schedule. <code>setSchedule(..)</code> just sets the
 scheduling parameters, <code>run()</code> executes the schedule.</p>
@@ -102,26 +93,26 @@ scheduling parameters, <code>run()</code> executes the schedule.</p>
 <p>To schedule metric collection for a specific MBean server:</p>
 
 <div class="highlight highlight-java"><pre><span class="pl-c">// obtain PingFactory instance</span>
-<span class="pl-stj">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-stj">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
+<span class="pl-smi">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-smi">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
 <span class="pl-c">// create an instance of the pinger that will sample mbeans</span>
-<span class="pl-stj">Pinger</span> sampler <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance(<span class="pl-stj">ManagementFactory</span><span class="pl-k">.</span>getPlatformMBeanServer());
+<span class="pl-smi">Pinger</span> sampler <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance(<span class="pl-smi">ManagementFactory</span><span class="pl-k">.</span>getPlatformMBeanServer());
 <span class="pl-c">// schedule collection (ping) for given MBean filter and 30000 ms sampling period</span>
-sampler<span class="pl-k">.</span>setSchedule(<span class="pl-stj">Pinger</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>run();</pre></div>
+sampler<span class="pl-k">.</span>setSchedule(<span class="pl-smi">Pinger</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>run();</pre></div>
 
 <p>Below is an example of how to sample all registered mbean servers:</p>
 
 <div class="highlight highlight-java"><pre><span class="pl-c">// obtain PingFactory instance</span>
-<span class="pl-stj">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-stj">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
+<span class="pl-smi">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-smi">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
 <span class="pl-c">// find other registered mbean servers</span>
-<span class="pl-st">ArrayList&lt;<span class="pl-stj">MBeanServer</span>&gt;</span> mlist <span class="pl-k">=</span> <span class="pl-stj">MBeanServerFactory</span><span class="pl-k">.</span>findMBeanServer(<span class="pl-c1">null</span>);
-<span class="pl-k">for</span> (<span class="pl-stj">MBeanServer</span> server<span class="pl-k">:</span> mlist) {
-    <span class="pl-stj">Pinger</span> jmxp <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance(server);
-    jmxp<span class="pl-k">.</span>setSchedule(<span class="pl-stj">Pinger</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>run();
+<span class="pl-k">ArrayList&lt;<span class="pl-smi">MBeanServer</span>&gt;</span> mlist <span class="pl-k">=</span> <span class="pl-smi">MBeanServerFactory</span><span class="pl-k">.</span>findMBeanServer(<span class="pl-c1">null</span>);
+<span class="pl-k">for</span> (<span class="pl-smi">MBeanServer</span> server<span class="pl-k">:</span> mlist) {
+    <span class="pl-smi">Pinger</span> jmxp <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance(server);
+    jmxp<span class="pl-k">.</span>setSchedule(<span class="pl-smi">Pinger</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>run();
 }</pre></div>
 
 <p>Alternatively, PingJMX provides a helper class <code>PingAgent</code> that lets you schedule sampling for all registered <code>MBeanServer</code> instances.</p>
 
-<div class="highlight highlight-java"><pre><span class="pl-stj">PingAgent</span><span class="pl-k">.</span>ping(<span class="pl-stj">Pinger</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">60000</span>, <span class="pl-stj">TimeUnit</span><span class="pl-c1"><span class="pl-k">.</span>MILLISECONDS</span>);</pre></div>
+<div class="highlight highlight-java"><pre><span class="pl-smi">PingAgent</span><span class="pl-k">.</span>ping(<span class="pl-smi">Pinger</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">60000</span>, <span class="pl-smi">TimeUnit</span><span class="pl-c1"><span class="pl-k">.</span>MILLISECONDS</span>);</pre></div>
 
 <p><b>NOTE:</b> Sampled MBean attributes and associated values are stored in a collection of <code>Snapshot</code> objects stored within <code>Activity</code> instance. Current <code>Activity</code> instance can be obtained via <code>AttributeSample</code> passed when calling listeners such as <code>AttributeCondition</code>, <code>SampleListener</code>. Snapshots can be accessed using <code>Activity.getSnapshots()</code> method call.</p>
 
@@ -134,14 +125,14 @@ sampler<span class="pl-k">.</span>setSchedule(<span class="pl-stj">Pinger</span>
 
 <p>Example below runs <code>PingAgent</code> helper class as a standalone java application with a given MBean filter <code>"*:*"</code>, sampling period in milliseconds (<code>10000</code>), and time to run in milliseconds (<code>60000</code>):</p>
 
-<div class="highlight highlight-java"><pre>java <span class="pl-k">-</span><span class="pl-stj">Dlog4j</span><span class="pl-k">.</span>configuration<span class="pl-k">=</span>file<span class="pl-k">:</span>log4j<span class="pl-k">.</span>properties <span class="pl-k">-</span><span class="pl-stj">Dorg</span><span class="pl-k">.</span>tnt4j<span class="pl-k">.</span>pingagent<span class="pl-k">.</span>trace<span class="pl-k">=</span><span class="pl-c1">true</span> <span class="pl-k">-</span>classpath <span class="pl-s1"><span class="pl-pds">"</span>tnt4j-ping-jmx.jar;lib/tnt4j-api-final-all.jar<span class="pl-pds">"</span></span> <span class="pl-stj">org.tnt4j.pingjmx<span class="pl-k">.</span>PingAgent</span> <span class="pl-s1"><span class="pl-pds">"</span>*:*<span class="pl-pds">"</span></span> <span class="pl-c1">10000</span> <span class="pl-c1">60000</span></pre></div>
+<div class="highlight highlight-java"><pre>java <span class="pl-k">-</span><span class="pl-smi">Dlog4j</span><span class="pl-k">.</span>configuration<span class="pl-k">=</span>file<span class="pl-k">:</span>log4j<span class="pl-k">.</span>properties <span class="pl-k">-</span><span class="pl-smi">Dorg</span><span class="pl-k">.</span>tnt4j<span class="pl-k">.</span>pingagent<span class="pl-k">.</span>trace<span class="pl-k">=</span><span class="pl-c1">true</span> <span class="pl-k">-</span>classpath <span class="pl-s"><span class="pl-pds">"</span>tnt4j-ping-jmx.jar;lib/tnt4j-api-final-all.jar<span class="pl-pds">"</span></span> <span class="pl-smi">org.tnt4j.pingjmx<span class="pl-k">.</span>PingAgent</span> <span class="pl-s"><span class="pl-pds">"</span>*:*<span class="pl-pds">"</span></span> <span class="pl-c1">10000</span> <span class="pl-c1">60000</span></pre></div>
 
 <h2>
 <a id="running-pingjmx-as--javaagent" class="anchor" href="#running-pingjmx-as--javaagent" aria-hidden="true"><span class="octicon octicon-link"></span></a>Running PingJMX as -javaagent</h2>
 
 <p>PingJMX can be invoked as <code>-javaagent</code> without changing your application code:</p>
 
-<div class="highlight highlight-java"><pre>java <span class="pl-k">-</span>javaagent<span class="pl-k">:</span>tnt4j<span class="pl-k">-</span>ping<span class="pl-k">-</span>jmx<span class="pl-k">.</span>jar<span class="pl-k">=</span><span class="pl-s1"><span class="pl-pds">"</span>*:*!30000<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-stj">Dlog4j</span><span class="pl-k">.</span>configuration<span class="pl-k">=</span>file<span class="pl-k">:</span>log4j<span class="pl-k">.</span>properties <span class="pl-k">-</span><span class="pl-stj">Dtnt4j</span><span class="pl-k">.</span>config<span class="pl-k">=</span>tnt4j<span class="pl-k">.</span>properties <span class="pl-k">-</span>classpath <span class="pl-s1"><span class="pl-pds">"</span>tnt4j-ping-jmx.jar;lib/tnt4j-api-final-all.jar<span class="pl-pds">"</span></span> your<span class="pl-k">.</span>class<span class="pl-k">.</span>name your<span class="pl-k">-</span>args</pre></div>
+<div class="highlight highlight-java"><pre>java <span class="pl-k">-</span>javaagent<span class="pl-k">:</span>tnt4j<span class="pl-k">-</span>ping<span class="pl-k">-</span>jmx<span class="pl-k">.</span>jar<span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>*:*!30000<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-smi">Dlog4j</span><span class="pl-k">.</span>configuration<span class="pl-k">=</span>file<span class="pl-k">:</span>log4j<span class="pl-k">.</span>properties <span class="pl-k">-</span><span class="pl-smi">Dtnt4j</span><span class="pl-k">.</span>config<span class="pl-k">=</span>tnt4j<span class="pl-k">.</span>properties <span class="pl-k">-</span>classpath <span class="pl-s"><span class="pl-pds">"</span>tnt4j-ping-jmx.jar;lib/tnt4j-api-final-all.jar<span class="pl-pds">"</span></span> your<span class="pl-k">.</span>class<span class="pl-k">.</span>name your<span class="pl-k">-</span>args</pre></div>
 
 <p>The options are <code>-javaagent:tnt4j-ping-jmx.jar="mbean-filter!sample-time-ms"</code>, classpath must include pingjmx jar files as well as locations of log4j and tnt4j configuration files.</p>
 
@@ -234,11 +225,11 @@ code or your application. TNT4J comes with a set of built-in event sink implemen
 
 <p>(1) Dump on VM shut-down:</p>
 
-<div class="highlight highlight-java"><pre>java <span class="pl-k">-</span><span class="pl-stj">Dtnt4j</span><span class="pl-k">.</span>dump<span class="pl-k">.</span>on<span class="pl-k">.</span>vm<span class="pl-k">.</span>shutdown<span class="pl-k">=</span><span class="pl-c1">true</span> <span class="pl-k">-</span><span class="pl-stj">Dtnt4j</span><span class="pl-k">.</span>dump<span class="pl-k">.</span>provider<span class="pl-k">.</span><span class="pl-k">default</span><span class="pl-k">=</span><span class="pl-c1">true</span> <span class="pl-k">-</span><span class="pl-stj">Dtnt4j</span><span class="pl-k">.</span>dump<span class="pl-k">.</span>folder<span class="pl-k">=</span><span class="pl-c1">.</span><span class="pl-k">/</span> <span class="pl-c1">...</span></pre></div>
+<div class="highlight highlight-java"><pre>java <span class="pl-k">-</span><span class="pl-smi">Dtnt4j</span><span class="pl-k">.</span>dump<span class="pl-k">.</span>on<span class="pl-k">.</span>vm<span class="pl-k">.</span>shutdown<span class="pl-k">=</span><span class="pl-c1">true</span> <span class="pl-k">-</span><span class="pl-smi">Dtnt4j</span><span class="pl-k">.</span>dump<span class="pl-k">.</span>provider<span class="pl-k">.</span><span class="pl-k">default</span><span class="pl-k">=</span><span class="pl-c1">true</span> <span class="pl-k">-</span><span class="pl-smi">Dtnt4j</span><span class="pl-k">.</span>dump<span class="pl-k">.</span>folder<span class="pl-k">=</span><span class="pl-c1">.</span><span class="pl-k">/</span> <span class="pl-c1">...</span></pre></div>
 
 <p>(2) Dump on uncaught thread exceptions:</p>
 
-<div class="highlight highlight-java"><pre>java <span class="pl-k">-</span><span class="pl-stj">Dtnt4j</span><span class="pl-k">.</span>dump<span class="pl-k">.</span>on<span class="pl-k">.</span>exceptionn<span class="pl-k">=</span><span class="pl-c1">true</span> <span class="pl-k">-</span><span class="pl-stj">Dtnt4j</span><span class="pl-k">.</span>dump<span class="pl-k">.</span>provider<span class="pl-k">.</span><span class="pl-k">default</span><span class="pl-k">=</span><span class="pl-c1">true</span> <span class="pl-k">-</span><span class="pl-stj">Dtnt4j</span><span class="pl-k">.</span>dump<span class="pl-k">.</span>folder<span class="pl-k">=</span><span class="pl-c1">.</span><span class="pl-k">/</span> <span class="pl-c1">...</span></pre></div>
+<div class="highlight highlight-java"><pre>java <span class="pl-k">-</span><span class="pl-smi">Dtnt4j</span><span class="pl-k">.</span>dump<span class="pl-k">.</span>on<span class="pl-k">.</span>exceptionn<span class="pl-k">=</span><span class="pl-c1">true</span> <span class="pl-k">-</span><span class="pl-smi">Dtnt4j</span><span class="pl-k">.</span>dump<span class="pl-k">.</span>provider<span class="pl-k">.</span><span class="pl-k">default</span><span class="pl-k">=</span><span class="pl-c1">true</span> <span class="pl-k">-</span><span class="pl-smi">Dtnt4j</span><span class="pl-k">.</span>dump<span class="pl-k">.</span>folder<span class="pl-k">=</span><span class="pl-c1">.</span><span class="pl-k">/</span> <span class="pl-c1">...</span></pre></div>
 
 <p><code>-Dtnt4j.dump.folder=./</code> specifies the destination folder where dump (.dump) files will be created (default is current working directory).</p>
 
@@ -266,12 +257,12 @@ code or your application. TNT4J comes with a set of built-in event sink implemen
 <p><code>PingFactory</code> instances are used to generate <code>Pinger</code> implementation for a specific runtime environment. PingJMX supplies pinger and ping factories for standard JVMs, JBoss,
 WebSphere Application Server. You may want to override default <code>PingFactory</code> with your own or an altenative by specifying:</p>
 
-<div class="highlight highlight-java"><pre>java <span class="pl-k">-</span><span class="pl-stj">Dorg</span><span class="pl-k">.</span>tnt4j<span class="pl-k">.</span>ping<span class="pl-k">.</span>factory<span class="pl-k">=</span><span class="pl-stj">org.tnt4j.pingjmx<span class="pl-k">.</span>PlatformPingFactory</span> <span class="pl-c1">...</span></pre></div>
+<div class="highlight highlight-java"><pre>java <span class="pl-k">-</span><span class="pl-smi">Dorg</span><span class="pl-k">.</span>tnt4j<span class="pl-k">.</span>ping<span class="pl-k">.</span>factory<span class="pl-k">=</span><span class="pl-smi">org.tnt4j.pingjmx<span class="pl-k">.</span>PlatformPingFactory</span> <span class="pl-c1">...</span></pre></div>
 
 <p><code>PingFactory</code> is used to generate instances of the underlying pinger implementatons (objects that provide sampling of underlying mbeans).</p>
 
 <div class="highlight highlight-java"><pre><span class="pl-c">// return default or user defined PingFactory implementation</span>
-<span class="pl-stj">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-stj">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
+<span class="pl-smi">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-smi">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
 <span class="pl-c1">...</span></pre></div>
 
 <h2>
@@ -282,26 +273,26 @@ WebSphere Application Server. You may want to override default <code>PingFactory
 <p>In addition to intercepting sample events, applications may want to control how one ore more attributes are sampled and whether each sample is reported/logged. See example below:</p>
 
 <div class="highlight highlight-java"><pre><span class="pl-c">// return default or user defined PingFactory implementation</span>
-<span class="pl-stj">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-stj">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
+<span class="pl-smi">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-smi">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
 <span class="pl-c">// create an instance of the pinger that will sample mbeans</span>
-<span class="pl-stj">Pinger</span> sampler <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance();
-sampler<span class="pl-k">.</span>setSchedule(<span class="pl-stj">Pinger</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>addListener(<span class="pl-k">new</span> <span class="pl-stj">MySampleListener</span>()))<span class="pl-k">.</span>run();</pre></div>
+<span class="pl-smi">Pinger</span> sampler <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance();
+sampler<span class="pl-k">.</span>setSchedule(<span class="pl-smi">Pinger</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>addListener(<span class="pl-k">new</span> <span class="pl-smi">MySampleListener</span>()))<span class="pl-k">.</span>run();</pre></div>
 
 <p>Below is a sample of what <code>MySampleListener</code> may look like:</p>
 
-<div class="highlight highlight-java"><pre><span class="pl-s">class</span> <span class="pl-en">MySampleListener</span> <span class="pl-s">implements</span> <span class="pl-e">SampleListener</span> {
-    <span class="pl-st">@Override</span>
-    <span class="pl-s">public</span> <span class="pl-st">void</span> <span class="pl-en">pre</span>(<span class="pl-stj">SampleContext</span> <span class="pl-v">context</span>, <span class="pl-stj">Activity</span> <span class="pl-v">activity</span>) {
+<div class="highlight highlight-java"><pre><span class="pl-k">class</span> <span class="pl-en">MySampleListener</span> <span class="pl-k">implements</span> <span class="pl-e">SampleListener</span> {
+    <span class="pl-k">@Override</span>
+    <span class="pl-k">public</span> <span class="pl-k">void</span> <span class="pl-en">pre</span>(<span class="pl-smi">SampleContext</span> <span class="pl-v">context</span>, <span class="pl-smi">Activity</span> <span class="pl-v">activity</span>) {
         <span class="pl-c">// called once per sample, beginning of each sample</span>
         <span class="pl-c">// set activity to NOOP to disable further sampling</span>
         <span class="pl-c">// no other attribute will be sampled during current sample</span>
         <span class="pl-k">if</span> (some<span class="pl-k">-</span>condition) {
-            activity<span class="pl-k">.</span>setType(<span class="pl-stj">OpType</span><span class="pl-c1"><span class="pl-k">.</span>NOOP</span>);
+            activity<span class="pl-k">.</span>setType(<span class="pl-smi">OpType</span><span class="pl-c1"><span class="pl-k">.</span>NOOP</span>);
         }
     }
 
-    <span class="pl-st">@Override</span>
-    <span class="pl-s">public</span> <span class="pl-st">boolean</span> <span class="pl-en">sample</span>(<span class="pl-stj">SampleContext</span> <span class="pl-v">context</span>, <span class="pl-stj">AttributeSample</span> <span class="pl-v">sample</span>) {
+    <span class="pl-k">@Override</span>
+    <span class="pl-k">public</span> <span class="pl-k">boolean</span> <span class="pl-en">sample</span>(<span class="pl-smi">SampleContext</span> <span class="pl-v">context</span>, <span class="pl-smi">AttributeSample</span> <span class="pl-v">sample</span>) {
         <span class="pl-c">// called once per sampled attribute</span>
         <span class="pl-c">// return false to skip this attribute from sampling collection</span>
         <span class="pl-k">if</span> (some<span class="pl-k">-</span>condition) {
@@ -310,19 +301,19 @@ sampler<span class="pl-k">.</span>setSchedule(<span class="pl-stj">Pinger</span>
         <span class="pl-k">return</span> <span class="pl-c1">true</span>;
     }
 
-    <span class="pl-st">@Override</span>
-    <span class="pl-s">public</span> <span class="pl-st">void</span> <span class="pl-en">error</span>(<span class="pl-stj">SampleContext</span> <span class="pl-v">context</span>, <span class="pl-stj">AttributeSample</span> <span class="pl-v">sample</span>) {
+    <span class="pl-k">@Override</span>
+    <span class="pl-k">public</span> <span class="pl-k">void</span> <span class="pl-en">error</span>(<span class="pl-smi">SampleContext</span> <span class="pl-v">context</span>, <span class="pl-smi">AttributeSample</span> <span class="pl-v">sample</span>) {
         <span class="pl-c">// called once for every exception that occurs during each sample</span>
-        <span class="pl-stj">Throwable</span> ex <span class="pl-k">=</span> sample<span class="pl-k">.</span>getError();
+        <span class="pl-smi">Throwable</span> ex <span class="pl-k">=</span> sample<span class="pl-k">.</span>getError();
         ex<span class="pl-k">.</span>printStackTrace();
     }
 
-    <span class="pl-st">@Override</span>
-    <span class="pl-s">public</span> <span class="pl-st">void</span> <span class="pl-en">post</span>(<span class="pl-stj">SampleContext</span> <span class="pl-v">context</span>, <span class="pl-stj">Activity</span> <span class="pl-v">activity</span>) {
+    <span class="pl-k">@Override</span>
+    <span class="pl-k">public</span> <span class="pl-k">void</span> <span class="pl-en">post</span>(<span class="pl-smi">SampleContext</span> <span class="pl-v">context</span>, <span class="pl-smi">Activity</span> <span class="pl-v">activity</span>) {
         <span class="pl-c">// called once per sample, end of each sample</span>
         <span class="pl-c">// set activity to NOOP to disable sampling reporting</span>
         <span class="pl-k">if</span> (some<span class="pl-k">-</span>condition) {
-            activity<span class="pl-k">.</span>setType(<span class="pl-stj">OpType</span><span class="pl-c1"><span class="pl-k">.</span>NOOP</span>);
+            activity<span class="pl-k">.</span>setType(<span class="pl-smi">OpType</span><span class="pl-c1"><span class="pl-k">.</span>NOOP</span>);
         }
     }
 }</pre></div>
@@ -336,25 +327,25 @@ interval. For example, what if you wanted to setup an action when a specific MBe
 <p>PingJMX <code>AttributeCondition</code> and <code>AttributeAction</code> interfaces allow you to call your action at runtime every time a condition is evaluated to true. See example below:</p>
 
 <div class="highlight highlight-java"><pre><span class="pl-c">// return default or user defined PingFactory implementation</span>
-<span class="pl-stj">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-stj">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
+<span class="pl-smi">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-smi">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
 <span class="pl-c">// create an instance of the pinger that will sample mbeans</span>
-<span class="pl-stj">Pinger</span> sampler <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance();
+<span class="pl-smi">Pinger</span> sampler <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance();
 <span class="pl-c">// create a condition when ThreadCount &gt; 100</span>
-<span class="pl-stj">AttributeCondition</span> myCondition <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-stj">SimpleCondition</span>(<span class="pl-s1"><span class="pl-pds">"</span>java.lang:type=Threading<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>ThreadCount<span class="pl-pds">"</span></span>, <span class="pl-c1">100</span>, <span class="pl-s1"><span class="pl-pds">"</span>&gt;<span class="pl-pds">"</span></span>);
+<span class="pl-smi">AttributeCondition</span> myCondition <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">SimpleCondition</span>(<span class="pl-s"><span class="pl-pds">"</span>java.lang:type=Threading<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>ThreadCount<span class="pl-pds">"</span></span>, <span class="pl-c1">100</span>, <span class="pl-s"><span class="pl-pds">"</span>&gt;<span class="pl-pds">"</span></span>);
 <span class="pl-c">// schedule collection (ping) for given MBean filter and 30000 ms sampling period</span>
-sampler<span class="pl-k">.</span>setSchedule(<span class="pl-stj">Pinger</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>register(myCondition, <span class="pl-k">new</span> <span class="pl-stj">MyAttributeAction</span>())<span class="pl-k">.</span>run();</pre></div>
+sampler<span class="pl-k">.</span>setSchedule(<span class="pl-smi">Pinger</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>register(myCondition, <span class="pl-k">new</span> <span class="pl-smi">MyAttributeAction</span>())<span class="pl-k">.</span>run();</pre></div>
 
 <p>Below is a sample of what <code>MyAttributeAction</code> may look like:</p>
 
-<div class="highlight highlight-java"><pre><span class="pl-s">public</span> <span class="pl-s">class</span> <span class="pl-en">MyAttributeAction</span> <span class="pl-s">implements</span> <span class="pl-e">AttributeAction</span> {
-    <span class="pl-st">@Override</span>
-    <span class="pl-s">public</span> <span class="pl-stj">Object</span> <span class="pl-en">action</span>(<span class="pl-stj">SampleContext</span> <span class="pl-v">context</span>, <span class="pl-stj">AttributeCondition</span> <span class="pl-v">cond</span>, <span class="pl-stj">AttributeSample</span> <span class="pl-v">sample</span>) {
-        <span class="pl-stj">Activity</span> activity <span class="pl-k">=</span> sample<span class="pl-k">.</span>getActivity();
+<div class="highlight highlight-java"><pre><span class="pl-k">public</span> <span class="pl-k">class</span> <span class="pl-en">MyAttributeAction</span> <span class="pl-k">implements</span> <span class="pl-e">AttributeAction</span> {
+    <span class="pl-k">@Override</span>
+    <span class="pl-k">public</span> <span class="pl-smi">Object</span> <span class="pl-en">action</span>(<span class="pl-smi">SampleContext</span> <span class="pl-v">context</span>, <span class="pl-smi">AttributeCondition</span> <span class="pl-v">cond</span>, <span class="pl-smi">AttributeSample</span> <span class="pl-v">sample</span>) {
+        <span class="pl-smi">Activity</span> activity <span class="pl-k">=</span> sample<span class="pl-k">.</span>getActivity();
         <span class="pl-c">// obtain a collection of all sampled metrics</span>
-        <span class="pl-st">Collection&lt;<span class="pl-stj">Snapshot</span>&gt;</span> metrics <span class="pl-k">=</span> activity<span class="pl-k">.</span>getSnapshots();
-        <span class="pl-stj">System</span><span class="pl-k">.</span>out<span class="pl-k">.</span>println(<span class="pl-s1"><span class="pl-pds">"</span>Myaction called with value=<span class="pl-pds">"</span></span> <span class="pl-k">+</span> sample<span class="pl-k">.</span>get()
-            <span class="pl-k">+</span> <span class="pl-s1"><span class="pl-pds">"</span>, age.usec=<span class="pl-pds">"</span></span> <span class="pl-k">+</span> sample<span class="pl-k">.</span>ageUsec()
-            <span class="pl-k">+</span> <span class="pl-s1"><span class="pl-pds">"</span>, count=<span class="pl-pds">"</span></span> <span class="pl-k">+</span> metrics<span class="pl-k">.</span>size());
+        <span class="pl-k">Collection&lt;<span class="pl-smi">Snapshot</span>&gt;</span> metrics <span class="pl-k">=</span> activity<span class="pl-k">.</span>getSnapshots();
+        <span class="pl-smi">System</span><span class="pl-k">.</span>out<span class="pl-k">.</span>println(<span class="pl-s"><span class="pl-pds">"</span>Myaction called with value=<span class="pl-pds">"</span></span> <span class="pl-k">+</span> sample<span class="pl-k">.</span>get()
+            <span class="pl-k">+</span> <span class="pl-s"><span class="pl-pds">"</span>, age.usec=<span class="pl-pds">"</span></span> <span class="pl-k">+</span> sample<span class="pl-k">.</span>ageUsec()
+            <span class="pl-k">+</span> <span class="pl-s"><span class="pl-pds">"</span>, count=<span class="pl-pds">"</span></span> <span class="pl-k">+</span> metrics<span class="pl-k">.</span>size());
         <span class="pl-k">return</span> <span class="pl-c1">null</span>;
     }
 }</pre></div>
@@ -386,9 +377,16 @@ sampler<span class="pl-k">.</span>setSchedule(<span class="pl-stj">Pinger</span>
 <li>jkoolcloud.com (<a href="https://www.jkoolcloud.com">https://www.jkoolcloud.com</a>)</li>
 <li>AutoPilot M6 (<a href="http://www.nastel.com/products/autopilot-m6.html">http://www.nastel.com/products/autopilot-m6.html</a>)</li>
 </ul>
-      </section>
-    </div>
 
-    
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/Nastel/PingJMX">PingJMX</a> is maintained by <a href="https://github.com/Nastel">Nastel</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
   </body>
 </html>
+
