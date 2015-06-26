@@ -54,9 +54,19 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		nvString.append("OBJ:Streams");
 		toString(nvString, event.getSource()).append(event.getOperation().getName()).append("\\Events").append(FIELD_SEP);
 
-		if (event.getCorrelator() != null) nvString.append("corrid=").append(event.getCorrelator()).append(FIELD_SEP);
+		if (event.getCorrelator() != null) {
+			Object [] cids = event.getCorrelator().toArray();
+			if (cids.length > 0) {
+				nvString.append("corrid=").append(cids[0]).append(FIELD_SEP);
+			}
+		}
+		if (event.getTag() != null) {
+			Object [] cids = event.getTag().toArray();
+			if (cids.length > 0) {
+				nvString.append("tag=").append(cids[0]).append(FIELD_SEP);
+			}
+		}
 		if (event.getOperation().getUser() != null) nvString.append("user=").append(event.getOperation().getUser()).append(FIELD_SEP);
-		if (event.getTag() != null) nvString.append("tag=").append(event.getTag()).append(FIELD_SEP);
 		if (event.getLocation() != null) nvString.append("Self\\location=").append(event.getLocation()).append(FIELD_SEP);
 		nvString.append("Self\\level=").append(event.getOperation().getSeverity()).append(FIELD_SEP);
 		nvString.append("Self\\pid=").append(event.getOperation().getPID()).append(FIELD_SEP);
@@ -78,7 +88,12 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		nvString.append("OBJ:Streams");
 		toString(nvString, event.getSource()).append("\\Activities").append(FIELD_SEP);
 
-		if (event.getCorrelator() != null) nvString.append("Self\\corrid=").append(event.getCorrelator()).append(FIELD_SEP);
+		if (event.getCorrelator() != null) {
+			Object [] cids = event.getCorrelator().toArray();
+			if (cids.length > 0) {
+				nvString.append("Self\\corrid=").append(cids[0]).append(FIELD_SEP);
+			}
+		}
 		if (event.getUser() != null) nvString.append("user=").append(event.getUser()).append(FIELD_SEP);
 		if (event.getLocation() != null) nvString.append("Self\\location=").append(event.getLocation()).append(FIELD_SEP);
 		nvString.append("Self\\level=").append(event.getSeverity()).append(FIELD_SEP);
