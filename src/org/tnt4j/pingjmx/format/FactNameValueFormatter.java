@@ -72,7 +72,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		nvString.append("Self\\pid=").append(event.getOperation().getPID()).append(FIELD_SEP);
 		nvString.append("Self\\tid=").append(event.getOperation().getTID()).append(FIELD_SEP);
 		nvString.append("Self\\tid=").append(event.getOperation().getTID()).append(FIELD_SEP);
-		nvString.append("Self\\elapsed.usec=").append(event.getOperation().getElapsedTime()).append(FIELD_SEP);
+		nvString.append("Self\\elapsed.usec=").append(event.getOperation().getElapsedTimeUsec()).append(FIELD_SEP);
 		
 		Collection<Snapshot> slist = event.getOperation().getSnapshots();
 		for (Snapshot snap: slist) {
@@ -101,7 +101,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		nvString.append("Self\\pid=").append(event.getPID()).append(FIELD_SEP);
 		nvString.append("Self\\tid=").append(event.getTID()).append(FIELD_SEP);
 		nvString.append("Self\\snap.count=").append(event.getSnapshotCount()).append(FIELD_SEP);
-		nvString.append("Self\\elapsed.usec=").append(event.getElapsedTime()).append(FIELD_SEP);
+		nvString.append("Self\\elapsed.usec=").append(event.getElapsedTimeUsec()).append(FIELD_SEP);
 
 		Collection<Snapshot> slist = event.getSnapshots();
 		for (Snapshot snap: slist) {

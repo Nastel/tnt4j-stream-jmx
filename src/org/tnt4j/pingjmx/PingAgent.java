@@ -196,7 +196,7 @@ class AgentSampleListener implements SampleListener {
 			System.out.println(activity.getName()
 				+ ": sample.count=" + context.getSampleCount()
 				+ ", mbean.count=" + context.getMBeanServer().getMBeanCount()
-				+ ", elasped.usec=" + activity.getElapsedTime() 
+				+ ", elasped.usec=" + activity.getElapsedTimeUsec() 
 				+ ", snap.count=" + activity.getSnapshotCount() 
 				+ ", id.count=" + activity.getIdCount()
 				+ ", noop.count=" + context.getTotalNoopCount()
