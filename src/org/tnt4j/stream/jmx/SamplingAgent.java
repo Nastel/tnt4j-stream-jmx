@@ -73,18 +73,20 @@ public class SamplingAgent {
 	/**
 	 * Main entry point for running as a standalone application (test only).
 	 * 
-	 * @param args argument list: mbean-filter sample_time_ms
+	 * @param args
+	 *            argument list: mbean-filter sample_time_ms
 	 */
 	public static void main(String[] args) throws InterruptedException, NumberFormatException, IOException {
 		if (args.length < 3) {
 			System.out.println("Usage: mbean-filter sample-ms wait-ms(e.g \"*:*\" 30000");
 		}
 		try {
-		sample(args[0], Integer.parseInt(args[1]), TimeUnit.MILLISECONDS);
-		System.out.println("SamplingAgent: filter=" + args[0] + ", sample.ms=" + args[1] + ", jmx.sample.list=" + STREAM_AGENTS);
-		synchronized (platformJmx) {
-			platformJmx.wait(Long.parseLong(args[2]));
-		}
+			sample(args[0], Integer.parseInt(args[1]), TimeUnit.MILLISECONDS);
+			System.out.println("SamplingAgent: filter=" + args[0] + ", sample.ms=" + args[1] + ", jmx.sample.list="
+			        + STREAM_AGENTS);
+			synchronized (platformJmx) {
+				platformJmx.wait(Long.parseLong(args[2]));
+			}
 		} catch (Throwable ex) {
 			ex.printStackTrace();
 		}
