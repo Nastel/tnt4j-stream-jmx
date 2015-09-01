@@ -2,7 +2,7 @@
 -->
 <project name="PingJmxBuildProps">
   <!-- Installation package directories -->
-  <property name="project-build"       value="${basedir}/../build/pingjmx"/>
+  <property name="project-build"       value="${basedir}/../build/tnt4j-stream-jmx"/>
   <property name="project-install"     value="${project-build}/install"/>
   
   <!-- Default compilation settings -->

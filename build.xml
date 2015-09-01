@@ -1,4 +1,4 @@
-<project name="PingJMX" default="ping-jmx" basedir=".">
+<project name="tnt4j-stream-jmx" default="ping-jmx" basedir=".">
 
 	<echo message="Processing ${ant.project.name}${line.separator}" level="info"/>
 
@@ -16,8 +16,8 @@
 	<property name="classes"   value="classes"/>
 	<property name="bin"       value="bin"/>
 	<property name="doc"       value="${project-build}/doc"/>
-	<property name="jar"       value="${project-build}/tnt4j-ping-jmx.jar"/>
-	<property name="docpkg"    value="org.tnt4j.pingjmx.*"/>
+	<property name="jar"       value="${project-build}/tnt4j-stream-jmx.jar"/>
+	<property name="docpkg"    value="org.tnt4j.stream.jmx.*"/>
 
 	<target name="init">
 		<tstamp/>
@@ -40,8 +40,8 @@
 		<javadoc destdir="${doc}"
 	             sourcepath="${src}"
 	             packagenames="${docpkg}"
-	             Doctitle="PingJMX Framework"
-	             Windowtitle="PingJMX Framework"
+	             Doctitle="tnt4j-stream-jmx Framework"
+	             Windowtitle="tnt4j-stream-jmx Framework"
 	             Header="Version ${version}"
 	             access="protected"
 	             use="true"
@@ -78,13 +78,13 @@
 		<delete dir="${project-build}" includes="*.jar,*-all.zip"/>
 	</target>
 
-	<target name="ping-jmx" depends="init,compile" description="build ${prodname} package">
+	<target name="stream-jmx" depends="init,compile" description="build ${prodname} package">
 		<jar jarfile="${jar}" basedir="${classes}" update="false">
 			<manifest>
 				<attribute name="Implementation-Vendor" value="${vendor}"/>
 				<attribute name="Implementation-Title" value="${prodname}"/>
 				<attribute name="Implementation-Version" value="${version}"/>
-				<attribute name="Premain-Class" value="org.tnt4j.pingjmx.PingAgent"/>
+				<attribute name="Premain-Class" value="org.tnt4j.stream.jmx.PingAgent"/>
 			</manifest>
 		</jar>
 		<copy todir="${project-build}">
@@ -102,12 +102,12 @@
 		</copy>
 		<copy todir="${project-build}/bin">
 			<fileset dir="${bin}">
-				<include name="pinger.*"/>
+				<include name="stream-jmx.*"/>
 			</fileset>
 		</copy>
 		<echo message="Build of ${ant.project.name} Complete${line.separator}" level="info"/>
 	</target>
 
-	<target name="all" depends="ping-jmx,doc" description="generate the distribution"/>
+	<target name="all" depends="stream-jmx,doc" description="generate the distribution"/>
 	<target name="rebuild" depends="clean,all" description="clean and build"/>
 </project>
