@@ -61,7 +61,7 @@ java runtime containers.</p>
 <li>Reduce cyber security risk: No need to enable remote JMX, SSL, security, ports, firewalls</li>
 <li>Integration with monitoring tools for alerting, pro-active monitoring (AutoPilot M6)</li>
 <li>Integration with cloud analytics tools (<a href="https://www.jkoolcloud.com">https://www.jkoolcloud.com</a> via JESL)</li>
-<li>Integration with log4j (via TNT4J event sinks)</li>
+<li>Integration with log4j, slf4j, jkoocloud (via TNT4J event sinks)</li>
 <li>Embedded application state dump framework for diagnostics</li>
 <li>Easily build your own extensions, monitors</li>
 </ul>
@@ -76,43 +76,43 @@ For more information on JESL visit: <a href="http://nastel.github.io/JESL/">http
 
 <p>Running Stream-JMX as javaagent:</p>
 
-<div class="highlight highlight-java"><pre>java <span class="pl-k">-</span>javaagent<span class="pl-k">:</span>tnt4j<span class="pl-k">-</span>stream<span class="pl-k">-</span>jmx<span class="pl-k">.</span>jar<span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>*:*!30000<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-smi">Dlog4j</span><span class="pl-k">.</span>configuration<span class="pl-k">=</span>file<span class="pl-k">:</span>log4j<span class="pl-k">.</span>properties <span class="pl-k">-</span><span class="pl-smi">Dtnt4j</span><span class="pl-k">.</span>config<span class="pl-k">=</span>tnt4j<span class="pl-k">.</span>properties <span class="pl-k">-</span>classpath <span class="pl-s"><span class="pl-pds">"</span>tnt4j-stream-jmx.jar;lib/tnt4j-api-final-all.jar<span class="pl-pds">"</span></span> your<span class="pl-k">.</span>class<span class="pl-k">.</span>name your<span class="pl-k">-</span>args</pre></div>
+<div class="highlight highlight-java"><pre>java <span class="pl-k">-</span>javaagent<span class="pl-k">:</span>tnt4j<span class="pl-k">-</span>stream<span class="pl-k">-</span>jmx<span class="pl-k">.</span>jar<span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>*:*!30000<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-smi">Dtnt4j</span><span class="pl-k">.</span>config<span class="pl-k">=</span>tnt4j<span class="pl-k">.</span>properties <span class="pl-k">-</span>classpath <span class="pl-s"><span class="pl-pds">"</span>tnt4j-stream-jmx.jar;lib/tnt4j-api-final-all.jar<span class="pl-pds">"</span></span> your<span class="pl-k">.</span>class<span class="pl-k">.</span>name your<span class="pl-k">-</span>args</pre></div>
 
 <p>Imbed Stream-JMX code into your application:</p>
 
-<div class="highlight highlight-java"><pre><span class="pl-c">// obtain PingFactory instance</span>
-<span class="pl-smi">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-smi">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
-<span class="pl-c">// create an instance of the pinger that will sample mbeans</span>
-<span class="pl-smi">Pinger</span> sampler <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance();
+<div class="highlight highlight-java"><pre><span class="pl-c">// obtain SamplerFactory instance</span>
+<span class="pl-smi">SamplerFactory</span> factory <span class="pl-k">=</span> <span class="pl-smi">DefaultSamplerFactory</span><span class="pl-k">.</span>getInstance();
+<span class="pl-c">// create an instance of the sampler that will sample mbeans</span>
+<span class="pl-smi">Sampler</span> sampler <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance();
 <span class="pl-c">// schedule collection (ping) for given MBean filter and 30000 ms sampling period</span>
-sampler<span class="pl-k">.</span>setSchedule(<span class="pl-smi">Pinger</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>run();</pre></div>
+sampler<span class="pl-k">.</span>setSchedule(<span class="pl-smi">Sampler</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>run();</pre></div>
 
 <p><b>NOTE:</b> <code>setSchedule(..).run()</code> sequence must be called to run the schedule. <code>setSchedule(..)</code> just sets the
 scheduling parameters, <code>run()</code> executes the schedule.</p>
 
 <p>To schedule metric collection for a specific MBean server:</p>
 
-<div class="highlight highlight-java"><pre><span class="pl-c">// obtain PingFactory instance</span>
-<span class="pl-smi">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-smi">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
-<span class="pl-c">// create an instance of the pinger that will sample mbeans</span>
-<span class="pl-smi">Pinger</span> sampler <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance(<span class="pl-smi">ManagementFactory</span><span class="pl-k">.</span>getPlatformMBeanServer());
+<div class="highlight highlight-java"><pre><span class="pl-c">// obtain SamplerFactory instance</span>
+<span class="pl-smi">SamplerFactory</span> factory <span class="pl-k">=</span> <span class="pl-smi">DefaultSamplerFactory</span><span class="pl-k">.</span>getInstance();
+<span class="pl-c">// create an instance of the sampler that will sample mbeans</span>
+<span class="pl-smi">Sampler</span> sampler <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance(<span class="pl-smi">ManagementFactory</span><span class="pl-k">.</span>getPlatformMBeanServer());
 <span class="pl-c">// schedule collection (ping) for given MBean filter and 30000 ms sampling period</span>
-sampler<span class="pl-k">.</span>setSchedule(<span class="pl-smi">Pinger</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>run();</pre></div>
+sampler<span class="pl-k">.</span>setSchedule(<span class="pl-smi">Sampler</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>run();</pre></div>
 
 <p>Below is an example of how to sample all registered mbean servers:</p>
 
-<div class="highlight highlight-java"><pre><span class="pl-c">// obtain PingFactory instance</span>
-<span class="pl-smi">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-smi">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
+<div class="highlight highlight-java"><pre><span class="pl-c">// obtain SamplerFactory instance</span>
+<span class="pl-smi">SamplerFactory</span> factory <span class="pl-k">=</span> <span class="pl-smi">DefaultSamplerFactory</span><span class="pl-k">.</span>getInstance();
 <span class="pl-c">// find other registered mbean servers</span>
 <span class="pl-k">ArrayList&lt;<span class="pl-smi">MBeanServer</span>&gt;</span> mlist <span class="pl-k">=</span> <span class="pl-smi">MBeanServerFactory</span><span class="pl-k">.</span>findMBeanServer(<span class="pl-c1">null</span>);
 <span class="pl-k">for</span> (<span class="pl-smi">MBeanServer</span> server<span class="pl-k">:</span> mlist) {
-    <span class="pl-smi">Pinger</span> jmxp <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance(server);
-    jmxp<span class="pl-k">.</span>setSchedule(<span class="pl-smi">Pinger</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>run();
+    <span class="pl-smi">Sampler</span> jmxp <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance(server);
+    jmxp<span class="pl-k">.</span>setSchedule(<span class="pl-smi">Sampler</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>run();
 }</pre></div>
 
-<p>Alternatively, Stream-JMX provides a helper class <code>PingAgent</code> that lets you schedule sampling for all registered <code>MBeanServer</code> instances.</p>
+<p>Alternatively, Stream-JMX provides a helper class <code>SamplingAgent</code> that lets you schedule sampling for all registered <code>MBeanServer</code> instances.</p>
 
-<div class="highlight highlight-java"><pre><span class="pl-smi">PingAgent</span><span class="pl-k">.</span>ping(<span class="pl-smi">Pinger</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">60000</span>, <span class="pl-smi">TimeUnit</span><span class="pl-c1"><span class="pl-k">.</span>MILLISECONDS</span>);</pre></div>
+<div class="highlight highlight-java"><pre><span class="pl-smi">SamplingAgent</span><span class="pl-k">.</span>sample(<span class="pl-smi">Sampler</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">60000</span>, <span class="pl-smi">TimeUnit</span><span class="pl-c1"><span class="pl-k">.</span>MILLISECONDS</span>);</pre></div>
 
 <p><b>NOTE:</b> Sampled MBean attributes and associated values are stored in a collection of <code>Snapshot</code> objects stored within <code>Activity</code> instance. Current <code>Activity</code> instance can be obtained via <code>AttributeSample</code> passed when calling listeners such as <code>AttributeCondition</code>, <code>SampleListener</code>. Snapshots can be accessed using <code>Activity.getSnapshots()</code> method call.</p>
 
@@ -123,18 +123,18 @@ sampler<span class="pl-k">.</span>setSchedule(<span class="pl-smi">Pinger</span>
 <h2>
 <a id="running-stream-jmx-as-standalone-app" class="anchor" href="#running-stream-jmx-as-standalone-app" aria-hidden="true"><span class="octicon octicon-link"></span></a>Running Stream-JMX as standalone app</h2>
 
-<p>Example below runs <code>PingAgent</code> helper class as a standalone java application with a given MBean filter <code>"*:*"</code>, sampling period in milliseconds (<code>10000</code>), and time to run in milliseconds (<code>60000</code>):</p>
+<p>Example below runs <code>SamplingAgent</code> helper class as a standalone java application with a given MBean filter <code>"*:*"</code>, sampling period in milliseconds (<code>10000</code>), and time to run in milliseconds (<code>60000</code>):</p>
 
-<div class="highlight highlight-java"><pre>java <span class="pl-k">-</span><span class="pl-smi">Dlog4j</span><span class="pl-k">.</span>configuration<span class="pl-k">=</span>file<span class="pl-k">:</span>log4j<span class="pl-k">.</span>properties <span class="pl-k">-</span><span class="pl-smi">Dorg</span><span class="pl-k">.</span>tnt4j<span class="pl-k">.</span>pingagent<span class="pl-k">.</span>trace<span class="pl-k">=</span><span class="pl-c1">true</span> <span class="pl-k">-</span>classpath <span class="pl-s"><span class="pl-pds">"</span>tnt4j-ping-jmx.jar;lib/tnt4j-api-final-all.jar<span class="pl-pds">"</span></span> <span class="pl-smi">org.tnt4j.pingjmx<span class="pl-k">.</span>PingAgent</span> <span class="pl-s"><span class="pl-pds">"</span>*:*<span class="pl-pds">"</span></span> <span class="pl-c1">10000</span> <span class="pl-c1">60000</span></pre></div>
+<div class="highlight highlight-java"><pre>java <span class="pl-k">-</span><span class="pl-smi">Dorg</span><span class="pl-k">.</span>tnt4j<span class="pl-k">.</span>stream<span class="pl-k">.</span>jmx<span class="pl-k">.</span>agent<span class="pl-k">.</span>trace<span class="pl-k">=</span><span class="pl-c1">true</span> <span class="pl-k">-</span>classpath <span class="pl-s"><span class="pl-pds">"</span>tnt4j-stream-jmx.jar;lib/tnt4j-api-final-all.jar<span class="pl-pds">"</span></span> <span class="pl-smi">org.tnt4j.stream.jmx<span class="pl-k">.</span>SamplingAgent</span> <span class="pl-s"><span class="pl-pds">"</span>*:*<span class="pl-pds">"</span></span> <span class="pl-c1">10000</span> <span class="pl-c1">60000</span></pre></div>
 
 <h2>
 <a id="running-stream-jmx-as--javaagent" class="anchor" href="#running-stream-jmx-as--javaagent" aria-hidden="true"><span class="octicon octicon-link"></span></a>Running Stream-JMX as -javaagent</h2>
 
 <p>Stream-JMX can be invoked as <code>-javaagent</code> without changing your application code:</p>
 
-<div class="highlight highlight-java"><pre>java <span class="pl-k">-</span>javaagent<span class="pl-k">:</span>tnt4j<span class="pl-k">-</span>ping<span class="pl-k">-</span>jmx<span class="pl-k">.</span>jar<span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>*:*!30000<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-smi">Dlog4j</span><span class="pl-k">.</span>configuration<span class="pl-k">=</span>file<span class="pl-k">:</span>log4j<span class="pl-k">.</span>properties <span class="pl-k">-</span><span class="pl-smi">Dtnt4j</span><span class="pl-k">.</span>config<span class="pl-k">=</span>tnt4j<span class="pl-k">.</span>properties <span class="pl-k">-</span>classpath <span class="pl-s"><span class="pl-pds">"</span>tnt4j-ping-jmx.jar;lib/tnt4j-api-final-all.jar<span class="pl-pds">"</span></span> your<span class="pl-k">.</span>class<span class="pl-k">.</span>name your<span class="pl-k">-</span>args</pre></div>
+<div class="highlight highlight-java"><pre>java <span class="pl-k">-</span>javaagent<span class="pl-k">:</span>tnt4j<span class="pl-k">-</span>stream<span class="pl-k">-</span>jmx<span class="pl-k">.</span>jar<span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>*:*!30000<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-smi">Dtnt4j</span><span class="pl-k">.</span>config<span class="pl-k">=</span>tnt4j<span class="pl-k">.</span>properties <span class="pl-k">-</span>classpath <span class="pl-s"><span class="pl-pds">"</span>tnt4j-stream-jmx.jar;lib/tnt4j-api-final-all.jar<span class="pl-pds">"</span></span> your<span class="pl-k">.</span>class<span class="pl-k">.</span>name your<span class="pl-k">-</span>args</pre></div>
 
-<p>The options are <code>-javaagent:tnt4j-ping-jmx.jar="mbean-filter!sample-time-ms"</code>, classpath must include pingjmx jar files as well as locations of log4j and tnt4j configuration files.</p>
+<p>The options are <code>-javaagent:tnt4j-stream-jmx.jar="mbean-filter!sample-time-ms"</code>, classpath must include pingjmx jar files as well as locations of log4j and tnt4j configuration files.</p>
 
 <h2>
 <a id="where-do-the-streams-go" class="anchor" href="#where-do-the-streams-go" aria-hidden="true"><span class="octicon octicon-link"></span></a>Where do the streams go?</h2>
@@ -142,16 +142,49 @@ sampler<span class="pl-k">.</span>setSchedule(<span class="pl-smi">Pinger</span>
 <p>Stream-JMX streams all collected metrics based on a scheduled interval via TNT4J event streaming framework.
 All streams are written into TNT4J event sinks defined in <code>tnt4j.properties</code> file which is defined by <code>-Dtnt4j.config=tnt4j.properties</code> property. </p>
 
-<p>Below is an example of TNT4J stream definition where all Stream-JMX streams are written into a socket event sink
-<code>com.nastel.jkool.tnt4j.sink.SocketEventSinkFactory</code>, formatted by <code>org.tnt4j.pingjmx.format.FactNameValueFormatter</code> :</p>
+<p>To stream Stream-JMX to jkool cloud (<a href="https://www.jkoolcloud.com">https://www.jkoolcloud.com</a>): (Requires JESL libraries (see <a href="https://github.com/Nastel/JESL">https://github.com/Nastel/JESL</a>))</p>
 
 <pre><code>;Stanza used for Stream-JMX sources
 {
-    source: org.tnt4j.pingjmx
+    source: org.tnt4j.stream.jmx
     source.factory: com.nastel.jkool.tnt4j.source.SourceFactoryImpl
     source.factory.GEOADDR: NewYork
     source.factory.DATACENTER: YourDC
     source.factory.RootFQN: SERVER=?#DATACENTER=?#GEOADDR=? 
+    source.factory.RootSSN: tnt4j-stream-jmx    
+
+    tracker.factory: com.nastel.jkool.tnt4j.tracker.DefaultTrackerFactory
+    dump.sink.factory: com.nastel.jkool.tnt4j.dump.DefaultDumpSinkFactory
+
+    ; Event sink definition where all streams are recorded
+    event.sink.factory: com.nastel.jkool.tnt4j.sink.BufferedEventSinkFactory
+
+    ; Event Sink configuration for streaming to jKool Cloud
+    ; event.sink.factory.EventSinkFactory.Filename: jkoocloud.json
+    event.sink.factory.EventSinkFactory.Url: http://data.jkoolcloud.com:6580
+    event.sink.factory.EventSinkFactory.Token: ACCESS-TOKEN
+    event.formatter: com.nastel.jkool.tnt4j.format.JSONFormatter
+
+    ; Configure default sink filter 
+    event.sink.factory.Filter: com.nastel.jkool.tnt4j.filters.EventLevelTimeFilter
+    event.sink.factory.Filter.Level: TRACE
+
+    tracking.selector: com.nastel.jkool.tnt4j.selector.DefaultTrackingSelector
+    tracking.selector.Repository: com.nastel.jkool.tnt4j.repository.FileTokenRepository
+}
+</code></pre>
+
+<p>Below is an example of TNT4J stream definition where all Stream-JMX streams are written into a socket event sink
+<code>com.nastel.jkool.tnt4j.sink.SocketEventSinkFactory</code>, formatted by <code>org.tnt4j.stream.jmx.format.FactNameValueFormatter</code> :</p>
+
+<pre><code>;Stanza used for Stream-JMX sources
+{
+    source: org.tnt4j.stream.jmx
+    source.factory: com.nastel.jkool.tnt4j.source.SourceFactoryImpl
+    source.factory.GEOADDR: NewYork
+    source.factory.DATACENTER: YourDC
+    source.factory.RootFQN: SERVER=?#DATACENTER=?#GEOADDR=? 
+    source.factory.RootSSN: tnt4j-stream-jmx    
 
     tracker.factory: com.nastel.jkool.tnt4j.tracker.DefaultTrackerFactory
     dump.sink.factory: com.nastel.jkool.tnt4j.dump.DefaultDumpSinkFactory
@@ -168,7 +201,7 @@ All streams are written into TNT4J event sinks defined in <code>tnt4j.properties
     event.sink.factory.Filter: com.nastel.jkool.tnt4j.filters.EventLevelTimeFilter
     event.sink.factory.Filter.Level: TRACE
 
-    event.formatter: org.tnt4j.pingjmx.format.FactNameValueFormatter
+    event.formatter: org.tnt4j.stream.jmx.format.FactNameValueFormatter
     tracking.selector: com.nastel.jkool.tnt4j.selector.DefaultTrackingSelector
     tracking.selector.Repository: com.nastel.jkool.tnt4j.repository.FileTokenRepository
 }
@@ -178,11 +211,12 @@ All streams are written into TNT4J event sinks defined in <code>tnt4j.properties
 
 <pre><code>;Stanza used for Stream-JMX sources
 {
-    source: org.tnt4j.pingjmx
+    source: org.tnt4j.stream.jmx
     source.factory: com.nastel.jkool.tnt4j.source.SourceFactoryImpl
     source.factory.GEOADDR: NewYork
     source.factory.DATACENTER: YourDC
     source.factory.RootFQN: SERVER=?#DATACENTER=?#GEOADDR=? 
+    source.factory.RootSSN: tnt4j-stream-jmx    
 
     tracker.factory: com.nastel.jkool.tnt4j.tracker.DefaultTrackerFactory
     dump.sink.factory: com.nastel.jkool.tnt4j.dump.DefaultDumpSinkFactory
@@ -196,7 +230,7 @@ All streams are written into TNT4J event sinks defined in <code>tnt4j.properties
     event.sink.factory.Filter: com.nastel.jkool.tnt4j.filters.EventLevelTimeFilter
     event.sink.factory.Filter.Level: TRACE
 
-    event.formatter: org.tnt4j.pingjmx.format.FactNameValueFormatter
+    event.formatter: org.tnt4j.stream.jmx.format.FactNameValueFormatter
     tracking.selector: com.nastel.jkool.tnt4j.selector.DefaultTrackingSelector
     tracking.selector.Repository: com.nastel.jkool.tnt4j.repository.FileTokenRepository
 }
@@ -250,32 +284,32 @@ All streams are written into TNT4J event sinks defined in <code>tnt4j.properties
 <p>You may create your own dump providers and handlers (<a href="https://github.com/Nastel/TNT4J/wiki/Getting-Started#application-state-dumps">https://github.com/Nastel/TNT4J/wiki/Getting-Started#application-state-dumps</a>)</p>
 
 <h2>
-<a id="overriding-default-pingfactory" class="anchor" href="#overriding-default-pingfactory" aria-hidden="true"><span class="octicon octicon-link"></span></a>Overriding default <code>PingFactory</code>
+<a id="overriding-default-samplerfactory" class="anchor" href="#overriding-default-samplerfactory" aria-hidden="true"><span class="octicon octicon-link"></span></a>Overriding default <code>SamplerFactory</code>
 </h2>
 
-<p><code>PingFactory</code> instances are used to generate <code>Pinger</code> implementation for a specific runtime environment. Stream-JMX supplies pinger and ping factories for standard JVMs, JBoss,
-WebSphere Application Server. You may want to override default <code>PingFactory</code> with your own or an altenative by specifying:</p>
+<p><code>SamplerFactory</code> instances are used to generate <code>Sampler</code> implementation for a specific runtime environment. Stream-JMX supplies sampler and ping factories for standard JVMs, JBoss,
+WebSphere Application Server. You may want to override default <code>SamplerFactory</code> with your own or an altenative by specifying:</p>
 
-<div class="highlight highlight-java"><pre>java <span class="pl-k">-</span><span class="pl-smi">Dorg</span><span class="pl-k">.</span>tnt4j<span class="pl-k">.</span>ping<span class="pl-k">.</span>factory<span class="pl-k">=</span><span class="pl-smi">org.tnt4j.pingjmx<span class="pl-k">.</span>PlatformPingFactory</span> <span class="pl-c1">...</span></pre></div>
+<div class="highlight highlight-java"><pre>java <span class="pl-k">-</span><span class="pl-smi">Dorg</span><span class="pl-k">.</span>tnt4j<span class="pl-k">.</span>stream<span class="pl-k">.</span>jmx<span class="pl-k">.</span>factory<span class="pl-k">=</span><span class="pl-smi">org.tnt4j.stream.jmx<span class="pl-k">.</span>PlatformSamplerFactory</span> <span class="pl-c1">...</span></pre></div>
 
-<p><code>PingFactory</code> is used to generate instances of the underlying pinger implementatons (objects that provide sampling of underlying mbeans).</p>
+<p><code>SamplerFactory</code> is used to generate instances of the underlying sampler implementatons (objects that provide sampling of underlying mbeans).</p>
 
-<div class="highlight highlight-java"><pre><span class="pl-c">// return default or user defined PingFactory implementation</span>
-<span class="pl-smi">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-smi">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
+<div class="highlight highlight-java"><pre><span class="pl-c">// return default or user defined SamplerFactory implementation</span>
+<span class="pl-smi">SamplerFactory</span> factory <span class="pl-k">=</span> <span class="pl-smi">DefaultSamplerFactory</span><span class="pl-k">.</span>getInstance();
 <span class="pl-c1">...</span></pre></div>
 
 <h2>
 <a id="managing-sample-behavior" class="anchor" href="#managing-sample-behavior" aria-hidden="true"><span class="octicon octicon-link"></span></a>Managing Sample Behavior</h2>
 
-<p>Stream-JMX provides a way to intercept sampling events such as pre, during an post for each sample run and control sample behavior. See <code>SampleListener</code> interface for more details. Applications may register more than one listener per <code>Pinger</code>. Each listener is called in registration order.</p>
+<p>Stream-JMX provides a way to intercept sampling events such as pre, during an post for each sample run and control sample behavior. See <code>SampleListener</code> interface for more details. Applications may register more than one listener per <code>Sampler</code>. Each listener is called in registration order.</p>
 
 <p>In addition to intercepting sample events, applications may want to control how one ore more attributes are sampled and whether each sample is reported/logged. See example below:</p>
 
-<div class="highlight highlight-java"><pre><span class="pl-c">// return default or user defined PingFactory implementation</span>
-<span class="pl-smi">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-smi">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
-<span class="pl-c">// create an instance of the pinger that will sample mbeans</span>
-<span class="pl-smi">Pinger</span> sampler <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance();
-sampler<span class="pl-k">.</span>setSchedule(<span class="pl-smi">Pinger</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>addListener(<span class="pl-k">new</span> <span class="pl-smi">MySampleListener</span>()))<span class="pl-k">.</span>run();</pre></div>
+<div class="highlight highlight-java"><pre><span class="pl-c">// return default or user defined SamplerFactory implementation</span>
+<span class="pl-smi">SamplerFactory</span> factory <span class="pl-k">=</span> <span class="pl-smi">DefaultSamplerFactory</span><span class="pl-k">.</span>getInstance();
+<span class="pl-c">// create an instance of the sampler that will sample mbeans</span>
+<span class="pl-smi">Sampler</span> sampler <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance();
+sampler<span class="pl-k">.</span>setSchedule(<span class="pl-smi">Sampler</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>addListener(<span class="pl-k">new</span> <span class="pl-smi">MySampleListener</span>()))<span class="pl-k">.</span>run();</pre></div>
 
 <p>Below is a sample of what <code>MySampleListener</code> may look like:</p>
 
@@ -325,14 +359,14 @@ interval. For example, what if you wanted to setup an action when a specific MBe
 
 <p>Stream-JMX <code>AttributeCondition</code> and <code>AttributeAction</code> interfaces allow you to call your action at runtime every time a condition is evaluated to true. See example below:</p>
 
-<div class="highlight highlight-java"><pre><span class="pl-c">// return default or user defined PingFactory implementation</span>
-<span class="pl-smi">PingFactory</span> factory <span class="pl-k">=</span> <span class="pl-smi">DefaultPingFactory</span><span class="pl-k">.</span>getInstance();
-<span class="pl-c">// create an instance of the pinger that will sample mbeans</span>
-<span class="pl-smi">Pinger</span> sampler <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance();
+<div class="highlight highlight-java"><pre><span class="pl-c">// return default or user defined SamplerFactory implementation</span>
+<span class="pl-smi">SamplerFactory</span> factory <span class="pl-k">=</span> <span class="pl-smi">DefaultSamplerFactory</span><span class="pl-k">.</span>getInstance();
+<span class="pl-c">// create an instance of the sampler that will sample mbeans</span>
+<span class="pl-smi">Sampler</span> sampler <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance();
 <span class="pl-c">// create a condition when ThreadCount &gt; 100</span>
 <span class="pl-smi">AttributeCondition</span> myCondition <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">SimpleCondition</span>(<span class="pl-s"><span class="pl-pds">"</span>java.lang:type=Threading<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>ThreadCount<span class="pl-pds">"</span></span>, <span class="pl-c1">100</span>, <span class="pl-s"><span class="pl-pds">"</span>&gt;<span class="pl-pds">"</span></span>);
 <span class="pl-c">// schedule collection (ping) for given MBean filter and 30000 ms sampling period</span>
-sampler<span class="pl-k">.</span>setSchedule(<span class="pl-smi">Pinger</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>register(myCondition, <span class="pl-k">new</span> <span class="pl-smi">MyAttributeAction</span>())<span class="pl-k">.</span>run();</pre></div>
+sampler<span class="pl-k">.</span>setSchedule(<span class="pl-smi">Sampler</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">30000</span>)<span class="pl-k">.</span>register(myCondition, <span class="pl-k">new</span> <span class="pl-smi">MyAttributeAction</span>())<span class="pl-k">.</span>run();</pre></div>
 
 <p>Below is a sample of what <code>MyAttributeAction</code> may look like:</p>
 
@@ -372,7 +406,6 @@ sampler<span class="pl-k">.</span>setSchedule(<span class="pl-smi">Pinger</span>
 
 <ul>
 <li>TNT4J (<a href="https://github.com/Nastel/TNT4J">https://github.com/Nastel/TNT4J</a>)</li>
-<li>Log4J (<a href="http://logging.apache.org/log4j/1.2/">http://logging.apache.org/log4j/1.2/</a>)</li>
 <li>jkoolcloud.com (<a href="https://www.jkoolcloud.com">https://www.jkoolcloud.com</a>)</li>
 <li>AutoPilot M6 (<a href="http://www.nastel.com/products/autopilot-m6.html">http://www.nastel.com/products/autopilot-m6.html</a>)</li>
 </ul>
