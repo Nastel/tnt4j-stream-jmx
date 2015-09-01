@@ -77,7 +77,7 @@ for (MBeanServer server: mlist) {
 ```
 Alternatively, Stream-JMX provides a helper class `SamplingAgent` that lets you schedule sampling for all registered `MBeanServer` instances.
 ```java
-SamplingAgent.ping(Sampler.JMX_FILTER_ALL, 60000, TimeUnit.MILLISECONDS);
+SamplingAgent.sample(Sampler.JMX_FILTER_ALL, 60000, TimeUnit.MILLISECONDS);
 ```
 <b>NOTE:</b> Sampled MBean attributes and associated values are stored in a collection of `Snapshot` objects stored within `Activity` instance. Current `Activity` instance can be obtained via `AttributeSample` passed when calling listeners such as `AttributeCondition`, `SampleListener`. Snapshots can be accessed using `Activity.getSnapshots()` method call.
 
