@@ -29,7 +29,7 @@ java runtime containers.
 * Reduce cyber security risk: No need to enable remote JMX, SSL, security, ports, firewalls
 * Integration with monitoring tools for alerting, pro-active monitoring (AutoPilot M6)
 * Integration with cloud analytics tools (https://www.jkoolcloud.com via JESL)
-* Integration with log4j (via TNT4J event sinks)
+* Integration with log4j, slf4j, jkoocloud (via TNT4J event sinks)
 * Embedded application state dump framework for diagnostics
 * Easily build your own extensions, monitors
 
@@ -41,43 +41,43 @@ It is simple: (1) run Stream-JMX as a `-javaagent` or (2) imbed Stream-JMX code 
 
 Running Stream-JMX as javaagent:
 ```java
-java -javaagent:tnt4j-stream-jmx.jar="*:*!30000" -Dlog4j.configuration=file:log4j.properties -Dtnt4j.config=tnt4j.properties -classpath "tnt4j-stream-jmx.jar;lib/tnt4j-api-final-all.jar" your.class.name your-args
+java -javaagent:tnt4j-stream-jmx.jar="*:*!30000" -Dtnt4j.config=tnt4j.properties -classpath "tnt4j-stream-jmx.jar;lib/tnt4j-api-final-all.jar" your.class.name your-args
 ```
 Imbed Stream-JMX code into your application:
 ```java
-// obtain PingFactory instance
-PingFactory factory = DefaultPingFactory.getInstance();
-// create an instance of the pinger that will sample mbeans
-Pinger sampler = factory.newInstance();
+// obtain SamplerFactory instance
+SamplerFactory factory = DefaultSamplerFactory.getInstance();
+// create an instance of the sampler that will sample mbeans
+Sampler sampler = factory.newInstance();
 // schedule collection (ping) for given MBean filter and 30000 ms sampling period
-sampler.setSchedule(Pinger.JMX_FILTER_ALL, 30000).run();
+sampler.setSchedule(Sampler.JMX_FILTER_ALL, 30000).run();
 ```
 <b>NOTE:</b> `setSchedule(..).run()` sequence must be called to run the schedule. `setSchedule(..)` just sets the
 scheduling parameters, `run()` executes the schedule.
 
 To schedule metric collection for a specific MBean server:
 ```java
-// obtain PingFactory instance
-PingFactory factory = DefaultPingFactory.getInstance();
-// create an instance of the pinger that will sample mbeans
-Pinger sampler = factory.newInstance(ManagementFactory.getPlatformMBeanServer());
+// obtain SamplerFactory instance
+SamplerFactory factory = DefaultSamplerFactory.getInstance();
+// create an instance of the sampler that will sample mbeans
+Sampler sampler = factory.newInstance(ManagementFactory.getPlatformMBeanServer());
 // schedule collection (ping) for given MBean filter and 30000 ms sampling period
-sampler.setSchedule(Pinger.JMX_FILTER_ALL, 30000).run();
+sampler.setSchedule(Sampler.JMX_FILTER_ALL, 30000).run();
 ```
 Below is an example of how to sample all registered mbean servers:
 ```java
-// obtain PingFactory instance
-PingFactory factory = DefaultPingFactory.getInstance();
+// obtain SamplerFactory instance
+SamplerFactory factory = DefaultSamplerFactory.getInstance();
 // find other registered mbean servers
 ArrayList<MBeanServer> mlist = MBeanServerFactory.findMBeanServer(null);
 for (MBeanServer server: mlist) {
-	Pinger jmxp = factory.newInstance(server);
-	jmxp.setSchedule(Pinger.JMX_FILTER_ALL, 30000).run();
+	Sampler jmxp = factory.newInstance(server);
+	jmxp.setSchedule(Sampler.JMX_FILTER_ALL, 30000).run();
 }
 ```
-Alternatively, Stream-JMX provides a helper class `PingAgent` that lets you schedule sampling for all registered `MBeanServer` instances.
+Alternatively, Stream-JMX provides a helper class `SamplingAgent` that lets you schedule sampling for all registered `MBeanServer` instances.
 ```java
-PingAgent.ping(Pinger.JMX_FILTER_ALL, 60000, TimeUnit.MILLISECONDS);
+SamplingAgent.ping(Sampler.JMX_FILTER_ALL, 60000, TimeUnit.MILLISECONDS);
 ```
 <b>NOTE:</b> Sampled MBean attributes and associated values are stored in a collection of `Snapshot` objects stored within `Activity` instance. Current `Activity` instance can be obtained via `AttributeSample` passed when calling listeners such as `AttributeCondition`, `SampleListener`. Snapshots can be accessed using `Activity.getSnapshots()` method call.
 
@@ -86,32 +86,64 @@ PingAgent.ping(Pinger.JMX_FILTER_ALL, 60000, TimeUnit.MILLISECONDS);
 For more information on TNT4J and `tnt4j.properties` see (https://github.com/Nastel/TNT4J/wiki/Getting-Started).
 
 ## Running Stream-JMX as standalone app
-Example below runs `PingAgent` helper class as a standalone java application with a given MBean filter `"*:*"`, sampling period in milliseconds (`10000`), and time to run in milliseconds (`60000`):
+Example below runs `SamplingAgent` helper class as a standalone java application with a given MBean filter `"*:*"`, sampling period in milliseconds (`10000`), and time to run in milliseconds (`60000`):
 ```java
-java -Dlog4j.configuration=file:log4j.properties -Dorg.tnt4j.pingagent.trace=true -classpath "tnt4j-ping-jmx.jar;lib/tnt4j-api-final-all.jar" org.tnt4j.pingjmx.PingAgent "*:*" 10000 60000
+java -Dorg.tnt4j.stream.jmx.agent.trace=true -classpath "tnt4j-stream-jmx.jar;lib/tnt4j-api-final-all.jar" org.tnt4j.stream.jmx.SamplingAgent "*:*" 10000 60000
 ```
 
 ## Running Stream-JMX as -javaagent
 Stream-JMX can be invoked as `-javaagent` without changing your application code:
 ```java
-java -javaagent:tnt4j-ping-jmx.jar="*:*!30000" -Dlog4j.configuration=file:log4j.properties -Dtnt4j.config=tnt4j.properties -classpath "tnt4j-ping-jmx.jar;lib/tnt4j-api-final-all.jar" your.class.name your-args
+java -javaagent:tnt4j-stream-jmx.jar="*:*!30000" -Dtnt4j.config=tnt4j.properties -classpath "tnt4j-stream-jmx.jar;lib/tnt4j-api-final-all.jar" your.class.name your-args
 ```
-The options are `-javaagent:tnt4j-ping-jmx.jar="mbean-filter!sample-time-ms"`, classpath must include pingjmx jar files as well as locations of log4j and tnt4j configuration files.
+The options are `-javaagent:tnt4j-stream-jmx.jar="mbean-filter!sample-time-ms"`, classpath must include pingjmx jar files as well as locations of log4j and tnt4j configuration files.
 
 ## Where do the streams go?
 Stream-JMX streams all collected metrics based on a scheduled interval via TNT4J event streaming framework.
 All streams are written into TNT4J event sinks defined in `tnt4j.properties` file which is defined by `-Dtnt4j.config=tnt4j.properties` property. 
 
-Below is an example of TNT4J stream definition where all Stream-JMX streams are written into a socket event sink
-`com.nastel.jkool.tnt4j.sink.SocketEventSinkFactory`, formatted by `org.tnt4j.pingjmx.format.FactNameValueFormatter` :
+To stream Stream-JMX to jkool cloud (https://www.jkoolcloud.com): (Requires JESL libraries (see https://github.com/Nastel/JESL))
 ```
 ;Stanza used for Stream-JMX sources
 {
-	source: org.tnt4j.pingjmx
+	source: org.tnt4j.stream.jmx
 	source.factory: com.nastel.jkool.tnt4j.source.SourceFactoryImpl
 	source.factory.GEOADDR: NewYork
 	source.factory.DATACENTER: YourDC
 	source.factory.RootFQN: SERVER=?#DATACENTER=?#GEOADDR=?	
+	source.factory.RootSSN: tnt4j-stream-jmx	
+	
+	tracker.factory: com.nastel.jkool.tnt4j.tracker.DefaultTrackerFactory
+	dump.sink.factory: com.nastel.jkool.tnt4j.dump.DefaultDumpSinkFactory
+
+	; Event sink definition where all streams are recorded
+	event.sink.factory: com.nastel.jkool.tnt4j.sink.BufferedEventSinkFactory
+
+	; Event Sink configuration for streaming to jKool Cloud
+	; event.sink.factory.EventSinkFactory.Filename: jkoocloud.json
+	event.sink.factory.EventSinkFactory.Url: http://data.jkoolcloud.com:6580
+	event.sink.factory.EventSinkFactory.Token: ACCESS-TOKEN
+	event.formatter: com.nastel.jkool.tnt4j.format.JSONFormatter
+
+	; Configure default sink filter 
+	event.sink.factory.Filter: com.nastel.jkool.tnt4j.filters.EventLevelTimeFilter
+	event.sink.factory.Filter.Level: TRACE
+	
+	tracking.selector: com.nastel.jkool.tnt4j.selector.DefaultTrackingSelector
+	tracking.selector.Repository: com.nastel.jkool.tnt4j.repository.FileTokenRepository
+}
+```
+Below is an example of TNT4J stream definition where all Stream-JMX streams are written into a socket event sink
+`com.nastel.jkool.tnt4j.sink.SocketEventSinkFactory`, formatted by `org.tnt4j.stream.jmx.format.FactNameValueFormatter` :
+```
+;Stanza used for Stream-JMX sources
+{
+	source: org.tnt4j.stream.jmx
+	source.factory: com.nastel.jkool.tnt4j.source.SourceFactoryImpl
+	source.factory.GEOADDR: NewYork
+	source.factory.DATACENTER: YourDC
+	source.factory.RootFQN: SERVER=?#DATACENTER=?#GEOADDR=?	
+	source.factory.RootSSN: tnt4j-stream-jmx	
 	
 	tracker.factory: com.nastel.jkool.tnt4j.tracker.DefaultTrackerFactory
 	dump.sink.factory: com.nastel.jkool.tnt4j.dump.DefaultDumpSinkFactory
@@ -128,7 +160,7 @@ Below is an example of TNT4J stream definition where all Stream-JMX streams are 
 	event.sink.factory.Filter: com.nastel.jkool.tnt4j.filters.EventLevelTimeFilter
 	event.sink.factory.Filter.Level: TRACE
 	
-	event.formatter: org.tnt4j.pingjmx.format.FactNameValueFormatter
+	event.formatter: org.tnt4j.stream.jmx.format.FactNameValueFormatter
 	tracking.selector: com.nastel.jkool.tnt4j.selector.DefaultTrackingSelector
 	tracking.selector.Repository: com.nastel.jkool.tnt4j.repository.FileTokenRepository
 }
@@ -137,11 +169,12 @@ To stream Stream-JMX into a log file `MyStream.log`:
 ```
 ;Stanza used for Stream-JMX sources
 {
-	source: org.tnt4j.pingjmx
+	source: org.tnt4j.stream.jmx
 	source.factory: com.nastel.jkool.tnt4j.source.SourceFactoryImpl
 	source.factory.GEOADDR: NewYork
 	source.factory.DATACENTER: YourDC
 	source.factory.RootFQN: SERVER=?#DATACENTER=?#GEOADDR=?	
+	source.factory.RootSSN: tnt4j-stream-jmx	
 	
 	tracker.factory: com.nastel.jkool.tnt4j.tracker.DefaultTrackerFactory
 	dump.sink.factory: com.nastel.jkool.tnt4j.dump.DefaultDumpSinkFactory
@@ -155,7 +188,7 @@ To stream Stream-JMX into a log file `MyStream.log`:
 	event.sink.factory.Filter: com.nastel.jkool.tnt4j.filters.EventLevelTimeFilter
 	event.sink.factory.Filter.Level: TRACE
 	
-	event.formatter: org.tnt4j.pingjmx.format.FactNameValueFormatter
+	event.formatter: org.tnt4j.stream.jmx.format.FactNameValueFormatter
 	tracking.selector: com.nastel.jkool.tnt4j.selector.DefaultTrackingSelector
 	tracking.selector.Repository: com.nastel.jkool.tnt4j.repository.FileTokenRepository
 }
@@ -190,28 +223,28 @@ By default Stream-JMX will generate dumps with the following info:
 * Logging Statistics Dump -- `LoggerDumpProvider`
 
 You may create your own dump providers and handlers (https://github.com/Nastel/TNT4J/wiki/Getting-Started#application-state-dumps)
-## Overriding default `PingFactory`
-`PingFactory` instances are used to generate `Pinger` implementation for a specific runtime environment. Stream-JMX supplies pinger and ping factories for standard JVMs, JBoss,
-WebSphere Application Server. You may want to override default `PingFactory` with your own or an altenative by specifying:
+## Overriding default `SamplerFactory`
+`SamplerFactory` instances are used to generate `Sampler` implementation for a specific runtime environment. Stream-JMX supplies sampler and ping factories for standard JVMs, JBoss,
+WebSphere Application Server. You may want to override default `SamplerFactory` with your own or an altenative by specifying:
 ```java
-java -Dorg.tnt4j.ping.factory=org.tnt4j.pingjmx.PlatformPingFactory ...
+java -Dorg.tnt4j.stream.jmx.factory=org.tnt4j.stream.jmx.PlatformSamplerFactory ...
 ```
-`PingFactory` is used to generate instances of the underlying pinger implementatons (objects that provide sampling of underlying mbeans).
+`SamplerFactory` is used to generate instances of the underlying sampler implementatons (objects that provide sampling of underlying mbeans).
 ```java
-// return default or user defined PingFactory implementation
-PingFactory factory = DefaultPingFactory.getInstance();
+// return default or user defined SamplerFactory implementation
+SamplerFactory factory = DefaultSamplerFactory.getInstance();
 ...
 ```
 ## Managing Sample Behavior
-Stream-JMX provides a way to intercept sampling events such as pre, during an post for each sample run and control sample behavior. See `SampleListener` interface for more details. Applications may register more than one listener per `Pinger`. Each listener is called in registration order.
+Stream-JMX provides a way to intercept sampling events such as pre, during an post for each sample run and control sample behavior. See `SampleListener` interface for more details. Applications may register more than one listener per `Sampler`. Each listener is called in registration order.
 
 In addition to intercepting sample events, applications may want to control how one ore more attributes are sampled and whether each sample is reported/logged. See example below:
 ```java
-// return default or user defined PingFactory implementation
-PingFactory factory = DefaultPingFactory.getInstance();
-// create an instance of the pinger that will sample mbeans
-Pinger sampler = factory.newInstance();
-sampler.setSchedule(Pinger.JMX_FILTER_ALL, 30000).addListener(new MySampleListener())).run();
+// return default or user defined SamplerFactory implementation
+SamplerFactory factory = DefaultSamplerFactory.getInstance();
+// create an instance of the sampler that will sample mbeans
+Sampler sampler = factory.newInstance();
+sampler.setSchedule(Sampler.JMX_FILTER_ALL, 30000).addListener(new MySampleListener())).run();
 ```
 Below is a sample of what `MySampleListener` may look like:
 ```java
@@ -259,14 +292,14 @@ interval. For example, what if you wanted to setup an action when a specific MBe
 
 Stream-JMX `AttributeCondition` and `AttributeAction` interfaces allow you to call your action at runtime every time a condition is evaluated to true. See example below:
 ```java
-// return default or user defined PingFactory implementation
-PingFactory factory = DefaultPingFactory.getInstance();
-// create an instance of the pinger that will sample mbeans
-Pinger sampler = factory.newInstance();
+// return default or user defined SamplerFactory implementation
+SamplerFactory factory = DefaultSamplerFactory.getInstance();
+// create an instance of the sampler that will sample mbeans
+Sampler sampler = factory.newInstance();
 // create a condition when ThreadCount > 100
 AttributeCondition myCondition = new SimpleCondition("java.lang:type=Threading", "ThreadCount", 100, ">");
 // schedule collection (ping) for given MBean filter and 30000 ms sampling period
-sampler.setSchedule(Pinger.JMX_FILTER_ALL, 30000).register(myCondition, new MyAttributeAction()).run();
+sampler.setSchedule(Sampler.JMX_FILTER_ALL, 30000).register(myCondition, new MyAttributeAction()).run();
 ```
 Below is a sample of what `MyAttributeAction` may look like:
 ```java
@@ -295,6 +328,5 @@ Stream-JMX requires the following:
 
 # Available Integrations
 * TNT4J (https://github.com/Nastel/TNT4J)
-* Log4J (http://logging.apache.org/log4j/1.2/)
 * jkoolcloud.com (https://www.jkoolcloud.com)
 * AutoPilot M6 (http://www.nastel.com/products/autopilot-m6.html)

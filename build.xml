@@ -72,6 +72,7 @@
 	</target>
 
 	<target name="clean" description="clean up">
+		<delete dir="${classes}"/>
 		<echo message="Clean of ${ant.project.name} Complete${line.separator}" level="info"/>
 		<delete dir="${project-build}"/>
 		<echo message="Deleting old archives" level="info"/>
