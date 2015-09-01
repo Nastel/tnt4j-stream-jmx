@@ -121,7 +121,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
     }
 
 	@Override
-    public String format(Source source, OpLevel level, String msg, Object... args) {
+    public String format(long ttl, Source source, OpLevel level, String msg, Object... args) {
 		StringBuilder nvString = new StringBuilder(1024);
 		
 		nvString.append("OBJ:Streams");

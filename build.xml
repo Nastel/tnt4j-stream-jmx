@@ -14,8 +14,8 @@
 	<property name="src"       value="src"/>
 	<property name="lib"       value="lib"/>
 	<property name="classes"   value="classes"/>
+	<property name="bin"       value="bin"/>
 	<property name="doc"       value="${project-build}/doc"/>
-	<property name="bin"       value="${project-build}/bin"/>
 	<property name="jar"       value="${project-build}/tnt4j-ping-jmx.jar"/>
 	<property name="docpkg"    value="org.tnt4j.pingjmx.*"/>
 
@@ -100,8 +100,8 @@
 				<include name="tnt4j-tokens.properties"/>
 			</fileset>
 		</copy>
-		<copy todir="${bin}">
-			<fileset dir="${root}/bin">
+		<copy todir="${project-build}/bin">
+			<fileset dir="${bin}">
 				<include name="pinger.*"/>
 			</fileset>
 		</copy>
