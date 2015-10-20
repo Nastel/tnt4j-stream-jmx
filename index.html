@@ -76,11 +76,11 @@ For more information on JESL visit: <a href="http://nastel.github.io/JESL/">http
 
 <p>Running Stream-JMX as javaagent:</p>
 
-<div class="highlight highlight-java"><pre>java <span class="pl-k">-</span>javaagent<span class="pl-k">:</span>tnt4j<span class="pl-k">-</span>stream<span class="pl-k">-</span>jmx<span class="pl-k">.</span>jar<span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>*:*!30000<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-smi">Dtnt4j</span><span class="pl-k">.</span>config<span class="pl-k">=</span>tnt4j<span class="pl-k">.</span>properties <span class="pl-k">-</span>classpath <span class="pl-s"><span class="pl-pds">"</span>tnt4j-stream-jmx.jar;lib/tnt4j-api-final-all.jar<span class="pl-pds">"</span></span> your<span class="pl-k">.</span>class<span class="pl-k">.</span>name your<span class="pl-k">-</span>args</pre></div>
+<div class="highlight highlight-source-java"><pre>java <span class="pl-k">-</span>javaagent<span class="pl-k">:</span>tnt4j<span class="pl-k">-</span>stream<span class="pl-k">-</span>jmx<span class="pl-k">.</span>jar<span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>*:*!30000<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-smi">Dtnt4j</span><span class="pl-k">.</span>config<span class="pl-k">=</span>tnt4j<span class="pl-k">.</span>properties <span class="pl-k">-</span>classpath <span class="pl-s"><span class="pl-pds">"</span>tnt4j-stream-jmx.jar;lib/tnt4j-api-final-all.jar<span class="pl-pds">"</span></span> your<span class="pl-k">.</span>class<span class="pl-k">.</span>name your<span class="pl-k">-</span>args</pre></div>
 
 <p>Imbed Stream-JMX code into your application:</p>
 
-<div class="highlight highlight-java"><pre><span class="pl-c">// obtain SamplerFactory instance</span>
+<div class="highlight highlight-source-java"><pre><span class="pl-c">// obtain SamplerFactory instance</span>
 <span class="pl-smi">SamplerFactory</span> factory <span class="pl-k">=</span> <span class="pl-smi">DefaultSamplerFactory</span><span class="pl-k">.</span>getInstance();
 <span class="pl-c">// create an instance of the sampler that will sample mbeans</span>
 <span class="pl-smi">Sampler</span> sampler <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance();
@@ -92,7 +92,7 @@ scheduling parameters, <code>run()</code> executes the schedule.</p>
 
 <p>To schedule metric collection for a specific MBean server:</p>
 
-<div class="highlight highlight-java"><pre><span class="pl-c">// obtain SamplerFactory instance</span>
+<div class="highlight highlight-source-java"><pre><span class="pl-c">// obtain SamplerFactory instance</span>
 <span class="pl-smi">SamplerFactory</span> factory <span class="pl-k">=</span> <span class="pl-smi">DefaultSamplerFactory</span><span class="pl-k">.</span>getInstance();
 <span class="pl-c">// create an instance of the sampler that will sample mbeans</span>
 <span class="pl-smi">Sampler</span> sampler <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance(<span class="pl-smi">ManagementFactory</span><span class="pl-k">.</span>getPlatformMBeanServer());
@@ -101,7 +101,7 @@ sampler<span class="pl-k">.</span>setSchedule(<span class="pl-smi">Sampler</span
 
 <p>Below is an example of how to sample all registered mbean servers:</p>
 
-<div class="highlight highlight-java"><pre><span class="pl-c">// obtain SamplerFactory instance</span>
+<div class="highlight highlight-source-java"><pre><span class="pl-c">// obtain SamplerFactory instance</span>
 <span class="pl-smi">SamplerFactory</span> factory <span class="pl-k">=</span> <span class="pl-smi">DefaultSamplerFactory</span><span class="pl-k">.</span>getInstance();
 <span class="pl-c">// find other registered mbean servers</span>
 <span class="pl-k">ArrayList&lt;<span class="pl-smi">MBeanServer</span>&gt;</span> mlist <span class="pl-k">=</span> <span class="pl-smi">MBeanServerFactory</span><span class="pl-k">.</span>findMBeanServer(<span class="pl-c1">null</span>);
@@ -112,7 +112,7 @@ sampler<span class="pl-k">.</span>setSchedule(<span class="pl-smi">Sampler</span
 
 <p>Alternatively, Stream-JMX provides a helper class <code>SamplingAgent</code> that lets you schedule sampling for all registered <code>MBeanServer</code> instances.</p>
 
-<div class="highlight highlight-java"><pre><span class="pl-smi">SamplingAgent</span><span class="pl-k">.</span>sample(<span class="pl-smi">Sampler</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">60000</span>, <span class="pl-smi">TimeUnit</span><span class="pl-c1"><span class="pl-k">.</span>MILLISECONDS</span>);</pre></div>
+<div class="highlight highlight-source-java"><pre><span class="pl-smi">SamplingAgent</span><span class="pl-k">.</span>sample(<span class="pl-smi">Sampler</span><span class="pl-c1"><span class="pl-k">.</span>JMX_FILTER_ALL</span>, <span class="pl-c1">60000</span>, <span class="pl-smi">TimeUnit</span><span class="pl-c1"><span class="pl-k">.</span>MILLISECONDS</span>);</pre></div>
 
 <p><b>NOTE:</b> Sampled MBean attributes and associated values are stored in a collection of <code>Snapshot</code> objects stored within <code>Activity</code> instance. Current <code>Activity</code> instance can be obtained via <code>AttributeSample</code> passed when calling listeners such as <code>AttributeCondition</code>, <code>SampleListener</code>. Snapshots can be accessed using <code>Activity.getSnapshots()</code> method call.</p>
 
@@ -125,14 +125,14 @@ sampler<span class="pl-k">.</span>setSchedule(<span class="pl-smi">Sampler</span
 
 <p>Example below runs <code>SamplingAgent</code> helper class as a standalone java application with a given MBean filter <code>"*:*"</code>, sampling period in milliseconds (<code>10000</code>), and time to run in milliseconds (<code>60000</code>):</p>
 
-<div class="highlight highlight-java"><pre>java <span class="pl-k">-</span><span class="pl-smi">Dorg</span><span class="pl-k">.</span>tnt4j<span class="pl-k">.</span>stream<span class="pl-k">.</span>jmx<span class="pl-k">.</span>agent<span class="pl-k">.</span>trace<span class="pl-k">=</span><span class="pl-c1">true</span> <span class="pl-k">-</span>classpath <span class="pl-s"><span class="pl-pds">"</span>tnt4j-stream-jmx.jar;lib/tnt4j-api-final-all.jar<span class="pl-pds">"</span></span> <span class="pl-smi">org.tnt4j.stream.jmx<span class="pl-k">.</span>SamplingAgent</span> <span class="pl-s"><span class="pl-pds">"</span>*:*<span class="pl-pds">"</span></span> <span class="pl-c1">10000</span> <span class="pl-c1">60000</span></pre></div>
+<div class="highlight highlight-source-java"><pre>java <span class="pl-k">-</span><span class="pl-smi">Dorg</span><span class="pl-k">.</span>tnt4j<span class="pl-k">.</span>stream<span class="pl-k">.</span>jmx<span class="pl-k">.</span>agent<span class="pl-k">.</span>trace<span class="pl-k">=</span><span class="pl-c1">true</span> <span class="pl-k">-</span>classpath <span class="pl-s"><span class="pl-pds">"</span>tnt4j-stream-jmx.jar;lib/tnt4j-api-final-all.jar<span class="pl-pds">"</span></span> <span class="pl-smi">org.tnt4j.stream.jmx<span class="pl-k">.</span>SamplingAgent</span> <span class="pl-s"><span class="pl-pds">"</span>*:*<span class="pl-pds">"</span></span> <span class="pl-c1">10000</span> <span class="pl-c1">60000</span></pre></div>
 
 <h2>
 <a id="running-stream-jmx-as--javaagent" class="anchor" href="#running-stream-jmx-as--javaagent" aria-hidden="true"><span class="octicon octicon-link"></span></a>Running Stream-JMX as -javaagent</h2>
 
 <p>Stream-JMX can be invoked as <code>-javaagent</code> without changing your application code:</p>
 
-<div class="highlight highlight-java"><pre>java <span class="pl-k">-</span>javaagent<span class="pl-k">:</span>tnt4j<span class="pl-k">-</span>stream<span class="pl-k">-</span>jmx<span class="pl-k">.</span>jar<span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>*:*!30000<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-smi">Dtnt4j</span><span class="pl-k">.</span>config<span class="pl-k">=</span>tnt4j<span class="pl-k">.</span>properties <span class="pl-k">-</span>classpath <span class="pl-s"><span class="pl-pds">"</span>tnt4j-stream-jmx.jar;lib/tnt4j-api-final-all.jar<span class="pl-pds">"</span></span> your<span class="pl-k">.</span>class<span class="pl-k">.</span>name your<span class="pl-k">-</span>args</pre></div>
+<div class="highlight highlight-source-java"><pre>java <span class="pl-k">-</span>javaagent<span class="pl-k">:</span>tnt4j<span class="pl-k">-</span>stream<span class="pl-k">-</span>jmx<span class="pl-k">.</span>jar<span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>*:*!30000<span class="pl-pds">"</span></span> <span class="pl-k">-</span><span class="pl-smi">Dtnt4j</span><span class="pl-k">.</span>config<span class="pl-k">=</span>tnt4j<span class="pl-k">.</span>properties <span class="pl-k">-</span>classpath <span class="pl-s"><span class="pl-pds">"</span>tnt4j-stream-jmx.jar;lib/tnt4j-api-final-all.jar<span class="pl-pds">"</span></span> your<span class="pl-k">.</span>class<span class="pl-k">.</span>name your<span class="pl-k">-</span>args</pre></div>
 
 <p>The options are <code>-javaagent:tnt4j-stream-jmx.jar="mbean-filter!sample-time-ms"</code>, classpath must include pingjmx jar files as well as locations of log4j and tnt4j configuration files.</p>
 
@@ -258,11 +258,11 @@ All streams are written into TNT4J event sinks defined in <code>tnt4j.properties
 
 <p>(1) Dump on VM shut-down:</p>
 
-<div class="highlight highlight-java"><pre>java <span class="pl-k">-</span><span class="pl-smi">Dtnt4j</span><span class="pl-k">.</span>dump<span class="pl-k">.</span>on<span class="pl-k">.</span>vm<span class="pl-k">.</span>shutdown<span class="pl-k">=</span><span class="pl-c1">true</span> <span class="pl-k">-</span><span class="pl-smi">Dtnt4j</span><span class="pl-k">.</span>dump<span class="pl-k">.</span>provider<span class="pl-k">.</span><span class="pl-k">default</span><span class="pl-k">=</span><span class="pl-c1">true</span> <span class="pl-k">-</span><span class="pl-smi">Dtnt4j</span><span class="pl-k">.</span>dump<span class="pl-k">.</span>folder<span class="pl-k">=</span><span class="pl-c1">.</span><span class="pl-k">/</span> <span class="pl-c1">...</span></pre></div>
+<div class="highlight highlight-source-java"><pre>java <span class="pl-k">-</span><span class="pl-smi">Dtnt4j</span><span class="pl-k">.</span>dump<span class="pl-k">.</span>on<span class="pl-k">.</span>vm<span class="pl-k">.</span>shutdown<span class="pl-k">=</span><span class="pl-c1">true</span> <span class="pl-k">-</span><span class="pl-smi">Dtnt4j</span><span class="pl-k">.</span>dump<span class="pl-k">.</span>provider<span class="pl-k">.</span><span class="pl-k">default</span><span class="pl-k">=</span><span class="pl-c1">true</span> <span class="pl-k">-</span><span class="pl-smi">Dtnt4j</span><span class="pl-k">.</span>dump<span class="pl-k">.</span>folder<span class="pl-k">=</span><span class="pl-c1">.</span><span class="pl-k">/</span> <span class="pl-c1">...</span></pre></div>
 
 <p>(2) Dump on uncaught thread exceptions:</p>
 
-<div class="highlight highlight-java"><pre>java <span class="pl-k">-</span><span class="pl-smi">Dtnt4j</span><span class="pl-k">.</span>dump<span class="pl-k">.</span>on<span class="pl-k">.</span>exceptionn<span class="pl-k">=</span><span class="pl-c1">true</span> <span class="pl-k">-</span><span class="pl-smi">Dtnt4j</span><span class="pl-k">.</span>dump<span class="pl-k">.</span>provider<span class="pl-k">.</span><span class="pl-k">default</span><span class="pl-k">=</span><span class="pl-c1">true</span> <span class="pl-k">-</span><span class="pl-smi">Dtnt4j</span><span class="pl-k">.</span>dump<span class="pl-k">.</span>folder<span class="pl-k">=</span><span class="pl-c1">.</span><span class="pl-k">/</span> <span class="pl-c1">...</span></pre></div>
+<div class="highlight highlight-source-java"><pre>java <span class="pl-k">-</span><span class="pl-smi">Dtnt4j</span><span class="pl-k">.</span>dump<span class="pl-k">.</span>on<span class="pl-k">.</span>exceptionn<span class="pl-k">=</span><span class="pl-c1">true</span> <span class="pl-k">-</span><span class="pl-smi">Dtnt4j</span><span class="pl-k">.</span>dump<span class="pl-k">.</span>provider<span class="pl-k">.</span><span class="pl-k">default</span><span class="pl-k">=</span><span class="pl-c1">true</span> <span class="pl-k">-</span><span class="pl-smi">Dtnt4j</span><span class="pl-k">.</span>dump<span class="pl-k">.</span>folder<span class="pl-k">=</span><span class="pl-c1">.</span><span class="pl-k">/</span> <span class="pl-c1">...</span></pre></div>
 
 <p><code>-Dtnt4j.dump.folder=./</code> specifies the destination folder where dump (.dump) files will be created (default is current working directory).</p>
 
@@ -290,11 +290,11 @@ All streams are written into TNT4J event sinks defined in <code>tnt4j.properties
 <p><code>SamplerFactory</code> instances are used to generate <code>Sampler</code> implementation for a specific runtime environment. Stream-JMX supplies sampler and ping factories for standard JVMs, JBoss,
 WebSphere Application Server. You may want to override default <code>SamplerFactory</code> with your own or an altenative by specifying:</p>
 
-<div class="highlight highlight-java"><pre>java <span class="pl-k">-</span><span class="pl-smi">Dorg</span><span class="pl-k">.</span>tnt4j<span class="pl-k">.</span>stream<span class="pl-k">.</span>jmx<span class="pl-k">.</span>factory<span class="pl-k">=</span><span class="pl-smi">org.tnt4j.stream.jmx<span class="pl-k">.</span>PlatformSamplerFactory</span> <span class="pl-c1">...</span></pre></div>
+<div class="highlight highlight-source-java"><pre>java <span class="pl-k">-</span><span class="pl-smi">Dorg</span><span class="pl-k">.</span>tnt4j<span class="pl-k">.</span>stream<span class="pl-k">.</span>jmx<span class="pl-k">.</span>factory<span class="pl-k">=</span><span class="pl-smi">org.tnt4j.stream.jmx<span class="pl-k">.</span>PlatformSamplerFactory</span> <span class="pl-c1">...</span></pre></div>
 
 <p><code>SamplerFactory</code> is used to generate instances of the underlying sampler implementatons (objects that provide sampling of underlying mbeans).</p>
 
-<div class="highlight highlight-java"><pre><span class="pl-c">// return default or user defined SamplerFactory implementation</span>
+<div class="highlight highlight-source-java"><pre><span class="pl-c">// return default or user defined SamplerFactory implementation</span>
 <span class="pl-smi">SamplerFactory</span> factory <span class="pl-k">=</span> <span class="pl-smi">DefaultSamplerFactory</span><span class="pl-k">.</span>getInstance();
 <span class="pl-c1">...</span></pre></div>
 
@@ -305,7 +305,7 @@ WebSphere Application Server. You may want to override default <code>SamplerFact
 
 <p>In addition to intercepting sample events, applications may want to control how one ore more attributes are sampled and whether each sample is reported/logged. See example below:</p>
 
-<div class="highlight highlight-java"><pre><span class="pl-c">// return default or user defined SamplerFactory implementation</span>
+<div class="highlight highlight-source-java"><pre><span class="pl-c">// return default or user defined SamplerFactory implementation</span>
 <span class="pl-smi">SamplerFactory</span> factory <span class="pl-k">=</span> <span class="pl-smi">DefaultSamplerFactory</span><span class="pl-k">.</span>getInstance();
 <span class="pl-c">// create an instance of the sampler that will sample mbeans</span>
 <span class="pl-smi">Sampler</span> sampler <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance();
@@ -313,7 +313,7 @@ sampler<span class="pl-k">.</span>setSchedule(<span class="pl-smi">Sampler</span
 
 <p>Below is a sample of what <code>MySampleListener</code> may look like:</p>
 
-<div class="highlight highlight-java"><pre><span class="pl-k">class</span> <span class="pl-en">MySampleListener</span> <span class="pl-k">implements</span> <span class="pl-e">SampleListener</span> {
+<div class="highlight highlight-source-java"><pre><span class="pl-k">class</span> <span class="pl-en">MySampleListener</span> <span class="pl-k">implements</span> <span class="pl-e">SampleListener</span> {
     <span class="pl-k">@Override</span>
     <span class="pl-k">public</span> <span class="pl-k">void</span> <span class="pl-en">pre</span>(<span class="pl-smi">SampleContext</span> <span class="pl-v">context</span>, <span class="pl-smi">Activity</span> <span class="pl-v">activity</span>) {
         <span class="pl-c">// called once per sample, beginning of each sample</span>
@@ -359,7 +359,7 @@ interval. For example, what if you wanted to setup an action when a specific MBe
 
 <p>Stream-JMX <code>AttributeCondition</code> and <code>AttributeAction</code> interfaces allow you to call your action at runtime every time a condition is evaluated to true. See example below:</p>
 
-<div class="highlight highlight-java"><pre><span class="pl-c">// return default or user defined SamplerFactory implementation</span>
+<div class="highlight highlight-source-java"><pre><span class="pl-c">// return default or user defined SamplerFactory implementation</span>
 <span class="pl-smi">SamplerFactory</span> factory <span class="pl-k">=</span> <span class="pl-smi">DefaultSamplerFactory</span><span class="pl-k">.</span>getInstance();
 <span class="pl-c">// create an instance of the sampler that will sample mbeans</span>
 <span class="pl-smi">Sampler</span> sampler <span class="pl-k">=</span> factory<span class="pl-k">.</span>newInstance();
@@ -370,7 +370,7 @@ sampler<span class="pl-k">.</span>setSchedule(<span class="pl-smi">Sampler</span
 
 <p>Below is a sample of what <code>MyAttributeAction</code> may look like:</p>
 
-<div class="highlight highlight-java"><pre><span class="pl-k">public</span> <span class="pl-k">class</span> <span class="pl-en">MyAttributeAction</span> <span class="pl-k">implements</span> <span class="pl-e">AttributeAction</span> {
+<div class="highlight highlight-source-java"><pre><span class="pl-k">public</span> <span class="pl-k">class</span> <span class="pl-en">MyAttributeAction</span> <span class="pl-k">implements</span> <span class="pl-e">AttributeAction</span> {
     <span class="pl-k">@Override</span>
     <span class="pl-k">public</span> <span class="pl-smi">Object</span> <span class="pl-en">action</span>(<span class="pl-smi">SampleContext</span> <span class="pl-v">context</span>, <span class="pl-smi">AttributeCondition</span> <span class="pl-v">cond</span>, <span class="pl-smi">AttributeSample</span> <span class="pl-v">sample</span>) {
         <span class="pl-smi">Activity</span> activity <span class="pl-k">=</span> sample<span class="pl-k">.</span>getActivity();
