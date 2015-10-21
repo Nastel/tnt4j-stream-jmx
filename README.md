@@ -1,4 +1,4 @@
-# Stream-JMX
+# Stream-JMX (formerly known as PingJMX)
 A Lightweight framework to stream and monitor JMX metrics. 
 
 Stream JMX metrics to: 
