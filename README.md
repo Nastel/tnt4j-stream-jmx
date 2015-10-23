@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 # Stream-JMX
 A Lightweight framework to stream and monitor JMX metrics. (Formerly known as PingJMX)
+=======
+# Stream-JMX (formerly known as PingJMX)
+A Lightweight framework to stream and monitor JMX metrics. 
+>>>>>>> origin/master
 
 Stream JMX metrics to: 
 * Central monitoring server
