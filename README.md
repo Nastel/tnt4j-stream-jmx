@@ -1,5 +1,5 @@
 # Stream-JMX
-A Lightweight framework to stream and monitor JMX metrics. 
+A Lightweight framework to stream and monitor JMX metrics. (Formerly known as PingJMX)
 
 Stream JMX metrics to: 
 * Central monitoring server
@@ -108,7 +108,7 @@ To stream Stream-JMX to jkool cloud (https://www.jkoolcloud.com): (Requires JESL
 {
 	source: org.tnt4j.stream.jmx
 	source.factory: com.nastel.jkool.tnt4j.source.SourceFactoryImpl
-	source.factory.GEOADDR: NewYork
+	source.factory.GEOADDR: New York
 	source.factory.DATACENTER: YourDC
 	source.factory.RootFQN: SERVER=?#DATACENTER=?#GEOADDR=?	
 	source.factory.RootSSN: tnt4j-stream-jmx	
@@ -121,7 +121,7 @@ To stream Stream-JMX to jkool cloud (https://www.jkoolcloud.com): (Requires JESL
 
 	; Event Sink configuration for streaming to jKool Cloud
 	; event.sink.factory.EventSinkFactory.Filename: jkoocloud.json
-	event.sink.factory.EventSinkFactory.Url: http://data.jkoolcloud.com:6580
+	event.sink.factory.EventSinkFactory.Url: https://data.jkoolcloud.com:6585
 	event.sink.factory.EventSinkFactory.Token: ACCESS-TOKEN
 	event.formatter: com.nastel.jkool.tnt4j.format.JSONFormatter
 
@@ -140,7 +140,7 @@ Below is an example of TNT4J stream definition where all Stream-JMX streams are 
 {
 	source: org.tnt4j.stream.jmx
 	source.factory: com.nastel.jkool.tnt4j.source.SourceFactoryImpl
-	source.factory.GEOADDR: NewYork
+	source.factory.GEOADDR: New York
 	source.factory.DATACENTER: YourDC
 	source.factory.RootFQN: SERVER=?#DATACENTER=?#GEOADDR=?	
 	source.factory.RootSSN: tnt4j-stream-jmx	
@@ -171,7 +171,7 @@ To stream Stream-JMX into a log file `MyStream.log`:
 {
 	source: org.tnt4j.stream.jmx
 	source.factory: com.nastel.jkool.tnt4j.source.SourceFactoryImpl
-	source.factory.GEOADDR: NewYork
+	source.factory.GEOADDR: New York
 	source.factory.DATACENTER: YourDC
 	source.factory.RootFQN: SERVER=?#DATACENTER=?#GEOADDR=?	
 	source.factory.RootSSN: tnt4j-stream-jmx	
