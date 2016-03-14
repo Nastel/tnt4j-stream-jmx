@@ -34,8 +34,8 @@ import com.nastel.jkool.tnt4j.TrackingLogger;
 /**
  * <p> 
  * This class provides scheduled execution and sampling of a JMX metrics
- * for a given <code>MBeanServer</code> instance. By default the class will
- * use <code>ManagementFactory.getPlatformMBeanServer()</code> instance.
+ * for a given {@code MBeanServer} instance. By default the class will
+ * use {@code ManagementFactory.getPlatformMBeanServer()} instance.
  * </p>
  * 
  * 
@@ -51,7 +51,7 @@ public class PlatformJmxSampler implements Sampler {
 	
 	/**
 	 * Create a default instance with default MBean server instance
-	 * <code>ManagementFactory.getPlatformMBeanServer()</code>
+	 * {@code ManagementFactory.getPlatformMBeanServer()}
 	 * 
 	 */
 	protected PlatformJmxSampler() {
@@ -93,7 +93,7 @@ public class PlatformJmxSampler implements Sampler {
 	@Override
 	public synchronized Sampler setSchedule(String jmxfilter, long period, TimeUnit tunit) throws IOException {
 		if (sampler == null) {
-			sampler = newPingScheduler(getMBeanServer(), jmxfilter, period, tunit);
+			sampler = newScheduler(getMBeanServer(), jmxfilter, period, tunit);
 			sampler.open();
 			return this;
 		} else {
@@ -112,17 +112,17 @@ public class PlatformJmxSampler implements Sampler {
 	}
 		
 	/**
-	 * Create new instance of <code>Scheduler</code>
-	 * Override this call to return your instance of <code>Scheduler</code>.
+	 * Create new instance of {@link Scheduler}
+	 * Override this call to return your instance of {@link Scheduler}.
 	 *
 	 * @param mserver MBean server instance
 	 * @param filter MBean filters semicolon separated
 	 * @param period time period for sampling
 	 * @param tunit time units for period
 	 *  
-	 * @return new <code>Scheduler</code> instance
+	 * @return new {@link Scheduler} instance
 	 */
-	protected Scheduler newPingScheduler(MBeanServer mserver, String filter, long period, TimeUnit tunit) {
+	protected Scheduler newScheduler(MBeanServer mserver, String filter, long period, TimeUnit tunit) {
 		return new SchedulerImpl(this.getClass().getName(), mserver, filter, period, tunit);
 	}
 
