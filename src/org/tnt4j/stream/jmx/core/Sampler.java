@@ -38,6 +38,7 @@ import com.nastel.jkool.tnt4j.TrackingLogger;
  */
 public interface Sampler extends NestedHandler<Sampler, SampleListener>, Runnable {
 	public static final String JMX_FILTER_ALL = "*:*";
+	public static final String JMX_FILTER_NONE = "";
 
 	/**
 	 * Name associated with this Sampler
@@ -48,12 +49,20 @@ public interface Sampler extends NestedHandler<Sampler, SampleListener>, Runnabl
 	String getName();
 	
 	/**
-	 * MBean filter associated with this sampler
+	 * MBean include filter associated with this sampler
 	 * 
 	 * @return filter list
 	 * @throws IllegalStateException if setSchedule is not called first
 	 */
-	String getFilter();
+	String getIncFilter();
+	
+	/**
+	 * MBean exclude filter associated with this sampler
+	 * 
+	 * @return filter list
+	 * @throws IllegalStateException if setSchedule is not called first
+	 */
+	String getExcFilter();
 	
 	/**
 	 * Sampling period in milliseconds
@@ -92,25 +101,38 @@ public interface Sampler extends NestedHandler<Sampler, SampleListener>, Runnabl
 	/**
 	 * Set schedule sample with associated MBean server instance
 	 *  
-	 * @param mbeanFilter semicolon separated filter list
+	 * @param incFilter semicolon separated filter list
 	 * @param period sampling time in milliseconds
 	 * @throws IOException 
 	 * @throws IllegalStateException if setSchedule is not called first
 	 * 
 	 */
-	Sampler setSchedule(String mbeanFilter, long period) throws IOException ;	
+	Sampler setSchedule(String incFilter, long period) throws IOException;	
 
 	/**
 	 * Set schedule sample with associated MBean server instance
 	 *  
-	 * @param mbeanFilter semicolon separated filter list
+	 * @param incFilter semicolon separated include filter list
+	 * @param excFilter semicolon separated exclude filter list
+	 * @param period sampling time in milliseconds
+	 * @throws IOException 
+	 * @throws IllegalStateException if setSchedule is not called first
+	 * 
+	 */
+	Sampler setSchedule(String incFilter, String excFilter, long period) throws IOException;	
+
+	/**
+	 * Set schedule sample with associated MBean server instance
+	 *  
+	 * @param incFilter semicolon separated include filter list
+	 * @param excFilter semicolon separated exclude filter list
 	 * @param period sampling time
 	 * @param tunit time units for sampling period
 	 * @throws IOException 
 	 * @throws IllegalStateException if setSchedule is not called first
 	 * 
 	 */
-	Sampler setSchedule(String mbeanFilter, long period, TimeUnit tunit) throws IOException ;
+	Sampler setSchedule(String incFilter, String excFilter, long period, TimeUnit tunit) throws IOException ;
 	
 	
 	/**

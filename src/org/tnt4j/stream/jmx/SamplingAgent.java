@@ -49,6 +49,7 @@ public class SamplingAgent {
 	protected static Sampler platformJmx;
 	protected static ConcurrentHashMap<MBeanServer, Sampler> STREAM_AGENTS = new ConcurrentHashMap<MBeanServer, Sampler>(89);
 	protected static boolean TRACE = Boolean.getBoolean("org.tnt4j.stream.jmx.agent.trace");
+	
 	/**
 	 * Entry point to be loaded as -javaagent:jarpath="mbean-filter!sample.ms" command line.
 	 * Example: -javaagent:tnt4j-sample-jmx.jar="*:*!30000"
@@ -57,17 +58,21 @@ public class SamplingAgent {
 	 * @param inst instrumentation handle
 	 */
 	public static void premain(String options, Instrumentation inst) throws IOException {
-		String jmxfilter = System.getProperty("org.tnt4j.stream.jmx.filter", Sampler.JMX_FILTER_ALL);
+		String incFilter = System.getProperty("org.tnt4j.stream.jmx.include.filter", Sampler.JMX_FILTER_ALL);
+		String excFilter = System.getProperty("org.tnt4j.stream.jmx.exclude.filter");
 		int period = Integer.getInteger("org.tnt4j.stream.jmx.period", 30000);
 		if (options != null) {
 			String [] args = options.split("!");
 			if (args.length >= 2) {
-				jmxfilter = args[0];
+				incFilter = args[0];
 				period = Integer.parseInt(args[1]);
 			}
 		}
-		sample(jmxfilter, period, TimeUnit.MILLISECONDS);
-		System.out.println("SamplingAgent: filter=" + jmxfilter + ", sample.ms=" + period + ", jmx.sample.list=" + STREAM_AGENTS);
+		sample(incFilter, excFilter, period, TimeUnit.MILLISECONDS);
+		System.out.println("SamplingAgent: inlcude.filter=" + incFilter
+				+ ", exclude.filter=" + excFilter
+				+ ", sample.ms=" + period
+				+ ", jmx.sample.list=" + STREAM_AGENTS);
 	}
 
 	/**
@@ -77,15 +82,20 @@ public class SamplingAgent {
 	 *            argument list: mbean-filter sample_time_ms
 	 */
 	public static void main(String[] args) throws InterruptedException, NumberFormatException, IOException {
-		if (args.length < 3) {
-			System.out.println("Usage: mbean-filter sample-ms wait-ms(e.g \"*:*\" 30000");
+		if (args.length < 4) {
+			System.out.println("Usage: mbean-filter exclude-filter sample-ms wait-ms(e.g \"*:*\" 30000");
 		}
 		try {
-			sample(args[0], Integer.parseInt(args[1]), TimeUnit.MILLISECONDS);
-			System.out.println("SamplingAgent: filter=" + args[0] + ", sample.ms=" + args[1] + ", jmx.sample.list="
-			        + STREAM_AGENTS);
+			long sample_time = Integer.parseInt(args[2]);
+			long wait_time = Integer.parseInt(args[3]);
+			sample(args[0], args[1], sample_time, TimeUnit.MILLISECONDS);
+			System.out.println("SamplingAgent: inlcude.filter=" + args[0]
+					+ ", exclude.filter=" + args[1]
+					+ ", sample.ms=" + sample_time
+					+ ", wait.ms=" + wait_time
+					+ ", jmx.sample.list=" + STREAM_AGENTS);
 			synchronized (platformJmx) {
-				platformJmx.wait(Long.parseLong(args[2]));
+				platformJmx.wait(wait_time);
 			}
 		} catch (Throwable ex) {
 			ex.printStackTrace();
@@ -98,9 +108,10 @@ public class SamplingAgent {
 	 * 
 	 */
 	public static void sample() throws IOException {
-		String jmxfilter = System.getProperty("org.tnt4j.stream.jmx.filter", Sampler.JMX_FILTER_ALL);
+		String incFilter = System.getProperty("org.tnt4j.stream.jmx.include.filter", Sampler.JMX_FILTER_ALL);
+		String excFilter = System.getProperty("org.tnt4j.stream.jmx.exclude.filter");
 		int period = Integer.getInteger("org.tnt4j.stream.jmx.period", 30000);
-		sample(jmxfilter, period);
+		sample(incFilter, excFilter, period);
 	}
 	
 
@@ -108,24 +119,38 @@ public class SamplingAgent {
 	 * Schedule sample with default MBean server instance as well
 	 * as all registered MBean servers within the JVM.
 	 * 
-	 * @param jmxfilter semicolon separated filter list
+	 * @param incFilter semicolon separated include filter list
 	 * @param period sampling in milliseconds.
 	 * 
 	 */
-	public static void sample(String jmxfilter, long period) throws IOException {
-		sample(jmxfilter, period, TimeUnit.MILLISECONDS);
+	public static void sample(String incFilter, long period) throws IOException {
+		sample(incFilter, null, period);
 	}
 	
 	/**
 	 * Schedule sample with default MBean server instance as well
 	 * as all registered MBean servers within the JVM.
 	 * 
-	 * @param jmxfilter semicolon separated filter list
+	 * @param incFilter semicolon separated include filter list
+	 * @param excFilter semicolon separated exclude filter list (null if empty)
+	 * @param period sampling in milliseconds.
+	 * 
+	 */
+	public static void sample(String incFilter, String excFilter, long period) throws IOException {
+		sample(incFilter, excFilter, period, TimeUnit.MILLISECONDS);
+	}
+	
+	/**
+	 * Schedule sample with default MBean server instance as well
+	 * as all registered MBean servers within the JVM.
+	 * 
+	 * @param incFilter semicolon separated include filter list
+	 * @param excFilter semicolon separated exclude filter list (null if empty)
 	 * @param period sampling time
 	 * @param tunit time units for sampling period
 	 * 
 	 */
-	public static void sample(String jmxfilter, long period, TimeUnit tunit) throws IOException {
+	public static void sample(String incFilter, String excFilter, long period, TimeUnit tunit) throws IOException {
 		// obtain a default sample factory
 		SamplerFactory pFactory = DefaultSamplerFactory.getInstance();
 		
@@ -133,7 +158,7 @@ public class SamplingAgent {
 			// create new sampler with default MBeanServer instance
 			platformJmx = pFactory.newInstance();
 			// schedule sample with a given filter and sampling period
-			platformJmx.setSchedule(jmxfilter, period).addListener(new AgentSampleListener()).run();
+			platformJmx.setSchedule(incFilter, excFilter, period, tunit).addListener(new AgentSampleListener()).run();
 			STREAM_AGENTS.put(platformJmx.getMBeanServer(), platformJmx);
 		}
 		
@@ -143,7 +168,7 @@ public class SamplingAgent {
 			Sampler jmxp = STREAM_AGENTS.get(server);
 			if (jmxp == null) {
 				jmxp = pFactory.newInstance(server);
-				jmxp.setSchedule(jmxfilter, period).addListener(new AgentSampleListener()).run();
+				jmxp.setSchedule(incFilter, excFilter, period, tunit).addListener(new AgentSampleListener()).run();
 				STREAM_AGENTS.put(jmxp.getMBeanServer(), jmxp);
 			}
 		}		
