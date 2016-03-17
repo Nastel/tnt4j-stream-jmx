@@ -100,5 +100,5 @@ public interface SampleContext {
 	 * 
 	 * @return number of excluded MBean attributes
 	 */
-	long getExclAttrCount();
+	long getExcludeAttrCount();
 }

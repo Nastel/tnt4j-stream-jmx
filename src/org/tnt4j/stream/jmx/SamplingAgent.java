@@ -26,14 +26,9 @@ import java.util.concurrent.TimeUnit;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 
-import org.tnt4j.stream.jmx.conditions.AttributeSample;
 import org.tnt4j.stream.jmx.core.Sampler;
-import org.tnt4j.stream.jmx.core.SampleContext;
-import org.tnt4j.stream.jmx.core.SampleListener;
 import org.tnt4j.stream.jmx.factory.DefaultSamplerFactory;
 import org.tnt4j.stream.jmx.factory.SamplerFactory;
-
-import com.nastel.jkool.tnt4j.core.Activity;
 
 /**
  * <p> 
@@ -158,7 +153,7 @@ public class SamplingAgent {
 			// create new sampler with default MBeanServer instance
 			platformJmx = pFactory.newInstance();
 			// schedule sample with a given filter and sampling period
-			platformJmx.setSchedule(incFilter, excFilter, period, tunit).addListener(new AgentSampleListener()).run();
+			platformJmx.setSchedule(incFilter, excFilter, period, tunit).addListener(new DefaultSampleListener(System.out, TRACE)).run();
 			STREAM_AGENTS.put(platformJmx.getMBeanServer(), platformJmx);
 		}
 		
@@ -168,7 +163,7 @@ public class SamplingAgent {
 			Sampler jmxp = STREAM_AGENTS.get(server);
 			if (jmxp == null) {
 				jmxp = pFactory.newInstance(server);
-				jmxp.setSchedule(incFilter, excFilter, period, tunit).addListener(new AgentSampleListener()).run();
+				jmxp.setSchedule(incFilter, excFilter, period, tunit).addListener(new DefaultSampleListener(System.out, TRACE)).run();
 				STREAM_AGENTS.put(jmxp.getMBeanServer(), jmxp);
 			}
 		}		
@@ -209,43 +204,4 @@ public class SamplingAgent {
 		Sampler sampler = STREAM_AGENTS.remove(mserver);
 		if (sampler != null) sampler.cancel();
 	}
-}
-
-class AgentSampleListener implements SampleListener {
-	@Override
-	public void pre(SampleContext context, Activity activity) {
-	}
-
-	@Override
-	public boolean sample(SampleContext context, AttributeSample sample) {
-		return true;
-	}
-
-	@Override
-	public void post(SampleContext context, Activity activity) {
-		if (SamplingAgent.TRACE) {
-			System.out.println(activity.getName()
-				+ ": sample.count=" + context.getSampleCount()
-				+ ", mbean.count=" + context.getMBeanServer().getMBeanCount()
-				+ ", elasped.usec=" + activity.getElapsedTimeUsec() 
-				+ ", snap.count=" + activity.getSnapshotCount() 
-				+ ", id.count=" + activity.getIdCount()
-				+ ", noop.count=" + context.getTotalNoopCount()
-				+ ", sample.mbeans.count=" + context.getMBeanCount()
-				+ ", sample.metric.count=" + context.getLastMetricCount()
-				+ ", sample.time.usec=" + context.getLastSampleUsec()
-				+ ", exclude.attrs=" + context.getExclAttrCount()
-				+ ", trackind.id=" + activity.getTrackingId() 
-				+ ", mbean.server=" + context.getMBeanServer()
-				);
-		}
-	}
-
-	@Override
-    public void error(SampleContext context, AttributeSample sample) {
-		if (SamplingAgent.TRACE) {
-			System.err.println("Failed to sample: " + sample.getAttributeInfo() + ", ex=" + sample.getError());
-			sample.getError().printStackTrace();
-		}
-    }
 }
