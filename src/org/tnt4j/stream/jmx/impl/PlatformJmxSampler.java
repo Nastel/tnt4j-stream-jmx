@@ -86,14 +86,19 @@ public class PlatformJmxSampler implements Sampler {
 	}
 
 	@Override
-	public Sampler setSchedule(String jmxfilter, long period) throws IOException {
-		return setSchedule(jmxfilter, period, TimeUnit.MILLISECONDS);
+    public Sampler setSchedule(String incFilter, long period) throws IOException {
+	    return setSchedule(incFilter, null, period);
+    }
+
+	@Override
+	public Sampler setSchedule(String incfilter, String excFilter, long period) throws IOException {
+		return setSchedule(incfilter, excFilter, period, TimeUnit.MILLISECONDS);
 	}	
 
 	@Override
-	public synchronized Sampler setSchedule(String jmxfilter, long period, TimeUnit tunit) throws IOException {
+	public synchronized Sampler setSchedule(String incfilter, String excFilter, long period, TimeUnit tunit) throws IOException {
 		if (sampler == null) {
-			sampler = newScheduler(getMBeanServer(), jmxfilter, period, tunit);
+			sampler = newScheduler(getMBeanServer(), incfilter, excFilter, period, tunit);
 			sampler.open();
 			return this;
 		} else {
@@ -116,14 +121,15 @@ public class PlatformJmxSampler implements Sampler {
 	 * Override this call to return your instance of {@link Scheduler}.
 	 *
 	 * @param mserver MBean server instance
-	 * @param filter MBean filters semicolon separated
+	 * @param incfilter MBean include filters semicolon separated
+	 * @param excfilter MBean exclude filters semicolon separated
 	 * @param period time period for sampling
 	 * @param tunit time units for period
 	 *  
 	 * @return new {@link Scheduler} instance
 	 */
-	protected Scheduler newScheduler(MBeanServer mserver, String filter, long period, TimeUnit tunit) {
-		return new SchedulerImpl(this.getClass().getName(), mserver, filter, period, tunit);
+	protected Scheduler newScheduler(MBeanServer mserver, String incfilter, String excfilter, long period, TimeUnit tunit) {
+		return new SchedulerImpl(this.getClass().getName(), mserver, incfilter, excfilter, period, tunit);
 	}
 
 	@Override
@@ -178,11 +184,19 @@ public class PlatformJmxSampler implements Sampler {
     }
 
 	@Override
-    public String getFilter() {
+    public String getIncFilter() {
 		if (sampler == null) {
 			throw new IllegalStateException("no schedule set: call setSchedule() first");
 		}
-	    return sampler.getFilter();
+	    return sampler.getIncFilter();
+    }
+
+	@Override
+    public String getExcFilter() {
+		if (sampler == null) {
+			throw new IllegalStateException("no schedule set: call setSchedule() first");
+		}
+	    return sampler.getExcFilter();
     }
 
 	@Override

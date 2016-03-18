@@ -52,7 +52,7 @@ public class SampleContextImpl implements SampleContext {
 	}
 
 	@Override
-	public long getExclAttrCount() {
+	public long getExcludeAttrCount() {
 		return handle.excAttrs.size();
 	}
 

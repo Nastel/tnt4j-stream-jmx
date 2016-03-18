@@ -81,11 +81,18 @@ public interface Scheduler extends Runnable {
 	SampleHandler getSampleHandler();
 	
 	/**
-	 * MBean filter associated with this sampler
+	 * MBean include filter associated with this sampler
 	 * 
-	 * @return filter list
+	 * @return include filter list
 	 */
-	String getFilter();
+	String getIncFilter();
+	
+	/**
+	 * MBean Exclude filter associated with this sampler
+	 * 
+	 * @return exclude filter list
+	 */
+	String getExcFilter();
 	
 	/**
 	 * Obtain <code>TrackingLogger</code> instance for logging

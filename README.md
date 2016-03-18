@@ -65,6 +65,18 @@ Sampler sampler = factory.newInstance(ManagementFactory.getPlatformMBeanServer()
 // schedule collection (ping) for given MBean filter and 30000 ms sampling period
 sampler.setSchedule(Sampler.JMX_FILTER_ALL, 30000).run();
 ```
+Stream-JMX supports inclusion and exclusion filters.
+To schedule metric collection for a specific MBean server and exclude certain MBeans:
+(Exclusion filters are applied after inclusion filters)
+```java
+// obtain SamplerFactory instance
+SamplerFactory factory = DefaultSamplerFactory.getInstance();
+// create an instance of the sampler that will sample mbeans
+Sampler sampler = factory.newInstance(ManagementFactory.getPlatformMBeanServer());
+String excludeMBeanFilter = "mydomain:*";
+// schedule collection (ping) for given MBean filter and 30000 ms sampling period
+sampler.setSchedule(Sampler.JMX_FILTER_ALL, excludeMBeanFilter, 30000).run();
+```
 Below is an example of how to sample all registered mbean servers:
 ```java
 // obtain SamplerFactory instance
@@ -78,7 +90,7 @@ for (MBeanServer server: mlist) {
 ```
 Alternatively, Stream-JMX provides a helper class `SamplingAgent` that lets you schedule sampling for all registered `MBeanServer` instances.
 ```java
-SamplingAgent.sample(Sampler.JMX_FILTER_ALL, 60000, TimeUnit.MILLISECONDS);
+SamplingAgent.sample(Sampler.JMX_FILTER_ALL, Sampler.JMX_FILTER_NONE, 60000, TimeUnit.MILLISECONDS);
 ```
 <b>NOTE:</b> Sampled MBean attributes and associated values are stored in a collection of `Snapshot` objects stored within `Activity` instance. Current `Activity` instance can be obtained via `AttributeSample` passed when calling listeners such as `AttributeCondition`, `SampleListener`. Snapshots can be accessed using `Activity.getSnapshots()` method call.
 
@@ -89,7 +101,7 @@ For more information on TNT4J and `tnt4j.properties` see (https://github.com/Nas
 ## Running Stream-JMX as standalone app
 Example below runs `SamplingAgent` helper class as a standalone java application with a given MBean filter `"*:*"`, sampling period in milliseconds (`10000`), and time to run in milliseconds (`60000`):
 ```java
-java -Dorg.tnt4j.stream.jmx.agent.trace=true -classpath "tnt4j-stream-jmx.jar;lib/tnt4j-api-final-all.jar" org.tnt4j.stream.jmx.SamplingAgent "*:*" 10000 60000
+java -Dorg.tnt4j.stream.jmx.agent.trace=true -classpath "tnt4j-stream-jmx.jar;lib/tnt4j-api-final-all.jar" org.tnt4j.stream.jmx.SamplingAgent "*:*" none 10000 60000
 ```
 
 ## Running Stream-JMX as -javaagent

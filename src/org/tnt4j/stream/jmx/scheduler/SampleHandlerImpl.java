@@ -16,8 +16,10 @@
 package org.tnt4j.stream.jmx.scheduler;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -28,6 +30,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanInfo;
 import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.openmbean.CompositeData;
 
@@ -71,7 +74,7 @@ public class SampleHandlerImpl implements SampleHandler {
 	
 	private final ReentrantLock lock = new ReentrantLock();
 	
-	String mbeanFilter;
+	String mbeanIncFilter, mbeanExcFilter;
 	long sampleCount = 0, totalMetricCount = 0, totalActionCount = 0;
 	long lastMetricCount = 0, lastSampleTimeUsec = 0, noopCount = 0;
 	
@@ -82,43 +85,79 @@ public class SampleHandlerImpl implements SampleHandler {
 	Vector<SampleListener> listeners = new Vector<SampleListener>(5, 5);
 	Map<AttributeCondition, AttributeAction> conditions = new LinkedHashMap<AttributeCondition, AttributeAction>(89);
 	HashMap<ObjectName, MBeanInfo> mbeans = new HashMap<ObjectName, MBeanInfo>(89);
-	HashMap<MBeanAttributeInfo, MBeanAttributeInfo> excAttrs = new HashMap<MBeanAttributeInfo, MBeanAttributeInfo>(89);
+	HashSet<ObjectName> excAttrs = new HashSet<ObjectName>(89);
 
 	/**
-	 * Create new instance of <code>SampleHandlerImpl</code> with a given
+	 * Create new instance of {@code SampleHandlerImpl} with a given
 	 * MBean server and a set of filters.
 	 *
 	 * @param mserver MBean server instance
-	 * @param filter MBean filters semicolon separated
+	 * @param incFilter MBean include filters semicolon separated
+	 * @param excFilter MBean exclude filters semicolon separated
 	 *  
 	 */
-	public SampleHandlerImpl(MBeanServer mserver, String filter) {
+	public SampleHandlerImpl(MBeanServer mserver, String incFilter, String excFilter) {
 		mbeanServer = mserver;
-		mbeanFilter = filter;
+		mbeanIncFilter = incFilter;
+		mbeanExcFilter = excFilter;
 		context = new SampleContextImpl(this);
 	}
 
+	
+	private static void  tokenizeFilters(String filter, List<ObjectName> filters) throws MalformedObjectNameException {
+		StringTokenizer itk = new StringTokenizer(filter, ";");
+		while (itk.hasMoreTokens()) {
+			filters.add(new ObjectName(itk.nextToken()));
+		}		
+	}
+	
 	/**
 	 * Load JMX beans based on a configured MBean filter list.
-	 * All loaded MBeans are stored in <code>HashMap</code>.
+	 * All loaded MBeans are stored in {@code HashMap}.
 	 */
 	private void loadMBeans() {
 		try {
-			StringTokenizer tk = new StringTokenizer(mbeanFilter, ";");
-			Vector<ObjectName> nFilters = new Vector<ObjectName>(5);
-			while (tk.hasMoreTokens()) {
-				nFilters.add(new ObjectName(tk.nextToken()));
+			Vector<ObjectName> nFilters = new Vector<ObjectName>(5, 5);
+			Vector<ObjectName> eFilters = new Vector<ObjectName>(5, 5);
+
+			tokenizeFilters(mbeanIncFilter, nFilters);
+			if (mbeanExcFilter != null && mbeanExcFilter.trim().length() > 0) {
+				tokenizeFilters(mbeanExcFilter, eFilters);
 			}
+			
+			// run inclusion
 			for (ObjectName nameFilter : nFilters) {
-				Set<?> set = mbeanServer.queryNames(nameFilter, nameFilter);
-				for (Iterator<?> it = set.iterator(); it.hasNext();) {
-					ObjectName oname = (ObjectName) it.next();
+				Set<ObjectName> set = mbeanServer.queryNames(nameFilter, nameFilter);
+				if (eFilters.size() > 0) {
+					excludeFromSet(set, eFilters);
+				}
+				for (Iterator<ObjectName> it = set.iterator(); it.hasNext();) {
+					ObjectName oname = it.next();
 					mbeans.put(oname, mbeanServer.getMBeanInfo(oname));
 				}
 			}
 		} catch (Exception ex) {
 			lastError = ex;
 			ex.printStackTrace();
+		}
+	}
+
+	/**
+	 * Exclude MBeans based on a list of exclude object name patterns
+	 * 
+	 * @param objSet JMX object name set
+	 * @param eFilters list of MBean exclusions
+	 * @return the set without objects excluded by eFilters list
+	 */
+	private void excludeFromSet(Set<ObjectName> objSet, List<ObjectName> eFilters) {
+		for (ObjectName ename: eFilters) {
+			Iterator<ObjectName> it = objSet.iterator();
+			while (it.hasNext()) {
+				ObjectName name = it.next();
+				if (ename.apply(name)) {
+					it.remove();
+				}
+			}
 		}
 	}
 
@@ -139,7 +178,7 @@ public class SampleHandlerImpl implements SampleHandler {
 			PropertySnapshot snapshot = new PropertySnapshot(name.getDomain(), name.getCanonicalName());
 			for (int i = 0; i < attr.length; i++) {
 				MBeanAttributeInfo jinfo = attr[i];
-				if (jinfo.isReadable() && !attrExcluded(jinfo)) {
+				if (jinfo.isReadable() && !isExcluded(name)) {
 					AttributeSample sample = new AttributeSample(activity, mbeanServer, name, jinfo);
 					try {
 						sample.sample(); // obtain a sample
@@ -148,7 +187,7 @@ public class SampleHandlerImpl implements SampleHandler {
 						}
 					} catch (Throwable ex) {
 						lastError = ex;
-						exclude(jinfo);
+						exclude(name);
 						doError(sample, ex);
 					} finally {
 						evalAttrConditions(sample);						
@@ -165,7 +204,7 @@ public class SampleHandlerImpl implements SampleHandler {
 
 	/**
 	 * Run and evaluate all registered conditions and invoke
-	 * associated <code>MBeanAction</code> instances.
+	 * associated {@code MBeanAction} instances.
 	 * 
 	 * @param sample MBean sample instance
 	 * @see AttributeSample
@@ -182,20 +221,20 @@ public class SampleHandlerImpl implements SampleHandler {
 	/**
 	 * Determine if a given attribute to be excluded from sampling.	
 	 * 
-	 * @param jinfo attribute info
+	 * @param oname attribute object name
 	 * @return true when attribute should be excluded, false otherwise
 	 */
-	private boolean attrExcluded(MBeanAttributeInfo jinfo) {
-	    return excAttrs.get(jinfo) != null;
+	private boolean isExcluded(ObjectName oname) {
+	    return excAttrs.contains(oname);
     }
 
 	/**
 	 * Mark a given attribute to be excluded from sampling.	
 	 * 
-	 * @param jinfo attribute info
+	 * @param oname attribute object name
 	 */
-	private void exclude(MBeanAttributeInfo jinfo) {
-	    excAttrs.put(jinfo, jinfo);
+	private void exclude(ObjectName oname) {
+	    excAttrs.add(oname);
     }
 
 	/**

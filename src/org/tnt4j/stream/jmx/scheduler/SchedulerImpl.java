@@ -28,8 +28,7 @@ import com.nastel.jkool.tnt4j.ActivityScheduler;
 
 /**
  * <p>
- * This class provides scheduled sample/heart-beat for a given JMX
- * <code>MBeanServer</code>.
+ * This class provides scheduled sample/heart-beat for a given JMX {@code MBeanServer}.
  * </p>
  * 
  * @version $Revision: 1 $
@@ -38,10 +37,11 @@ public class SchedulerImpl extends ActivityScheduler implements Scheduler {
 	protected SampleHandler listener;
 	protected long period;
 	protected TimeUnit timeUnit;
-	protected String filter;
+	protected String incFilter;
+	protected String excFilter;
 
 	/**
-	 * Create new instance of <code>SchedulerImpl</code> with a given name, MBean
+	 * Create new instance of {@code SchedulerImpl} with a given name, MBean
 	 * server, sampling period. Filter is set to all MBeans.
 	 *
 	 * @param name
@@ -57,7 +57,7 @@ public class SchedulerImpl extends ActivityScheduler implements Scheduler {
 	}
 
 	/**
-	 * Create new instance of <code>SchedulerImpl</code> with a given name, MBean
+	 * Create new instance of {@code SchedulerImpl} with a given name, MBean
 	 * server, filter list and sampling period.
 	 *
 	 * @param name
@@ -72,18 +72,18 @@ public class SchedulerImpl extends ActivityScheduler implements Scheduler {
 	 */
 	public SchedulerImpl(String name, MBeanServer server, String filterList,
 			long period) {
-		this(name, server, filterList, period, TimeUnit.MILLISECONDS);
+		this(name, server, filterList, null, period, TimeUnit.MILLISECONDS);
 	}
 
 	/**
-	 * Create new instance of <code>SchedulerImpl</code> with a given name, MBean
+	 * Create new instance of {@code SchedulerImpl} with a given name, MBean
 	 * server, filter list and sampling period.
 	 *
 	 * @param name
 	 *            name of assigned to the sampler
 	 * @param server
 	 *            MBean server instance
-	 * @param filterList
+	 * @param incFilterList
 	 *            MBean filters semicolon separated
 	 * @param period
 	 *            sampling period
@@ -91,17 +91,44 @@ public class SchedulerImpl extends ActivityScheduler implements Scheduler {
 	 *            time unit for the sampling period
 	 * 
 	 */
-	public SchedulerImpl(String name, MBeanServer server, String filterList,
+	public SchedulerImpl(String name, MBeanServer server, 
+			String incFilterList,
 			long period, TimeUnit tunit) {
-		super(name, newSampleHandlerImpl(server, filterList));
-		this.listener = (SampleHandler) this.getListener();
-		this.period = period;
-		this.timeUnit = tunit;
-		this.filter = filterList;
+		this(name, server, incFilterList, null, period, tunit);		
 	}
 
 	/**
-	 * Create new instance of <code>SampleHandler</code> Override this call
+	 * Create new instance of {@code SchedulerImpl} with a given name, MBean
+	 * server, filter list and sampling period.
+	 *
+	 * @param name
+	 *            name of assigned to the sampler
+	 * @param server
+	 *            MBean server instance
+	 * @param incFilterList
+	 *            MBean filters semicolon separated
+	 * @param excFilterList
+	 *            MBean filters semicolon separated
+	 * @param period
+	 *            sampling period
+	 * @param tunit
+	 *            time unit for the sampling period
+	 * 
+	 */
+	public SchedulerImpl(String name, MBeanServer server, 
+			String incFilterList,
+			String excFilterList,
+			long period, TimeUnit tunit) {
+		super(name, newSampleHandlerImpl(server, incFilterList, excFilterList));
+		this.listener = (SampleHandler) this.getListener();
+		this.period = period;
+		this.timeUnit = tunit;
+		this.incFilter = incFilterList;
+		this.excFilter = excFilterList;
+	}
+
+	/**
+	 * Create new instance of {@code SampleHandler}. Override this call
 	 * to return your instance of the sample handler implementation.
 	 *
 	 * @param server
@@ -113,8 +140,8 @@ public class SchedulerImpl extends ActivityScheduler implements Scheduler {
 	 * @return new sample handler implementation instance
 	 */
 	protected static SampleHandler newSampleHandlerImpl(MBeanServer server,
-			String filterList) {
-		return new SampleHandlerImpl(server, filterList);
+			String filterList, String excfilterList) {
+		return new SampleHandlerImpl(server, filterList, excfilterList);
 	}
 
 	@Override
@@ -128,8 +155,13 @@ public class SchedulerImpl extends ActivityScheduler implements Scheduler {
 	}
 
 	@Override
-	public String getFilter() {
-		return filter;
+	public String getIncFilter() {
+		return incFilter;
+	}
+	
+	@Override
+	public String getExcFilter() {
+		return excFilter;
 	}
 	
 	@Override
