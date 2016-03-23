@@ -46,8 +46,8 @@ public class SamplingAgent {
 	protected static boolean TRACE = Boolean.getBoolean("org.tnt4j.stream.jmx.agent.trace");
 	
 	/**
-	 * Entry point to be loaded as -javaagent:jarpath="mbean-filter!sample.ms" command line.
-	 * Example: -javaagent:tnt4j-sample-jmx.jar="*:*!30000"
+	 * Entry point to be loaded as {@code -javaagent:jarpath="mbean-filter!sample.ms"} command line.
+	 * Example:  {@code -javaagent:tnt4j-sample-jmx.jar="*:*!30000"}
 	 * 
 	 * @param options ! separated list of options mbean-filter!sample.ms, where mbean-filter is semicolon separated list of mbean filters
 	 * @param inst instrumentation handle
