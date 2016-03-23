@@ -182,8 +182,8 @@ public class SamplingAgent {
 	}
 	
 	/**
-	 * Cancel and close all outstanding <code>Sampler</code> 
-	 * instances and stop all sampling for all <code>MBeanServer</code>
+	 * Cancel and close all outstanding {@link Sampler} 
+	 * instances and stop all sampling for all {@code MBeanServer}
 	 * instances.
 	 *  
 	 */
@@ -195,7 +195,7 @@ public class SamplingAgent {
 	}
 
 	/**
-	 * Cancel and close all sampling for a given <code>MBeanServer</code>
+	 * Cancel and close all sampling for a given {@code MBeanServer}
 	 * instance.
 	 *  
 	 * @param mserver MBeanServer instance
