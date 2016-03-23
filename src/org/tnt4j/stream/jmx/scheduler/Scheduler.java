@@ -26,7 +26,7 @@ import com.nastel.jkool.tnt4j.TrackingLogger;
 /**
  * <p>
  * This interface provides a way to implement classes that implement 
- * scheduled sample/heart-beat for a given JMX <code>MBeanServer</code>.
+ * scheduled sample/heart-beat for a given JMX {@code MBeanServer}.
  * </p>
  * 
  * @version $Revision: 1 $
@@ -95,7 +95,8 @@ public interface Scheduler extends Runnable {
 	String getExcFilter();
 	
 	/**
-	 * Obtain <code>TrackingLogger</code> instance for logging
+	 * Obtain {@code TrackingLogger} instance for logging associated with
+	 * this scheduler instance.
 	 * 
 	 * @return tracking logger instance
 	 */

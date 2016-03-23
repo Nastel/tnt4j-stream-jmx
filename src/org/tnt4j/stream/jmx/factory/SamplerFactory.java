@@ -33,7 +33,7 @@ public interface SamplerFactory {
 	
 	/**
 	 * Create a default instance with default MBean server instance
-	 * <code>ManagementFactory.getPlatformMBeanServer()</code>
+	 * {@code ManagementFactory.getPlatformMBeanServer()}
 	 * 
 	 * @see Sampler
 	 */

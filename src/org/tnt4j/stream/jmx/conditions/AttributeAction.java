@@ -20,8 +20,7 @@ import org.tnt4j.stream.jmx.core.SampleContext;
 
 /**
  * <p> 
- * This interface defines <code>AttributeAction</code> which provides
- * a way to run actions on specific MBean attributes during a sample.
+ * This interface defines a way to run actions on specific MBean attributes during a sample.
  * </p>
  * 
  * 

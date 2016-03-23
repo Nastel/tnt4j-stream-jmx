@@ -19,7 +19,7 @@ import org.tnt4j.stream.jmx.impl.PlatformSamplerFactory;
 
 /**
  * <p> 
- * This class provides a generic way to get a default <code>SamplerFactory</code>
+ * This class provides a generic way to get a default {@link SamplerFactory}
  * instance.
  * </p>
  * 
@@ -45,7 +45,7 @@ public class DefaultSamplerFactory {
 	private DefaultSamplerFactory() {}
 	
 	/**
-	 * Obtain a default instance of <code>SamplerFactory</code>
+	 * Obtain a default instance of {@link SamplerFactory}
 	 *
 	 * @return default sample factory instance
 	 */

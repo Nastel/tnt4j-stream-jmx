@@ -22,8 +22,8 @@ import org.tnt4j.stream.jmx.factory.SamplerFactory;
 
 /**
  * <p> 
- * This class provides a <code>SamplerFactory</code> implementation
- * with <code>JBossJmxSampler</code> as underlying sampler implementation.
+ * This class provides a {@link SamplerFactory} implementation
+ * with {@code JBossJmxSampler} as underlying sampler implementation.
  * </p>
  * 
  * @version $Revision: 1 $
