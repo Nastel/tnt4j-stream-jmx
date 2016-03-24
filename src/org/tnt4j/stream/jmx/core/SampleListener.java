@@ -35,7 +35,7 @@ import com.nastel.jkool.tnt4j.core.Activity;
 public interface SampleListener {
 	/**
 	 * This method is called before a sample begins
-	 * Set activity <code>OpType</code> to NOOP to ignore
+	 * Set activity {@code OpType} to NOOP to ignore
 	 * activity reporting. Setting this to NOOP at pre stage
 	 * cancels current sample.
 	 * 
@@ -64,7 +64,7 @@ public interface SampleListener {
 
 	/**
 	 * This method is called after current sample is completed
-	 * Set activity <code>OpType</code> to NOOP to ignore
+	 * Set activity {@code OpType} to NOOP to ignore
 	 * activity reporting. Setting this to NOOP at post stage
 	 * cancels reporting of the current sample.
 	 * 

@@ -32,7 +32,7 @@ import org.tnt4j.stream.jmx.factory.SamplerFactory;
 
 /**
  * <p> 
- * This class provides java agent implementation as well as <code>main()</code>
+ * This class provides java agent implementation {@link #premain(String, Instrumentation)} as well as {@link #main(String[])}
  * entry point to run as a standalone application.
  * </p>
  * 
@@ -46,8 +46,8 @@ public class SamplingAgent {
 	protected static boolean TRACE = Boolean.getBoolean("org.tnt4j.stream.jmx.agent.trace");
 	
 	/**
-	 * Entry point to be loaded as -javaagent:jarpath="mbean-filter!sample.ms" command line.
-	 * Example: -javaagent:tnt4j-sample-jmx.jar="*:*!30000"
+	 * Entry point to be loaded as {@code -javaagent:jarpath="mbean-filter!sample.ms"} command line.
+	 * Example:  {@code -javaagent:tnt4j-sample-jmx.jar="*:*!30000"}
 	 * 
 	 * @param options ! separated list of options mbean-filter!sample.ms, where mbean-filter is semicolon separated list of mbean filters
 	 * @param inst instrumentation handle
@@ -78,7 +78,7 @@ public class SamplingAgent {
 	 */
 	public static void main(String[] args) throws InterruptedException, NumberFormatException, IOException {
 		if (args.length < 4) {
-			System.out.println("Usage: mbean-filter exclude-filter sample-ms wait-ms(e.g \"*:*\" 30000");
+			System.out.println("Usage: mbean-filter exclude-filter sample-ms wait-ms(e.g \"*:*\" \"none:*\"30000");
 		}
 		try {
 			long sample_time = Integer.parseInt(args[2]);
@@ -182,8 +182,8 @@ public class SamplingAgent {
 	}
 	
 	/**
-	 * Cancel and close all outstanding <code>Sampler</code> 
-	 * instances and stop all sampling for all <code>MBeanServer</code>
+	 * Cancel and close all outstanding {@link Sampler} 
+	 * instances and stop all sampling for all {@code MBeanServer}
 	 * instances.
 	 *  
 	 */
@@ -195,7 +195,7 @@ public class SamplingAgent {
 	}
 
 	/**
-	 * Cancel and close all sampling for a given <code>MBeanServer</code>
+	 * Cancel and close all sampling for a given {@code MBeanServer}
 	 * instance.
 	 *  
 	 * @param mserver MBeanServer instance

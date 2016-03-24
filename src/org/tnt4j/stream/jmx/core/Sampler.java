@@ -28,8 +28,8 @@ import com.nastel.jkool.tnt4j.TrackingLogger;
 
 /**
  * <p> 
- * This interface defines <code>Sampler</code> which allows sampling
- * of MBeans based on a given sampling period.
+ * This interface sampling of MBeans based on a given sampling period and
+ * a set of include/exclude filters.
  * </p>
  * 
  * 

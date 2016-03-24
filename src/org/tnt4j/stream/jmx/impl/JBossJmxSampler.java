@@ -23,7 +23,7 @@ import javax.management.MBeanServer;
 /**
  * <p> 
  * This class provides scheduled execution and sampling of JMX metrics
- * for a JBoss Application Server <code>MBeanServer</code> instance.
+ * for a JBoss Application Server {@code MBeanServer} instance.
  * </p>
  * 
  * 
@@ -35,8 +35,8 @@ public class JBossJmxSampler extends PlatformJmxSampler {
 	public static final String JBOSS_JMX_ADMIN_CLASS = "org.jboss.mx.util.MBeanServerLocator";
 	/**
 	 * Dynamically identify and load JBoss MBean Server
-	 * <code>org.jboss.mx.util.MBeanServerLocator.locate()</code>.
-	 * Use <code>ManagementFactory.getPlatformMBeanServer()</code> if none found.
+	 * {@code org.jboss.mx.util.MBeanServerLocator.locate()}.
+	 * Use {@code ManagementFactory.getPlatformMBeanServer()} if none found.
 	 * 
 	 * @return JBoss JMX MBean server instance
 	 */

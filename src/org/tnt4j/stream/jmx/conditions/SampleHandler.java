@@ -22,7 +22,7 @@ import com.nastel.jkool.tnt4j.core.ActivityListener;
 
 /**
  * <p> 
- * This interface defines <code>SampleHandler</code> which provides
+ * This interface defines {@link SampleHandler} which provides
  * a way to conditionally process activities.
  * </p>
  * 
@@ -35,7 +35,7 @@ public interface SampleHandler extends ActivityListener, NestedHandler<SampleHan
 	/**
 	 * Register and associate condition with an action
 	 * 
-	 * @param cond user defined condition with <code>NoopAction</code>
+	 * @param cond user defined condition with {@link NoopAction}
 	 */
 	SampleHandler register(AttributeCondition cond);
 	

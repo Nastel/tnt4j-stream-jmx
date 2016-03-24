@@ -32,7 +32,7 @@ import com.nastel.jkool.tnt4j.utils.Utils;
  * This class provides key/value formatting for tnt4j activities, events and
  * snapshots. The output format follows the following format:
  * <p>
- * <code>"OBJ:name-value-prefix,name1=value1,....,nameN=valueN"</code>.
+ * {@code "OBJ:name-value-prefix,name1=value1,....,nameN=valueN"}.
  * </p> 
  * Newline is added at the end of each line.
  * 

@@ -74,7 +74,7 @@ public class AttributeSample {
 	
 	/**
 	 * Returns true if sample failed with error, false otherwise.
-	 * Call {@link #getError()} to obtain <code>Throwable</code>
+	 * Call {@link #getError()} to obtain {@code Throwable}
 	 * instance when true.
 	 * 
 	 * @return true if sample failed with error, false otherwise
@@ -129,11 +129,11 @@ public class AttributeSample {
 	}
 	
 	/**
-	 * Obtain <code>Activity</code> instance associated with this instance.
+	 * Obtain {@code Activity} instance associated with this instance.
 	 * Activity encapsulates all info about current sample attributes, values,
 	 * timing.
 	 * 
-	 * @return code>Activity</code> instance associated with this instance
+	 * @return {@code Activity} instance associated with this instance
 	 */
 	public Activity getActivity() {
 		return activity;
