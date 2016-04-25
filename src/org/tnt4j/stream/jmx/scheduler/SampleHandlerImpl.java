@@ -15,7 +15,6 @@
  */
 package org.tnt4j.stream.jmx.scheduler;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -25,14 +24,21 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.management.InstanceNotFoundException;
 import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanInfo;
 import javax.management.MBeanServer;
+import javax.management.MBeanServerDelegate;
+import javax.management.MBeanServerNotification;
 import javax.management.MalformedObjectNameException;
+import javax.management.Notification;
+import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.management.openmbean.CompositeData;
+import javax.management.relation.MBeanServerNotificationFilter;
 
 import org.tnt4j.stream.jmx.conditions.AttributeAction;
 import org.tnt4j.stream.jmx.conditions.AttributeCondition;
@@ -60,7 +66,7 @@ import com.nastel.jkool.tnt4j.core.PropertySnapshot;
  * 
  * @version $Revision: 1 $
  */
-public class SampleHandlerImpl implements SampleHandler {
+public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	public static String STAT_NOOP_COUNT = "noop.count";
 	public static String STAT_SAMPLE_COUNT = "sample.count";
 	public static String STAT_MBEAN_COUNT = "mbean.count";
@@ -82,8 +88,9 @@ public class SampleHandlerImpl implements SampleHandler {
 	SampleContext context;
 	Throwable lastError;
 	
+	MBeanServerNotificationFilter MBeanFilter = new MBeanServerNotificationFilter(); 
 	Map<AttributeCondition, AttributeAction> conditions = new LinkedHashMap<AttributeCondition, AttributeAction>(89);
-	HashMap<ObjectName, MBeanInfo> mbeans = new HashMap<ObjectName, MBeanInfo>(89);
+	ConcurrentHashMap<ObjectName, MBeanInfo> mbeans = new ConcurrentHashMap<ObjectName, MBeanInfo>(89);
 	HashSet<ObjectName> excAttrs = new HashSet<ObjectName>(89);
 
 	Vector<SampleListener> listeners = new Vector<SampleListener>(5, 5);
@@ -112,6 +119,11 @@ public class SampleHandlerImpl implements SampleHandler {
 		}		
 	}
 	
+	private void listenForChanges(List<ObjectName> filters) throws InstanceNotFoundException {
+		MBeanFilter.enableAllObjectNames();
+		mbeanServer.addNotificationListener(MBeanServerDelegate.DELEGATE_NAME, this, MBeanFilter, null);
+	}
+	
 	/**
 	 * Load JMX beans based on a configured MBean filter list.
 	 * All loaded MBeans are stored in {@code HashMap}.
@@ -124,6 +136,7 @@ public class SampleHandlerImpl implements SampleHandler {
 			tokenizeFilters(mbeanIncFilter, nFilters);
 			if (mbeanExcFilter != null && mbeanExcFilter.trim().length() > 0) {
 				tokenizeFilters(mbeanExcFilter, eFilters);
+				listenForChanges(nFilters);
 			}
 			
 			// run inclusion
@@ -424,4 +437,22 @@ public class SampleHandlerImpl implements SampleHandler {
 	public SampleContext getContext() {
 		return context;
 	}
+
+
+	@Override
+    public void handleNotification(Notification notification, Object handback) {
+		if (notification instanceof MBeanServerNotification) {
+			MBeanServerNotification mbeanEvent = (MBeanServerNotification) notification;
+			if (mbeanEvent.getType().equalsIgnoreCase(MBeanServerNotification.REGISTRATION_NOTIFICATION)) {
+				try {
+	                mbeans.put(mbeanEvent.getMBeanName(), mbeanServer.getMBeanInfo(mbeanEvent.getMBeanName()));
+                } catch (Throwable e) {
+                	e.printStackTrace();
+                }
+			} else if (mbeanEvent.getType().equalsIgnoreCase(MBeanServerNotification.UNREGISTRATION_NOTIFICATION)) {
+				mbeans.remove(mbeanEvent.getMBeanName());
+			}
+		}
+	}
+
 }
