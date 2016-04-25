@@ -88,7 +88,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	SampleContext context;
 	Throwable lastError;
 	
-	MBeanServerNotificationFilter MBeanFilter = new MBeanServerNotificationFilter(); 
+	MBeanServerNotificationFilter MBeanFilter; 
 	Map<AttributeCondition, AttributeAction> conditions = new LinkedHashMap<AttributeCondition, AttributeAction>(89);
 	ConcurrentHashMap<ObjectName, MBeanInfo> mbeans = new ConcurrentHashMap<ObjectName, MBeanInfo>(89);
 	HashSet<ObjectName> excAttrs = new HashSet<ObjectName>(89);
@@ -112,6 +112,13 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	}
 
 	
+	/**
+	 * Tokenize a given set of filters into JMX object names
+	 * 
+	 * @param filter semicolon set of JMX filters
+	 * @param tokenized list of object names
+	 * @throws MalformedObjectNameException 
+	 */
 	private static void  tokenizeFilters(String filter, List<ObjectName> filters) throws MalformedObjectNameException {
 		StringTokenizer itk = new StringTokenizer(filter, ";");
 		while (itk.hasMoreTokens()) {
@@ -119,9 +126,16 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 		}		
 	}
 	
-	private void listenForChanges(List<ObjectName> filters) throws InstanceNotFoundException {
-		MBeanFilter.enableAllObjectNames();
-		mbeanServer.addNotificationListener(MBeanServerDelegate.DELEGATE_NAME, this, MBeanFilter, null);
+	/**
+	 * Install mbean add/delete listener
+	 * @throws InstanceNotFoundException 
+	 */
+	private void listenForChanges() throws InstanceNotFoundException  {
+		if (MBeanFilter == null) {
+			MBeanFilter = new MBeanServerNotificationFilter();
+			MBeanFilter.enableAllObjectNames();
+			mbeanServer.addNotificationListener(MBeanServerDelegate.DELEGATE_NAME, this, MBeanFilter, null);
+		}
 	}
 	
 	/**
@@ -136,8 +150,8 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 			tokenizeFilters(mbeanIncFilter, nFilters);
 			if (mbeanExcFilter != null && mbeanExcFilter.trim().length() > 0) {
 				tokenizeFilters(mbeanExcFilter, eFilters);
-				listenForChanges(nFilters);
 			}
+			listenForChanges();			
 			
 			// run inclusion
 			for (ObjectName nameFilter : nFilters) {
