@@ -15,6 +15,8 @@
  */
 package org.tnt4j.stream.jmx.core;
 
+import java.util.Map;
+
 import org.tnt4j.stream.jmx.conditions.AttributeSample;
 import org.tnt4j.stream.jmx.conditions.NestedHandler;
 
@@ -36,7 +38,7 @@ public interface SampleListener {
 	/**
 	 * This method is called before a sample begins
 	 * Set activity {@code OpType} to NOOP to ignore
-	 * activity reporting. Setting this to NOOP at pre stage
+	 * activity reporting. Setting this to NOOP at pre-stage
 	 * cancels current sample.
 	 * 
 	 * @param context current sample context
@@ -72,4 +74,12 @@ public interface SampleListener {
 	 * @param activity instance
 	 */
 	void post(SampleContext context, Activity activity);
+	
+	/**
+	 * This method is called to collect accumulated metrics maintained by a listener
+	 * 
+	 * @param context current sample context
+	 * @param stats collection where all metrics are added
+	 */
+	void getStats(SampleContext context, Map<String, Object> stats);
 }

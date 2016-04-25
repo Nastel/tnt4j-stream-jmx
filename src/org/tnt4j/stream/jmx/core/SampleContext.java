@@ -74,6 +74,13 @@ public interface SampleContext {
 	long getTotalNoopCount();
 	
 	/**
+	 * Obtain number of total failed samples
+	 * 
+	 * @return number of total failed samples
+	 */
+	long getTotalErrorCount();
+	
+	/**
 	 * Obtain number of samples metrics during last sample
 	 * 
 	 * @return number of samples metrics during last sample
