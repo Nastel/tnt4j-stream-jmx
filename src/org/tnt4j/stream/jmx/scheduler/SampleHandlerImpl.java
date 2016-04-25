@@ -89,9 +89,10 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	Throwable lastError;
 	
 	MBeanServerNotificationFilter MBeanFilter; 
+	Vector<ObjectName> iFilters = new Vector<ObjectName>(5, 5), eFilters = new Vector<ObjectName>(5, 5);
 	Map<AttributeCondition, AttributeAction> conditions = new LinkedHashMap<AttributeCondition, AttributeAction>(89);
 	ConcurrentHashMap<ObjectName, MBeanInfo> mbeans = new ConcurrentHashMap<ObjectName, MBeanInfo>(89);
-	HashSet<ObjectName> excAttrs = new HashSet<ObjectName>(89);
+	HashSet<MBeanAttributeInfo> excAttrs = new HashSet<MBeanAttributeInfo>(89);
 
 	Vector<SampleListener> listeners = new Vector<SampleListener>(5, 5);
 
@@ -138,23 +139,41 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 		}
 	}
 	
+
+	/**
+	 * Determine if a given object name matches include/exclusion filters
+	 * 
+	 * @param oname object name
+	 * @return true if included, false otherwise
+	 */
+	public boolean isFilterIncluded(ObjectName oname) {
+		for (ObjectName eFilter : eFilters) {
+			if (eFilter.apply(oname)) {
+				return false;
+			}
+		}
+		for (ObjectName incFilter : iFilters) {
+			if (incFilter.apply(oname)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	/**
 	 * Load JMX beans based on a configured MBean filter list.
 	 * All loaded MBeans are stored in {@code HashMap}.
 	 */
 	private void loadMBeans() {
 		try {
-			Vector<ObjectName> nFilters = new Vector<ObjectName>(5, 5);
-			Vector<ObjectName> eFilters = new Vector<ObjectName>(5, 5);
-
-			tokenizeFilters(mbeanIncFilter, nFilters);
+			tokenizeFilters(mbeanIncFilter, iFilters);
 			if (mbeanExcFilter != null && mbeanExcFilter.trim().length() > 0) {
 				tokenizeFilters(mbeanExcFilter, eFilters);
 			}
 			listenForChanges();			
 			
 			// run inclusion
-			for (ObjectName nameFilter : nFilters) {
+			for (ObjectName nameFilter : iFilters) {
 				Set<ObjectName> set = mbeanServer.queryNames(nameFilter, nameFilter);
 				if (eFilters.size() > 0) {
 					excludeFromSet(set, eFilters);
@@ -206,7 +225,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 			PropertySnapshot snapshot = new PropertySnapshot(name.getDomain(), name.getCanonicalName());
 			for (int i = 0; i < attr.length; i++) {
 				MBeanAttributeInfo jinfo = attr[i];
-				if (jinfo.isReadable() && !isExcluded(name)) {
+				if (jinfo.isReadable() && !isExcluded(jinfo)) {
 					AttributeSample sample = new AttributeSample(activity, mbeanServer, name, jinfo);
 					try {
 						sample.sample(); // obtain a sample
@@ -215,9 +234,11 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 						}
 					} catch (Throwable ex) {
 						lastError = ex;
-						exclude(name);
 						doError(sample, ex);
 					} finally {
+						if (sample.excludeNext()) {
+							exclude(jinfo);
+						}
 						evalAttrConditions(sample);						
 					}
 				}
@@ -249,20 +270,20 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	/**
 	 * Determine if a given attribute to be excluded from sampling.	
 	 * 
-	 * @param oname attribute object name
+	 * @param attr MBean attribute info
 	 * @return true when attribute should be excluded, false otherwise
 	 */
-	private boolean isExcluded(ObjectName oname) {
-	    return excAttrs.contains(oname);
+	private boolean isExcluded(MBeanAttributeInfo attr) {
+	    return excAttrs.contains(attr);
     }
 
 	/**
 	 * Mark a given attribute to be excluded from sampling.	
 	 * 
-	 * @param oname attribute object name
+	 * @param attr MBean attribute info
 	 */
-	private void exclude(ObjectName oname) {
-	    excAttrs.add(oname);
+	private void exclude(MBeanAttributeInfo attr) {
+	    excAttrs.add(attr);
     }
 
 	/**
@@ -459,7 +480,9 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 			MBeanServerNotification mbeanEvent = (MBeanServerNotification) notification;
 			if (mbeanEvent.getType().equalsIgnoreCase(MBeanServerNotification.REGISTRATION_NOTIFICATION)) {
 				try {
-	                mbeans.put(mbeanEvent.getMBeanName(), mbeanServer.getMBeanInfo(mbeanEvent.getMBeanName()));
+					if (isFilterIncluded(mbeanEvent.getMBeanName())) {
+						mbeans.put(mbeanEvent.getMBeanName(), mbeanServer.getMBeanInfo(mbeanEvent.getMBeanName()));
+					}
                 } catch (Throwable e) {
                 	e.printStackTrace();
                 }

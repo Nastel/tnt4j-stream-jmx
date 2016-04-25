@@ -73,7 +73,8 @@ public class DefaultSampleListener implements SampleListener {
 	@Override
     public void error(SampleContext context, AttributeSample sample) {
 		if (trace) {
-			out.println("Failed to sample: " + sample.getAttributeInfo() + ", ex=" + sample.getError());
+			sample.excludeNext(true);
+			out.println("Failed to sample: " + sample.getAttributeInfo() + ", exclude.next=" + sample.excludeNext() + ", ex=" + sample.getError());
 			sample.getError().printStackTrace(out);
 		}
     }
