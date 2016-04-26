@@ -400,22 +400,40 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 		}
     }
 
+	/**
+	 * Run {@link org.tnt4j.stream.jmx.core.SampleListener#registerMBean(SampleContext, ObjectName)}
+	 * for all registered listeners.
+	 * 
+	 * @param name MBean object name
+	 */
 	private void runRegister(ObjectName name) {
 		synchronized (this.listeners) {
 			for (SampleListener lst: listeners) {
-				lst.regsiterMBean(context, name);
+				lst.registerMBean(context, name);
 			}
 		} 
 	}
 
+	/**
+	 * Run {@link org.tnt4j.stream.jmx.core.SampleListener#unregisterMBean(SampleContext, ObjectName)}
+	 * for all registered listeners.
+	 * 
+	 * @param name MBean object name
+	 */
 	private void runUnRegister(ObjectName name) {
 		synchronized (this.listeners) {
 			for (SampleListener lst: listeners) {
-				lst.unregsiterMBean(context, name);
+				lst.unregisterMBean(context, name);
 			}
 		} 
 	}
 
+	/**
+	 * Run {@link org.tnt4j.stream.jmx.core.SampleListener#post(SampleContext, Activity)}
+	 * for all registered listeners.
+	 * 
+	 * @param activity sampling activity instance
+	 */
 	private void runPost(Activity activity) {
 		synchronized (this.listeners) {
 			for (SampleListener lst: listeners) {
@@ -424,6 +442,12 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 		} 
 	}
 
+	/**
+	 * Run {@link org.tnt4j.stream.jmx.core.SampleListener#pre(SampleContext, Activity)}
+	 * for all registered listeners.
+	 * 
+	 * @param activity sampling activity instance
+	 */
 	private void runPre(Activity activity) {
 		synchronized (this.listeners) {
 			for (SampleListener lst: listeners) {
@@ -432,6 +456,12 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 		} 
 	}
 
+	/**
+	 * Run {@link org.tnt4j.stream.jmx.core.SampleListener#sample(SampleContext, AttributeSample)}
+	 * for all registered listeners.
+	 * 
+	 * @param sample current attribute sample instance
+	 */
 	private boolean doSample(AttributeSample sample) {
 		boolean result = true;
 		synchronized (this.listeners) {
@@ -443,6 +473,13 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 		return result;
 	}
 
+	/**
+	 * Run {@link org.tnt4j.stream.jmx.core.SampleListener#error(SampleContext, AttributeSample)}
+	 * for all registered listeners.
+	 * 
+	 * @param sample current attribute sample instance
+	 * @param ex exception associated with the error
+	 */
 	private void doError(AttributeSample sample, Throwable ex) {
 		sample.setError(ex);
 		synchronized (this.listeners) {
@@ -452,6 +489,12 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 		} 
 	}
 
+	/**
+	 * Run {@link org.tnt4j.stream.jmx.core.SampleListener#error(SampleContext, Throwable)}
+	 * for all registered listeners.
+	 * 
+	 * @param ex exception associated with the error
+	 */
 	private void doError(Throwable ex) {
 		synchronized (this.listeners) {
 			for (SampleListener lst: listeners) {
@@ -460,6 +503,12 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 		} 
 	}
 
+	/**
+	 * Run {@link org.tnt4j.stream.jmx.core.SampleListener#getStats(SampleContext, Map)}
+	 * for all registered listeners.
+	 * 
+	 * @param stats map of key/value statistics
+	 */
 	private void doStats(Map<String, Object> stats) {
 		synchronized (this.listeners) {
 			for (SampleListener lst: listeners) {

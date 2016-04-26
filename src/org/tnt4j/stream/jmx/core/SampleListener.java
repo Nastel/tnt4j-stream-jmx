@@ -43,7 +43,7 @@ public interface SampleListener {
 	 * @param context current sample context
 	 * @param oname MBean object name
 	 */
-	void regsiterMBean(SampleContext context, ObjectName oname);
+	void registerMBean(SampleContext context, ObjectName oname);
 	
 	/**
 	 * This method is called on a new MBean is removed/unregistered
@@ -51,7 +51,7 @@ public interface SampleListener {
 	 * @param context current sample context
 	 * @param oname MBean object name
 	 */
-	void unregsiterMBean(SampleContext context, ObjectName oname);
+	void unregisterMBean(SampleContext context, ObjectName oname);
 	
 	/**
 	 * This method is called before a sample begins

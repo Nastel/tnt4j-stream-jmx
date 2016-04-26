@@ -140,14 +140,14 @@ public class DefaultSampleListener implements SampleListener {
 	}
 
 	@Override
-    public void regsiterMBean(SampleContext context, ObjectName oname) {
+    public void registerMBean(SampleContext context, ObjectName oname) {
 		if (trace) {
 			out.println("Register mbean: " + oname + ", mbean.server=" + context.getMBeanServer());
 		}
     }
 
 	@Override
-    public void unregsiterMBean(SampleContext context, ObjectName oname) {
+    public void unregisterMBean(SampleContext context, ObjectName oname) {
 		if (trace) {
 			out.println("Unregister mbean: " + oname + ", mbean.server=" + context.getMBeanServer());
 		}
