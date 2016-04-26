@@ -228,9 +228,9 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 				MBeanAttributeInfo jinfo = attr[i];
 				AttributeSample sample = AttributeSample.newAttributeSample(activity, snapshot, mbeanServer, name, jinfo);
 				try {
-					if (preSample(sample)) {
+					if (doPre(sample)) {
 						sample.sample(); // obtain a sample
-						postSample(sample);
+						doPost(sample);
 					}
 				} catch (Throwable ex) {
 					doError(sample, ex);
@@ -361,7 +361,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
     }
 
 	/**
-	 * Run {@link org.tnt4j.stream.jmx.core.SampleListener#registerMBean(SampleContext, ObjectName)}
+	 * Run {@link org.tnt4j.stream.jmx.core.SampleListener#register(SampleContext, ObjectName)}
 	 * for all registered listeners.
 	 * 
 	 * @param name MBean object name
@@ -369,13 +369,13 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	private void runRegister(ObjectName name) {
 		synchronized (this.listeners) {
 			for (SampleListener lst: listeners) {
-				lst.registerMBean(context, name);
+				lst.register(context, name);
 			}
 		} 
 	}
 
 	/**
-	 * Run {@link org.tnt4j.stream.jmx.core.SampleListener#unregisterMBean(SampleContext, ObjectName)}
+	 * Run {@link org.tnt4j.stream.jmx.core.SampleListener#unregister(SampleContext, ObjectName)}
 	 * for all registered listeners.
 	 * 
 	 * @param name MBean object name
@@ -383,7 +383,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	private void runUnRegister(ObjectName name) {
 		synchronized (this.listeners) {
 			for (SampleListener lst: listeners) {
-				lst.unregisterMBean(context, name);
+				lst.unregister(context, name);
 			}
 		} 
 	}
@@ -422,15 +422,13 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	 * 
 	 * @param sample current attribute sample instance
 	 */
-	private boolean preSample(AttributeSample sample) {
-		boolean result = true;
+	private boolean doPre(AttributeSample sample) {
 		synchronized (this.listeners) {
 			for (SampleListener lst: listeners) {
-				boolean last = lst.pre(context, sample);
-				result = result && last;
+				lst.pre(context, sample);
 			}
 		} 
-		return result;
+		return !sample.excludeNext();
 	}
 
 	/**
@@ -440,7 +438,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	 * @param sample current attribute sample instance
 	 * @throws UnsupportedAttributeException 
 	 */
-	private void postSample(AttributeSample sample) throws UnsupportedAttributeException {
+	private void doPost(AttributeSample sample) throws UnsupportedAttributeException {
 		synchronized (this.listeners) {
 			for (SampleListener lst: listeners) {
 				lst.post(context, sample);

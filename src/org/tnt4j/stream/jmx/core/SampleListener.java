@@ -43,7 +43,7 @@ public interface SampleListener {
 	 * @param context current sample context
 	 * @param oname MBean object name
 	 */
-	void registerMBean(SampleContext context, ObjectName oname);
+	void register(SampleContext context, ObjectName oname);
 	
 	/**
 	 * This method is called on a new MBean is removed/unregistered
@@ -51,17 +51,18 @@ public interface SampleListener {
 	 * @param context current sample context
 	 * @param oname MBean object name
 	 */
-	void unregisterMBean(SampleContext context, ObjectName oname);
+	void unregister(SampleContext context, ObjectName oname);
 	
 	/**
 	 * This method is called before each attribute is sampled.
-	 * Throw a runtime exception if you want samples to halt.
+	 * Throw a runtime exception if you want all further samples to halt.
+	 * Set {@link AttributeSample#excludeNext(boolean)} to true to skip 
+	 * sampling this attribute.
 	 * 
 	 * @param context current sample context
 	 * @param sample current attribute sample
-	 * @return true of current sampled metric should be included, false otherwise (excluded)
 	 */
-	boolean pre(SampleContext context, AttributeSample sample);
+	void pre(SampleContext context, AttributeSample sample);
 
 	/**
 	 * This method is called for after attribute is sampled.

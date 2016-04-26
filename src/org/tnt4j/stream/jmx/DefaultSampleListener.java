@@ -101,12 +101,12 @@ public class DefaultSampleListener implements SampleListener {
 	}
 
 	@Override
-	public boolean preSample(SampleContext context, AttributeSample sample) {
-		return sample.getAttributeInfo().isReadable() && !isExcluded(sample.getAttributeInfo());
+	public void pre(SampleContext context, AttributeSample sample) {
+		sample.excludeNext(sample.getAttributeInfo().isReadable() && !isExcluded(sample.getAttributeInfo()));
 	}
 
 	@Override
-    public void postSample(SampleContext context, AttributeSample sample) throws UnsupportedAttributeException {
+    public void post(SampleContext context, AttributeSample sample) throws UnsupportedAttributeException {
 		MBeanAttributeInfo jinfo = sample.getAttributeInfo();
 		PropertySnapshot snapshot = sample.getSnapshot();
 		processAttrValue(snapshot, jinfo , jinfo.getName(), sample.get());
@@ -153,14 +153,14 @@ public class DefaultSampleListener implements SampleListener {
 	}
 
 	@Override
-    public void registerMBean(SampleContext context, ObjectName oname) {
+    public void register(SampleContext context, ObjectName oname) {
 		if (trace) {
 			out.println("Register mbean: " + oname + ", mbean.server=" + context.getMBeanServer());
 		}
     }
 
 	@Override
-    public void unregisterMBean(SampleContext context, ObjectName oname) {
+    public void unregister(SampleContext context, ObjectName oname) {
 		if (trace) {
 			out.println("Unregister mbean: " + oname + ", mbean.server=" + context.getMBeanServer());
 		}
