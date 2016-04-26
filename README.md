@@ -263,6 +263,21 @@ Below is a sample of what `MySampleListener` may look like:
 ```java
 class MySampleListener implements SampleListener {
 	@Override
+    public void getStats(SampleContext context, Map<String, Object> stats) {
+		// add your own stats to the map
+	}
+	
+	@Override
+    public void register(SampleContext context, ObjectName oname) {
+		System.out.println("Register mbean: " + oname + ", mbean.server=" + context.getMBeanServer());
+	}
+
+	@Override
+    public void unregister(SampleContext context, ObjectName oname) {
+		System.out.println("Unregister mbean: " + oname + ", mbean.server=" + context.getMBeanServer());
+    }
+
+	@Override
 	public void pre(SampleContext context, Activity activity) {
 		// called once per sample, beginning of each sample
 		// set activity to NOOP to disable further sampling
@@ -273,22 +288,18 @@ class MySampleListener implements SampleListener {
 	}
 
 	@Override
-	public boolean sample(SampleContext context, AttributeSample sample) {
-		// called once per sampled attribute
-		// return false to skip this attribute from sampling collection
-		if (some-condition) {
-			return false;
-		}
-		return true;
+	public void pre(SampleContext context, AttributeSample sample) {
+		// called once before attribute is sampled
+		// set exclude to true to skip sampling this attribute
+		sample.excludeNext(sample.getAttributeInfo().isReadable());
 	}
 
 	@Override
-	public void error(SampleContext context, AttributeSample sample) {
-		// called once for every exception that occurs during each sample
-		Throwable ex = sample.getError();
-		ex.printStackTrace();
+	public void post(SampleContext context, AttributeSample sample) {
+		// called once after attribute is sampled
+		Object value = sample.get();
 	}
-	
+
 	@Override
 	public void post(SampleContext context, Activity activity) {
 		// called once per sample, end of each sample
@@ -297,6 +308,19 @@ class MySampleListener implements SampleListener {
 			activity.setType(OpType.NOOP);
 		}
 	}
+	
+	@Override
+	public void error(SampleContext context, Throwable ex) {
+		// called once for every exception that occurs not associated with a sample
+		ex.printStackTrace();
+	}
+	
+	@Override
+	public void error(SampleContext context, AttributeSample sample) {
+		// called once for every exception that occurs during each sample
+		Throwable ex = sample.getError();
+		ex.printStackTrace();
+	}	
 }
 ```
 ## Conditions and Actions
