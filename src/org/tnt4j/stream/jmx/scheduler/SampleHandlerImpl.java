@@ -16,7 +16,6 @@
 package org.tnt4j.stream.jmx.scheduler;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -25,14 +24,21 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.management.InstanceNotFoundException;
 import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanInfo;
 import javax.management.MBeanServer;
+import javax.management.MBeanServerDelegate;
+import javax.management.MBeanServerNotification;
 import javax.management.MalformedObjectNameException;
+import javax.management.Notification;
+import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.management.openmbean.CompositeData;
+import javax.management.relation.MBeanServerNotificationFilter;
 
 import org.tnt4j.stream.jmx.conditions.AttributeAction;
 import org.tnt4j.stream.jmx.conditions.AttributeCondition;
@@ -60,13 +66,14 @@ import com.nastel.jkool.tnt4j.core.PropertySnapshot;
  * 
  * @version $Revision: 1 $
  */
-public class SampleHandlerImpl implements SampleHandler {
+public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	public static String STAT_NOOP_COUNT = "noop.count";
 	public static String STAT_SAMPLE_COUNT = "sample.count";
+	public static String STAT_TOTAL_ERROR_COUNT = "total.error.count";
+	public static String STAT_TOTAL_EXCLUDE_COUNT = "total.exclude.count";
 	public static String STAT_MBEAN_COUNT = "mbean.count";
 	public static String STAT_CONDITION_COUNT = "condition.count";
 	public static String STAT_LISTENER_COUNT = "listener.count";
-	public static String STAT_EXCLUDE_COUNT = "exclude.metric.count";
 	public static String STAT_TOTAL_ACTION_COUNT = "total.action.count";
 	public static String STAT_TOTAL_METRIC_COUNT = "total.metric.count";
 	public static String STAT_LAST_METRIC_COUNT = "last.metric.count";
@@ -76,15 +83,17 @@ public class SampleHandlerImpl implements SampleHandler {
 	
 	String mbeanIncFilter, mbeanExcFilter;
 	long sampleCount = 0, totalMetricCount = 0, totalActionCount = 0;
-	long lastMetricCount = 0, lastSampleTimeUsec = 0, noopCount = 0;
+	long lastMetricCount = 0, lastSampleTimeUsec = 0;
+	long noopCount = 0, excCount = 0, errorCount = 0;
 	
 	MBeanServer mbeanServer;
 	SampleContext context;
 	Throwable lastError;
 	
+	MBeanServerNotificationFilter MBeanFilter; 
+	Vector<ObjectName> iFilters = new Vector<ObjectName>(5, 5), eFilters = new Vector<ObjectName>(5, 5);
 	Map<AttributeCondition, AttributeAction> conditions = new LinkedHashMap<AttributeCondition, AttributeAction>(89);
-	HashMap<ObjectName, MBeanInfo> mbeans = new HashMap<ObjectName, MBeanInfo>(89);
-	HashSet<ObjectName> excAttrs = new HashSet<ObjectName>(89);
+	ConcurrentHashMap<ObjectName, MBeanInfo> mbeans = new ConcurrentHashMap<ObjectName, MBeanInfo>(89);
 
 	Vector<SampleListener> listeners = new Vector<SampleListener>(5, 5);
 
@@ -105,6 +114,13 @@ public class SampleHandlerImpl implements SampleHandler {
 	}
 
 	
+	/**
+	 * Tokenize a given set of filters into JMX object names
+	 * 
+	 * @param filter semicolon set of JMX filters
+	 * @param tokenized list of object names
+	 * @throws MalformedObjectNameException 
+	 */
 	private static void  tokenizeFilters(String filter, List<ObjectName> filters) throws MalformedObjectNameException {
 		StringTokenizer itk = new StringTokenizer(filter, ";");
 		while (itk.hasMoreTokens()) {
@@ -113,21 +129,52 @@ public class SampleHandlerImpl implements SampleHandler {
 	}
 	
 	/**
+	 * Install MBean add/delete listener
+	 * @throws InstanceNotFoundException 
+	 */
+	private void listenForChanges() throws InstanceNotFoundException  {
+		if (MBeanFilter == null) {
+			MBeanFilter = new MBeanServerNotificationFilter();
+			MBeanFilter.enableAllObjectNames();
+			mbeanServer.addNotificationListener(MBeanServerDelegate.DELEGATE_NAME, this, MBeanFilter, null);
+		}
+	}
+	
+
+	/**
+	 * Determine if a given object name matches include/exclusion filters
+	 * 
+	 * @param oname object name
+	 * @return true if included, false otherwise
+	 */
+	public boolean isFilterIncluded(ObjectName oname) {
+		for (ObjectName eFilter : eFilters) {
+			if (eFilter.apply(oname)) {
+				return false;
+			}
+		}
+		for (ObjectName incFilter : iFilters) {
+			if (incFilter.apply(oname)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
 	 * Load JMX beans based on a configured MBean filter list.
 	 * All loaded MBeans are stored in {@code HashMap}.
 	 */
 	private void loadMBeans() {
 		try {
-			Vector<ObjectName> nFilters = new Vector<ObjectName>(5, 5);
-			Vector<ObjectName> eFilters = new Vector<ObjectName>(5, 5);
-
-			tokenizeFilters(mbeanIncFilter, nFilters);
+			tokenizeFilters(mbeanIncFilter, iFilters);
 			if (mbeanExcFilter != null && mbeanExcFilter.trim().length() > 0) {
 				tokenizeFilters(mbeanExcFilter, eFilters);
 			}
+			listenForChanges();			
 			
 			// run inclusion
-			for (ObjectName nameFilter : nFilters) {
+			for (ObjectName nameFilter : iFilters) {
 				Set<ObjectName> set = mbeanServer.queryNames(nameFilter, nameFilter);
 				if (eFilters.size() > 0) {
 					excludeFromSet(set, eFilters);
@@ -179,18 +226,21 @@ public class SampleHandlerImpl implements SampleHandler {
 			PropertySnapshot snapshot = new PropertySnapshot(name.getDomain(), name.getCanonicalName());
 			for (int i = 0; i < attr.length; i++) {
 				MBeanAttributeInfo jinfo = attr[i];
-				if (jinfo.isReadable() && !isExcluded(name)) {
+				if (jinfo.isReadable()) {
 					AttributeSample sample = new AttributeSample(activity, mbeanServer, name, jinfo);
 					try {
-						sample.sample(); // obtain a sample
 						if (doSample(sample)) {
+							sample.sample(); // obtain a sample
 							processJmxValue(snapshot, jinfo, jinfo.getName(), sample.get());
 						}
 					} catch (Throwable ex) {
+						errorCount++;
 						lastError = ex;
-						exclude(name);
 						doError(sample, ex);
 					} finally {
+						if (sample.excludeNext()) {
+							excCount++;
+						}
 						evalAttrConditions(sample);						
 					}
 				}
@@ -218,25 +268,6 @@ public class SampleHandlerImpl implements SampleHandler {
 			}
 		}
 	}
-
-	/**
-	 * Determine if a given attribute to be excluded from sampling.	
-	 * 
-	 * @param oname attribute object name
-	 * @return true when attribute should be excluded, false otherwise
-	 */
-	private boolean isExcluded(ObjectName oname) {
-	    return excAttrs.contains(oname);
-    }
-
-	/**
-	 * Mark a given attribute to be excluded from sampling.	
-	 * 
-	 * @param oname attribute object name
-	 */
-	private void exclude(ObjectName oname) {
-	    excAttrs.add(oname);
-    }
 
 	/**
 	 * Process/extract value from a given MBean attribute
@@ -280,20 +311,27 @@ public class SampleHandlerImpl implements SampleHandler {
 	 * Finish processing of the activity sampling
 	 * 
 	 * @param activity instance
-	 * @return snapshot instance containing finish stats
+	 * @return snapshot instance containing metrics at the end of each sample
 	 */
 	private PropertySnapshot finish(Activity activity) {
 		PropertySnapshot snapshot = new PropertySnapshot(activity.getName(), "SampleContext");
 		snapshot.add(STAT_NOOP_COUNT, noopCount);
 		snapshot.add(STAT_SAMPLE_COUNT, sampleCount);
+		snapshot.add(STAT_TOTAL_ERROR_COUNT, errorCount);
+		snapshot.add(STAT_TOTAL_EXCLUDE_COUNT, excCount);
 		snapshot.add(STAT_MBEAN_COUNT, mbeans.size());
 		snapshot.add(STAT_CONDITION_COUNT, conditions.size());
 		snapshot.add(STAT_LISTENER_COUNT, listeners.size());
-		snapshot.add(STAT_EXCLUDE_COUNT, excAttrs.size());
 		snapshot.add(STAT_TOTAL_ACTION_COUNT, totalActionCount);
 		snapshot.add(STAT_TOTAL_METRIC_COUNT, totalMetricCount);
 		snapshot.add(STAT_LAST_METRIC_COUNT, lastMetricCount);
 		snapshot.add(STAT_SAMPLE_TIME_USEC, lastSampleTimeUsec);
+		
+		// get custom statistics
+		Map<String, Object> stats = new HashMap<String, Object>();
+		doStats(stats);
+		snapshot.addAll(stats);
+		
 		activity.addSnapshot(snapshot);		
 		return snapshot;
 	}
@@ -352,6 +390,8 @@ public class SampleHandlerImpl implements SampleHandler {
 			lastMetricCount = 0;
 			lastSampleTimeUsec = 0;
 			noopCount = 0;
+			excCount = 0;
+			errorCount = 0;
 			lastError = null;
 			return context;
 		} finally {
@@ -395,6 +435,14 @@ public class SampleHandlerImpl implements SampleHandler {
 		} 
 	}
 
+	private void doStats(Map<String, Object> stats) {
+		synchronized (this.listeners) {
+			for (SampleListener lst: listeners) {
+				lst.getStats(context, stats);
+			}
+		} 
+	}
+
 	@Override
 	public SampleHandler register(AttributeCondition cond, AttributeAction action) {
 		conditions.put(cond, (action == null? NoopAction.NOOP: action));
@@ -424,4 +472,24 @@ public class SampleHandlerImpl implements SampleHandler {
 	public SampleContext getContext() {
 		return context;
 	}
+
+
+	@Override
+    public void handleNotification(Notification notification, Object handback) {
+		if (notification instanceof MBeanServerNotification) {
+			MBeanServerNotification mbeanEvent = (MBeanServerNotification) notification;
+			if (mbeanEvent.getType().equalsIgnoreCase(MBeanServerNotification.REGISTRATION_NOTIFICATION)) {
+				try {
+					if (isFilterIncluded(mbeanEvent.getMBeanName())) {
+						mbeans.put(mbeanEvent.getMBeanName(), mbeanServer.getMBeanInfo(mbeanEvent.getMBeanName()));
+					}
+                } catch (Throwable e) {
+                	e.printStackTrace();
+                }
+			} else if (mbeanEvent.getType().equalsIgnoreCase(MBeanServerNotification.UNREGISTRATION_NOTIFICATION)) {
+				mbeans.remove(mbeanEvent.getMBeanName());
+			}
+		}
+	}
+
 }

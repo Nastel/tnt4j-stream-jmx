@@ -43,6 +43,7 @@ public class AttributeSample {
 	long timeStamp = 0;
 	Object value;
 	Throwable ex;
+	boolean excludeNext = false;
 	
 	/**
 	 * Create an attribute sample
@@ -81,6 +82,26 @@ public class AttributeSample {
 	 */
 	public boolean isError(Throwable error) {
 		return ex != null;
+	}
+	
+	/**
+	 * Has the attribute been marked for exclusion 
+	 * 
+	 * @return true if attribute to be marked for exclusion, false otherwise
+	 */
+	public boolean excludeNext() {
+		return excludeNext;
+	}
+	
+	/**
+	 * Mark attribute to be excluded from sampling 
+	 * 
+	 * @param exclude true to exclude, false to include
+	 * @return true if attribute to be marked for exclusion, false otherwise
+	 */
+	public boolean excludeNext(boolean exclude) {
+		excludeNext = exclude;
+		return excludeNext;
 	}
 	
 	/**

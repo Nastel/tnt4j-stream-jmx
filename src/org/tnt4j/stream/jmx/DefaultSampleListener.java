@@ -16,6 +16,10 @@
 package org.tnt4j.stream.jmx;
 
 import java.io.PrintStream;
+import java.util.HashSet;
+import java.util.Map;
+
+import javax.management.MBeanAttributeInfo;
 
 import org.tnt4j.stream.jmx.conditions.AttributeSample;
 import org.tnt4j.stream.jmx.core.SampleContext;
@@ -33,21 +37,45 @@ import com.nastel.jkool.tnt4j.core.Activity;
  * @see SampleListener
  */
 public class DefaultSampleListener implements SampleListener {
+	public static String STAT_TRACE_MODE = "listener.trace.mode";
+	public static String STAT_EXCLUDE_SET_COUNT = "listener.exclude.set.count";
+
 	boolean trace = false;
 	PrintStream out;
+	
+	HashSet<MBeanAttributeInfo> excAttrs = new HashSet<MBeanAttributeInfo>(89);
 	
 	public DefaultSampleListener(PrintStream pstream, boolean trace) {
 		this.trace = trace;
 		this.out = pstream;
 	}
 	
+	/**
+	 * Determine if a given attribute to be excluded from sampling.	
+	 * 
+	 * @param attr MBean attribute info
+	 * @return true when attribute should be excluded, false otherwise
+	 */
+	protected boolean isExcluded(MBeanAttributeInfo attr) {
+	    return excAttrs.contains(attr);
+    }
+
+	/**
+	 * Mark a given attribute to be excluded from sampling.	
+	 * 
+	 * @param attr MBean attribute info
+	 */
+	protected void exclude(MBeanAttributeInfo attr) {
+	    excAttrs.add(attr);
+    }
+
 	@Override
 	public void pre(SampleContext context, Activity activity) {
 	}
 
 	@Override
 	public boolean sample(SampleContext context, AttributeSample sample) {
-		return true;
+		return !isExcluded(sample.getAttributeInfo());
 	}
 
 	@Override
@@ -56,14 +84,16 @@ public class DefaultSampleListener implements SampleListener {
 			out.println(activity.getName()
 				+ ": sample.count=" + context.getSampleCount()
 				+ ", mbean.count=" + context.getMBeanServer().getMBeanCount()
-				+ ", elasped.usec=" + activity.getElapsedTimeUsec() 
+				+ ", elapsed.usec=" + activity.getElapsedTimeUsec() 
 				+ ", snap.count=" + activity.getSnapshotCount() 
 				+ ", id.count=" + activity.getIdCount()
-				+ ", noop.count=" + context.getTotalNoopCount()
 				+ ", sample.mbeans.count=" + context.getMBeanCount()
 				+ ", sample.metric.count=" + context.getLastMetricCount()
 				+ ", sample.time.usec=" + context.getLastSampleUsec()
-				+ ", exclude.attrs=" + context.getExcludeAttrCount()
+				+ ", exclude.attr.set=" + excAttrs.size()
+				+ ", total.noop.count=" + context.getTotalNoopCount()
+				+ ", total.exclude.set=" + context.getExcludeAttrCount()
+				+ ", total.error.count=" + context.getTotalErrorCount()
 				+ ", trackind.id=" + activity.getTrackingId() 
 				+ ", mbean.server=" + context.getMBeanServer()
 				);
@@ -72,9 +102,19 @@ public class DefaultSampleListener implements SampleListener {
 
 	@Override
     public void error(SampleContext context, AttributeSample sample) {
+		sample.excludeNext(true);
 		if (trace) {
-			out.println("Failed to sample: " + sample.getAttributeInfo() + ", ex=" + sample.getError());
+			out.println("Failed to sample: " + sample.getAttributeInfo() + ", exclude=" + sample.excludeNext() + ", ex=" + sample.getError());
 			sample.getError().printStackTrace(out);
 		}
+		if (sample.excludeNext()) {
+			exclude(sample.getAttributeInfo());
+		}
     }
+
+	@Override
+    public void getStats(SampleContext context, Map<String, Object> stats) {
+		stats.put(STAT_TRACE_MODE, trace);
+		stats.put(STAT_EXCLUDE_SET_COUNT, excAttrs.size());
+	}
 }
