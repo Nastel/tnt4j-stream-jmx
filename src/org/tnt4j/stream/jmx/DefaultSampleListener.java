@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.Map;
 
 import javax.management.MBeanAttributeInfo;
+import javax.management.ObjectName;
 
 import org.tnt4j.stream.jmx.conditions.AttributeSample;
 import org.tnt4j.stream.jmx.core.SampleContext;
@@ -45,9 +46,16 @@ public class DefaultSampleListener implements SampleListener {
 	
 	HashSet<MBeanAttributeInfo> excAttrs = new HashSet<MBeanAttributeInfo>(89);
 	
+	/**
+	 * Create an instance of {@link DefaultSampleListener} with a a given print stream
+	 * and trace mode
+	 * 
+	 * @param pstream print stream instance for tracing
+	 * @param trace mode
+	 */
 	public DefaultSampleListener(PrintStream pstream, boolean trace) {
 		this.trace = trace;
-		this.out = pstream;
+		this.out = pstream == null? System.out: pstream;
 	}
 	
 	/**
@@ -71,17 +79,30 @@ public class DefaultSampleListener implements SampleListener {
 
 	@Override
 	public void pre(SampleContext context, Activity activity) {
+		if (trace) {
+			out.println("Pre: " + activity.getName()
+					+ ": sample.count=" + context.getSampleCount()
+					+ ", mbean.count=" + context.getMBeanServer().getMBeanCount()
+					+ ", sample.mbeans.count=" + context.getMBeanCount()
+					+ ", exclude.attr.set=" + excAttrs.size()
+					+ ", total.noop.count=" + context.getTotalNoopCount()
+					+ ", total.exclude.count=" + context.getExcludeAttrCount()
+					+ ", total.error.count=" + context.getTotalErrorCount()
+					+ ", trackind.id=" + activity.getTrackingId() 
+					+ ", mbean.server=" + context.getMBeanServer()
+					);
+		}
 	}
 
 	@Override
 	public boolean sample(SampleContext context, AttributeSample sample) {
-		return !isExcluded(sample.getAttributeInfo());
+		return sample.getAttributeInfo().isReadable() && !isExcluded(sample.getAttributeInfo());
 	}
 
 	@Override
 	public void post(SampleContext context, Activity activity) {
 		if (trace) {
-			out.println(activity.getName()
+			out.println("Post: " + activity.getName()
 				+ ": sample.count=" + context.getSampleCount()
 				+ ", mbean.count=" + context.getMBeanServer().getMBeanCount()
 				+ ", elapsed.usec=" + activity.getElapsedTimeUsec() 
@@ -92,7 +113,7 @@ public class DefaultSampleListener implements SampleListener {
 				+ ", sample.time.usec=" + context.getLastSampleUsec()
 				+ ", exclude.attr.set=" + excAttrs.size()
 				+ ", total.noop.count=" + context.getTotalNoopCount()
-				+ ", total.exclude.set=" + context.getExcludeAttrCount()
+				+ ", total.exclude.count=" + context.getExcludeAttrCount()
 				+ ", total.error.count=" + context.getTotalErrorCount()
 				+ ", trackind.id=" + activity.getTrackingId() 
 				+ ", mbean.server=" + context.getMBeanServer()
@@ -116,5 +137,25 @@ public class DefaultSampleListener implements SampleListener {
     public void getStats(SampleContext context, Map<String, Object> stats) {
 		stats.put(STAT_TRACE_MODE, trace);
 		stats.put(STAT_EXCLUDE_SET_COUNT, excAttrs.size());
+	}
+
+	@Override
+    public void regsiterMBean(SampleContext context, ObjectName oname) {
+		if (trace) {
+			out.println("Register mbean: " + oname + ", mbean.server=" + context.getMBeanServer());
+		}
+    }
+
+	@Override
+    public void unregsiterMBean(SampleContext context, ObjectName oname) {
+		if (trace) {
+			out.println("Unregister mbean: " + oname + ", mbean.server=" + context.getMBeanServer());
+		}
+    }
+
+	@Override
+    public void error(SampleContext context, Throwable ex) {
+		out.println("Unexpected error when sampling mbean.server=" + context.getMBeanServer());
+		ex.printStackTrace(out);
 	}
 }

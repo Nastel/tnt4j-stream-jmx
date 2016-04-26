@@ -182,11 +182,12 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 				for (Iterator<ObjectName> it = set.iterator(); it.hasNext();) {
 					ObjectName oname = it.next();
 					mbeans.put(oname, mbeanServer.getMBeanInfo(oname));
+					runRegister(oname);
 				}
 			}
 		} catch (Exception ex) {
 			lastError = ex;
-			ex.printStackTrace();
+			doError(ex);
 		}
 	}
 
@@ -210,39 +211,37 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	}
 
 	/**
-	 * Sample  MBeans based on a configured MBean filter list
-	 * and store within given activity as snapshots.
+	 * Sample MBeans based on a configured MBean filter list and store within given activity as snapshots.
 	 * 
-	 * @param activity instance where sampled MBean attributes are stored
+	 * @param activity
+	 *            instance where sampled MBean attributes are stored
 	 * @return number of metrics loaded from all MBeans
 	 */
 	private int sampleMBeans(Activity activity) {
 		int pCount = 0;
-		for (Entry<ObjectName, MBeanInfo> entry: mbeans.entrySet()) {
+		for (Entry<ObjectName, MBeanInfo> entry : mbeans.entrySet()) {
 			ObjectName name = entry.getKey();
 			MBeanInfo info = entry.getValue();
 			MBeanAttributeInfo[] attr = info.getAttributes();
-			
+
 			PropertySnapshot snapshot = new PropertySnapshot(name.getDomain(), name.getCanonicalName());
 			for (int i = 0; i < attr.length; i++) {
 				MBeanAttributeInfo jinfo = attr[i];
-				if (jinfo.isReadable()) {
-					AttributeSample sample = new AttributeSample(activity, mbeanServer, name, jinfo);
-					try {
-						if (doSample(sample)) {
-							sample.sample(); // obtain a sample
-							processJmxValue(snapshot, jinfo, jinfo.getName(), sample.get());
-						}
-					} catch (Throwable ex) {
-						errorCount++;
-						lastError = ex;
-						doError(sample, ex);
-					} finally {
-						if (sample.excludeNext()) {
-							excCount++;
-						}
-						evalAttrConditions(sample);						
+				AttributeSample sample = new AttributeSample(activity, mbeanServer, name, jinfo);
+				try {
+					if (doSample(sample)) {
+						sample.sample(); // obtain a sample
+						processJmxValue(snapshot, jinfo, jinfo.getName(), sample.get());
 					}
+				} catch (Throwable ex) {
+					errorCount++;
+					lastError = ex;
+					doError(sample, ex);
+				} finally {
+					if (sample.excludeNext()) {
+						excCount++;
+					}
+					evalAttrConditions(sample);
 				}
 			}
 			if (snapshot.size() > 0) {
@@ -370,6 +369,8 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 				}
 				// compute sampling statistics
 				finish(activity);
+			} catch (Throwable ex) {
+				doError(ex);
 			} finally {
 				lock.unlock();
 			}
@@ -398,6 +399,22 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 			lock.unlock();
 		}
     }
+
+	private void runRegister(ObjectName name) {
+		synchronized (this.listeners) {
+			for (SampleListener lst: listeners) {
+				lst.regsiterMBean(context, name);
+			}
+		} 
+	}
+
+	private void runUnRegister(ObjectName name) {
+		synchronized (this.listeners) {
+			for (SampleListener lst: listeners) {
+				lst.unregsiterMBean(context, name);
+			}
+		} 
+	}
 
 	private void runPost(Activity activity) {
 		synchronized (this.listeners) {
@@ -431,6 +448,14 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 		synchronized (this.listeners) {
 			for (SampleListener lst: listeners) {
 				lst.error(context, sample);
+			}
+		} 
+	}
+
+	private void doError(Throwable ex) {
+		synchronized (this.listeners) {
+			for (SampleListener lst: listeners) {
+				lst.error(context, ex);
 			}
 		} 
 	}
@@ -482,12 +507,14 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 				try {
 					if (isFilterIncluded(mbeanEvent.getMBeanName())) {
 						mbeans.put(mbeanEvent.getMBeanName(), mbeanServer.getMBeanInfo(mbeanEvent.getMBeanName()));
+						runRegister(mbeanEvent.getMBeanName());
 					}
-                } catch (Throwable e) {
-                	e.printStackTrace();
+                } catch (Throwable ex) {
+                	doError(ex);
                 }
 			} else if (mbeanEvent.getType().equalsIgnoreCase(MBeanServerNotification.UNREGISTRATION_NOTIFICATION)) {
 				mbeans.remove(mbeanEvent.getMBeanName());
+				runUnRegister(mbeanEvent.getMBeanName());
 			}
 		}
 	}

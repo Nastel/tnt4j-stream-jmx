@@ -17,6 +17,8 @@ package org.tnt4j.stream.jmx.core;
 
 import java.util.Map;
 
+import javax.management.ObjectName;
+
 import org.tnt4j.stream.jmx.conditions.AttributeSample;
 import org.tnt4j.stream.jmx.conditions.NestedHandler;
 
@@ -35,6 +37,22 @@ import com.nastel.jkool.tnt4j.core.Activity;
  * @version $Revision: 1 $
  */
 public interface SampleListener {
+	/**
+	 * This method is called on a new MBean is found/registered
+	 * 
+	 * @param context current sample context
+	 * @param oname MBean object name
+	 */
+	void regsiterMBean(SampleContext context, ObjectName oname);
+	
+	/**
+	 * This method is called on a new MBean is removed/unregistered
+	 * 
+	 * @param context current sample context
+	 * @param oname MBean object name
+	 */
+	void unregsiterMBean(SampleContext context, ObjectName oname);
+	
 	/**
 	 * This method is called before a sample begins
 	 * Set activity {@code OpType} to NOOP to ignore
@@ -63,6 +81,14 @@ public interface SampleListener {
 	 * @param sample current attribute sample
 	 */
 	void error(SampleContext context, AttributeSample sample);
+
+	/**
+	 * This method is called when generic error occurs
+	 * 
+	 * @param context current sample context
+	 * @param ex exception instance
+	 */
+	void error(SampleContext context, Throwable ex);
 
 	/**
 	 * This method is called after current sample is completed
