@@ -61,7 +61,7 @@ public interface SampleListener {
 	 * @param sample current attribute sample
 	 * @return true of current sampled metric should be included, false otherwise (excluded)
 	 */
-	boolean preSample(SampleContext context, AttributeSample sample);
+	boolean pre(SampleContext context, AttributeSample sample);
 
 	/**
 	 * This method is called for after attribute is sampled.
@@ -71,7 +71,7 @@ public interface SampleListener {
 	 * @param sample current attribute sample
 	 * @throws UnsupportedAttributeException 
 	 */
-	void postSample(SampleContext context, AttributeSample sample) throws UnsupportedAttributeException;
+	void post(SampleContext context, AttributeSample sample) throws UnsupportedAttributeException;
 
 	/**
 	 * This method is called if sample fails with exception.

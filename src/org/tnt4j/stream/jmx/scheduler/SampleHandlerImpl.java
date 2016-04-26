@@ -426,7 +426,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 		boolean result = true;
 		synchronized (this.listeners) {
 			for (SampleListener lst: listeners) {
-				boolean last = lst.preSample(context, sample);
+				boolean last = lst.pre(context, sample);
 				result = result && last;
 			}
 		} 
@@ -443,7 +443,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	private void postSample(AttributeSample sample) throws UnsupportedAttributeException {
 		synchronized (this.listeners) {
 			for (SampleListener lst: listeners) {
-				lst.postSample(context, sample);
+				lst.post(context, sample);
 			}
 		} 
 	}
