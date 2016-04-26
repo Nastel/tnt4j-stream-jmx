@@ -37,7 +37,6 @@ import javax.management.MalformedObjectNameException;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
-import javax.management.openmbean.CompositeData;
 import javax.management.relation.MBeanServerNotificationFilter;
 
 import org.tnt4j.stream.jmx.conditions.AttributeAction;
@@ -227,15 +226,13 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 			PropertySnapshot snapshot = new PropertySnapshot(name.getDomain(), name.getCanonicalName());
 			for (int i = 0; i < attr.length; i++) {
 				MBeanAttributeInfo jinfo = attr[i];
-				AttributeSample sample = new AttributeSample(activity, mbeanServer, name, jinfo);
+				AttributeSample sample = AttributeSample.newAttributeSample(activity, snapshot, mbeanServer, name, jinfo);
 				try {
-					if (doSample(sample)) {
+					if (preSample(sample)) {
 						sample.sample(); // obtain a sample
-						processJmxValue(snapshot, jinfo, jinfo.getName(), sample.get());
+						postSample(sample);
 					}
 				} catch (Throwable ex) {
-					errorCount++;
-					lastError = ex;
 					doError(sample, ex);
 				} finally {
 					if (sample.excludeNext()) {
@@ -245,8 +242,8 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 				}
 			}
 			if (snapshot.size() > 0) {
-				activity.addSnapshot(snapshot);
 				pCount += snapshot.size();
+				activity.addSnapshot(snapshot);
 			}
 		}
 		return pCount;
@@ -268,43 +265,6 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 		}
 	}
 
-	/**
-	 * Process/extract value from a given MBean attribute
-	 * 
-	 * @param snapshot instance where extracted attribute is stored
-	 * @param jinfo attribute info
-	 * @param property name to be assigned to given attribute value
-	 * @param value associated with attribute
-	 * @throws UnsupportedAttributeException if provided attribute not supported
-	 * @return snapshot instance where all attributes are contained
-	 */
-	private PropertySnapshot processJmxValue(PropertySnapshot snapshot, MBeanAttributeInfo jinfo, String propName, Object value) throws UnsupportedAttributeException {
-		if (value != null && !value.getClass().isArray()) {
-			if (value instanceof CompositeData) {
-				CompositeData cdata = (CompositeData) value;
-				Set<String> keys = cdata.getCompositeType().keySet();
-				for (String key: keys) {
-					Object cval = cdata.get(key);
-					processJmxValue(snapshot, jinfo, propName + "\\" + key, cval);
-				}
-			} else if (typeSupported(value)) {
-				snapshot.add(propName, value);
-			} else {
-				throw new UnsupportedAttributeException("Unsupported type=" + value.getClass(), jinfo, value);
-			}
-		}
-		return snapshot;
-	}
-	
-	/**
-	 * Determine if a given value and its type are supported
-	 * 
-	 * @param value value to test for support
-	 * @return true if a given value and its type are supported, false otherwise
-	 */
-	protected boolean typeSupported(Object value) {
-		 return (value.getClass().isPrimitive() || (value instanceof String) || (value instanceof Number) || (value instanceof Boolean));
-	}
 	
 	/**
 	 * Finish processing of the activity sampling
@@ -457,20 +417,35 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	}
 
 	/**
-	 * Run {@link org.tnt4j.stream.jmx.core.SampleListener#sample(SampleContext, AttributeSample)}
+	 * Run {@link org.tnt4j.stream.jmx.core.SampleListener#preSample(SampleContext, AttributeSample)}
 	 * for all registered listeners.
 	 * 
 	 * @param sample current attribute sample instance
 	 */
-	private boolean doSample(AttributeSample sample) {
+	private boolean preSample(AttributeSample sample) {
 		boolean result = true;
 		synchronized (this.listeners) {
 			for (SampleListener lst: listeners) {
-				boolean last = lst.sample(context, sample);
+				boolean last = lst.preSample(context, sample);
 				result = result && last;
 			}
 		} 
 		return result;
+	}
+
+	/**
+	 * Run {@link org.tnt4j.stream.jmx.core.SampleListener#postSample(SampleContext, AttributeSample)}
+	 * for all registered listeners.
+	 * 
+	 * @param sample current attribute sample instance
+	 * @throws UnsupportedAttributeException 
+	 */
+	private void postSample(AttributeSample sample) throws UnsupportedAttributeException {
+		synchronized (this.listeners) {
+			for (SampleListener lst: listeners) {
+				lst.postSample(context, sample);
+			}
+		} 
 	}
 
 	/**
@@ -481,6 +456,8 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	 * @param ex exception associated with the error
 	 */
 	private void doError(AttributeSample sample, Throwable ex) {
+		errorCount++;
+		lastError = ex;
 		sample.setError(ex);
 		synchronized (this.listeners) {
 			for (SampleListener lst: listeners) {
@@ -496,6 +473,8 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	 * @param ex exception associated with the error
 	 */
 	private void doError(Throwable ex) {
+		errorCount++;
+		lastError = ex;
 		synchronized (this.listeners) {
 			for (SampleListener lst: listeners) {
 				lst.error(context, ex);

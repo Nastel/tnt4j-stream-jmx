@@ -54,25 +54,24 @@ public interface SampleListener {
 	void unregisterMBean(SampleContext context, ObjectName oname);
 	
 	/**
-	 * This method is called before a sample begins
-	 * Set activity {@code OpType} to NOOP to ignore
-	 * activity reporting. Setting this to NOOP at pre-stage
-	 * cancels current sample.
-	 * 
-	 * @param context current sample context
-	 * @param activity instance
-	 */
-	void pre(SampleContext context, Activity activity);
-	
-	/**
-	 * This method is called for each sampled attribute.
+	 * This method is called before each attribute is sampled.
 	 * Throw a runtime exception if you want samples to halt.
 	 * 
 	 * @param context current sample context
 	 * @param sample current attribute sample
 	 * @return true of current sampled metric should be included, false otherwise (excluded)
 	 */
-	boolean sample(SampleContext context, AttributeSample sample);
+	boolean preSample(SampleContext context, AttributeSample sample);
+
+	/**
+	 * This method is called for after attribute is sampled.
+	 * Throw a runtime exception if you want samples to halt.
+	 * 
+	 * @param context current sample context
+	 * @param sample current attribute sample
+	 * @throws UnsupportedAttributeException 
+	 */
+	void postSample(SampleContext context, AttributeSample sample) throws UnsupportedAttributeException;
 
 	/**
 	 * This method is called if sample fails with exception.
@@ -90,6 +89,17 @@ public interface SampleListener {
 	 */
 	void error(SampleContext context, Throwable ex);
 
+	/**
+	 * This method is called before a sample begins
+	 * Set activity {@code OpType} to NOOP to ignore
+	 * activity reporting. Setting this to NOOP at pre-stage
+	 * cancels current sample.
+	 * 
+	 * @param context current sample context
+	 * @param activity instance
+	 */
+	void pre(SampleContext context, Activity activity);
+	
 	/**
 	 * This method is called after current sample is completed
 	 * Set activity {@code OpType} to NOOP to ignore

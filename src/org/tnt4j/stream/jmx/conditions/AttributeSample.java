@@ -24,6 +24,7 @@ import javax.management.ObjectName;
 import javax.management.ReflectionException;
 
 import com.nastel.jkool.tnt4j.core.Activity;
+import com.nastel.jkool.tnt4j.core.PropertySnapshot;
 import com.nastel.jkool.tnt4j.utils.Utils;
 
 /**
@@ -43,6 +44,7 @@ public class AttributeSample {
 	long timeStamp = 0;
 	Object value;
 	Throwable ex;
+	PropertySnapshot snapshot;
 	boolean excludeNext = false;
 	
 	/**
@@ -54,11 +56,25 @@ public class AttributeSample {
 	 * @param ainfo MBean attribute info
 	 * 
 	 */
-	public AttributeSample(Activity activity, MBeanServer server, ObjectName name, MBeanAttributeInfo ainfo) {
+	protected AttributeSample(Activity activity, PropertySnapshot snapshot, MBeanServer server, ObjectName name, MBeanAttributeInfo ainfo) {
 		this.activity = activity;
 		this.server = server;
 		this.name = name;
 		this.ainfo = ainfo;
+		this.snapshot = snapshot;
+	}
+	
+	/**
+	 * Create an attribute sample
+	 * 
+	 * @param activity associated with current sample
+	 * @param server MBean server instance
+	 * @param name MBean object name reference
+	 * @param ainfo MBean attribute info
+	 * 
+	 */
+	public static AttributeSample newAttributeSample(Activity activity, PropertySnapshot snapshot, MBeanServer server, ObjectName name, MBeanAttributeInfo ainfo) {
+		return new AttributeSample(activity, snapshot, server, name, ainfo);
 	}
 	
 	/**
@@ -158,6 +174,16 @@ public class AttributeSample {
 	 */
 	public Activity getActivity() {
 		return activity;
+	}
+	
+	/**
+	 * Obtain {@code PropertySnapshot} instance associated with this instance.
+	 * Snapshot encapsulates all info about current sample key/value pairs.
+	 * 
+	 * @return {@code PropertySnapshot} instance associated with this instance
+	 */
+	public PropertySnapshot getSnapshot() {
+		return snapshot;
 	}
 	
 	/**
