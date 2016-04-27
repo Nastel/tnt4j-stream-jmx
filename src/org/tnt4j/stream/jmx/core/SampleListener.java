@@ -17,6 +17,8 @@ package org.tnt4j.stream.jmx.core;
 
 import java.util.Map;
 
+import javax.management.ObjectName;
+
 import org.tnt4j.stream.jmx.conditions.AttributeSample;
 import org.tnt4j.stream.jmx.conditions.NestedHandler;
 
@@ -36,6 +38,59 @@ import com.nastel.jkool.tnt4j.core.Activity;
  */
 public interface SampleListener {
 	/**
+	 * This method is called on a new MBean is found/registered
+	 * 
+	 * @param context current sample context
+	 * @param oname MBean object name
+	 */
+	void register(SampleContext context, ObjectName oname);
+	
+	/**
+	 * This method is called on a new MBean is removed/unregistered
+	 * 
+	 * @param context current sample context
+	 * @param oname MBean object name
+	 */
+	void unregister(SampleContext context, ObjectName oname);
+	
+	/**
+	 * This method is called before each attribute is sampled.
+	 * Throw a runtime exception if you want all further samples to halt.
+	 * Set {@link AttributeSample#excludeNext(boolean)} to true to skip 
+	 * sampling this attribute.
+	 * 
+	 * @param context current sample context
+	 * @param sample current attribute sample
+	 */
+	void pre(SampleContext context, AttributeSample sample);
+
+	/**
+	 * This method is called for after attribute is sampled.
+	 * Throw a runtime exception if you want samples to halt.
+	 * 
+	 * @param context current sample context
+	 * @param sample current attribute sample
+	 * @throws UnsupportedAttributeException 
+	 */
+	void post(SampleContext context, AttributeSample sample) throws UnsupportedAttributeException;
+
+	/**
+	 * This method is called if sample fails with exception.
+	 * 
+	 * @param context current sample context
+	 * @param sample current attribute sample
+	 */
+	void error(SampleContext context, AttributeSample sample);
+
+	/**
+	 * This method is called when generic error occurs
+	 * 
+	 * @param context current sample context
+	 * @param ex exception instance
+	 */
+	void error(SampleContext context, Throwable ex);
+
+	/**
 	 * This method is called before a sample begins
 	 * Set activity {@code OpType} to NOOP to ignore
 	 * activity reporting. Setting this to NOOP at pre-stage
@@ -46,24 +101,6 @@ public interface SampleListener {
 	 */
 	void pre(SampleContext context, Activity activity);
 	
-	/**
-	 * This method is called for each sampled attribute.
-	 * Throw a runtime exception if you want samples to halt.
-	 * 
-	 * @param context current sample context
-	 * @param sample current attribute sample
-	 * @return true of current sampled metric should be included, false otherwise (excluded)
-	 */
-	boolean sample(SampleContext context, AttributeSample sample);
-
-	/**
-	 * This method is called if sample fails with exception.
-	 * 
-	 * @param context current sample context
-	 * @param sample current attribute sample
-	 */
-	void error(SampleContext context, AttributeSample sample);
-
 	/**
 	 * This method is called after current sample is completed
 	 * Set activity {@code OpType} to NOOP to ignore

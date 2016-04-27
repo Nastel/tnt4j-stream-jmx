@@ -37,7 +37,6 @@ import javax.management.MalformedObjectNameException;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
-import javax.management.openmbean.CompositeData;
 import javax.management.relation.MBeanServerNotificationFilter;
 
 import org.tnt4j.stream.jmx.conditions.AttributeAction;
@@ -182,11 +181,12 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 				for (Iterator<ObjectName> it = set.iterator(); it.hasNext();) {
 					ObjectName oname = it.next();
 					mbeans.put(oname, mbeanServer.getMBeanInfo(oname));
+					runRegister(oname);
 				}
 			}
 		} catch (Exception ex) {
 			lastError = ex;
-			ex.printStackTrace();
+			doError(ex);
 		}
 	}
 
@@ -210,44 +210,40 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	}
 
 	/**
-	 * Sample  MBeans based on a configured MBean filter list
-	 * and store within given activity as snapshots.
+	 * Sample MBeans based on a configured MBean filter list and store within given activity as snapshots.
 	 * 
-	 * @param activity instance where sampled MBean attributes are stored
+	 * @param activity
+	 *            instance where sampled MBean attributes are stored
 	 * @return number of metrics loaded from all MBeans
 	 */
 	private int sampleMBeans(Activity activity) {
 		int pCount = 0;
-		for (Entry<ObjectName, MBeanInfo> entry: mbeans.entrySet()) {
+		for (Entry<ObjectName, MBeanInfo> entry : mbeans.entrySet()) {
 			ObjectName name = entry.getKey();
 			MBeanInfo info = entry.getValue();
 			MBeanAttributeInfo[] attr = info.getAttributes();
-			
+
 			PropertySnapshot snapshot = new PropertySnapshot(name.getDomain(), name.getCanonicalName());
 			for (int i = 0; i < attr.length; i++) {
 				MBeanAttributeInfo jinfo = attr[i];
-				if (jinfo.isReadable()) {
-					AttributeSample sample = new AttributeSample(activity, mbeanServer, name, jinfo);
-					try {
-						if (doSample(sample)) {
-							sample.sample(); // obtain a sample
-							processJmxValue(snapshot, jinfo, jinfo.getName(), sample.get());
-						}
-					} catch (Throwable ex) {
-						errorCount++;
-						lastError = ex;
-						doError(sample, ex);
-					} finally {
-						if (sample.excludeNext()) {
-							excCount++;
-						}
-						evalAttrConditions(sample);						
+				AttributeSample sample = AttributeSample.newAttributeSample(activity, snapshot, mbeanServer, name, jinfo);
+				try {
+					if (doPre(sample)) {
+						sample.sample(); // obtain a sample
+						doPost(sample);
 					}
+				} catch (Throwable ex) {
+					doError(sample, ex);
+				} finally {
+					if (sample.excludeNext()) {
+						excCount++;
+					}
+					evalAttrConditions(sample);
 				}
 			}
 			if (snapshot.size() > 0) {
-				activity.addSnapshot(snapshot);
 				pCount += snapshot.size();
+				activity.addSnapshot(snapshot);
 			}
 		}
 		return pCount;
@@ -269,43 +265,6 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 		}
 	}
 
-	/**
-	 * Process/extract value from a given MBean attribute
-	 * 
-	 * @param snapshot instance where extracted attribute is stored
-	 * @param jinfo attribute info
-	 * @param property name to be assigned to given attribute value
-	 * @param value associated with attribute
-	 * @throws UnsupportedAttributeException if provided attribute not supported
-	 * @return snapshot instance where all attributes are contained
-	 */
-	private PropertySnapshot processJmxValue(PropertySnapshot snapshot, MBeanAttributeInfo jinfo, String propName, Object value) throws UnsupportedAttributeException {
-		if (value != null && !value.getClass().isArray()) {
-			if (value instanceof CompositeData) {
-				CompositeData cdata = (CompositeData) value;
-				Set<String> keys = cdata.getCompositeType().keySet();
-				for (String key: keys) {
-					Object cval = cdata.get(key);
-					processJmxValue(snapshot, jinfo, propName + "\\" + key, cval);
-				}
-			} else if (typeSupported(value)) {
-				snapshot.add(propName, value);
-			} else {
-				throw new UnsupportedAttributeException("Unsupported type=" + value.getClass(), jinfo, value);
-			}
-		}
-		return snapshot;
-	}
-	
-	/**
-	 * Determine if a given value and its type are supported
-	 * 
-	 * @param value value to test for support
-	 * @return true if a given value and its type are supported, false otherwise
-	 */
-	protected boolean typeSupported(Object value) {
-		 return (value.getClass().isPrimitive() || (value instanceof String) || (value instanceof Number) || (value instanceof Boolean));
-	}
 	
 	/**
 	 * Finish processing of the activity sampling
@@ -370,6 +329,8 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 				}
 				// compute sampling statistics
 				finish(activity);
+			} catch (Throwable ex) {
+				doError(ex);
 			} finally {
 				lock.unlock();
 			}
@@ -399,6 +360,40 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 		}
     }
 
+	/**
+	 * Run {@link org.tnt4j.stream.jmx.core.SampleListener#register(SampleContext, ObjectName)}
+	 * for all registered listeners.
+	 * 
+	 * @param name MBean object name
+	 */
+	private void runRegister(ObjectName name) {
+		synchronized (this.listeners) {
+			for (SampleListener lst: listeners) {
+				lst.register(context, name);
+			}
+		} 
+	}
+
+	/**
+	 * Run {@link org.tnt4j.stream.jmx.core.SampleListener#unregister(SampleContext, ObjectName)}
+	 * for all registered listeners.
+	 * 
+	 * @param name MBean object name
+	 */
+	private void runUnRegister(ObjectName name) {
+		synchronized (this.listeners) {
+			for (SampleListener lst: listeners) {
+				lst.unregister(context, name);
+			}
+		} 
+	}
+
+	/**
+	 * Run {@link org.tnt4j.stream.jmx.core.SampleListener#post(SampleContext, Activity)}
+	 * for all registered listeners.
+	 * 
+	 * @param activity sampling activity instance
+	 */
 	private void runPost(Activity activity) {
 		synchronized (this.listeners) {
 			for (SampleListener lst: listeners) {
@@ -407,6 +402,12 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 		} 
 	}
 
+	/**
+	 * Run {@link org.tnt4j.stream.jmx.core.SampleListener#pre(SampleContext, Activity)}
+	 * for all registered listeners.
+	 * 
+	 * @param activity sampling activity instance
+	 */
 	private void runPre(Activity activity) {
 		synchronized (this.listeners) {
 			for (SampleListener lst: listeners) {
@@ -415,18 +416,46 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 		} 
 	}
 
-	private boolean doSample(AttributeSample sample) {
-		boolean result = true;
+	/**
+	 * Run {@link org.tnt4j.stream.jmx.core.SampleListener#preSample(SampleContext, AttributeSample)}
+	 * for all registered listeners.
+	 * 
+	 * @param sample current attribute sample instance
+	 */
+	private boolean doPre(AttributeSample sample) {
 		synchronized (this.listeners) {
 			for (SampleListener lst: listeners) {
-				boolean last = lst.sample(context, sample);
-				result = result && last;
+				lst.pre(context, sample);
 			}
 		} 
-		return result;
+		return !sample.excludeNext();
 	}
 
+	/**
+	 * Run {@link org.tnt4j.stream.jmx.core.SampleListener#postSample(SampleContext, AttributeSample)}
+	 * for all registered listeners.
+	 * 
+	 * @param sample current attribute sample instance
+	 * @throws UnsupportedAttributeException 
+	 */
+	private void doPost(AttributeSample sample) throws UnsupportedAttributeException {
+		synchronized (this.listeners) {
+			for (SampleListener lst: listeners) {
+				lst.post(context, sample);
+			}
+		} 
+	}
+
+	/**
+	 * Run {@link org.tnt4j.stream.jmx.core.SampleListener#error(SampleContext, AttributeSample)}
+	 * for all registered listeners.
+	 * 
+	 * @param sample current attribute sample instance
+	 * @param ex exception associated with the error
+	 */
 	private void doError(AttributeSample sample, Throwable ex) {
+		errorCount++;
+		lastError = ex;
 		sample.setError(ex);
 		synchronized (this.listeners) {
 			for (SampleListener lst: listeners) {
@@ -435,6 +464,28 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 		} 
 	}
 
+	/**
+	 * Run {@link org.tnt4j.stream.jmx.core.SampleListener#error(SampleContext, Throwable)}
+	 * for all registered listeners.
+	 * 
+	 * @param ex exception associated with the error
+	 */
+	private void doError(Throwable ex) {
+		errorCount++;
+		lastError = ex;
+		synchronized (this.listeners) {
+			for (SampleListener lst: listeners) {
+				lst.error(context, ex);
+			}
+		} 
+	}
+
+	/**
+	 * Run {@link org.tnt4j.stream.jmx.core.SampleListener#getStats(SampleContext, Map)}
+	 * for all registered listeners.
+	 * 
+	 * @param stats map of key/value statistics
+	 */
 	private void doStats(Map<String, Object> stats) {
 		synchronized (this.listeners) {
 			for (SampleListener lst: listeners) {
@@ -482,12 +533,14 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 				try {
 					if (isFilterIncluded(mbeanEvent.getMBeanName())) {
 						mbeans.put(mbeanEvent.getMBeanName(), mbeanServer.getMBeanInfo(mbeanEvent.getMBeanName()));
+						runRegister(mbeanEvent.getMBeanName());
 					}
-                } catch (Throwable e) {
-                	e.printStackTrace();
+                } catch (Throwable ex) {
+                	doError(ex);
                 }
 			} else if (mbeanEvent.getType().equalsIgnoreCase(MBeanServerNotification.UNREGISTRATION_NOTIFICATION)) {
 				mbeans.remove(mbeanEvent.getMBeanName());
+				runUnRegister(mbeanEvent.getMBeanName());
 			}
 		}
 	}
