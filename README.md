@@ -134,7 +134,7 @@ To stream Stream-JMX to jkool cloud (https://www.jkoolcloud.com): (Requires JESL
 
 	; Event Sink configuration for streaming to jKool Cloud
 	; event.sink.factory.EventSinkFactory.Filename: jkoocloud.json
-	event.sink.factory.EventSinkFactory.Url: https://data.jkoolcloud.com:6585
+	event.sink.factory.EventSinkFactory.Url: https://data.jkoolcloud.com
 	event.sink.factory.EventSinkFactory.Token: ACCESS-TOKEN
 	event.formatter: com.nastel.jkool.tnt4j.format.JSONFormatter
 
