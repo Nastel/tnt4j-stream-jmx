@@ -102,7 +102,7 @@ public class DefaultSampleListener implements SampleListener {
 
 	@Override
 	public void pre(SampleContext context, AttributeSample sample) {
-		sample.excludeNext(sample.getAttributeInfo().isReadable() && !isExcluded(sample.getAttributeInfo()));
+		sample.excludeNext(!sample.getAttributeInfo().isReadable() || isExcluded(sample.getAttributeInfo()));
 	}
 
 	@Override
