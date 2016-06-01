@@ -120,62 +120,62 @@ To stream Stream-JMX to jkool cloud (https://www.jkoolcloud.com): (Requires JESL
 ;Stanza used for Stream-JMX sources
 {
 	source: org.tnt4j.stream.jmx
-	source.factory: com.nastel.jkool.tnt4j.source.SourceFactoryImpl
+	source.factory: com.jkoolcloud.tnt4j.source.SourceFactoryImpl
 	source.factory.GEOADDR: New York
 	source.factory.DATACENTER: YourDC
 	source.factory.RootFQN: SERVER=?#DATACENTER=?#GEOADDR=?	
 	source.factory.RootSSN: tnt4j-stream-jmx	
 	
-	tracker.factory: com.nastel.jkool.tnt4j.tracker.DefaultTrackerFactory
-	dump.sink.factory: com.nastel.jkool.tnt4j.dump.DefaultDumpSinkFactory
+	tracker.factory: com.com.jkoolcloud.jkool.tnt4j.tracker.DefaultTrackerFactory
+	dump.sink.factory: com.jkoolcloud.tnt4j.dump.DefaultDumpSinkFactory
 
 	; Event sink definition where all streams are recorded
-	event.sink.factory: com.nastel.jkool.tnt4j.sink.BufferedEventSinkFactory
+	event.sink.factory: com.jkoolcloud.tnt4j.sink.BufferedEventSinkFactory
 
 	; Event Sink configuration for streaming to jKool Cloud
 	; event.sink.factory.EventSinkFactory.Filename: jkoocloud.json
 	event.sink.factory.EventSinkFactory.Url: https://data.jkoolcloud.com
 	event.sink.factory.EventSinkFactory.Token: ACCESS-TOKEN
-	event.formatter: com.nastel.jkool.tnt4j.format.JSONFormatter
+	event.formatter: com.jkoolcloud.tnt4j.format.JSONFormatter
 
 	; Configure default sink filter 
-	event.sink.factory.Filter: com.nastel.jkool.tnt4j.filters.EventLevelTimeFilter
+	event.sink.factory.Filter: com.jkoolcloud.tnt4j.filters.EventLevelTimeFilter
 	event.sink.factory.Filter.Level: TRACE
 	
-	tracking.selector: com.nastel.jkool.tnt4j.selector.DefaultTrackingSelector
-	tracking.selector.Repository: com.nastel.jkool.tnt4j.repository.FileTokenRepository
+	tracking.selector: com.jkoolcloud.tnt4j.selector.DefaultTrackingSelector
+	tracking.selector.Repository: com.jkoolcloud.tnt4j.repository.FileTokenRepository
 }
 ```
 Below is an example of TNT4J stream definition where all Stream-JMX streams are written into a socket event sink
-`com.nastel.jkool.tnt4j.sink.SocketEventSinkFactory`, formatted by `org.tnt4j.stream.jmx.format.FactNameValueFormatter` :
+`com.jkoolcloud.tnt4j.sink.SocketEventSinkFactory`, formatted by `org.tnt4j.stream.jmx.format.FactNameValueFormatter` :
 ```
 ;Stanza used for Stream-JMX sources
 {
 	source: org.tnt4j.stream.jmx
-	source.factory: com.nastel.jkool.tnt4j.source.SourceFactoryImpl
+	source.factory: com.jkoolcloud.tnt4j.source.SourceFactoryImpl
 	source.factory.GEOADDR: New York
 	source.factory.DATACENTER: YourDC
 	source.factory.RootFQN: SERVER=?#DATACENTER=?#GEOADDR=?	
 	source.factory.RootSSN: tnt4j-stream-jmx	
 	
-	tracker.factory: com.nastel.jkool.tnt4j.tracker.DefaultTrackerFactory
-	dump.sink.factory: com.nastel.jkool.tnt4j.dump.DefaultDumpSinkFactory
+	tracker.factory: com.jkoolcloud.tnt4j.tracker.DefaultTrackerFactory
+	dump.sink.factory: com.jkoolcloud.tnt4j.dump.DefaultDumpSinkFactory
 
 	; Event sink definition where all streams are recorded
 
-	event.sink.factory: com.nastel.jkool.tnt4j.sink.BufferedEventSinkFactory
-	event.sink.factory.EventSinkFactory: com.nastel.jkool.tnt4j.sink.SocketEventSinkFactory
-	event.sink.factory.EventSinkFactory.eventSinkFactory: com.nastel.jkool.tnt4j.sink.NullEventSinkFactory
+	event.sink.factory: com.jkoolcloud.tnt4j.sink.BufferedEventSinkFactory
+	event.sink.factory.EventSinkFactory: com.jkoolcloud.tnt4j.sink.SocketEventSinkFactory
+	event.sink.factory.EventSinkFactory.eventSinkFactory: com.jkoolcloud.tnt4j.sink.NullEventSinkFactory
 	event.sink.factory.EventSinkFactory.Host: localhost
 	event.sink.factory.EventSinkFactory.Port: 6060
 
 	; Configure default sink filter 
-	event.sink.factory.Filter: com.nastel.jkool.tnt4j.filters.EventLevelTimeFilter
+	event.sink.factory.Filter: com.jkoolcloud.tnt4j.filters.EventLevelTimeFilter
 	event.sink.factory.Filter.Level: TRACE
 	
 	event.formatter: org.tnt4j.stream.jmx.format.FactNameValueFormatter
-	tracking.selector: com.nastel.jkool.tnt4j.selector.DefaultTrackingSelector
-	tracking.selector.Repository: com.nastel.jkool.tnt4j.repository.FileTokenRepository
+	tracking.selector: com.jkoolcloud.tnt4j.selector.DefaultTrackingSelector
+	tracking.selector.Repository: com.jkoolcloud.tnt4j.repository.FileTokenRepository
 }
 ```
 To stream Stream-JMX into a log file `MyStream.log`:
@@ -183,36 +183,36 @@ To stream Stream-JMX into a log file `MyStream.log`:
 ;Stanza used for Stream-JMX sources
 {
 	source: org.tnt4j.stream.jmx
-	source.factory: com.nastel.jkool.tnt4j.source.SourceFactoryImpl
+	source.factory: com.jkoolcloud.tnt4j.source.SourceFactoryImpl
 	source.factory.GEOADDR: New York
 	source.factory.DATACENTER: YourDC
 	source.factory.RootFQN: SERVER=?#DATACENTER=?#GEOADDR=?	
 	source.factory.RootSSN: tnt4j-stream-jmx	
 	
-	tracker.factory: com.nastel.jkool.tnt4j.tracker.DefaultTrackerFactory
-	dump.sink.factory: com.nastel.jkool.tnt4j.dump.DefaultDumpSinkFactory
+	tracker.factory: com.jkoolcloud.tnt4j.tracker.DefaultTrackerFactory
+	dump.sink.factory: com.jkoolcloud.tnt4j.dump.DefaultDumpSinkFactory
 
 	; Event sink definition where all streams are recorded
-	event.sink.factory: com.nastel.jkool.tnt4j.sink.BufferedEventSinkFactory
-	event.sink.factory.EventSinkFactory: com.nastel.jkool.tnt4j.sink.FileEventSinkFactory
+	event.sink.factory: com.jkoolcloud.tnt4j.sink.BufferedEventSinkFactory
+	event.sink.factory.EventSinkFactory: com.jkoolcloud.tnt4j.sink.FileEventSinkFactory
 	event.sink.factory.EventSinkFactory.FileName: MyStream.log
 
 	; Configure default sink filter 
-	event.sink.factory.Filter: com.nastel.jkool.tnt4j.filters.EventLevelTimeFilter
+	event.sink.factory.Filter: com.jkoolcloud.tnt4j.filters.EventLevelTimeFilter
 	event.sink.factory.Filter.Level: TRACE
 	
 	event.formatter: org.tnt4j.stream.jmx.format.FactNameValueFormatter
-	tracking.selector: com.nastel.jkool.tnt4j.selector.DefaultTrackingSelector
-	tracking.selector.Repository: com.nastel.jkool.tnt4j.repository.FileTokenRepository
+	tracking.selector: com.jkoolcloud.tnt4j.selector.DefaultTrackingSelector
+	tracking.selector.Repository: com.jkoolcloud.tnt4j.repository.FileTokenRepository
 }
 ```
 You can write your own custom event sinks (HTTPS, HTTP, etc) and your own stream formatters without having to change Stream-JMX code or your application. TNT4J comes with a set of built-in event sink implementations such as: 
 
-* `com.nastel.jkool.tnt4j.logger.Log4JEventSinkFactory` -- log4j
-* `com.nastel.jkool.tnt4j.sink.BufferedEventSinkFactory` -- buffered sink
-* `com.nastel.jkool.tnt4j.sink.FileEventSinkFactory` - standard log file
-* `com.nastel.jkool.tnt4j.sink.SocketEventSinkFactory` -- socket (tcp/ip)
-* `com.nastel.jkool.tnt4j.sink.NullEventSinkFactory` -- null (empty)
+* `com.jkoolcloud.tnt4j.logger.Log4JEventSinkFactory` -- log4j
+* `com.jkoolcloud.tnt4j.sink.BufferedEventSinkFactory` -- buffered sink
+* `com.jkoolcloud.tnt4j.sink.FileEventSinkFactory` - standard log file
+* `com.jkoolcloud.tnt4j.sink.SocketEventSinkFactory` -- socket (tcp/ip)
+* `com.jkoolcloud.tnt4j.sink.NullEventSinkFactory` -- null (empty)
 
 ## Auto-generating application state dump
 Stream-JMX is utilizing TNT4J state dump capability to generate application state dumps
