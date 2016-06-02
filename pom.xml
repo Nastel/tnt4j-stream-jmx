@@ -29,6 +29,14 @@
     <developerConnection>scm:git:git//github.com/Nastel/TNT4J</developerConnection>
     <url>https://github.com/Nastel/TNT4j</url>
   </scm>
+  <distributionManagement>
+	 <repository>
+      	<id>bintray-amavashev2-jkoolcloud</id>
+      	<name>amavashev2-jkoolcloud</name>
+      	<url>https://api.bintray.com/maven/amavashev2/jkoolcloud/tnt4j/;publish=1;override=1</url>
+  	 </repository>
+  </distributionManagement>
+  
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
