@@ -4,10 +4,10 @@
 
   <groupId>com.jkoolcloud.tnt4j.stream</groupId>
   <artifactId>jmx</artifactId>
-  <version>0.4.6-SNAPSHOT</version>
+  <version>0.4.5</version>
   <packaging>jar</packaging>
 
-  <name>jmx</name>
+  <name>stream-jmx</name>
   <url>http://www.jkoolcloud.com/</url>
   <description>Data Streaming, Data Analytics</description>
   <licenses>
@@ -25,15 +25,15 @@
     </developer>
   </developers>
   <scm>
-    <connection>scm:git:git://github.com/Nastel/TNT4J</connection>
-    <developerConnection>scm:git:git//github.com/Nastel/TNT4J</developerConnection>
-    <url>https://github.com/Nastel/TNT4j</url>
+    <connection>scm:git:git://github.com/Nastel/tnt4j-stream-jmx</connection>
+    <developerConnection>scm:git:git//github.com/Nastel/tnt4j-stream-jmx</developerConnection>
+    <url>https://github.com/Nastel/tnt4j-stream-jmx</url>
   </scm>
   <distributionManagement>
 	 <repository>
       	<id>bintray-amavashev2-jkoolcloud</id>
       	<name>amavashev2-jkoolcloud</name>
-      	<url>https://api.bintray.com/maven/amavashev2/jkoolcloud/tnt4j/;publish=1;override=1</url>
+      	<url>https://api.bintray.com/maven/amavashev2/jkoolcloud/stream-jmx/;publish=1;override=1</url>
   	 </repository>
   </distributionManagement>
   
