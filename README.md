@@ -359,6 +359,9 @@ Stream-JMX requires the following:
 * JDK 1.6+
 * TNT4J (https://github.com/Nastel/TNT4J)
 
+Please use JCenter or Maven and dependencies will be downloaded automatically. 
+
+
 # Related Projects
 * TrackingFilter (http://nastel.github.io/TrackingFilter/)
 * JESL (http://nastel.github.io/JESL/)
