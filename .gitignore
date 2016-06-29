@@ -19,5 +19,3 @@ hs_err_pid*
 /lib/
 /target/
 /.settings/
-.project
-.classpath
