@@ -3,13 +3,13 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.jkoolcloud.tnt4j.stream</groupId>
-  <artifactId>jmx</artifactId>
+  <artifactId>tnt4j-stream-jmx</artifactId>
   <version>0.4.5</version>
   <packaging>jar</packaging>
 
-  <name>stream-jmx</name>
+  <name>tnt4j-stream-jmx</name>
   <url>http://www.jkoolcloud.com/</url>
-  <description>Data Streaming, Data Analytics</description>
+  <description>JMX Collection and Streaming over TNT4J</description>
   <licenses>
   <license>
     <name>The Apache License, Version 2.0</name>
