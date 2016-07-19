@@ -49,6 +49,12 @@
             <artifactId>tnt4j</artifactId>
             <version>2.2.1-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>com.jkoolcloud</groupId>
+            <artifactId>jesl</artifactId>
+            <version>0.1.6-SNAPSHOT</version>
+            <scope>runtime</scope>
+        </dependency>
     </dependencies>
 
     <profiles>
