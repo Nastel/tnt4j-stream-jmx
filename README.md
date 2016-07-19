@@ -130,7 +130,8 @@ To stream Stream-JMX to jkool cloud (https://www.jkoolcloud.com): (Requires JESL
 	dump.sink.factory: com.jkoolcloud.tnt4j.dump.DefaultDumpSinkFactory
 
 	; Event sink definition where all streams are recorded
-	event.sink.factory: com.jkoolcloud.tnt4j.sink.BufferedEventSinkFactory
+	event.sink.factory: com.jkoolcloud.tnt4j.sink.impl.BufferedEventSinkFactory
+	event.sink.factory.PooledLoggerFactory: com.jkoolcloud.tnt4j.sink.impl.PooledLoggerFactoryImpl
 
 	; Event Sink configuration for streaming to jKool Cloud
 	; event.sink.factory.EventSinkFactory.Filename: jkoocloud.json
@@ -147,7 +148,7 @@ To stream Stream-JMX to jkool cloud (https://www.jkoolcloud.com): (Requires JESL
 }
 ```
 Below is an example of TNT4J stream definition where all Stream-JMX streams are written into a socket event sink
-`com.jkoolcloud.tnt4j.sink.SocketEventSinkFactory`, formatted by `org.tnt4j.stream.jmx.format.FactNameValueFormatter` :
+`com.jkoolcloud.tnt4j.sink.impl.SocketEventSinkFactory`, formatted by `org.tnt4j.stream.jmx.format.FactNameValueFormatter` :
 ```
 ;Stanza used for Stream-JMX sources
 {
@@ -163,9 +164,11 @@ Below is an example of TNT4J stream definition where all Stream-JMX streams are 
 
 	; Event sink definition where all streams are recorded
 
-	event.sink.factory: com.jkoolcloud.tnt4j.sink.BufferedEventSinkFactory
-	event.sink.factory.EventSinkFactory: com.jkoolcloud.tnt4j.sink.SocketEventSinkFactory
-	event.sink.factory.EventSinkFactory.eventSinkFactory: com.jkoolcloud.tnt4j.sink.NullEventSinkFactory
+	event.sink.factory: com.jkoolcloud.tnt4j.sink.impl.BufferedEventSinkFactory
+	event.sink.factory.PooledLoggerFactory: com.jkoolcloud.tnt4j.sink.impl.PooledLoggerFactoryImpl
+	
+	event.sink.factory.EventSinkFactory: com.jkoolcloud.tnt4j.sink.impl.SocketEventSinkFactory
+	event.sink.factory.EventSinkFactory.eventSinkFactory: com.jkoolcloud.tnt4j.sink.impl.NullEventSinkFactory
 	event.sink.factory.EventSinkFactory.Host: localhost
 	event.sink.factory.EventSinkFactory.Port: 6060
 
@@ -193,8 +196,9 @@ To stream Stream-JMX into a log file `MyStream.log`:
 	dump.sink.factory: com.jkoolcloud.tnt4j.dump.DefaultDumpSinkFactory
 
 	; Event sink definition where all streams are recorded
-	event.sink.factory: com.jkoolcloud.tnt4j.sink.BufferedEventSinkFactory
-	event.sink.factory.EventSinkFactory: com.jkoolcloud.tnt4j.sink.FileEventSinkFactory
+	event.sink.factory: com.jkoolcloud.tnt4j.sink.impl.BufferedEventSinkFactory
+	event.sink.factory.PooledLoggerFactory: com.jkoolcloud.tnt4j.sink.impl.PooledLoggerFactoryImpl
+	event.sink.factory.EventSinkFactory: com.jkoolcloud.tnt4j.sink.impl.FileEventSinkFactory
 	event.sink.factory.EventSinkFactory.FileName: MyStream.log
 
 	; Configure default sink filter 
@@ -209,10 +213,10 @@ To stream Stream-JMX into a log file `MyStream.log`:
 You can write your own custom event sinks (HTTPS, HTTP, etc) and your own stream formatters without having to change Stream-JMX code or your application. TNT4J comes with a set of built-in event sink implementations such as: 
 
 * `com.jkoolcloud.tnt4j.logger.Log4JEventSinkFactory` -- log4j
-* `com.jkoolcloud.tnt4j.sink.BufferedEventSinkFactory` -- buffered sink
-* `com.jkoolcloud.tnt4j.sink.FileEventSinkFactory` - standard log file
-* `com.jkoolcloud.tnt4j.sink.SocketEventSinkFactory` -- socket (tcp/ip)
-* `com.jkoolcloud.tnt4j.sink.NullEventSinkFactory` -- null (empty)
+* `com.jkoolcloud.tnt4j.sink.impl.BufferedEventSinkFactory` -- buffered sink
+* `com.jkoolcloud.tnt4j.sink.impl.FileEventSinkFactory` - standard log file
+* `com.jkoolcloud.tnt4j.sink.impl.SocketEventSinkFactory` -- socket (tcp/ip)
+* `com.jkoolcloud.tnt4j.sink.impl.NullEventSinkFactory` -- null (empty)
 
 ## Auto-generating application state dump
 Stream-JMX is utilizing TNT4J state dump capability to generate application state dumps
@@ -368,5 +372,5 @@ Please use JCenter or Maven and dependencies will be downloaded automatically.
 
 # Available Integrations
 * TNT4J (https://github.com/Nastel/TNT4J)
-* jkoolcloud.com (https://www.jkoolcloud.com)
+* jKoolCloud.com (https://www.jkoolcloud.com)
 * AutoPilot M6 (http://www.nastel.com/products/autopilot-m6.html)
