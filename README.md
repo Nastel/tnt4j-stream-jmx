@@ -42,7 +42,7 @@ It is simple: (1) run Stream-JMX as a `-javaagent` or (2) imbed Stream-JMX code 
 
 Running Stream-JMX as javaagent:
 ```java
-java -javaagent:tnt4j-stream-jmx.jar="*:*!30000" -Dtnt4j.config=tnt4j.properties -classpath "tnt4j-stream-jmx.jar;lib/tnt4j-api-final-all.jar" your.class.name your-args
+java -javaagent:tnt4j-stream-jmx.jar="*:*!30000" -Dtnt4j.config=tnt4j.properties -classpath "tnt4j-stream-jmx*.jar;lib/*" your.class.name your-args
 ```
 Imbed Stream-JMX code into your application:
 ```java
@@ -101,13 +101,13 @@ For more information on TNT4J and `tnt4j.properties` see (https://github.com/Nas
 ## Running Stream-JMX as standalone app
 Example below runs `SamplingAgent` helper class as a standalone java application with a given MBean filter `"*:*"`, sampling period in milliseconds (`10000`), and time to run in milliseconds (`60000`):
 ```java
-java -Dorg.tnt4j.stream.jmx.agent.trace=true -classpath "tnt4j-stream-jmx.jar;lib/tnt4j-api-final-all.jar" org.tnt4j.stream.jmx.SamplingAgent "*:*" none 10000 60000
+java -Dorg.tnt4j.stream.jmx.agent.trace=true -classpath "tnt4j-stream-jmx*.jar;lib/*" org.tnt4j.stream.jmx.SamplingAgent "*:*" none 10000 60000
 ```
 
 ## Running Stream-JMX as -javaagent
 Stream-JMX can be invoked as `-javaagent` without changing your application code:
 ```java
-java -javaagent:tnt4j-stream-jmx.jar="*:*!30000" -Dtnt4j.config=tnt4j.properties -classpath "tnt4j-stream-jmx.jar;lib/tnt4j-api-final-all.jar" your.class.name your-args
+java -javaagent:tnt4j-stream-jmx.jar="*:*!30000" -Dtnt4j.config=tnt4j.properties -classpath "tnt4j-stream-jmx.jar;lib/*" your.class.name your-args
 ```
 The options are `-javaagent:tnt4j-stream-jmx.jar="mbean-filter!sample-time-ms"`, classpath must include pingjmx jar files as well as locations of log4j and tnt4j configuration files.
 
