@@ -20,6 +20,7 @@ import java.util.Collection;
 import com.jkoolcloud.tnt4j.stream.jmx.scheduler.SchedulerImpl;
 
 import com.jkoolcloud.tnt4j.core.OpLevel;
+import com.jkoolcloud.tnt4j.core.Operation;
 import com.jkoolcloud.tnt4j.core.Property;
 import com.jkoolcloud.tnt4j.core.Snapshot;
 import com.jkoolcloud.tnt4j.format.DefaultFormatter;
@@ -33,9 +34,9 @@ import com.jkoolcloud.tnt4j.utils.Utils;
  * snapshots. The output format follows the following format:
  * <p>
  * {@code "OBJ:name-value-prefix,name1=value1,....,nameN=valueN"}.
- * </p> 
+ * </p>
  * Newline is added at the end of each line.
- * 
+ *
  * @version $Revision: 1 $
  * 
  * @see SchedulerImpl
@@ -43,25 +44,25 @@ import com.jkoolcloud.tnt4j.utils.Utils;
 public class FactNameValueFormatter extends DefaultFormatter {
 	public static final String FIELD_SEP = ",";
 	public static final String END_SEP = "\n";
-	
+
 	public FactNameValueFormatter() {
-		super("time.stamp={2},level={1},source={3},msg=\"{0}\"");		
+		super("time.stamp={2},level={1},source={3},msg=\"{0}\"");
 	}
-	
+
 	@Override
-    public String format(TrackingEvent event) {
+	public String format(TrackingEvent event) {
 		StringBuilder nvString = new StringBuilder(1024);
 		nvString.append("OBJ:Streams");
 		toString(nvString, event.getSource()).append(event.getOperation().getName()).append("\\Events").append(FIELD_SEP);
 
 		if (event.getCorrelator() != null) {
-			Object [] cids = event.getCorrelator().toArray();
+			Object[] cids = event.getCorrelator().toArray();
 			if (cids.length > 0) {
 				nvString.append("corrid=").append(cids[0]).append(FIELD_SEP);
 			}
 		}
 		if (event.getTag() != null) {
-			Object [] cids = event.getTag().toArray();
+			Object[] cids = event.getTag().toArray();
 			if (cids.length > 0) {
 				nvString.append("tag=").append(cids[0]).append(FIELD_SEP);
 			}
@@ -73,23 +74,27 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		nvString.append("Self\\tid=").append(event.getOperation().getTID()).append(FIELD_SEP);
 		nvString.append("Self\\tid=").append(event.getOperation().getTID()).append(FIELD_SEP);
 		nvString.append("Self\\elapsed.usec=").append(event.getOperation().getElapsedTimeUsec()).append(FIELD_SEP);
-		
-		Collection<Snapshot> slist = event.getOperation().getSnapshots();
-		for (Snapshot snap: slist) {
+
+		Collection<Snapshot> slist = getSnapshots(event.getOperation());
+		for (Snapshot snap : slist) {
 			toString(nvString, snap);
 		}
 		return nvString.append(END_SEP).toString();
-    }
+	}
+
+	protected Collection<Snapshot> getSnapshots(Operation op) {
+		return op.getSnapshots();
+	}
 
 	@Override
-    public String format(TrackingActivity event) {
+	public String format(TrackingActivity event) {
 		StringBuilder nvString = new StringBuilder(1024);
-		
+
 		nvString.append("OBJ:Streams");
 		toString(nvString, event.getSource()).append("\\Activities").append(FIELD_SEP);
 
 		if (event.getCorrelator() != null) {
-			Object [] cids = event.getCorrelator().toArray();
+			Object[] cids = event.getCorrelator().toArray();
 			if (cids.length > 0) {
 				nvString.append("Self\\corrid=").append(cids[0]).append(FIELD_SEP);
 			}
@@ -103,53 +108,53 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		nvString.append("Self\\snap.count=").append(event.getSnapshotCount()).append(FIELD_SEP);
 		nvString.append("Self\\elapsed.usec=").append(event.getElapsedTimeUsec()).append(FIELD_SEP);
 
-		Collection<Snapshot> slist = event.getSnapshots();
-		for (Snapshot snap: slist) {
+		Collection<Snapshot> slist = getSnapshots(event);
+		for (Snapshot snap : slist) {
 			toString(nvString, snap);
 		}
-		
+
 		return nvString.append(END_SEP).toString();
-    }
+	}
 
 	@Override
-    public String format(Snapshot event) {
+	public String format(Snapshot event) {
 		StringBuilder nvString = new StringBuilder(1024);
 		String prefix = "OBJ:Metrics\\" + event.getCategory();
 		nvString.append(prefix).append(FIELD_SEP);
 		toString(nvString, event).append(END_SEP);
 		return nvString.toString();
-    }
+	}
 
 	@Override
-    public String format(long ttl, Source source, OpLevel level, String msg, Object... args) {
+	public String format(long ttl, Source source, OpLevel level, String msg, Object... args) {
 		StringBuilder nvString = new StringBuilder(1024);
-		
+
 		nvString.append("OBJ:Streams");
 		toString(nvString, source).append("\\Message").append(FIELD_SEP);
 		nvString.append("Self\\level=").append(level).append(FIELD_SEP);
 		nvString.append("Self\\msg-text=\"").append(Utils.format(msg, args)).append("\"").append(END_SEP);
 		return nvString.toString();
-    }
-	
+	}
+
 
 	protected StringBuilder toString(StringBuilder nvString, Source source) {
 		Source parent = source.getSource();
 		if (parent != null) {
 			toString(nvString, source.getSource());
 		}
-		nvString.append("\\").append(source.getName());		
+		nvString.append("\\").append(source.getName());
 		return nvString;
 	}
-	
+
 	protected StringBuilder toString(StringBuilder nvString, Snapshot snap) {
 		Collection<Property> list = snap.getSnapshot();
-		for (Property p: list) {
+		for (Property p : list) {
 			Object value = p.getValue();
 			if ((value instanceof Number) || (value instanceof Boolean)) {
 				String name = snap.getName().replace("=", "\\").replace(",", "!");
 				nvString.append(name).append("\\").append(p.getKey());
 				nvString.append("=").append(p.getValue()).append(FIELD_SEP);
-			} 
+			}
 		}
 		return nvString;
 	}

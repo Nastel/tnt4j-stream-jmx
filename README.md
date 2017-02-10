@@ -38,13 +38,13 @@ java runtime containers.
 For more information on JESL visit: http://nastel.github.io/JESL/
 
 # Using Stream-JMX
-It is simple: (1) run Stream-JMX as a `-javaagent` or (2) imbed Stream-JMX code into your application.
+It is simple: (1) run Stream-JMX as a `-javaagent` or (2) embed Stream-JMX code into your application.
 
 Running Stream-JMX as javaagent:
 ```java
 java -javaagent:tnt4j-stream-jmx.jar="*:*!30000" -Dtnt4j.config=tnt4j.properties -classpath "tnt4j-stream-jmx*.jar;lib/*" your.class.name your-args
 ```
-Imbed Stream-JMX code into your application:
+Embed Stream-JMX code into your application:
 ```java
 // obtain SamplerFactory instance
 SamplerFactory factory = DefaultSamplerFactory.getInstance();
@@ -101,7 +101,7 @@ For more information on TNT4J and `tnt4j.properties` see (https://github.com/Nas
 ## Running Stream-JMX as standalone app
 Example below runs `SamplingAgent` helper class as a standalone java application with a given MBean filter `"*:*"`, sampling period in milliseconds (`10000`), and time to run in milliseconds (`60000`):
 ```java
-java -Dorg.tnt4j.stream.jmx.agent.trace=true -classpath "tnt4j-stream-jmx*.jar;lib/*" org.tnt4j.stream.jmx.SamplingAgent "*:*" none 10000 60000
+java -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -classpath "tnt4j-stream-jmx*.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent "*:*" "" 10000 60000
 ```
 
 ## Running Stream-JMX as -javaagent
@@ -109,7 +109,7 @@ Stream-JMX can be invoked as `-javaagent` without changing your application code
 ```java
 java -javaagent:tnt4j-stream-jmx.jar="*:*!30000" -Dtnt4j.config=tnt4j.properties -classpath "tnt4j-stream-jmx.jar;lib/*" your.class.name your-args
 ```
-The options are `-javaagent:tnt4j-stream-jmx.jar="mbean-filter!sample-time-ms"`, classpath must include pingjmx jar files as well as locations of log4j and tnt4j configuration files.
+The options are `-javaagent:tnt4j-stream-jmx.jar="mbean-filter!sample-time-ms"`, classpath must include tnt4j-stream-jmx jar files as well as locations of log4j and tnt4j configuration files.
 
 ## Where do the streams go?
 Stream-JMX streams all collected metrics based on a scheduled interval via TNT4J event streaming framework.
@@ -119,7 +119,7 @@ To stream Stream-JMX to jkool cloud (https://www.jkoolcloud.com): (Requires JESL
 ```
 ;Stanza used for Stream-JMX sources
 {
-	source: org.tnt4j.stream.jmx
+	source: com.jkoolcloud.tnt4j.stream.jmx
 	source.factory: com.jkoolcloud.tnt4j.source.SourceFactoryImpl
 	source.factory.GEOADDR: New York
 	source.factory.DATACENTER: YourDC
@@ -148,11 +148,11 @@ To stream Stream-JMX to jkool cloud (https://www.jkoolcloud.com): (Requires JESL
 }
 ```
 Below is an example of TNT4J stream definition where all Stream-JMX streams are written into a socket event sink
-`com.jkoolcloud.tnt4j.sink.impl.SocketEventSinkFactory`, formatted by `org.tnt4j.stream.jmx.format.FactNameValueFormatter` :
+`com.jkoolcloud.tnt4j.sink.impl.SocketEventSinkFactory`, formatted by `com.jkoolcloud.tnt4j.stream.jmx.format.FactNameValueFormatter` :
 ```
 ;Stanza used for Stream-JMX sources
 {
-	source: org.tnt4j.stream.jmx
+	source: com.jkoolcloud.tnt4j.stream.jmx
 	source.factory: com.jkoolcloud.tnt4j.source.SourceFactoryImpl
 	source.factory.GEOADDR: New York
 	source.factory.DATACENTER: YourDC
@@ -176,7 +176,7 @@ Below is an example of TNT4J stream definition where all Stream-JMX streams are 
 	event.sink.factory.Filter: com.jkoolcloud.tnt4j.filters.EventLevelTimeFilter
 	event.sink.factory.Filter.Level: TRACE
 	
-	event.formatter: org.tnt4j.stream.jmx.format.FactNameValueFormatter
+	event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.FactNameValueFormatter
 	tracking.selector: com.jkoolcloud.tnt4j.selector.DefaultTrackingSelector
 	tracking.selector.Repository: com.jkoolcloud.tnt4j.repository.FileTokenRepository
 }
@@ -185,7 +185,7 @@ To stream Stream-JMX into a log file `MyStream.log`:
 ```
 ;Stanza used for Stream-JMX sources
 {
-	source: org.tnt4j.stream.jmx
+	source: com.jkoolcloud.tnt4j.stream.jmx
 	source.factory: com.jkoolcloud.tnt4j.source.SourceFactoryImpl
 	source.factory.GEOADDR: New York
 	source.factory.DATACENTER: YourDC
@@ -205,7 +205,7 @@ To stream Stream-JMX into a log file `MyStream.log`:
 	event.sink.factory.Filter: com.jkoolcloud.tnt4j.filters.EventLevelTimeFilter
 	event.sink.factory.Filter.Level: TRACE
 	
-	event.formatter: org.tnt4j.stream.jmx.format.FactNameValueFormatter
+	event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.FactNameValueFormatter
 	tracking.selector: com.jkoolcloud.tnt4j.selector.DefaultTrackingSelector
 	tracking.selector.Repository: com.jkoolcloud.tnt4j.repository.FileTokenRepository
 }
@@ -242,11 +242,11 @@ By default Stream-JMX will generate dumps with the following info:
 You may create your own dump providers and handlers (https://github.com/Nastel/TNT4J/wiki/Getting-Started#application-state-dumps)
 ## Overriding default `SamplerFactory`
 `SamplerFactory` instances are used to generate `Sampler` implementation for a specific runtime environment. Stream-JMX supplies sampler and ping factories for standard JVMs, JBoss,
-WebSphere Application Server. You may want to override default `SamplerFactory` with your own or an altenative by specifying:
+WebSphere Application Server. You may want to override default `SamplerFactory` with your own or an alternative by specifying:
 ```java
-java -Dorg.tnt4j.stream.jmx.factory=org.tnt4j.stream.jmx.PlatformSamplerFactory ...
+java -Dcom.jkoolcloud.tnt4j.stream.jmx.factory=com.jkoolcloud.tnt4j.stream.jmx.PlatformSamplerFactory ...
 ```
-`SamplerFactory` is used to generate instances of the underlying sampler implementatons (objects that provide sampling of underlying mbeans).
+`SamplerFactory` is used to generate instances of the underlying sampler implementations (objects that provide sampling of underlying mbeans).
 ```java
 // return default or user defined SamplerFactory implementation
 SamplerFactory factory = DefaultSamplerFactory.getInstance();

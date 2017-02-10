@@ -1,5 +1,5 @@
 /**
- * PingJMX Conditional action execution framework
+ * Stream-JMX Conditional action execution framework
  * 
  * @author albert
  * @version 1.0

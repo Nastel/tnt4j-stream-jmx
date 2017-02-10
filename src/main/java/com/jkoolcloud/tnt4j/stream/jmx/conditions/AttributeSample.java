@@ -28,7 +28,7 @@ import com.jkoolcloud.tnt4j.core.PropertySnapshot;
 import com.jkoolcloud.tnt4j.utils.Utils;
 
 /**
- * <p> 
+ * <p>
  * This class provides a wrapper for sampling a single JMX MBean
  * attribute and maintain sample context.
  * </p>
@@ -46,7 +46,7 @@ public class AttributeSample {
 	Throwable ex;
 	PropertySnapshot snapshot;
 	boolean excludeNext = false;
-	
+
 	/**
 	 * Create an attribute sample
 	 * 
@@ -63,7 +63,7 @@ public class AttributeSample {
 		this.ainfo = ainfo;
 		this.snapshot = snapshot;
 	}
-	
+
 	/**
 	 * Create an attribute sample
 	 * 
@@ -76,19 +76,25 @@ public class AttributeSample {
 	public static AttributeSample newAttributeSample(Activity activity, PropertySnapshot snapshot, MBeanServer server, ObjectName name, MBeanAttributeInfo ainfo) {
 		return new AttributeSample(activity, snapshot, server, name, ainfo);
 	}
-	
+
 	/**
 	 * Sample and retrieve the value associated with 
 	 * the MBean attribute.
 	 * 
-	 * @return the value associated with the current attribute 
+	 * @return the value associated with the current attribute
 	 */
 	public Object sample() throws AttributeNotFoundException, InstanceNotFoundException, MBeanException, ReflectionException {
-		value = server.getAttribute(name, ainfo.getName());
+		try {
+			value = server.getAttribute(name, ainfo.getName());
+		} catch (UnsupportedOperationException exc) {
+			value = "<unsupported>";
+		} catch (AttributeNotFoundException exc) {
+			value = "<not found>";
+		}
 		timeStamp = Utils.currentTimeUsec();
 		return value;
 	}
-	
+
 	/**
 	 * Returns true if sample failed with error, false otherwise.
 	 * Call {@link #getError()} to obtain {@code Throwable}
@@ -99,18 +105,18 @@ public class AttributeSample {
 	public boolean isError(Throwable error) {
 		return ex != null;
 	}
-	
+
 	/**
-	 * Has the attribute been marked for exclusion 
+	 * Has the attribute been marked for exclusion
 	 * 
 	 * @return true if attribute to be marked for exclusion, false otherwise
 	 */
 	public boolean excludeNext() {
 		return excludeNext;
 	}
-	
+
 	/**
-	 * Mark attribute to be excluded from sampling 
+	 * Mark attribute to be excluded from sampling
 	 * 
 	 * @param exclude true to exclude, false to include
 	 * @return true if attribute to be marked for exclusion, false otherwise
@@ -119,7 +125,7 @@ public class AttributeSample {
 		excludeNext = exclude;
 		return excludeNext;
 	}
-	
+
 	/**
 	 * Set error associated with this sample
 	 * 
@@ -128,7 +134,7 @@ public class AttributeSample {
 	public void setError(Throwable error) {
 		ex = error;
 	}
-	
+
 	/**
 	 * Obtain MBean attribute handle associated with this sample
 	 * 
@@ -137,7 +143,7 @@ public class AttributeSample {
 	public MBeanAttributeInfo getAttributeInfo() {
 		return ainfo;
 	}
-	
+
 	/**
 	 * Obtain exception (if any) that occurred during sample
 	 * 
@@ -146,7 +152,7 @@ public class AttributeSample {
 	public Throwable getError() {
 		return ex;
 	}
-	
+
 	/**
 	 * Obtain MBean object name associated with this sample
 	 * 
@@ -155,7 +161,7 @@ public class AttributeSample {
 	public ObjectName getObjetName() {
 		return name;
 	}
-	
+
 	/**
 	 * Obtain MBean server instance associated with this instance
 	 * 
@@ -164,7 +170,7 @@ public class AttributeSample {
 	public MBeanServer getMBeanServer() {
 		return server;
 	}
-	
+
 	/**
 	 * Obtain {@code Activity} instance associated with this instance.
 	 * Activity encapsulates all info about current sample attributes, values,
@@ -175,7 +181,7 @@ public class AttributeSample {
 	public Activity getActivity() {
 		return activity;
 	}
-	
+
 	/**
 	 * Obtain {@code PropertySnapshot} instance associated with this instance.
 	 * Snapshot encapsulates all info about current sample key/value pairs.
@@ -185,7 +191,7 @@ public class AttributeSample {
 	public PropertySnapshot getSnapshot() {
 		return snapshot;
 	}
-	
+
 	/**
 	 * Obtain last sampled value. This value can only be non null
 	 * after {@link #sample()} is called.
@@ -195,7 +201,7 @@ public class AttributeSample {
 	public Object get() {
 		return value;
 	}
-	
+
 	/**
 	 * Obtain age in microseconds since last sampled value. {@link #sample()} must 
 	 * be called prior to calling this call, otherwise -1 is returned.
@@ -204,6 +210,6 @@ public class AttributeSample {
 	 * 			see {@link #sample()}
 	 */
 	public long ageUsec() {
-		return timeStamp > 0? (Utils.currentTimeUsec() - timeStamp): -1;
+		return timeStamp > 0 ? (Utils.currentTimeUsec() - timeStamp) : -1;
 	}
 }
