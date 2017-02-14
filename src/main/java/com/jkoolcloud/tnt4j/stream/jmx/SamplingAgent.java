@@ -359,9 +359,10 @@ public class SamplingAgent {
 	}
 
 	/**
-	 * Connects to {@code vmDescr} defined JVM over {@link JMXConnector} an uses {@link MBeanServerConnection} to collect samples.
+	 * Connects to {@code vmDescr} defined JVM over {@link JMXConnector} an uses {@link MBeanServerConnection} to
+	 * collect samples.
 	 * 
-	 * @param vmDescr JVM descriptor: name fragment or pid
+	 * @param vmDescr JVM descriptor: JMX service URI, local JVM name fragment or pid
 	 * @param options '!' separated list of options mbean-filter!sample.ms, where mbean-filter is semicolon separated list of mbean filters
 	 * @throws Exception if any exception occurs while connecting to JVM
 	 */
@@ -370,35 +371,43 @@ public class SamplingAgent {
 			throw new RuntimeException("JVM attach VM descriptor must be not empty!..");
 		}
 
-		List<VirtualMachineDescriptor> runningVMsList = VirtualMachine.list();
+		String connectorAddress;
+		if (vmDescr.startsWith("service:jmx:")) {
+			connectorAddress = vmDescr;
+		} else {
+			List<VirtualMachineDescriptor> runningVMsList = VirtualMachine.list();
 
-		VirtualMachineDescriptor descriptor = null;
-		for (VirtualMachineDescriptor rVM : runningVMsList) {
-			if ((rVM.displayName().contains(vmDescr)
-					&& !rVM.displayName().contains(SamplingAgent.class.getSimpleName()))
-					|| rVM.id().equalsIgnoreCase(vmDescr)) {
-				descriptor = rVM;
-				break;
+			VirtualMachineDescriptor descriptor = null;
+			for (VirtualMachineDescriptor rVM : runningVMsList) {
+				if ((rVM.displayName().contains(vmDescr)
+						&& !rVM.displayName().contains(SamplingAgent.class.getSimpleName()))
+						|| rVM.id().equalsIgnoreCase(vmDescr)) {
+					descriptor = rVM;
+					break;
+				}
+			}
+
+			if (descriptor == null) {
+				System.err.println("SamplingAgent.connect: ----------- Available JVMs -----------");
+				for (VirtualMachineDescriptor vmD : runningVMsList) {
+					System.err.println("SamplingAgent.connect: JVM id=" + vmD.id() + ", name=" + vmD.displayName());
+				}
+				System.err.println("SamplingAgent.connect: ---------------- END ----------------");
+				throw new RuntimeException("Java VM not found using provided descriptor: [" + vmDescr + "]");
+			}
+
+			final VirtualMachine virtualMachine = VirtualMachine.attach(descriptor.id());
+
+			Properties props = virtualMachine.getAgentProperties();
+			connectorAddress = props.getProperty("com.sun.management.jmxremote.localConnectorAddress");
+			if (connectorAddress == null) {
+				throw new RuntimeException("JVM does not support JMX connection...");
 			}
 		}
-
-		if (descriptor == null) {
-			System.err.println("SamplingAgent.connect: ----------- Available JVMs -----------");
-			for (VirtualMachineDescriptor vmD : runningVMsList) {
-				System.err.println("SamplingAgent.connect: JVM id=" + vmD.id() + ", name=" + vmD.displayName());
-			}
-			System.err.println("SamplingAgent.connect: ---------------- END ----------------");
-			throw new RuntimeException("Java VM not found using provided descriptor: [" + vmDescr + "]");
-		}
-
-		final VirtualMachine virtualMachine = VirtualMachine.attach(descriptor.id());
-
-		Properties props = virtualMachine.getAgentProperties();
-		String connectorAddress = props.getProperty("com.sun.management.jmxremote.localConnectorAddress");
-		if (connectorAddress == null) {
-			throw new RuntimeException("JVM does not support JMX connection...");
-		}
+		System.out.println("SamplingAgent.connect: making JMX service URL from address=" + connectorAddress);
 		JMXServiceURL url = new JMXServiceURL(connectorAddress);
+
+		System.out.println("SamplingAgent.connect: connecting JMX service using URL=" + url);
 		JMXConnector connector = JMXConnectorFactory.connect(url);
 
 		String incFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.include.filter", Sampler.JMX_FILTER_ALL);
@@ -430,19 +439,17 @@ public class SamplingAgent {
 							|| notification.getType().contains("lost")) {
 						System.out.println(
 								"SamplingAgent.connect: JMX connection status change: " + notification.getType());
-						makeEnd();
-					}
-				}
-
-				private void makeEnd() {
-					if (platformJmx != null) {
-						synchronized (platformJmx) {
-							platformJmx.notifyAll();
-						}
+						stopConnection();
 					}
 				}
 			};
 			connector.addConnectionNotificationListener(cnl, null, null);
+			Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+				@Override
+				public void run() {
+					stopConnection();
+				}
+			}));
 
 			synchronized (platformJmx) {
 				platformJmx.wait();
@@ -455,6 +462,14 @@ public class SamplingAgent {
 			try {
 				connector.close();
 			} catch (IOException exc) {
+			}
+		}
+	}
+
+	private static void stopConnection() {
+		if (platformJmx != null) {
+			synchronized (platformJmx) {
+				platformJmx.notifyAll();
 			}
 		}
 	}
