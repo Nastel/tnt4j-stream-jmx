@@ -15,41 +15,21 @@
  */
 package com.jkoolcloud.tnt4j.stream.jmx.scheduler;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanAttributeInfo;
-import javax.management.MBeanInfo;
-import javax.management.MBeanServer;
-import javax.management.MBeanServerDelegate;
-import javax.management.MBeanServerNotification;
-import javax.management.MalformedObjectNameException;
-import javax.management.Notification;
-import javax.management.NotificationListener;
-import javax.management.ObjectName;
+import javax.management.*;
 import javax.management.relation.MBeanServerNotificationFilter;
-
-import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeAction;
-import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeCondition;
-import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeSample;
-import com.jkoolcloud.tnt4j.stream.jmx.conditions.NoopAction;
-import com.jkoolcloud.tnt4j.stream.jmx.conditions.SampleHandler;
-import com.jkoolcloud.tnt4j.stream.jmx.core.SampleContext;
-import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
-import com.jkoolcloud.tnt4j.stream.jmx.core.UnsupportedAttributeException;
 
 import com.jkoolcloud.tnt4j.core.Activity;
 import com.jkoolcloud.tnt4j.core.PropertySnapshot;
+import com.jkoolcloud.tnt4j.stream.jmx.conditions.*;
+import com.jkoolcloud.tnt4j.stream.jmx.core.SampleContext;
+import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
+import com.jkoolcloud.tnt4j.stream.jmx.core.UnsupportedAttributeException;
 
 /**
  * <p>
@@ -84,7 +64,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	long lastMetricCount = 0, lastSampleTimeUsec = 0;
 	long noopCount = 0, excCount = 0, errorCount = 0;
 
-	MBeanServer mbeanServer;
+	MBeanServerConnection mbeanServer;
 	SampleContext context;
 	Throwable lastError;
 
@@ -98,13 +78,12 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	/**
 	 * Create new instance of {@code SampleHandlerImpl} with a given MBean server and a set of filters.
 	 *
-	 * @param mserver MBean server instance
+	 * @param mServerConn MBean server connection instance
 	 * @param incFilter MBean include filters semicolon separated
 	 * @param excFilter MBean exclude filters semicolon separated
-	 * 
 	 */
-	public SampleHandlerImpl(MBeanServer mserver, String incFilter, String excFilter) {
-		mbeanServer = mserver;
+	public SampleHandlerImpl(MBeanServerConnection mServerConn, String incFilter, String excFilter) {
+		mbeanServer = mServerConn;
 		mbeanIncFilter = incFilter;
 		mbeanExcFilter = excFilter;
 		context = new SampleContextImpl(this);
@@ -127,9 +106,10 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	/**
 	 * Install MBean add/delete listener
 	 * 
+	 * @throws IOException
 	 * @throws InstanceNotFoundException
 	 */
-	private void listenForChanges() throws InstanceNotFoundException {
+	private void listenForChanges() throws IOException, InstanceNotFoundException {
 		if (MBeanFilter == null) {
 			MBeanFilter = new MBeanServerNotificationFilter();
 			MBeanFilter.enableAllObjectNames();
@@ -221,7 +201,8 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 			PropertySnapshot snapshot = new PropertySnapshot(name.getDomain(), name.getCanonicalName());
 			for (int i = 0; i < attr.length; i++) {
 				MBeanAttributeInfo jinfo = attr[i];
-				AttributeSample sample = AttributeSample.newAttributeSample(activity, snapshot, mbeanServer, name, jinfo);
+				AttributeSample sample = AttributeSample.newAttributeSample(activity, snapshot, mbeanServer, name,
+						jinfo);
 				try {
 					if (doPre(sample)) {
 						sample.sample(); // obtain a sample
@@ -410,7 +391,8 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	}
 
 	/**
-	 * Run {@link com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener#pre(com.jkoolcloud.tnt4j.stream.jmx.core.SampleContext, com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeSample)}
+	 * Run
+	 * {@link com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener#pre(com.jkoolcloud.tnt4j.stream.jmx.core.SampleContext, com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeSample)}
 	 * for all registered listeners.
 	 * 
 	 * @param sample current attribute sample instance
@@ -425,7 +407,8 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	}
 
 	/**
-	 * Run {@link com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener#post(com.jkoolcloud.tnt4j.stream.jmx.core.SampleContext, com.jkoolcloud.tnt4j.core.Activity)}
+	 * Run
+	 * {@link com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener#post(com.jkoolcloud.tnt4j.stream.jmx.core.SampleContext, com.jkoolcloud.tnt4j.core.Activity)}
 	 * for all registered listeners.
 	 * 
 	 * @param sample current attribute sample instance

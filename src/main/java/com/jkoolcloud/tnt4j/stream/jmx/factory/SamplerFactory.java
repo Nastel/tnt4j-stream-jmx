@@ -15,14 +15,14 @@
  */
 package com.jkoolcloud.tnt4j.stream.jmx.factory;
 
-import javax.management.MBeanServer;
+import javax.management.MBeanServerConnection;
 
 import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
 
 /**
- * <p> 
- * This interface defines a way to obtain underlying implementation 
- * of the sampler object that actually samples underlying MBeans.
+ * <p>
+ * This interface defines a way to obtain underlying implementation of the sampler object that actually samples
+ * underlying MBeans.
  * </p>
  * 
  * @version $Revision: 1 $
@@ -30,10 +30,9 @@ import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
  * @see Sampler
  */
 public interface SamplerFactory {
-	
+
 	/**
-	 * Create a default instance with default MBean server instance
-	 * {@code ManagementFactory.getPlatformMBeanServer()}
+	 * Create a default instance with default MBean server instance {@code ManagementFactory.getPlatformMBeanServer()}
 	 * 
 	 * @see Sampler
 	 */
@@ -42,8 +41,8 @@ public interface SamplerFactory {
 	/**
 	 * Create a default instance with a given MBean server instance
 	 * 
-	 * @param mserver MBean server instance
+	 * @param mServerConn MBean server connection instance
 	 * @see Sampler
 	 */
-	Sampler newInstance(MBeanServer mserver);
+	Sampler newInstance(MBeanServerConnection mServerConn);
 }

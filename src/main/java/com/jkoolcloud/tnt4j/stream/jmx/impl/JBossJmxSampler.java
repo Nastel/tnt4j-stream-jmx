@@ -19,11 +19,12 @@ import java.lang.management.ManagementFactory;
 import java.lang.reflect.Method;
 
 import javax.management.MBeanServer;
+import javax.management.MBeanServerConnection;
 
 /**
- * <p> 
- * This class provides scheduled execution and sampling of JMX metrics
- * for a JBoss Application Server {@code MBeanServer} instance.
+ * <p>
+ * This class provides scheduled execution and sampling of JMX metrics for a JBoss Application Server
+ * {@code MBeanServer} instance.
  * </p>
  * 
  * 
@@ -33,19 +34,19 @@ import javax.management.MBeanServer;
  */
 public class JBossJmxSampler extends PlatformJmxSampler {
 	public static final String JBOSS_JMX_ADMIN_CLASS = "org.jboss.mx.util.MBeanServerLocator";
+
 	/**
-	 * Dynamically identify and load JBoss MBean Server
-	 * {@code org.jboss.mx.util.MBeanServerLocator.locate()}.
-	 * Use {@code ManagementFactory.getPlatformMBeanServer()} if none found.
+	 * Dynamically identify and load JBoss MBean Server {@code org.jboss.mx.util.MBeanServerLocator.locate()}. Use
+	 * {@code ManagementFactory.getPlatformMBeanServer()} if none found.
 	 * 
 	 * @return JBoss JMX MBean server instance
 	 */
-	protected static MBeanServer getAdminServer()  {
+	protected static MBeanServer getAdminServer() {
 		try {
 			Class<?> adminClass = Class.forName(JBOSS_JMX_ADMIN_CLASS);
 			Method mserverMethod = adminClass.getMethod("locate", (Class<?>) null);
 			if (mserverMethod != null) {
-				return (MBeanServer) mserverMethod.invoke(null);			
+				return (MBeanServer) mserverMethod.invoke(null);
 			}
 		} catch (Throwable ex) {
 			ex.printStackTrace();
@@ -55,18 +56,17 @@ public class JBossJmxSampler extends PlatformJmxSampler {
 
 	/**
 	 * Create an instance with JBoss MBean Server instance
-	 * 
 	 */
 	protected JBossJmxSampler() {
 		super(getAdminServer());
 	}
-	
+
 	/**
 	 * Create a default instance with a given MBean server instance
 	 * 
-	 * @param mserver MBean server instance
+	 * @param mServerConn MBean server connection instance
 	 */
-	protected JBossJmxSampler(MBeanServer mserver) {
-		super(mserver);
+	protected JBossJmxSampler(MBeanServerConnection mServerConn) {
+		super(mServerConn);
 	}
 }

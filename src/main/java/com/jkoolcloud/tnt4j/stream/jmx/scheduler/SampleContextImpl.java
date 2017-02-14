@@ -15,12 +15,12 @@
  */
 package com.jkoolcloud.tnt4j.stream.jmx.scheduler;
 
-import javax.management.MBeanServer;
+import javax.management.MBeanServerConnection;
 
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleContext;
 
 /**
- * <p> 
+ * <p>
  * This class provides implementation of {@link SampleContext} and used by {@link SampleHandlerImpl}.
  * </p>
  * 
@@ -31,13 +31,13 @@ import com.jkoolcloud.tnt4j.stream.jmx.core.SampleContext;
  */
 public class SampleContextImpl implements SampleContext {
 	SampleHandlerImpl handle;
-	
+
 	protected SampleContextImpl(SampleHandlerImpl lst) {
 		handle = lst;
 	}
-	
+
 	@Override
-	public MBeanServer getMBeanServer() {
+	public MBeanServerConnection getMBeanServer() {
 		return handle.mbeanServer;
 	}
 
@@ -72,23 +72,23 @@ public class SampleContextImpl implements SampleContext {
 	}
 
 	@Override
-    public Throwable getLastError() {
+	public Throwable getLastError() {
 		return handle.lastError;
-    }
+	}
 
 	@Override
-    public long getLastSampleUsec() {
-	    return handle.lastSampleTimeUsec;
-    }
+	public long getLastSampleUsec() {
+		return handle.lastSampleTimeUsec;
+	}
 
 	@Override
-    public SampleContext resetCounters() {
-	    handle.resetCounters();
-	    return this;
-    }
+	public SampleContext resetCounters() {
+		handle.resetCounters();
+		return this;
+	}
 
 	@Override
-    public long getTotalErrorCount() {
+	public long getTotalErrorCount() {
 		return handle.errorCount;
-    }
+	}
 }

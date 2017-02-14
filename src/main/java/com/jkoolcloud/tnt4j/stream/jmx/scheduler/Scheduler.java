@@ -17,16 +17,15 @@ package com.jkoolcloud.tnt4j.stream.jmx.scheduler;
 
 import java.io.IOException;
 
+import com.jkoolcloud.tnt4j.TrackingLogger;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeAction;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeCondition;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.SampleHandler;
 
-import com.jkoolcloud.tnt4j.TrackingLogger;
-
 /**
  * <p>
- * This interface provides a way to implement classes that implement 
- * scheduled sample/heart-beat for a given JMX {@code MBeanServer}.
+ * This interface provides a way to implement classes that implement scheduled sample/heart-beat for a given JMX
+ * {@code MBeanServerConnection}.
  * </p>
  * 
  * @version $Revision: 1 $
@@ -48,55 +47,48 @@ public interface Scheduler extends Runnable {
 
 	/**
 	 * Open current scheduled activity instance.
-	 * @throws IOException 
 	 * 
+	 * @throws IOException
 	 */
 	void open() throws IOException;
 
 	/**
 	 * Close current scheduled activity instance.
-	 * 
 	 */
 	void close();
 
 	/**
-	 * Register a condition/action pair which will be evaluated every sampling
-	 * interval.
+	 * Register a condition/action pair which will be evaluated every sampling interval.
 	 *
-	 * @param cond
-	 *            user defined condition
-	 * @param action
-	 *            user defined action
-	 * 
+	 * @param cond user defined condition
+	 * @param action user defined action
 	 */
 	void register(AttributeCondition cond, AttributeAction action);
 
 	/**
-	 * Obtain sample handler instance which is triggered on every sample.
-	 * Sample handler instance is invoked on every sample and handles
-	 * all metric collection.
+	 * Obtain sample handler instance which is triggered on every sample. Sample handler instance is invoked on every
+	 * sample and handles all metric collection.
 	 *
 	 * @return conditional listener instance
 	 */
 	SampleHandler getSampleHandler();
-	
+
 	/**
 	 * MBean include filter associated with this sampler
 	 * 
 	 * @return include filter list
 	 */
 	String getIncFilter();
-	
+
 	/**
 	 * MBean Exclude filter associated with this sampler
 	 * 
 	 * @return exclude filter list
 	 */
 	String getExcFilter();
-	
+
 	/**
-	 * Obtain {@code TrackingLogger} instance for logging associated with
-	 * this scheduler instance.
+	 * Obtain {@code TrackingLogger} instance for logging associated with this scheduler instance.
 	 * 
 	 * @return tracking logger instance
 	 */

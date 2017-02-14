@@ -18,18 +18,16 @@ package com.jkoolcloud.tnt4j.stream.jmx.core;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import javax.management.MBeanServer;
+import javax.management.MBeanServerConnection;
 
+import com.jkoolcloud.tnt4j.TrackingLogger;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeAction;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeCondition;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.NestedHandler;
 
-import com.jkoolcloud.tnt4j.TrackingLogger;
-
 /**
- * <p> 
- * This interface sampling of MBeans based on a given sampling period and
- * a set of include/exclude filters.
+ * <p>
+ * This interface sampling of MBeans based on a given sampling period and a set of include/exclude filters.
  * </p>
  * 
  * 
@@ -47,7 +45,7 @@ public interface Sampler extends NestedHandler<Sampler, SampleListener>, Runnabl
 	 * @throws IllegalStateException if setSchedule is not called first
 	 */
 	String getName();
-	
+
 	/**
 	 * MBean include filter associated with this sampler
 	 * 
@@ -55,7 +53,7 @@ public interface Sampler extends NestedHandler<Sampler, SampleListener>, Runnabl
 	 * @throws IllegalStateException if setSchedule is not called first
 	 */
 	String getIncFilter();
-	
+
 	/**
 	 * MBean exclude filter associated with this sampler
 	 * 
@@ -63,7 +61,7 @@ public interface Sampler extends NestedHandler<Sampler, SampleListener>, Runnabl
 	 * @throws IllegalStateException if setSchedule is not called first
 	 */
 	String getExcFilter();
-	
+
 	/**
 	 * Sampling period in milliseconds
 	 * 
@@ -72,77 +70,69 @@ public interface Sampler extends NestedHandler<Sampler, SampleListener>, Runnabl
 	 */
 	long getPeriod();
 
-		/**
+	/**
 	 * Obtain MBean server associated with this object
 	 * 
-	 * @return MBean server instance
+	 * @return MBean server connection instance
 	 */
-	MBeanServer getMBeanServer();
-	
+	MBeanServerConnection getMBeanServer();
+
 	/**
-	 * Obtain <code>TrackingLogger</code> instance for logging
+	 * Obtain {@code TrackingLogger} instance for logging
 	 * 
 	 * @return tracking logger instance associated with this sampler
 	 * @throws IllegalStateException if setSchedule is not called first
 	 */
 	TrackingLogger getLogger();
-	
+
 	/**
-	 * Set schedule sample with associated MBean server instance
-	 * and all MBeans.
-	 *  
-	 * @param period sampling time in milliseconds
-	 * @throws IOException 
-	 * @throws IllegalStateException if setSchedule is not called first
+	 * Set schedule sample with associated MBean server instance and all MBeans.
 	 * 
+	 * @param period sampling time in milliseconds
+	 * @throws IOException
+	 * @throws IllegalStateException if setSchedule is not called first
 	 */
 	Sampler setSchedule(long period) throws IOException;
 
 	/**
 	 * Set schedule sample with associated MBean server instance
-	 *  
+	 * 
 	 * @param incFilter semicolon separated filter list
 	 * @param period sampling time in milliseconds
-	 * @throws IOException 
+	 * @throws IOException
 	 * @throws IllegalStateException if setSchedule is not called first
-	 * 
 	 */
-	Sampler setSchedule(String incFilter, long period) throws IOException;	
+	Sampler setSchedule(String incFilter, long period) throws IOException;
 
 	/**
 	 * Set schedule sample with associated MBean server instance
-	 *  
+	 * 
 	 * @param incFilter semicolon separated include filter list
 	 * @param excFilter semicolon separated exclude filter list
 	 * @param period sampling time in milliseconds
-	 * @throws IOException 
+	 * @throws IOException
 	 * @throws IllegalStateException if setSchedule is not called first
-	 * 
 	 */
-	Sampler setSchedule(String incFilter, String excFilter, long period) throws IOException;	
+	Sampler setSchedule(String incFilter, String excFilter, long period) throws IOException;
 
 	/**
 	 * Set schedule sample with associated MBean server instance
-	 *  
+	 * 
 	 * @param incFilter semicolon separated include filter list
 	 * @param excFilter semicolon separated exclude filter list
 	 * @param period sampling time
 	 * @param tunit time units for sampling period
-	 * @throws IOException 
+	 * @throws IOException
 	 * @throws IllegalStateException if setSchedule is not called first
-	 * 
 	 */
-	Sampler setSchedule(String incFilter, String excFilter, long period, TimeUnit tunit) throws IOException ;
-	
-	
+	Sampler setSchedule(String incFilter, String excFilter, long period, TimeUnit tunit) throws IOException;
+
 	/**
-	 * Register a condition/action pair which will
-	 * be evaluated every sampling interval.
+	 * Register a condition/action pair which will be evaluated every sampling interval.
 	 *
 	 * @param cond user defined condition
 	 * @param action user defined action
 	 * @throws IllegalStateException if setSchedule is not called first
-	 *  
 	 */
 	Sampler register(AttributeCondition cond, AttributeAction action);
 
@@ -155,8 +145,8 @@ public interface Sampler extends NestedHandler<Sampler, SampleListener>, Runnabl
 	SampleContext getContext();
 
 	/**
-	 * Cancel/close this object instance and cancel all outstanding
-	 * or scheduled samplers.
+	 * Cancel/close this object instance and cancel all outstanding or scheduled samplers.
+	 * 
 	 * @throws IllegalStateException if setSchedule is not called first
 	 */
 	void cancel();

@@ -15,15 +15,15 @@
  */
 package com.jkoolcloud.tnt4j.stream.jmx.impl;
 
-import javax.management.MBeanServer;
+import javax.management.MBeanServerConnection;
 
 import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
 import com.jkoolcloud.tnt4j.stream.jmx.factory.SamplerFactory;
 
 /**
- * <p> 
- * This class provides a {@link SamplerFactory} implementation
- * with {@link PlatformJmxSampler} as underlying sampler implementation.
+ * <p>
+ * This class provides a {@link SamplerFactory} implementation with {@link PlatformJmxSampler} as underlying sampler
+ * implementation.
  * </p>
  * 
  * @version $Revision: 1 $
@@ -32,14 +32,14 @@ import com.jkoolcloud.tnt4j.stream.jmx.factory.SamplerFactory;
  * @see PlatformJmxSampler
  */
 public class PlatformSamplerFactory implements SamplerFactory {
-	
+
 	@Override
 	public Sampler newInstance() {
 		return new PlatformJmxSampler();
 	}
 
 	@Override
-	public Sampler newInstance(MBeanServer mserver) {
-		return new PlatformJmxSampler(mserver);
+	public Sampler newInstance(MBeanServerConnection mServerConn) {
+		return mServerConn == null ? new PlatformJmxSampler() : new PlatformJmxSampler(mServerConn);
 	}
 }

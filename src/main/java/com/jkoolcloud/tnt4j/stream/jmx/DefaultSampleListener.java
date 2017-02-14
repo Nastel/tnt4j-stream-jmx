@@ -15,6 +15,7 @@
  */
 package com.jkoolcloud.tnt4j.stream.jmx;
 
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Collection;
 import java.util.HashSet;
@@ -26,13 +27,12 @@ import javax.management.ObjectName;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 
+import com.jkoolcloud.tnt4j.core.Activity;
+import com.jkoolcloud.tnt4j.core.PropertySnapshot;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeSample;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleContext;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.UnsupportedAttributeException;
-
-import com.jkoolcloud.tnt4j.core.Activity;
-import com.jkoolcloud.tnt4j.core.PropertySnapshot;
 
 /**
  * <p>
@@ -98,14 +98,14 @@ public class DefaultSampleListener implements SampleListener {
 	@Override
 	public void pre(SampleContext context, Activity activity) {
 		if (trace) {
-			out.println("Pre: " + activity.getName()
-					+ ": sample.count=" + context.getSampleCount()
-					+ ", mbean.count=" + context.getMBeanServer().getMBeanCount()
+			out.println("Pre: " + activity.getName() 
+					+ ": sample.count=" + context.getSampleCount() 
+					+ ", mbean.count=" + getMBeanCount(context) 
 					+ ", sample.mbeans.count=" + context.getMBeanCount()
-					+ ", exclude.attr.set=" + excAttrs.size()
+					+ ", exclude.attr.set=" + excAttrs.size() 
 					+ ", total.noop.count=" + context.getTotalNoopCount()
-					+ ", total.exclude.count=" + context.getExcludeAttrCount()
-					+ ", total.error.count=" + context.getTotalErrorCount()
+					+ ", total.exclude.count=" + context.getExcludeAttrCount() 
+					+ ", total.error.count=" + context.getTotalErrorCount() 
 					+ ", trackind.id=" + activity.getTrackingId() 
 					+ ", mbean.server=" + context.getMBeanServer()
 					);
@@ -127,22 +127,30 @@ public class DefaultSampleListener implements SampleListener {
 	@Override
 	public void post(SampleContext context, Activity activity) {
 		if (trace) {
-			out.println("Post: " + activity.getName()
-				+ ": sample.count=" + context.getSampleCount()
-				+ ", mbean.count=" + context.getMBeanServer().getMBeanCount()
+			out.println("Post: " + activity.getName() 
+				+ ": sample.count=" + context.getSampleCount() 
+				+ ", mbean.count="+ getMBeanCount(context) 
 				+ ", elapsed.usec=" + activity.getElapsedTimeUsec() 
 				+ ", snap.count=" + activity.getSnapshotCount() 
-				+ ", id.count=" + activity.getIdCount()
-				+ ", sample.mbeans.count=" + context.getMBeanCount()
+				+ ", id.count=" + activity.getIdCount() 
+				+ ", sample.mbeans.count=" + context.getMBeanCount() 
 				+ ", sample.metric.count=" + context.getLastMetricCount()
-				+ ", sample.time.usec=" + context.getLastSampleUsec()
+				+ ", sample.time.usec=" + context.getLastSampleUsec() 
 				+ ", exclude.attr.set=" + excAttrs.size()
-				+ ", total.noop.count=" + context.getTotalNoopCount()
-				+ ", total.exclude.count=" + context.getExcludeAttrCount()
+				+ ", total.noop.count=" + context.getTotalNoopCount() 
+				+ ", total.exclude.count=" + context.getExcludeAttrCount() 
 				+ ", total.error.count=" + context.getTotalErrorCount()
 				+ ", trackind.id=" + activity.getTrackingId() 
 				+ ", mbean.server=" + context.getMBeanServer()
 				);
+		}
+	}
+
+	private static String getMBeanCount(SampleContext context) {
+		try {
+			return String.valueOf(context.getMBeanServer().getMBeanCount());
+		} catch (IOException exc) {
+			return exc.getLocalizedMessage();
 		}
 	}
 
