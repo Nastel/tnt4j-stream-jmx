@@ -173,7 +173,7 @@ public class SamplingAgent {
 		if (args.length < 2) {
 			System.out.println("Usage: mbean-filter exclude-filter sample-ms [wait-ms] (e.g \"*:*\" \"\" 10000 60000)");
 			System.out.println("   or: -attach vmName/vmId agentJarPath (e.g -attach activemq [ENV_PATH]/tnt-stream-jmx.jar)");
-			System.out.println("   or: -connect vmName/vmId (e.g -connect activemq");
+			System.out.println("   or: -connect vmName/vmId/JMX_URL (e.g -connect activemq");
 		}
 		if (args[0].equalsIgnoreCase("-connect")) {
 			String vmDescr = args[1];
