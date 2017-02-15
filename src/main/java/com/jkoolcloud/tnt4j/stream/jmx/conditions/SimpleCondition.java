@@ -51,7 +51,7 @@ public class SimpleCondition implements AttributeCondition {
 
 	@Override
 	public String toString() {
-		return getName() + " " + op + " " + value;
+		return name + " " + op + " " + value;
 	}
 
 	@Override

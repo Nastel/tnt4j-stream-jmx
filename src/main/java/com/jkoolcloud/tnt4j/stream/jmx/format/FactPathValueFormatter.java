@@ -24,6 +24,7 @@ import java.util.*;
 import com.jkoolcloud.tnt4j.core.Operation;
 import com.jkoolcloud.tnt4j.core.Property;
 import com.jkoolcloud.tnt4j.core.Snapshot;
+import com.jkoolcloud.tnt4j.utils.Utils;
 
 /**
  * This class provides key/value formatting for tnt4j activities, events and 
@@ -119,7 +120,7 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 	}
 
 	private static String makeObjNamePath(String objCanonName) {
-		if (objCanonName == null || objCanonName.isEmpty()) {
+		if (Utils.isEmpty (objCanonName)) {
 			return objCanonName;
 		}
 
@@ -156,7 +157,7 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 			for (String pKey : levelKeys) {
 				String pp = (String) props.remove(pKey);
 
-				if (pp != null && !pp.isEmpty()) {
+				if (!Utils.isEmpty (pp)) {
 					pathBuilder.append(pathBuilder.length() > 0 ? PATH_DELIM : "").append(pp);
 				}
 			}

@@ -34,6 +34,7 @@ import javax.management.remote.JMXServiceURL;
 import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
 import com.jkoolcloud.tnt4j.stream.jmx.factory.DefaultSamplerFactory;
 import com.jkoolcloud.tnt4j.stream.jmx.factory.SamplerFactory;
+import com.jkoolcloud.tnt4j.utils.Utils;
 import com.sun.tools.attach.VirtualMachine;
 import com.sun.tools.attach.VirtualMachineDescriptor;
 
@@ -95,7 +96,7 @@ public class SamplingAgent {
 		String agentParams = "";
 		String tnt4jProp = System.getProperty("tnt4j.config");
 		String agentLibPath = "";
-		if (!isEmpty(agentArgs)) {
+		if (!Utils.isEmpty(agentArgs)) {
 			String[] args = agentArgs.split("!");
 
 			if (args.length >= 2) {
@@ -104,7 +105,7 @@ public class SamplingAgent {
 
 			for (String arg : args) {
 				if (arg.startsWith("-Dtnt4j.config")) {
-					if (isEmpty(tnt4jProp)) {
+					if (Utils.isEmpty(tnt4jProp)) {
 						String[] prop = arg.split("=");
 						tnt4jProp = prop.length > 1 ? prop[1] : null;
 
@@ -305,7 +306,7 @@ public class SamplingAgent {
 	 * @throws Exception if any exception occurs while attaching to JVM
 	 */
 	public static void attach(String vmDescr, String agentJarPath, String agentOptions) throws Exception {
-		if (isEmpty(vmDescr) || isEmpty(agentJarPath)) {
+		if (Utils.isEmpty(vmDescr) || Utils.isEmpty(agentJarPath)) {
 			throw new RuntimeException("JVM attach VM descriptor and agent Jar path must be not empty!..");
 		}
 
@@ -323,7 +324,7 @@ public class SamplingAgent {
 
 		String tnt4jConf = System.getProperty("tnt4j.config");
 
-		if (!isEmpty(tnt4jConf)) {
+		if (!Utils.isEmpty(tnt4jConf)) {
 			String tnt4jPropPath = new File(tnt4jConf).getAbsolutePath();
 			agentOptions += "!-Dtnt4j.config=" + tnt4jPropPath;
 		}
@@ -333,10 +334,6 @@ public class SamplingAgent {
 
 		virtualMachine.loadAgent(agentPath, agentOptions);
 		virtualMachine.detach();
-	}
-
-	private static boolean isEmpty(String str) {
-		return str == null || str.trim().isEmpty();
 	}
 
 	private static VirtualMachineDescriptor findVM(String vmDescr) {
@@ -373,7 +370,7 @@ public class SamplingAgent {
 	 * @throws Exception if any exception occurs while connecting to JVM
 	 */
 	public static void connect(String vmDescr, String options) throws Exception {
-		if (isEmpty(vmDescr)) {
+		if (Utils.isEmpty(vmDescr)) {
 			throw new RuntimeException("JVM attach VM descriptor must be not empty!..");
 		}
 

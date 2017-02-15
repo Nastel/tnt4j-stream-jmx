@@ -30,6 +30,7 @@ import com.jkoolcloud.tnt4j.stream.jmx.conditions.*;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleContext;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.UnsupportedAttributeException;
+import com.jkoolcloud.tnt4j.utils.Utils;
 
 /**
  * <p>
@@ -143,7 +144,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	private void loadMBeans() {
 		try {
 			tokenizeFilters(mbeanIncFilter, iFilters);
-			if (mbeanExcFilter != null && mbeanExcFilter.trim().length() > 0) {
+			if (!Utils.isEmpty(mbeanExcFilter)) {
 				tokenizeFilters(mbeanExcFilter, eFilters);
 			}
 			listenForChanges();
@@ -151,11 +152,10 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 			// run inclusion
 			for (ObjectName nameFilter : iFilters) {
 				Set<ObjectName> set = mbeanServer.queryNames(nameFilter, nameFilter);
-				if (eFilters.size() > 0) {
+				if (!eFilters.isEmpty()) {
 					excludeFromSet(set, eFilters);
 				}
-				for (Iterator<ObjectName> it = set.iterator(); it.hasNext();) {
-					ObjectName oname = it.next();
+				for (ObjectName oname : set) {
 					mbeans.put(oname, mbeanServer.getMBeanInfo(oname));
 					runRegister(oname);
 				}
@@ -199,8 +199,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 			MBeanAttributeInfo[] attr = info.getAttributes();
 
 			PropertySnapshot snapshot = new PropertySnapshot(name.getDomain(), name.getCanonicalName());
-			for (int i = 0; i < attr.length; i++) {
-				MBeanAttributeInfo jinfo = attr[i];
+			for (MBeanAttributeInfo jinfo : attr) {
 				AttributeSample sample = AttributeSample.newAttributeSample(activity, snapshot, mbeanServer, name,
 						jinfo);
 				try {
@@ -275,7 +274,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 		try {
 			lastError = null; // reset last sample error
 			runPre(activity);
-			if ((!activity.isNoop()) && (mbeans.size() == 0)) {
+			if ((!activity.isNoop()) && (mbeans.isEmpty())) {
 				loadMBeans();
 			} else if (activity.isNoop()) {
 				noopCount++;
