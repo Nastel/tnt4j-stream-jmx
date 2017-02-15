@@ -30,7 +30,7 @@ java runtime containers.
 * Reduce cyber security risk: No need to enable remote JMX, SSL, security, ports, firewalls
 * Integration with monitoring tools for alerting, pro-active monitoring (AutoPilot M6)
 * Integration with cloud analytics tools (https://www.jkoolcloud.com via JESL)
-* Integration with log4j, slf4j, jkoocloud (via TNT4J event sinks)
+* Integration with log4j, slf4j, jkoolcloud (via TNT4J event sinks)
 * Embedded application state dump framework for diagnostics
 * Easily build your own extensions, monitors
 
@@ -38,59 +38,123 @@ java runtime containers.
 For more information on JESL visit: http://nastel.github.io/JESL/
 
 # Using Stream-JMX
-It is simple: (1) run Stream-JMX as a `-javaagent` or (2) embed Stream-JMX code into your application.
+It is simple, do one of the following: 
+ * run Stream-JMX as a `-javaagent` 
+ * attach Stream-JMX as agent to running JVM 
+ * connect Streams-JMX over JMXConnector to locally running JVM or remote JMX service
+ * embed Stream-JMX code into your application
+ 
+**NOTE:** Running Stream-JMX as `-javaagent`, attaching agent to running JVM or connecting over JMXConnector to locally running JVM or 
+remote JMX service over RMI connection can be invoked without changing your application code.
+ 
+## Running Stream-JMX as `-javaagent`
 
-Running Stream-JMX as javaagent:
-```java
-java -javaagent:tnt4j-stream-jmx.jar="*:*!30000" -Dtnt4j.config=tnt4j.properties -classpath "tnt4j-stream-jmx*.jar;lib/*" your.class.name your-args
+### Command line to run
+```cmd
+java -javaagent:tnt4j-stream-jmx.jar="*:*!30000" -Dtnt4j.config=tnt4j.properties -classpath "tnt4j-stream-jmx.jar;lib/*" your.class.name your-args
 ```
-Embed Stream-JMX code into your application:
+The options are `-javaagent:tnt4j-stream-jmx.jar="mbean-filter!sample-time-ms"`, classpath must include tnt4j-stream-jmx jar files as well as locations of log4j and tnt4j configuration files.
+ 
+## Attaching Stream-JMX to running JVM
+
+### Command line to run
+```cmd
+java -Dtnt4j.config=.\config\tnt4j.properties -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.validate.types=false -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -attach activemq tnt4j-stream-jmx-0.4.5.jar *:*!10000
+```
+System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [Stream-JMX configuration ](#stream-jmx-configuration).
+ 
+StreamAgent arguments `-attach activemq tnt4j-stream-jmx-0.4.5.jar *:*!10000` states:
+* `-attach` - defines that StreamsAgent shall be attached to running JVM process
+* `activemq` - is JVM descriptor. In this case it is running JVM name fragment `activemq`. But it also may be JVM process identifier - PID.
+* `tnt4j-stream-jmx-0.4.5.jar` - is agent library name. If it is class path - then only name should be sufficient. In any other case define 
+full or relative path i.e. `..\build\tnt4j-stream-jmx\tnt4j-stream-jmx-0.4.5\lib\tnt4j-stream-jmx-0.4.5.jar`.
+* `*:*!30000` - is JMX sampler options stating to include all MBeans and schedule sampling every 30 seconds. Sampler options are optional - 
+default value is `*:*!10000`.   
+
+**NOTE:** arguments and properties defined running `StreamAgent.main` is forwarded to `StreamsAgent` agent attached to JVM process. 
+
+## Connecting Stream-JMX to local or remote JMX service
+
+### Command line to run
+
+#### To connect to local JVM process
+ 
+```cmd
+java -Dtnt4j.config=.\config\tnt4j.properties -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.validate.types=false -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect activemq *:*!*:dummy!30000
+```
+
+System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [Stream-JMX configuration ](#stream-jmx-configuration).
+ 
+StreamAgent arguments `-connect activemq *:*!*:dummy!30000` states:
+* `-connect` - defines that StreamsAgent shall connect to running JVM process over JMXConnector (RMI) connection.
+* `activemq` - is JVM descriptor. In this case it is running JVM name fragment `activemq`. But it also may be JVM process identifier - PID.
+* `*:*!*:dummy!30000` - is JMX sampler options stating to include all MBeans, exclude all `dummy` MBeans and schedule sampling every 30 
+seconds. Sampler options are optional - default value is `*:*!10000`.  
+
+#### To connect to JMX service over URL
+ 
+```cmd
+java -Dtnt4j.config=.\config\tnt4j.properties -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.validate.types=false -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect service:jmx:<JMX_URL> *:*!!10000
+```
+System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [Stream-JMX configuration ](#stream-jmx-configuration).
+ 
+StreamAgent arguments `-connect service:jmx:<JMX_URL> *:*!!10000` states:
+* `-connect` - defines that StreamsAgent shall connect to running JMX service over JMXConnector (RMI) connection.
+* `service:jmx:<JMX_URL>` - is JMX service URL to use for connection. Full URL may be like 
+`service:jmx:rmi://127.0.0.1/stub/rO0ABXN9AAAAAQAlamF2YXgubWFuYWdlbWVudC5yZW1vdGUucm1pLlJNSVNlcnZlcnhyABdqYXZhLmxhbmcucmVmbGVjdC5Qcm94eeEn2iDMEEPLAgABTAABaHQAJUxqYXZhL2xhbmcvcmVmbGVjdC9JbnZvY2F0aW9uSGFuZGxlcjt4cHNyAC1qYXZhLnJtaS5zZXJ2ZXIuUmVtb3RlT2JqZWN0SW52b2NhdGlvbkhhbmRsZXIAAAAAAAAAAgIAAHhyABxqYXZhLnJtaS5zZXJ2ZXIuUmVtb3RlT2JqZWN002G0kQxhMx4DAAB4cHc2AAtVbmljYXN0UmVmMgAACzE3Mi4xNi42Ljg2AADPWKO5DJD/bZIhG9aBuwAAAVo8DdAkgAEAeA==`.
+* `*:*!!10000` - is JMX sampler options stating to include all MBeans and schedule sampling every 10 seconds. Sampler options are optional -
+default value is `*:*!10000`.  
+
+## Embed Stream-JMX code into your application
+
+### Coding
+
 ```java
-// obtain SamplerFactory instance
-SamplerFactory factory = DefaultSamplerFactory.getInstance();
-// create an instance of the sampler that will sample mbeans
-Sampler sampler = factory.newInstance();
-// schedule collection (ping) for given MBean filter and 30000 ms sampling period
-sampler.setSchedule(Sampler.JMX_FILTER_ALL, 30000).run();
+    // obtain SamplerFactory instance
+    SamplerFactory factory = DefaultSamplerFactory.getInstance();
+    // create an instance of the sampler that will sample mbeans
+    Sampler sampler = factory.newInstance();
+    // schedule collection (ping) for given MBean filter and 30000 ms sampling period
+    sampler.setSchedule(Sampler.JMX_FILTER_ALL, 30000).run();
 ```
 <b>NOTE:</b> `setSchedule(..).run()` sequence must be called to run the schedule. `setSchedule(..)` just sets the
 scheduling parameters, `run()` executes the schedule.
 
 To schedule metric collection for a specific MBean server:
 ```java
-// obtain SamplerFactory instance
-SamplerFactory factory = DefaultSamplerFactory.getInstance();
-// create an instance of the sampler that will sample mbeans
-Sampler sampler = factory.newInstance(ManagementFactory.getPlatformMBeanServer());
-// schedule collection (ping) for given MBean filter and 30000 ms sampling period
-sampler.setSchedule(Sampler.JMX_FILTER_ALL, 30000).run();
+    // obtain SamplerFactory instance
+    SamplerFactory factory = DefaultSamplerFactory.getInstance();
+    // create an instance of the sampler that will sample mbeans
+    Sampler sampler = factory.newInstance(ManagementFactory.getPlatformMBeanServer());
+    // schedule collection (ping) for given MBean filter and 30000 ms sampling period
+    sampler.setSchedule(Sampler.JMX_FILTER_ALL, 30000).run();
 ```
 Stream-JMX supports inclusion and exclusion filters.
 To schedule metric collection for a specific MBean server and exclude certain MBeans:
 (Exclusion filters are applied after inclusion filters)
 ```java
-// obtain SamplerFactory instance
-SamplerFactory factory = DefaultSamplerFactory.getInstance();
-// create an instance of the sampler that will sample mbeans
-Sampler sampler = factory.newInstance(ManagementFactory.getPlatformMBeanServer());
-String excludeMBeanFilter = "mydomain:*";
-// schedule collection (ping) for given MBean filter and 30000 ms sampling period
-sampler.setSchedule(Sampler.JMX_FILTER_ALL, excludeMBeanFilter, 30000).run();
+    // obtain SamplerFactory instance
+    SamplerFactory factory = DefaultSamplerFactory.getInstance();
+    // create an instance of the sampler that will sample mbeans
+    Sampler sampler = factory.newInstance(ManagementFactory.getPlatformMBeanServer());
+    String excludeMBeanFilter = "mydomain:*";
+    // schedule collection (ping) for given MBean filter and 30000 ms sampling period
+    sampler.setSchedule(Sampler.JMX_FILTER_ALL, excludeMBeanFilter, 30000).run();
 ```
 Below is an example of how to sample all registered mbean servers:
 ```java
-// obtain SamplerFactory instance
-SamplerFactory factory = DefaultSamplerFactory.getInstance();
-// find other registered mbean servers
-ArrayList<MBeanServer> mlist = MBeanServerFactory.findMBeanServer(null);
-for (MBeanServer server: mlist) {
-	Sampler jmxp = factory.newInstance(server);
-	jmxp.setSchedule(Sampler.JMX_FILTER_ALL, 30000).run();
-}
+    // obtain SamplerFactory instance
+    SamplerFactory factory = DefaultSamplerFactory.getInstance();
+    // find other registered mbean servers
+    ArrayList<MBeanServer> mlist = MBeanServerFactory.findMBeanServer(null);
+    for (MBeanServer server: mlist) {
+        Sampler jmxp = factory.newInstance(server);
+        jmxp.setSchedule(Sampler.JMX_FILTER_ALL, 30000).run();
+    }
 ```
 Alternatively, Stream-JMX provides a helper class `SamplingAgent` that lets you schedule sampling for all registered `MBeanServer` instances.
 ```java
-SamplingAgent.sample(Sampler.JMX_FILTER_ALL, Sampler.JMX_FILTER_NONE, 60000, TimeUnit.MILLISECONDS);
+    SamplingAgent.sample(Sampler.JMX_FILTER_ALL, Sampler.JMX_FILTER_NONE, 60000, TimeUnit.MILLISECONDS);
 ```
 <b>NOTE:</b> Sampled MBean attributes and associated values are stored in a collection of `Snapshot` objects stored within `Activity` instance. Current `Activity` instance can be obtained via `AttributeSample` passed when calling listeners such as `AttributeCondition`, `SampleListener`. Snapshots can be accessed using `Activity.getSnapshots()` method call.
 
@@ -98,25 +162,198 @@ SamplingAgent.sample(Sampler.JMX_FILTER_ALL, Sampler.JMX_FILTER_NONE, 60000, Tim
 
 For more information on TNT4J and `tnt4j.properties` see (https://github.com/Nastel/TNT4J/wiki/Getting-Started).
 
-## Running Stream-JMX as standalone app
+### Command line to run
 Example below runs `SamplingAgent` helper class as a standalone java application with a given MBean filter `"*:*"`, sampling period in milliseconds (`10000`), and time to run in milliseconds (`60000`):
-```java
+```cmd
 java -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -classpath "tnt4j-stream-jmx*.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent "*:*" "" 10000 60000
 ```
 
-## Running Stream-JMX as -javaagent
-Stream-JMX can be invoked as `-javaagent` without changing your application code:
-```java
-java -javaagent:tnt4j-stream-jmx.jar="*:*!30000" -Dtnt4j.config=tnt4j.properties -classpath "tnt4j-stream-jmx.jar;lib/*" your.class.name your-args
+## Stream-JMX configuration 
+
+### System properties used
+* `tnt4j.config` - defines TNT4J properties file path. Example: `-Dtnt4j.config=".\config\tnt4j.properties"`
+* `com.jkoolcloud.tnt4j.stream.jmx.agent.trace` - defines whether to dump trace data to application console output. 
+Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true`
+* `com.jkoolcloud.tnt4j.stream.jmx.agent.validate.types` - defines if MBean attribute value types validation should be applied. If `true` - 
+only non array primitives, Strings, Numbers and Booleans are allowed to be processed. 
+Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.validate.types=false`
+
+## Stream-JMX event data formatters
+
+* FactNameValueFormatter - This class provides key/value formatting for tnt4j activities, events and snapshots. The output format follows 
+the following format:
 ```
-The options are `-javaagent:tnt4j-stream-jmx.jar="mbean-filter!sample-time-ms"`, classpath must include tnt4j-stream-jmx jar files as well as locations of log4j and tnt4j configuration files.
+"OBJ:name-value-prefix1\name1=value1,name-value-prefix1\name2=value2,....,name-value-prefixN\nameN=valueN"
+```
+Sample output:
+```
+OBJ:Streams\0,
+0\HQDC\samtis\com.jkoolcloud.tnt4j.stream.jmx.impl.PlatformJmxSampler\Activities,
+Self\location=0,
+0,
+Self\level=INFO,
+Self\id.count=0,
+Self\pid=7660,
+Self\tid=63,
+Self\snap.count=34,
+Self\elapsed.usec=9989365,
+JMImplementation:type\MBeanServerDelegate\MBeanServerId=samtis_1486645461070,
+JMImplementation:type\MBeanServerDelegate\SpecificationName=Java Management Extensions,
+JMImplementation:type\MBeanServerDelegate\SpecificationVersion=1.4,
+JMImplementation:type\MBeanServerDelegate\SpecificationVendor=Oracle Corporation,
+JMImplementation:type\MBeanServerDelegate\ImplementationName=JMX,
+JMImplementation:type\MBeanServerDelegate\ImplementationVersion=1.8.0_121-b13,
+JMImplementation:type\MBeanServerDelegate\ImplementationVendor=Oracle Corporation,
+org.apache.activemq:brokerName\localhost!type\Broker\Uptime=1 minute,
+org.apache.activemq:brokerName\localhost!type\Broker\MemoryPercentUsage=0,
+org.apache.activemq:brokerName\localhost!type\Broker\Persistent=true,
+org.apache.activemq:brokerName\localhost!type\Broker\DataDirectory=D:\tmp\apache-activemq-5.14.3\data,
+org.apache.activemq:brokerName\localhost!type\Broker\VMURL=vm://localhost,
+org.apache.activemq:brokerName\localhost!type\Broker\TempLimit=42844577792,
+org.apache.activemq:brokerName\localhost!type\Broker\MemoryLimit=668309914,
+org.apache.activemq:brokerName\localhost!type\Broker\StoreLimit=42846849471,
+org.apache.activemq:brokerName\localhost!type\Broker\MaxMessageSize=1024,
+org.apache.activemq:brokerName\localhost!type\Broker\AverageMessageSize=1024,
+org.apache.activemq:brokerName\localhost!type\Broker\TotalDequeueCount=0,
+org.apache.activemq:brokerName\localhost!type\Broker\TotalConsumerCount=0,
+org.apache.activemq:brokerName\localhost!type\Broker\StatisticsEnabled=true,
+org.apache.activemq:brokerName\localhost!type\Broker\JobSchedulerStoreLimit=0,
+org.apache.activemq:brokerName\localhost!type\Broker\MinMessageSize=1024,
+org.apache.activemq:brokerName\localhost!type\Broker\JobSchedulerStorePercentUsage=0,
+org.apache.activemq:brokerName\localhost!type\Broker\StorePercentUsage=0,
+org.apache.activemq:brokerName\localhost!type\Broker\TempPercentUsage=0,
+org.apache.activemq:brokerName\localhost!type\Broker\CurrentConnectionsCount=0,
+org.apache.activemq:brokerName\localhost!type\Broker\TotalMessageCount=0,
+org.apache.activemq:brokerName\localhost!type\Broker\TotalConnectionsCount=0,
+org.apache.activemq:brokerName\localhost!type\Broker\TotalEnqueueCount=1,
+org.apache.activemq:brokerName\localhost!type\Broker\TotalProducerCount=0,
+org.apache.activemq:brokerName\localhost!type\Broker\TransportConnectors=[openwire=tcp://samtis:61616?maximumConnections=1000&wireFormat.maxFrameSize=104857600,
+ amqp=amqp://samtis:5672?maximumConnections=1000&wireFormat.maxFrameSize=104857600,
+ mqtt=mqtt://samtis:1883?maximumConnections=1000&wireFormat.maxFrameSize=104857600,
+ stomp=stomp://samtis:61613?maximumConnections=1000&wireFormat.maxFrameSize=104857600,
+ ws=ws://samtis:61614?maximumConnections=1000&wireFormat.maxFrameSize=104857600],
+org.apache.activemq:brokerName\localhost!type\Broker\BrokerVersion=5.14.3,
+org.apache.activemq:brokerName\localhost!type\Broker\UptimeMillis=62787,
+org.apache.activemq:brokerName\localhost!type\Broker\BrokerName=localhost,
+org.apache.activemq:brokerName\localhost!type\Broker\Slave=false,
+org.apache.activemq:brokerName\localhost!type\Broker\BrokerId=ID:samtis-52769-1486645462150-0:1,
+SampleContext\noop.count=0,
+SampleContext\sample.count=6,
+SampleContext\total.error.count=6,
+SampleContext\total.exclude.count=204,
+SampleContext\mbean.count=37,
+SampleContext\condition.count=0,
+SampleContext\listener.count=1,
+SampleContext\total.action.count=0,
+SampleContext\total.metric.count=3582,
+SampleContext\last.metric.count=595,
+SampleContext\sample.time.usec=10054,
+SampleContext\listener.exclude.set.count=6,
+SampleContext\listener.trace.mode=false,
+...
+```
+**NOTE:** Entries are not sorted, sequence is same as returned by activity contained snapshots map entries and snapshot properties iterators.  
+
+* FactPathValueFormatter - This class provides key/value formatting for tnt4j activities, events and snapshots. The output format follows 
+the following format:
+```
+"OBJ:object-path1\name1=value1,object-path1\name2=value2,....,object-pathN\nameN=valueN""
+```
+Sample output:
+```
+OBJ:Streams\0,
+0\HQDC\samtis\com.jkoolcloud.tnt4j.stream.jmx.impl.PlatformJmxSampler\Activities,
+Self\location=0,
+0,
+Self\level=INFO,
+Self\id.count=0,
+Self\pid=3136,
+Self\tid=24,
+Self\snap.count=34,
+Self\elapsed.usec=9885208,
+JMImplementation\MBeanServerDelegate\ImplementationName=JMX,
+JMImplementation\MBeanServerDelegate\ImplementationVendor=Oracle Corporation,
+JMImplementation\MBeanServerDelegate\ImplementationVersion=1.8.0_121-b13,
+JMImplementation\MBeanServerDelegate\MBeanServerId=samtis_1486998422874,
+JMImplementation\MBeanServerDelegate\SpecificationName=Java Management Extensions,
+JMImplementation\MBeanServerDelegate\SpecificationVendor=Oracle Corporation,
+JMImplementation\MBeanServerDelegate\SpecificationVersion=1.4,
+SampleContext\condition.count=0,
+SampleContext\last.metric.count=633,
+SampleContext\listener.count=1,
+SampleContext\listener.exclude.set.count=6,
+SampleContext\listener.trace.mode=true,
+SampleContext\mbean.count=37,
+SampleContext\noop.count=0,
+SampleContext\sample.count=2,
+SampleContext\sample.time.usec=72856,
+SampleContext\total.action.count=0,
+SampleContext\total.error.count=6,
+SampleContext\total.exclude.count=66,
+SampleContext\total.metric.count=1272,
+org.apache.activemq\Broker\localhost\AverageMessageSize=1024,
+org.apache.activemq\Broker\localhost\BrokerId=ID:samtis-63754-1486998424125-0:1,
+org.apache.activemq\Broker\localhost\BrokerName=localhost,
+org.apache.activemq\Broker\localhost\BrokerVersion=5.14.3,
+org.apache.activemq\Broker\localhost\CurrentConnectionsCount=0,
+org.apache.activemq\Broker\localhost\DataDirectory=D:\tmp\apache-activemq-5.14.3\data,
+org.apache.activemq\Broker\localhost\DurableTopicSubscribers=[],
+org.apache.activemq\Broker\localhost\DynamicDestinationProducers=[],
+org.apache.activemq\Broker\localhost\InactiveDurableTopicSubscribers=[],
+org.apache.activemq\Broker\localhost\JMSJobScheduler=null,
+org.apache.activemq\Broker\localhost\JobSchedulerStoreLimit=0,
+org.apache.activemq\Broker\localhost\JobSchedulerStorePercentUsage=0,
+org.apache.activemq\Broker\localhost\MaxMessageSize=1024,
+org.apache.activemq\Broker\localhost\MemoryLimit=668309914,
+org.apache.activemq\Broker\localhost\MemoryPercentUsage=0,
+org.apache.activemq\Broker\localhost\MinMessageSize=1024,
+org.apache.activemq\Broker\localhost\Persistent=true,
+org.apache.activemq\Broker\localhost\QueueProducers=[],
+org.apache.activemq\Broker\localhost\QueueSubscribers=[],
+org.apache.activemq\Broker\localhost\Queues=[],
+org.apache.activemq\Broker\localhost\Slave=false,
+org.apache.activemq\Broker\localhost\StatisticsEnabled=true,
+org.apache.activemq\Broker\localhost\StoreLimit=42845775469,
+org.apache.activemq\Broker\localhost\StorePercentUsage=0,
+org.apache.activemq\Broker\localhost\TempLimit=42842071040,
+org.apache.activemq\Broker\localhost\TempPercentUsage=0,
+org.apache.activemq\Broker\localhost\TemporaryQueueProducers=[],
+org.apache.activemq\Broker\localhost\TemporaryQueueSubscribers=[],
+org.apache.activemq\Broker\localhost\TemporaryQueues=[],
+org.apache.activemq\Broker\localhost\TemporaryTopicProducers=[],
+org.apache.activemq\Broker\localhost\TemporaryTopicSubscribers=[],
+org.apache.activemq\Broker\localhost\TemporaryTopics=[],
+org.apache.activemq\Broker\localhost\TopicProducers=[],
+org.apache.activemq\Broker\localhost\TopicSubscribers=[],
+org.apache.activemq\Broker\localhost\Topics=[org.apache.activemq:type=Broker,
+brokerName=localhost,
+destinationType=Topic,
+destinationName=ActiveMQ.Advisory.MasterBroker],
+org.apache.activemq\Broker\localhost\TotalConnectionsCount=0,
+org.apache.activemq\Broker\localhost\TotalConsumerCount=0,
+org.apache.activemq\Broker\localhost\TotalDequeueCount=0,
+org.apache.activemq\Broker\localhost\TotalEnqueueCount=1,
+org.apache.activemq\Broker\localhost\TotalMessageCount=0,
+org.apache.activemq\Broker\localhost\TotalProducerCount=0,
+org.apache.activemq\Broker\localhost\TransportConnectors=[amqp=amqp://samtis:5672?maximumConnections=1000&wireFormat.maxFrameSize=104857600,
+ mqtt=mqtt://samtis:1883?maximumConnections=1000&wireFormat.maxFrameSize=104857600,
+ ws=ws://samtis:61614?maximumConnections=1000&wireFormat.maxFrameSize=104857600,
+ openwire=tcp://samtis:61616?maximumConnections=1000&wireFormat.maxFrameSize=104857600,
+ stomp=stomp://samtis:61613?maximumConnections=1000&wireFormat.maxFrameSize=104857600],
+org.apache.activemq\Broker\localhost\Uptime=13 minutes,
+org.apache.activemq\Broker\localhost\UptimeMillis=822599,
+org.apache.activemq\Broker\localhost\VMURL=vm://localhost,
+...
+```
+**NOTE:** Entries are sorted by key alphanumeric ordering and key representation is more common to be used for i.e. tree model construction 
+to represent JMX structure more like `JConsole` does.  
 
 ## Where do the streams go?
 Stream-JMX streams all collected metrics based on a scheduled interval via TNT4J event streaming framework.
 All streams are written into TNT4J event sinks defined in `tnt4j.properties` file which is defined by `-Dtnt4j.config=tnt4j.properties` property. 
 
 To stream Stream-JMX to jkool cloud (https://www.jkoolcloud.com): (Requires JESL libraries (see https://github.com/Nastel/JESL))
-```
+```properties
 ;Stanza used for Stream-JMX sources
 {
 	source: com.jkoolcloud.tnt4j.stream.jmx
@@ -134,7 +371,7 @@ To stream Stream-JMX to jkool cloud (https://www.jkoolcloud.com): (Requires JESL
 	event.sink.factory.PooledLoggerFactory: com.jkoolcloud.tnt4j.sink.impl.PooledLoggerFactoryImpl
 
 	; Event Sink configuration for streaming to jKool Cloud
-	; event.sink.factory.EventSinkFactory.Filename: jkoocloud.json
+	; event.sink.factory.EventSinkFactory.Filename: jkoolcloud.json
 	event.sink.factory.EventSinkFactory.Url: https://data.jkoolcloud.com
 	event.sink.factory.EventSinkFactory.Token: ACCESS-TOKEN
 	event.formatter: com.jkoolcloud.tnt4j.format.JSONFormatter
@@ -149,7 +386,7 @@ To stream Stream-JMX to jkool cloud (https://www.jkoolcloud.com): (Requires JESL
 ```
 Below is an example of TNT4J stream definition where all Stream-JMX streams are written into a socket event sink
 `com.jkoolcloud.tnt4j.sink.impl.SocketEventSinkFactory`, formatted by `com.jkoolcloud.tnt4j.stream.jmx.format.FactNameValueFormatter` :
-```
+```properties
 ;Stanza used for Stream-JMX sources
 {
 	source: com.jkoolcloud.tnt4j.stream.jmx
@@ -177,12 +414,14 @@ Below is an example of TNT4J stream definition where all Stream-JMX streams are 
 	event.sink.factory.Filter.Level: TRACE
 	
 	event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.FactNameValueFormatter
+    ; If file entries should be formatter as JMS object paths
+    event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.FactPathValueFormatter
 	tracking.selector: com.jkoolcloud.tnt4j.selector.DefaultTrackingSelector
 	tracking.selector.Repository: com.jkoolcloud.tnt4j.repository.FileTokenRepository
 }
 ```
 To stream Stream-JMX into a log file `MyStream.log`:
-```
+```properties
 ;Stanza used for Stream-JMX sources
 {
 	source: com.jkoolcloud.tnt4j.stream.jmx
@@ -206,6 +445,8 @@ To stream Stream-JMX into a log file `MyStream.log`:
 	event.sink.factory.Filter.Level: TRACE
 	
 	event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.FactNameValueFormatter
+    ; If file entries should be formatter as JMS object paths
+	;event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.FactPathValueFormatter
 	tracking.selector: com.jkoolcloud.tnt4j.selector.DefaultTrackingSelector
 	tracking.selector.Repository: com.jkoolcloud.tnt4j.repository.FileTokenRepository
 }
@@ -222,11 +463,11 @@ You can write your own custom event sinks (HTTPS, HTTP, etc) and your own stream
 Stream-JMX is utilizing TNT4J state dump capability to generate application state dumps
 
 (1) Dump on VM shut-down:
-```java
+```cmd
 java -Dtnt4j.dump.on.vm.shutdown=true -Dtnt4j.dump.provider.default=true -Dtnt4j.dump.folder=./ ...
 ```
 (2) Dump on uncaught thread exceptions:
-```java
+```cmd
 java -Dtnt4j.dump.on.exceptionn=true -Dtnt4j.dump.provider.default=true -Dtnt4j.dump.folder=./ ...
 ```
 `-Dtnt4j.dump.folder=./` specifies the destination folder where dump (.dump) files will be created (default is current working directory).
@@ -243,25 +484,25 @@ You may create your own dump providers and handlers (https://github.com/Nastel/T
 ## Overriding default `SamplerFactory`
 `SamplerFactory` instances are used to generate `Sampler` implementation for a specific runtime environment. Stream-JMX supplies sampler and ping factories for standard JVMs, JBoss,
 WebSphere Application Server. You may want to override default `SamplerFactory` with your own or an alternative by specifying:
-```java
+```cmd
 java -Dcom.jkoolcloud.tnt4j.stream.jmx.factory=com.jkoolcloud.tnt4j.stream.jmx.PlatformSamplerFactory ...
 ```
 `SamplerFactory` is used to generate instances of the underlying sampler implementations (objects that provide sampling of underlying mbeans).
 ```java
-// return default or user defined SamplerFactory implementation
-SamplerFactory factory = DefaultSamplerFactory.getInstance();
-...
+    // return default or user defined SamplerFactory implementation
+    SamplerFactory factory = DefaultSamplerFactory.getInstance();
+    ...
 ```
 ## Managing Sample Behavior
 Stream-JMX provides a way to intercept sampling events such as pre, during an post for each sample run and control sample behavior. See `SampleListener` interface for more details. Applications may register more than one listener per `Sampler`. Each listener is called in registration order.
 
 In addition to intercepting sample events, applications may want to control how one ore more attributes are sampled and whether each sample is reported/logged. See example below:
 ```java
-// return default or user defined SamplerFactory implementation
-SamplerFactory factory = DefaultSamplerFactory.getInstance();
-// create an instance of the sampler that will sample mbeans
-Sampler sampler = factory.newInstance();
-sampler.setSchedule(Sampler.JMX_FILTER_ALL, 30000).addListener(new MySampleListener())).run();
+    // return default or user defined SamplerFactory implementation
+    SamplerFactory factory = DefaultSamplerFactory.getInstance();
+    // create an instance of the sampler that will sample mbeans
+    Sampler sampler = factory.newInstance();
+    sampler.setSchedule(Sampler.JMX_FILTER_ALL, 30000).addListener(new MySampleListener())).run();
 ```
 Below is a sample of what `MySampleListener` may look like:
 ```java
@@ -333,14 +574,14 @@ interval. For example, what if you wanted to setup an action when a specific MBe
 
 Stream-JMX `AttributeCondition` and `AttributeAction` interfaces allow you to call your action at runtime every time a condition is evaluated to true. See example below:
 ```java
-// return default or user defined SamplerFactory implementation
-SamplerFactory factory = DefaultSamplerFactory.getInstance();
-// create an instance of the sampler that will sample mbeans
-Sampler sampler = factory.newInstance();
-// create a condition when ThreadCount > 100
-AttributeCondition myCondition = new SimpleCondition("java.lang:type=Threading", "ThreadCount", 100, ">");
-// schedule collection (ping) for given MBean filter and 30000 ms sampling period
-sampler.setSchedule(Sampler.JMX_FILTER_ALL, 30000).register(myCondition, new MyAttributeAction()).run();
+    // return default or user defined SamplerFactory implementation
+    SamplerFactory factory = DefaultSamplerFactory.getInstance();
+    // create an instance of the sampler that will sample mbeans
+    Sampler sampler = factory.newInstance();
+    // create a condition when ThreadCount > 100
+    AttributeCondition myCondition = new SimpleCondition("java.lang:type=Threading", "ThreadCount", 100, ">");
+    // schedule collection (ping) for given MBean filter and 30000 ms sampling period
+    sampler.setSchedule(Sampler.JMX_FILTER_ALL, 30000).register(myCondition, new MyAttributeAction()).run();
 ```
 Below is a sample of what `MyAttributeAction` may look like:
 ```java
@@ -364,7 +605,6 @@ Stream-JMX requires the following:
 * TNT4J (https://github.com/Nastel/TNT4J)
 
 Please use JCenter or Maven and dependencies will be downloaded automatically. 
-
 
 # Related Projects
 * TrackingFilter (http://nastel.github.io/TrackingFilter/)

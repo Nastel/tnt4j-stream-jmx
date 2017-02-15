@@ -165,8 +165,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	 * @return {@code true} if a given value can be serialized to string meaningfully, {@code false} - otherwise
 	 */
 	public static boolean isSerializable(Object value) {
-		return (value != null && !value.getClass().isArray())
-				&& (value.getClass().isPrimitive() || value instanceof char[] || value instanceof String
-						|| value instanceof Number || value instanceof Boolean);
+		return (value != null && !value.getClass().isArray()) 
+			&& (value.getClass().isPrimitive() || value instanceof String || value instanceof Number || value instanceof Boolean);
 	}
 }
