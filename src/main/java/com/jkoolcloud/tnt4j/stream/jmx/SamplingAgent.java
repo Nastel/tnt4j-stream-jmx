@@ -309,26 +309,7 @@ public class SamplingAgent {
 			throw new RuntimeException("JVM attach VM descriptor and agent Jar path must be not empty!..");
 		}
 
-		List<VirtualMachineDescriptor> runningVMsList = VirtualMachine.list();
-
-		VirtualMachineDescriptor descriptor = null;
-		for (VirtualMachineDescriptor rVM : runningVMsList) {
-			if ((rVM.displayName().contains(vmDescr)
-					&& !rVM.displayName().contains(SamplingAgent.class.getSimpleName()))
-					|| rVM.id().equalsIgnoreCase(vmDescr)) {
-				descriptor = rVM;
-				break;
-			}
-		}
-
-		if (descriptor == null) {
-			System.err.println("SamplingAgent.attach: ----------- Available JVMs -----------");
-			for (VirtualMachineDescriptor vmD : runningVMsList) {
-				System.err.println("SamplingAgent.attach: JVM.id=" + vmD.id() + ", name=" + vmD.displayName());
-			}
-			System.err.println("SamplingAgent.attach: ---------------- END ----------------");
-			throw new RuntimeException("Java VM not found using provided descriptor: [" + vmDescr + "]");
-		}
+		VirtualMachineDescriptor descriptor = findVM(vmDescr);
 
 		final VirtualMachine virtualMachine = VirtualMachine.attach(descriptor.id());
 		File pathFile = new File(agentJarPath);
@@ -358,6 +339,31 @@ public class SamplingAgent {
 		return str == null || str.trim().isEmpty();
 	}
 
+	private static VirtualMachineDescriptor findVM(String vmDescr) {
+		List<VirtualMachineDescriptor> runningVMsList = VirtualMachine.list();
+
+		VirtualMachineDescriptor descriptor = null;
+		for (VirtualMachineDescriptor rVM : runningVMsList) {
+			if ((rVM.displayName().contains(vmDescr)
+					&& !rVM.displayName().contains(SamplingAgent.class.getSimpleName()))
+					|| rVM.id().equalsIgnoreCase(vmDescr)) {
+				descriptor = rVM;
+				break;
+			}
+		}
+
+		if (descriptor == null) {
+			System.err.println("SamplingAgent: ----------- Available JVMs -----------");
+			for (VirtualMachineDescriptor vmD : runningVMsList) {
+				System.err.println("SamplingAgent: JVM.id=" + vmD.id() + ", name=" + vmD.displayName());
+			}
+			System.err.println("SamplingAgent: ---------------- END ----------------");
+			throw new RuntimeException("Java VM not found using provided descriptor: [" + vmDescr + "]");
+		}
+
+		return descriptor;
+	}
+
 	/**
 	 * Connects to {@code vmDescr} defined JVM over {@link JMXConnector} an uses {@link MBeanServerConnection} to
 	 * collect samples.
@@ -375,26 +381,7 @@ public class SamplingAgent {
 		if (vmDescr.startsWith("service:jmx:")) {
 			connectorAddress = vmDescr;
 		} else {
-			List<VirtualMachineDescriptor> runningVMsList = VirtualMachine.list();
-
-			VirtualMachineDescriptor descriptor = null;
-			for (VirtualMachineDescriptor rVM : runningVMsList) {
-				if ((rVM.displayName().contains(vmDescr)
-						&& !rVM.displayName().contains(SamplingAgent.class.getSimpleName()))
-						|| rVM.id().equalsIgnoreCase(vmDescr)) {
-					descriptor = rVM;
-					break;
-				}
-			}
-
-			if (descriptor == null) {
-				System.err.println("SamplingAgent.connect: ----------- Available JVMs -----------");
-				for (VirtualMachineDescriptor vmD : runningVMsList) {
-					System.err.println("SamplingAgent.connect: JVM id=" + vmD.id() + ", name=" + vmD.displayName());
-				}
-				System.err.println("SamplingAgent.connect: ---------------- END ----------------");
-				throw new RuntimeException("Java VM not found using provided descriptor: [" + vmDescr + "]");
-			}
+			VirtualMachineDescriptor descriptor = findVM(vmDescr);
 
 			final VirtualMachine virtualMachine = VirtualMachine.attach(descriptor.id());
 
@@ -404,6 +391,7 @@ public class SamplingAgent {
 				throw new RuntimeException("JVM does not support JMX connection...");
 			}
 		}
+
 		System.out.println("SamplingAgent.connect: making JMX service URL from address=" + connectorAddress);
 		JMXServiceURL url = new JMXServiceURL(connectorAddress);
 

@@ -192,10 +192,21 @@ public class DefaultSampleListener implements SampleListener {
 		ex.printStackTrace(out);
 	}
 
+	/**
+	 * Gets attributes type validation flag value.
+	 * 
+	 * @return {@code true} if attributes type validation is applied, {@code false} - otherwise
+	 */
 	public boolean isValidateTypes() {
 		return validateTypes;
 	}
 
+	/**
+	 * Sets attributes type validation flag value.
+	 *
+	 * @param validateTypes
+	 *            flag indicating if attributes type validation shall be applied
+	 */
 	public void setValidateTypes(boolean validateTypes) {
 		this.validateTypes = validateTypes;
 	}
@@ -241,7 +252,7 @@ public class DefaultSampleListener implements SampleListener {
 	}
 
 	/**
-	 * Determine if a given value and its type are supported
+	 * Determine if a given value and its type are supported.
 	 * 
 	 * @param value value to test for support
 	 * @return true if a given value and its type are supported, false otherwise
