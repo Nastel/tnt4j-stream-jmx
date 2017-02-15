@@ -33,6 +33,7 @@ import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeSample;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleContext;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.UnsupportedAttributeException;
+import com.jkoolcloud.tnt4j.stream.jmx.format.FactNameValueFormatter;
 
 /**
  * <p>
@@ -255,11 +256,9 @@ public class DefaultSampleListener implements SampleListener {
 	 * Determine if a given value and its type are supported.
 	 * 
 	 * @param value value to test for support
-	 * @return true if a given value and its type are supported, false otherwise
+	 * @return {@code true} if a given value and its type are supported, {@code false} - otherwise
 	 */
 	protected boolean typeSupported(Object value) {
-		return !validateTypes 
-			|| ((value != null && !value.getClass().isArray()) 
-				&& (value.getClass().isPrimitive() || value instanceof String || value instanceof Number || value instanceof Boolean));
+		return !validateTypes || FactNameValueFormatter.isSerializable(value);
 	}
 }

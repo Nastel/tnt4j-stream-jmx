@@ -17,21 +17,20 @@ package com.jkoolcloud.tnt4j.stream.jmx.format;
 
 import java.util.Collection;
 
-import com.jkoolcloud.tnt4j.stream.jmx.scheduler.SchedulerImpl;
-
 import com.jkoolcloud.tnt4j.core.OpLevel;
 import com.jkoolcloud.tnt4j.core.Operation;
 import com.jkoolcloud.tnt4j.core.Property;
 import com.jkoolcloud.tnt4j.core.Snapshot;
 import com.jkoolcloud.tnt4j.format.DefaultFormatter;
 import com.jkoolcloud.tnt4j.source.Source;
+import com.jkoolcloud.tnt4j.stream.jmx.scheduler.SchedulerImpl;
 import com.jkoolcloud.tnt4j.tracker.TrackingActivity;
 import com.jkoolcloud.tnt4j.tracker.TrackingEvent;
 import com.jkoolcloud.tnt4j.utils.Utils;
 
 /**
- * This class provides key/value formatting for tnt4j activities, events and
- * snapshots. The output format follows the following format:
+ * This class provides key/value formatting for tnt4j activities, events and snapshots. The output format follows the
+ * following format:
  * <p>
  * {@code "OBJ:name-value-prefix,name1=value1,....,nameN=valueN"}.
  * </p>
@@ -136,7 +135,6 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		return nvString.toString();
 	}
 
-
 	protected StringBuilder toString(StringBuilder nvString, Source source) {
 		Source parent = source.getSource();
 		if (parent != null) {
@@ -150,12 +148,25 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		Collection<Property> list = snap.getSnapshot();
 		for (Property p : list) {
 			Object value = p.getValue();
-			if ((value instanceof Number) || (value instanceof Boolean)) {
+			if (isSerializable(value)) {
 				String name = snap.getName().replace("=", "\\").replace(",", "!");
 				nvString.append(name).append("\\").append(p.getKey());
-				nvString.append("=").append(p.getValue()).append(FIELD_SEP);
+				nvString.append("=").append(String.valueOf(value)).append(FIELD_SEP);
 			}
 		}
 		return nvString;
+	}
+
+	/**
+	 * Determine if a given value can be meaningfully serialized to string.
+	 *
+	 * @param value
+	 *            value to test for serialization
+	 * @return {@code true} if a given value can be serialized to string meaningfully, {@code false} - otherwise
+	 */
+	public static boolean isSerializable(Object value) {
+		return (value != null && !value.getClass().isArray())
+				&& (value.getClass().isPrimitive() || value instanceof char[] || value instanceof String
+						|| value instanceof Number || value instanceof Boolean);
 	}
 }
