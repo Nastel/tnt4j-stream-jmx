@@ -1,0 +1,8 @@
+title: Stream-JMX
+description: A Lightweight framework to stream & monitor JMX metrics
+google_analytics: 
+show_downloads: true
+theme: jekyll-theme-cayman
+
+gems:
+  - jekyll-mentions
