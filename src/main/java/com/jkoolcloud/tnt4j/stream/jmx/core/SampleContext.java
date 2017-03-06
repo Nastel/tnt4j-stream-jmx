@@ -15,12 +15,12 @@
  */
 package com.jkoolcloud.tnt4j.stream.jmx.core;
 
-import javax.management.MBeanServer;
+import javax.management.MBeanServerConnection;
 
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.NestedHandler;
 
 /**
- * <p> 
+ * <p>
  * This interface provides a way to obtain sample context.
  * </p>
  * 
@@ -32,11 +32,11 @@ import com.jkoolcloud.tnt4j.stream.jmx.conditions.NestedHandler;
  */
 public interface SampleContext {
 	/**
-	 * Obtain associated MBean server instance.
+	 * Obtain associated MBean server connection instance.
 	 * 
-	 * @return MBean server instance associated with this listener 
+	 * @return MBean server connection instance associated with this listener
 	 */
-	MBeanServer getMBeanServer();
+	MBeanServerConnection getMBeanServer();
 
 	/**
 	 * Reset all counters maintained by this context
@@ -55,57 +55,56 @@ public interface SampleContext {
 	/**
 	 * Obtain number of executed samples
 	 * 
-	 * @return number of executed samples 
+	 * @return number of executed samples
 	 */
 	long getSampleCount();
-	
+
 	/**
-	 * Obtain number of total  metrics sampled for all samples
+	 * Obtain number of total metrics sampled for all samples
 	 * 
-	 * @return number of total  metrics sampled for all samples
+	 * @return number of total metrics sampled for all samples
 	 */
 	long getTotalMetricCount();
-	
+
 	/**
 	 * Obtain number of total skipped/ignored samples
 	 * 
 	 * @return number of total skipped/ignored samples
 	 */
 	long getTotalNoopCount();
-	
+
 	/**
 	 * Obtain number of total failed samples
 	 * 
 	 * @return number of total failed samples
 	 */
 	long getTotalErrorCount();
-	
+
 	/**
 	 * Obtain number of samples metrics during last sample
 	 * 
 	 * @return number of samples metrics during last sample
 	 */
 	long getLastMetricCount();
-	
+
 	/**
 	 * Obtain time in microseconds it took to take a last sample
 	 * 
 	 * @return number of samples metrics during last sample
 	 */
 	long getLastSampleUsec();
-	
+
 	/**
 	 * Obtain number of sampled MBeans
 	 * 
-	 * @return number of sampled MBeans 
+	 * @return number of sampled MBeans
 	 */
 	long getMBeanCount();
-	
+
 	/**
-	 * Obtain number of excluded MBean attributes due
-	 * to some kind of exception during sampling.
+	 * Obtain number of excluded MBean attributes due to some kind of exception during sampling.
 	 * 
 	 * @return number of excluded MBean attributes
 	 */
-	long getExcludeAttrCount();	
+	long getExcludeAttrCount();
 }

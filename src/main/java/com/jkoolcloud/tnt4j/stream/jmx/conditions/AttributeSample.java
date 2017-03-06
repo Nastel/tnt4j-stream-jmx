@@ -16,21 +16,17 @@
 package com.jkoolcloud.tnt4j.stream.jmx.conditions;
 
 import javax.management.AttributeNotFoundException;
-import javax.management.InstanceNotFoundException;
 import javax.management.MBeanAttributeInfo;
-import javax.management.MBeanException;
-import javax.management.MBeanServer;
+import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
-import javax.management.ReflectionException;
 
 import com.jkoolcloud.tnt4j.core.Activity;
 import com.jkoolcloud.tnt4j.core.PropertySnapshot;
 import com.jkoolcloud.tnt4j.utils.Utils;
 
 /**
- * <p> 
- * This class provides a wrapper for sampling a single JMX MBean
- * attribute and maintain sample context.
+ * <p>
+ * This class provides a wrapper for sampling a single JMX MBean attribute and maintain sample context.
  * </p>
  * 
  * @version $Revision: 1 $
@@ -38,7 +34,7 @@ import com.jkoolcloud.tnt4j.utils.Utils;
  */
 public class AttributeSample {
 	Activity activity;
-	MBeanServer server;
+	MBeanServerConnection server;
 	ObjectName name;
 	MBeanAttributeInfo ainfo;
 	long timeStamp = 0;
@@ -46,52 +42,56 @@ public class AttributeSample {
 	Throwable ex;
 	PropertySnapshot snapshot;
 	boolean excludeNext = false;
-	
+
 	/**
 	 * Create an attribute sample
 	 * 
 	 * @param activity associated with current sample
-	 * @param server MBean server instance
+	 * @param serverConn MBean server connection instance
 	 * @param name MBean object name reference
 	 * @param ainfo MBean attribute info
-	 * 
 	 */
-	protected AttributeSample(Activity activity, PropertySnapshot snapshot, MBeanServer server, ObjectName name, MBeanAttributeInfo ainfo) {
+	protected AttributeSample(Activity activity, PropertySnapshot snapshot, MBeanServerConnection serverConn,
+			ObjectName name, MBeanAttributeInfo ainfo) {
 		this.activity = activity;
-		this.server = server;
+		this.server = serverConn;
 		this.name = name;
 		this.ainfo = ainfo;
 		this.snapshot = snapshot;
 	}
-	
+
 	/**
 	 * Create an attribute sample
 	 * 
 	 * @param activity associated with current sample
-	 * @param server MBean server instance
+	 * @param serverConn MBean server connection instance
 	 * @param name MBean object name reference
 	 * @param ainfo MBean attribute info
-	 * 
 	 */
-	public static AttributeSample newAttributeSample(Activity activity, PropertySnapshot snapshot, MBeanServer server, ObjectName name, MBeanAttributeInfo ainfo) {
-		return new AttributeSample(activity, snapshot, server, name, ainfo);
+	public static AttributeSample newAttributeSample(Activity activity, PropertySnapshot snapshot,
+			MBeanServerConnection serverConn, ObjectName name, MBeanAttributeInfo ainfo) {
+		return new AttributeSample(activity, snapshot, serverConn, name, ainfo);
 	}
-	
+
 	/**
-	 * Sample and retrieve the value associated with 
-	 * the MBean attribute.
+	 * Sample and retrieve the value associated with the MBean attribute.
 	 * 
-	 * @return the value associated with the current attribute 
+	 * @return the value associated with the current attribute
 	 */
-	public Object sample() throws AttributeNotFoundException, InstanceNotFoundException, MBeanException, ReflectionException {
-		value = server.getAttribute(name, ainfo.getName());
+	public Object sample() throws Exception {
+		try {
+			value = server.getAttribute(name, ainfo.getName());
+		} catch (UnsupportedOperationException exc) {
+			value = "<unsupported>";
+		} catch (AttributeNotFoundException exc) {
+			value = "<not found>";
+		}
 		timeStamp = Utils.currentTimeUsec();
 		return value;
 	}
-	
+
 	/**
-	 * Returns true if sample failed with error, false otherwise.
-	 * Call {@link #getError()} to obtain {@code Throwable}
+	 * Returns true if sample failed with error, false otherwise. Call {@link #getError()} to obtain {@code Throwable}
 	 * instance when true.
 	 * 
 	 * @return true if sample failed with error, false otherwise
@@ -99,27 +99,27 @@ public class AttributeSample {
 	public boolean isError(Throwable error) {
 		return ex != null;
 	}
-	
+
 	/**
-	 * Has the attribute been marked for exclusion 
+	 * Has the attribute been marked for exclusion
 	 * 
 	 * @return true if attribute to be marked for exclusion, false otherwise
 	 */
 	public boolean excludeNext() {
 		return excludeNext;
 	}
-	
+
 	/**
-	 * Mark attribute to be excluded from sampling 
+	 * Mark attribute to be excluded from sampling
 	 * 
-	 * @param exclude true to exclude, false to include
+	 * @param exclude {@code true} to exclude, {@code false} to include
 	 * @return true if attribute to be marked for exclusion, false otherwise
 	 */
 	public boolean excludeNext(boolean exclude) {
 		excludeNext = exclude;
 		return excludeNext;
 	}
-	
+
 	/**
 	 * Set error associated with this sample
 	 * 
@@ -128,7 +128,7 @@ public class AttributeSample {
 	public void setError(Throwable error) {
 		ex = error;
 	}
-	
+
 	/**
 	 * Obtain MBean attribute handle associated with this sample
 	 * 
@@ -137,7 +137,7 @@ public class AttributeSample {
 	public MBeanAttributeInfo getAttributeInfo() {
 		return ainfo;
 	}
-	
+
 	/**
 	 * Obtain exception (if any) that occurred during sample
 	 * 
@@ -146,7 +146,7 @@ public class AttributeSample {
 	public Throwable getError() {
 		return ex;
 	}
-	
+
 	/**
 	 * Obtain MBean object name associated with this sample
 	 * 
@@ -155,55 +155,54 @@ public class AttributeSample {
 	public ObjectName getObjetName() {
 		return name;
 	}
-	
+
 	/**
-	 * Obtain MBean server instance associated with this instance
+	 * Obtain MBean server connection instance associated with this instance
 	 * 
-	 * @return MBean server instance associated with this instance
+	 * @return MBean server connection instance associated with this instance
 	 */
-	public MBeanServer getMBeanServer() {
+	public MBeanServerConnection getMBeanServer() {
 		return server;
 	}
-	
+
 	/**
-	 * Obtain {@code Activity} instance associated with this instance.
-	 * Activity encapsulates all info about current sample attributes, values,
-	 * timing.
+	 * Obtain {@code Activity} instance associated with this instance. Activity encapsulates all info about current
+	 * sample attributes, values, timing.
 	 * 
 	 * @return {@code Activity} instance associated with this instance
 	 */
 	public Activity getActivity() {
 		return activity;
 	}
-	
+
 	/**
-	 * Obtain {@code PropertySnapshot} instance associated with this instance.
-	 * Snapshot encapsulates all info about current sample key/value pairs.
+	 * Obtain {@code PropertySnapshot} instance associated with this instance. Snapshot encapsulates all info about
+	 * current sample key/value pairs.
 	 * 
 	 * @return {@code PropertySnapshot} instance associated with this instance
 	 */
 	public PropertySnapshot getSnapshot() {
 		return snapshot;
 	}
-	
+
 	/**
-	 * Obtain last sampled value. This value can only be non null
-	 * after {@link #sample()} is called.
+	 * Obtain last sampled value. This value can only be non null after {@link #sample()} is called.
 	 * 
 	 * @return Obtain last sampled value, see {@link #sample()}
 	 */
 	public Object get() {
 		return value;
 	}
-	
+
 	/**
-	 * Obtain age in microseconds since last sampled value. {@link #sample()} must 
-	 * be called prior to calling this call, otherwise -1 is returned.
+	 * Obtain age in microseconds since last sampled value. {@link #sample()} must be called prior to calling this call,
+	 * otherwise -1 is returned.
 	 * 
-	 * @return get in microseconds since last sampled value, -1 if no sample was taken.
-	 * 			see {@link #sample()}
+	 * @return get in microseconds since last sampled value, -1 if no sample was taken. 
+	 *
+	 * @see #sample()
 	 */
 	public long ageUsec() {
-		return timeStamp > 0? (Utils.currentTimeUsec() - timeStamp): -1;
+		return timeStamp > 0 ? (Utils.currentTimeUsec() - timeStamp) : -1;
 	}
 }

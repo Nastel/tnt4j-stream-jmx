@@ -20,11 +20,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import javax.management.MBeanServer;
+import javax.management.MBeanServerConnection;
 
 /**
- * <p> 
- * This class provides scheduled execution and sampling of JMX metrics
- * for a WebSphere Application Server {@code MBeanServer} instance.
+ * <p>
+ * This class provides scheduled execution and sampling of JMX metrics for a WebSphere Application Server
+ * {@code MBeanServer} instance.
  * </p>
  * 
  * 
@@ -34,22 +35,22 @@ import javax.management.MBeanServer;
  */
 public class WASJmxSampler extends PlatformJmxSampler {
 	public static final String WAS_JMX_ADMIN_CLASS = "com.ibm.websphere.management.AdminServiceFactory";
-	
+
 	/**
-	 * Dynamically identify and load WebSphere JMX MBean Server {@code com.ibm.websphere.management.AdminServiceFactory}.
-	 * Throws exception if WAS specific MBeanServer is not found.
+	 * Dynamically identify and load WebSphere JMX MBean Server
+	 * {@code com.ibm.websphere.management.AdminServiceFactory}. Throws exception if WAS specific MBeanServer is not
+	 * found.
 	 * 
 	 * @return WebSphere JMX MBean server instance
-	 * @throws ClassNotFoundException 
-	 * @throws InvocationTargetException 
-	 * @throws IllegalArgumentException 
-	 * @throws IllegalAccessException 
-	 * @throws SecurityException 
-	 * @throws NoSuchMethodException 
+	 * @throws ClassNotFoundException
+	 * @throws InvocationTargetException
+	 * @throws IllegalArgumentException
+	 * @throws IllegalAccessException
+	 * @throws SecurityException
+	 * @throws NoSuchMethodException
 	 */
-	public static MBeanServer getAdminServer() throws ClassNotFoundException, 
-		IllegalAccessException, IllegalArgumentException, InvocationTargetException,
-		NoSuchMethodException, SecurityException {
+	public static MBeanServer getAdminServer() throws ClassNotFoundException, IllegalAccessException,
+			IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
 		Class<?> adminClass = Class.forName(WAS_JMX_ADMIN_CLASS);
 		Method getMbeanFactory = adminClass.getDeclaredMethod("getMBeanFactory", (Class<?>) null);
 		Object mbeanFactory = getMbeanFactory.invoke(null);
@@ -62,8 +63,8 @@ public class WASJmxSampler extends PlatformJmxSampler {
 
 	/**
 	 * Dynamically identify and load WebSphere JMX MBean Server
-	 * {@code com.ibm.websphere.management.AdminServiceFactory}.
-	 * Use {@code ManagementFactory.getPlatformMBeanServer()} if none found.
+	 * {@code com.ibm.websphere.management.AdminServiceFactory}. Use {@code ManagementFactory.getPlatformMBeanServer()}
+	 * if none found.
 	 * 
 	 * @return WebSphere JMX MBean server instance
 	 */
@@ -78,18 +79,17 @@ public class WASJmxSampler extends PlatformJmxSampler {
 
 	/**
 	 * Create an instance with WebSphere MBean Server instance
-	 * 
 	 */
 	protected WASJmxSampler() {
 		super(defaultMBeanServer());
 	}
-	
+
 	/**
 	 * Create a default instance with a given MBean server instance
 	 * 
-	 * @param mserver MBean server instance
+	 * @param mServerConn MBean server connection instance
 	 */
-	protected WASJmxSampler(MBeanServer mserver) {
-		super(mserver);
+	protected WASJmxSampler(MBeanServerConnection mServerConn) {
+		super(mServerConn);
 	}
 }

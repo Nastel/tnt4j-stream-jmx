@@ -1,5 +1,5 @@
 /**
- * <code>Sampler</code> factory interfaces and and implementation.
+ * {@code Sampler} factory interfaces and and implementation.
  * 
  * @author albert
  * @version 1.0

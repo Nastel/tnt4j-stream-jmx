@@ -19,23 +19,21 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.concurrent.TimeUnit;
 
-import javax.management.MBeanServer;
+import javax.management.MBeanServerConnection;
 
+import com.jkoolcloud.tnt4j.TrackingLogger;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeAction;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeCondition;
-import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleContext;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
+import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
 import com.jkoolcloud.tnt4j.stream.jmx.scheduler.Scheduler;
 import com.jkoolcloud.tnt4j.stream.jmx.scheduler.SchedulerImpl;
 
-import com.jkoolcloud.tnt4j.TrackingLogger;
-
 /**
- * <p> 
- * This class provides scheduled execution and sampling of a JMX metrics
- * for a given {@code MBeanServer} instance. By default the class will
- * use {@code ManagementFactory.getPlatformMBeanServer()} instance.
+ * <p>
+ * This class provides scheduled execution and sampling of a JMX metrics for a given {@code MBeanServerConnection}
+ * instance. By default the class will use {@code ManagementFactory.getPlatformMBeanServer()} instance.
  * </p>
  * 
  * 
@@ -45,40 +43,38 @@ import com.jkoolcloud.tnt4j.TrackingLogger;
  * @see Scheduler
  * @see SchedulerImpl
  */
-public class PlatformJmxSampler implements Sampler {	
+public class PlatformJmxSampler implements Sampler {
 	protected Scheduler sampler;
-	protected MBeanServer targetServer;
-	
+	protected MBeanServerConnection targetServer;
+
 	/**
-	 * Create a default instance with default MBean server instance
-	 * {@code ManagementFactory.getPlatformMBeanServer()}
-	 * 
+	 * Create a default instance with default MBean server instance {@code ManagementFactory.getPlatformMBeanServer()}
 	 */
 	protected PlatformJmxSampler() {
 		this(ManagementFactory.getPlatformMBeanServer());
 	}
-	
+
 	/**
-	 * Create a default instance with a given MBean server instance
+	 * Create a default instance with a given MBean server connection instance
 	 * 
-	 * @param mserver MBean server instance
+	 * @param mServerConn MBean server connection instance
 	 */
-	protected PlatformJmxSampler(MBeanServer mserver) {
-		targetServer = mserver;
+	protected PlatformJmxSampler(MBeanServerConnection mServerConn) {
+		targetServer = mServerConn;
 	}
-	
+
 	@Override
-	public MBeanServer getMBeanServer() {
+	public MBeanServerConnection getMBeanServer() {
 		return targetServer;
 	}
-	
+
 	@Override
-    public TrackingLogger getLogger() {
+	public TrackingLogger getLogger() {
 		if (sampler == null) {
 			throw new IllegalStateException("no schedule set: call setSchedule() first");
 		}
-	    return sampler.getLogger();
-    }
+		return sampler.getLogger();
+	}
 
 	@Override
 	public Sampler setSchedule(long period) throws IOException {
@@ -86,23 +82,24 @@ public class PlatformJmxSampler implements Sampler {
 	}
 
 	@Override
-    public Sampler setSchedule(String incFilter, long period) throws IOException {
-	    return setSchedule(incFilter, null, period);
-    }
+	public Sampler setSchedule(String incFilter, long period) throws IOException {
+		return setSchedule(incFilter, null, period);
+	}
 
 	@Override
 	public Sampler setSchedule(String incfilter, String excFilter, long period) throws IOException {
 		return setSchedule(incfilter, excFilter, period, TimeUnit.MILLISECONDS);
-	}	
+	}
 
 	@Override
-	public synchronized Sampler setSchedule(String incfilter, String excFilter, long period, TimeUnit tunit) throws IOException {
+	public synchronized Sampler setSchedule(String incfilter, String excFilter, long period, TimeUnit tunit)
+			throws IOException {
 		if (sampler == null) {
 			sampler = newScheduler(getMBeanServer(), incfilter, excFilter, period, tunit);
 			sampler.open();
 			return this;
 		} else {
-			throw new IllegalStateException("setSchedule() already called");			
+			throw new IllegalStateException("setSchedule() already called");
 		}
 	}
 
@@ -115,21 +112,21 @@ public class PlatformJmxSampler implements Sampler {
 			sampler = null;
 		}
 	}
-		
+
 	/**
-	 * Create new instance of {@link Scheduler}
-	 * Override this call to return your instance of {@link Scheduler}.
+	 * Create new instance of {@link Scheduler}. Override this call to return your instance of {@link Scheduler}.
 	 *
-	 * @param mserver MBean server instance
+	 * @param mServerConn MBean server connection instance
 	 * @param incfilter MBean include filters semicolon separated
 	 * @param excfilter MBean exclude filters semicolon separated
 	 * @param period time period for sampling
 	 * @param tunit time units for period
-	 *  
+	 * 
 	 * @return new {@link Scheduler} instance
 	 */
-	protected Scheduler newScheduler(MBeanServer mserver, String incfilter, String excfilter, long period, TimeUnit tunit) {
-		return new SchedulerImpl(this.getClass().getName(), mserver, incfilter, excfilter, period, tunit);
+	protected Scheduler newScheduler(MBeanServerConnection mServerConn, String incfilter, String excfilter, long period,
+			TimeUnit tunit) {
+		return new SchedulerImpl(this.getClass().getName(), mServerConn, incfilter, excfilter, period, tunit);
 	}
 
 	@Override
@@ -176,34 +173,34 @@ public class PlatformJmxSampler implements Sampler {
 	}
 
 	@Override
-    public String getName() {
+	public String getName() {
 		if (sampler == null) {
 			throw new IllegalStateException("no schedule set: call setSchedule() first");
 		}
-	    return sampler.getName();
-    }
+		return sampler.getName();
+	}
 
 	@Override
-    public String getIncFilter() {
+	public String getIncFilter() {
 		if (sampler == null) {
 			throw new IllegalStateException("no schedule set: call setSchedule() first");
 		}
-	    return sampler.getIncFilter();
-    }
+		return sampler.getIncFilter();
+	}
 
 	@Override
-    public String getExcFilter() {
+	public String getExcFilter() {
 		if (sampler == null) {
 			throw new IllegalStateException("no schedule set: call setSchedule() first");
 		}
-	    return sampler.getExcFilter();
-    }
+		return sampler.getExcFilter();
+	}
 
 	@Override
-    public long getPeriod() {
+	public long getPeriod() {
 		if (sampler == null) {
 			throw new IllegalStateException("no schedule set: call setSchedule() first");
 		}
-	    return sampler.getPeriod();
-    }
+		return sampler.getPeriod();
+	}
 }

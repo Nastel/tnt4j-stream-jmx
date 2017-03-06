@@ -18,7 +18,7 @@ package com.jkoolcloud.tnt4j.stream.jmx.factory;
 import com.jkoolcloud.tnt4j.stream.jmx.impl.PlatformSamplerFactory;
 
 /**
- * <p> 
+ * <p>
  * This class provides a generic way to get a default {@link SamplerFactory}
  * instance.
  * </p>
@@ -28,22 +28,22 @@ import com.jkoolcloud.tnt4j.stream.jmx.impl.PlatformSamplerFactory;
  * @see SamplerFactory
  */
 public class DefaultSamplerFactory {
-	public static final String DEFAULT_PING_FACTORY = "org.tnt4j.stream.jmx.impl.PlatformSamplerFactory";
+	public static final String DEFAULT_PING_FACTORY = "com.jkoolcloud.tnt4j.stream.jmx.impl.PlatformSamplerFactory";
 	private static SamplerFactory defaultFactory;
-	
+
 	static {
-		String factoryClassName = System.getProperty("org.tnt4j.stream.jmx.sampler.factory", DEFAULT_PING_FACTORY);
+		String factoryClassName = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.sampler.factory", DEFAULT_PING_FACTORY);
 		try {
 			Class<?> factoryClass = Class.forName(factoryClassName);
 			defaultFactory = (SamplerFactory) factoryClass.newInstance();
 		} catch (Throwable ex) {
-			defaultFactory = new PlatformSamplerFactory();			
+			defaultFactory = new PlatformSamplerFactory();
 			ex.printStackTrace();
 		}
 	}
-	
+
 	private DefaultSamplerFactory() {}
-	
+
 	/**
 	 * Obtain a default instance of {@link SamplerFactory}
 	 *
