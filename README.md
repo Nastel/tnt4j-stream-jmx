@@ -602,6 +602,25 @@ public class MyAttributeAction implements AttributeAction {
 # Project Dependencies
 Stream-JMX requires the following:
 * JDK 1.6+
+    * JDK instrumentation library `tools.jar` is referenced:
+        * from Maven POM script by
+          ```xml
+          <dependency>
+              <groupId>com.sun</groupId>
+              <artifactId>tools</artifactId>
+              <version>1.7.0</version>
+              <scope>system</scope>
+              <systemPath>${java.home}/../lib/tools.jar</systemPath>
+          </dependency>
+          ```
+        * from system executables `bin/stream-jmx.bat` or `bin/stream-jmx.sh` by environment variable `TOOLS_PATH`
+          ```cmd
+          set TOOLS_PATH="%JAVA_HOME%\lib\tools.jar"
+          ```
+          ```bash
+          TOOLS_PATH="$JAVA_HOME/lib/tools.jar"
+          ```          
+     **NOTE:** you may need to change paths if these do not match your enviroment.     
 * TNT4J (https://github.com/Nastel/TNT4J)
 
 Please use JCenter or Maven and dependencies will be downloaded automatically. 
