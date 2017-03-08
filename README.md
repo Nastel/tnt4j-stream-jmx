@@ -59,17 +59,18 @@ The options are `-javaagent:tnt4j-stream-jmx.jar="mbean-filter!sample-time-ms"`,
 
 ### Command line to run
 ```cmd
-java -Dtnt4j.config=.\config\tnt4j.properties -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.validate.types=false -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -attach activemq tnt4j-stream-jmx-0.4.5.jar *:*!10000
+java -Dtnt4j.config=.\config\tnt4j.properties -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.validate.types=false -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -attach -vm:activemq -ap:tnt4j-stream-jmx-0.4.5.jar -ao:*:*!10000
 ```
 System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [Stream-JMX configuration ](#stream-jmx-configuration).
  
-StreamAgent arguments `-attach activemq tnt4j-stream-jmx-0.4.5.jar *:*!10000` states:
+StreamAgent arguments `-attach -vm:activemq -ap:tnt4j-stream-jmx-0.4.5.jar -ao:*:*!10000` states:
 * `-attach` - defines that StreamsAgent shall be attached to running JVM process
-* `activemq` - is JVM descriptor. In this case it is running JVM name fragment `activemq`. But it also may be JVM process identifier - PID.
-* `tnt4j-stream-jmx-0.4.5.jar` - is agent library name. If it is class path - then only name should be sufficient. In any other case define 
-full or relative path i.e. `..\build\tnt4j-stream-jmx\tnt4j-stream-jmx-0.4.5\lib\tnt4j-stream-jmx-0.4.5.jar`.
-* `*:*!30000` - is JMX sampler options stating to include all MBeans and schedule sampling every 30 seconds. Sampler options are optional - 
-default value is `*:*!10000`.   
+* `-vm:activemq` - is JVM descriptor. In this case it is running JVM name fragment `activemq`. But it also may be JVM process identifier - 
+PID. Mandatory argument.
+* `-ap:tnt4j-stream-jmx-0.4.5.jar` - is agent library name. If it is class path - then only name should be sufficient. In any other case 
+define full or relative path i.e. `..\build\tnt4j-stream-jmx\tnt4j-stream-jmx-0.4.5\lib\tnt4j-stream-jmx-0.4.5.jar`. Mandatory argument.
+* `-ao:*:*!10000` - is JMX sampler options stating to include all MBeans and schedule sampling every 30 seconds. Sampler options are 
+optional - default value is `*:*!30000`.   
 
 **NOTE:** arguments and properties defined running `StreamAgent.main` is forwarded to `StreamsAgent` agent attached to JVM process. 
 
@@ -80,30 +81,31 @@ default value is `*:*!10000`.
 #### To connect to local JVM process
  
 ```cmd
-java -Dtnt4j.config=.\config\tnt4j.properties -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.validate.types=false -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect activemq *:*!*:dummy!30000
+java -Dtnt4j.config=.\config\tnt4j.properties -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.validate.types=false -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -vm:activemq -ao:*:*!*:dummy!10000
 ```
 
 System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [Stream-JMX configuration ](#stream-jmx-configuration).
  
-StreamAgent arguments `-connect activemq *:*!*:dummy!30000` states:
+StreamAgent arguments `-connect -vm:activemq -ao:*:*!*:dummy!10000` states:
 * `-connect` - defines that StreamsAgent shall connect to running JVM process over JMXConnector (RMI) connection.
-* `activemq` - is JVM descriptor. In this case it is running JVM name fragment `activemq`. But it also may be JVM process identifier - PID.
-* `*:*!*:dummy!30000` - is JMX sampler options stating to include all MBeans, exclude all `dummy` MBeans and schedule sampling every 30 
-seconds. Sampler options are optional - default value is `*:*!10000`.  
+* `-vm:activemq` - is JVM descriptor. In this case it is running JVM name fragment `activemq`. But it also may be JVM process identifier - 
+PID. Mandatory argument.
+* `-ao:*:*!*:dummy!10000` - is JMX sampler options stating to include all MBeans, exclude all `dummy` MBeans and schedule sampling every 30 
+seconds. Sampler options are optional - default value is `*:*!30000`.  
 
 #### To connect to JMX service over URL
  
 ```cmd
-java -Dtnt4j.config=.\config\tnt4j.properties -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.validate.types=false -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect service:jmx:<JMX_URL> *:*!!10000
+java -Dtnt4j.config=.\config\tnt4j.properties -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.validate.types=false -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -vm:service:jmx:<JMX_URL> -ao:*:*!!10000
 ```
 System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [Stream-JMX configuration ](#stream-jmx-configuration).
  
-StreamAgent arguments `-connect service:jmx:<JMX_URL> *:*!!10000` states:
+StreamAgent arguments `-connect -vm:service:jmx:<JMX_URL> -ao:*:*!!10000` states:
 * `-connect` - defines that StreamsAgent shall connect to running JMX service over JMXConnector (RMI) connection.
-* `service:jmx:<JMX_URL>` - is JMX service URL to use for connection. Full URL may be like 
+* `-vm:service:jmx:<JMX_URL>` - is JMX service URL to use for connection. Mandatory argument. Full URL may be like 
 `service:jmx:rmi://127.0.0.1/stub/rO0ABXN9AAAAAQAlamF2YXgubWFuYWdlbWVudC5yZW1vdGUucm1pLlJNSVNlcnZlcnhyABdqYXZhLmxhbmcucmVmbGVjdC5Qcm94eeEn2iDMEEPLAgABTAABaHQAJUxqYXZhL2xhbmcvcmVmbGVjdC9JbnZvY2F0aW9uSGFuZGxlcjt4cHNyAC1qYXZhLnJtaS5zZXJ2ZXIuUmVtb3RlT2JqZWN0SW52b2NhdGlvbkhhbmRsZXIAAAAAAAAAAgIAAHhyABxqYXZhLnJtaS5zZXJ2ZXIuUmVtb3RlT2JqZWN002G0kQxhMx4DAAB4cHc2AAtVbmljYXN0UmVmMgAACzE3Mi4xNi42Ljg2AADPWKO5DJD/bZIhG9aBuwAAAVo8DdAkgAEAeA==`.
-* `*:*!!10000` - is JMX sampler options stating to include all MBeans and schedule sampling every 10 seconds. Sampler options are optional -
-default value is `*:*!10000`.  
+* `-ao:*:*!!10000` - is JMX sampler options stating to include all MBeans and schedule sampling every 10 seconds. Sampler options are 
+optional - default value is `*:*!30000`.  
 
 ## Embed Stream-JMX code into your application
 
