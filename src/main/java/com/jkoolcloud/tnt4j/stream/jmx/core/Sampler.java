@@ -37,6 +37,7 @@ import com.jkoolcloud.tnt4j.stream.jmx.conditions.NestedHandler;
 public interface Sampler extends NestedHandler<Sampler, SampleListener>, Runnable {
 	public static final String JMX_FILTER_ALL = "*:*";
 	public static final String JMX_FILTER_NONE = "";
+	public static final int JMX_SAMPLE_PERIOD = 30000;
 
 	/**
 	 * Name associated with this Sampler

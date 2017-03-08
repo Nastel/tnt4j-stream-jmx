@@ -31,12 +31,12 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
 import com.jkoolcloud.tnt4j.stream.jmx.factory.DefaultSamplerFactory;
 import com.jkoolcloud.tnt4j.stream.jmx.factory.SamplerFactory;
 import com.jkoolcloud.tnt4j.utils.Utils;
-import com.sun.tools.attach.VirtualMachine;
-import com.sun.tools.attach.VirtualMachineDescriptor;
 
 /**
  * <p>
@@ -55,6 +55,26 @@ public class SamplingAgent {
 	protected static boolean TRACE = Boolean.getBoolean("com.jkoolcloud.tnt4j.stream.jmx.agent.trace");
 	protected static boolean VALIDATE_TYPES = Boolean.getBoolean("com.jkoolcloud.tnt4j.stream.jmx.agent.validate.types");
 
+	private static final String PARAM_VM_DESCRIPTOR = "-vm:";
+	private static final String PARAM_AGENT_LIB_PATH = "-ap:";
+	private static final String PARAM_AGENT_OPTIONS = "-ao:";
+
+	private static final String AGENT_MODE_AGENT = "-agent";
+	private static final String AGENT_MODE_ATTACH = "-attach";
+	private static final String AGENT_MODE_CONNECT = "-connect";
+
+	private static final String AGENT_ARG_MODE = "agent.mode";
+	private static final String AGENT_ARG_VM = "vm.descriptor";
+	private static final String AGENT_ARG_LIB_PATH = "agent.lib.path";
+	private static final String AGENT_ARG_OPTIONS = "agent.options";
+	private static final String AGENT_ARG_I_FILTER = "beans.include.filter";
+	private static final String AGENT_ARG_E_FILTER = "beans.exclude.filter";
+	private static final String AGENT_ARG_S_TIME = "agent.sample.time";
+	private static final String AGENT_ARG_W_TIME = "agent.wait.time";
+
+	private static final String DEFAULT_AGENT_OPTIONS = Sampler.JMX_FILTER_ALL + "!" + Sampler.JMX_FILTER_NONE + "!"
+			+ Sampler.JMX_SAMPLE_PERIOD;
+
 	/**
 	 * Entry point to be loaded as {@code -javaagent:jarpath="mbean-filter!sample.ms"} command line.
 	 * Example:  {@code -javaagent:tnt4j-sample-jmx.jar="*:*!30000"}
@@ -65,7 +85,7 @@ public class SamplingAgent {
 	public static void premain(String options, Instrumentation inst) throws IOException {
 		String incFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.include.filter", Sampler.JMX_FILTER_ALL);
 		String excFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.exclude.filter", Sampler.JMX_FILTER_NONE);
-		int period = Integer.getInteger("com.jkoolcloud.tnt4j.stream.jmx.period", 30000);
+		int period = Integer.getInteger("com.jkoolcloud.tnt4j.stream.jmx.period", Sampler.JMX_SAMPLE_PERIOD);
 		if (options != null) {
 			String[] args = options.split("!");
 			if (args.length >= 2) {
@@ -171,42 +191,143 @@ public class SamplingAgent {
 	 *            argument list: mbean-filter sample_time_ms
 	 */
 	public static void main(String[] args) throws Exception {
-		if (args.length < 2) {
-			System.out.println("Usage: mbean-filter exclude-filter sample-ms [wait-ms] (e.g \"*:*\" \"\" 10000 60000)");
-			System.out.println("   or: -attach vmName/vmId agentJarPath (e.g -attach activemq [ENV_PATH]/tnt-stream-jmx.jar)");
-			System.out.println("   or: -connect vmName/vmId/JMX_URL (e.g -connect activemq");
-		}
-		if (args[0].equalsIgnoreCase("-connect")) {
-			String vmDescr = args[1];
-			String agentOptions = args.length > 2 ? args[2] : "*:*!10000";
+		Properties props = new Properties();
+		boolean argsValid = parseArgs(props, args);
 
-			connect(vmDescr, agentOptions);
-		} else if (args[0].equalsIgnoreCase("-attach")) {
-			String vmDescr = args[1];
-			String jarPath = args[2];
-			String agentOptions = args.length > 3 ? args[3] : "*:*!10000";
+		if (argsValid) {
+			String am = props.getProperty(AGENT_ARG_MODE);
+			if (AGENT_MODE_CONNECT.equalsIgnoreCase(am)) {
+				String vmDescr = props.getProperty(AGENT_ARG_VM);
+				String agentOptions = props.getProperty(AGENT_ARG_OPTIONS, DEFAULT_AGENT_OPTIONS);
 
-			attach(vmDescr, jarPath, agentOptions);
-		} else {
-			try {
-				long sample_time = Integer.parseInt(args[2]);
-				long wait_time = args.length > 3 ? Integer.parseInt(args[3]) : 0;
-				sample(args[0], args[1], sample_time, TimeUnit.MILLISECONDS);
-				System.out.println("SamplingAgent.main: inlcude.filter=" + args[0] 
-						+ ", exclude.filter=" + args[1]
-						+ ", sample.ms=" + sample_time 
-						+ ", wait.ms=" + wait_time 
-						+ ", trace=" + TRACE
-						+ ", validate.types=" + VALIDATE_TYPES 
-						+ ", tnt4j.config=" + System.getProperty("tnt4j.config")
-						+ ", jmx.sample.list=" + STREAM_AGENTS);
-				synchronized (platformJmx) {
-					platformJmx.wait(wait_time);
+				connect(vmDescr, agentOptions);
+			} else if (AGENT_MODE_ATTACH.equalsIgnoreCase(am)) {
+				String vmDescr = props.getProperty(AGENT_ARG_VM);
+				String jarPath = props.getProperty(AGENT_ARG_LIB_PATH);
+				String agentOptions = props.getProperty(AGENT_ARG_OPTIONS, DEFAULT_AGENT_OPTIONS);
+
+				attach(vmDescr, jarPath, agentOptions);
+			} else {
+				try {
+					String inclF = props.getProperty(AGENT_ARG_I_FILTER, Sampler.JMX_FILTER_ALL);
+					String exclF = props.getProperty(AGENT_ARG_E_FILTER, Sampler.JMX_FILTER_NONE);
+					long sample_time = Integer
+							.parseInt(props.getProperty(AGENT_ARG_S_TIME, String.valueOf(Sampler.JMX_SAMPLE_PERIOD)));
+					long wait_time = Integer.parseInt(props.getProperty(AGENT_ARG_W_TIME, "0"));
+					sample(inclF, exclF, sample_time, TimeUnit.MILLISECONDS);
+					System.out.println("SamplingAgent.main: inlcude.filter=" + inclF 
+							+ ", exclude.filter=" + exclF
+							+ ", sample.ms=" + sample_time 
+							+ ", wait.ms=" + wait_time 
+							+ ", trace=" + TRACE
+							+ ", validate.types=" + VALIDATE_TYPES 
+							+ ", tnt4j.config=" + System.getProperty("tnt4j.config") 
+							+ ", jmx.sample.list=" + STREAM_AGENTS);
+					synchronized (platformJmx) {
+						platformJmx.wait(wait_time);
+					}
+				} catch (Throwable ex) {
+					ex.printStackTrace();
 				}
-			} catch (Throwable ex) {
-				ex.printStackTrace();
+			}
+		} else {
+			System.out.println("Usage: mbean-filter exclude-filter sample-ms [wait-ms] (e.g \"*:*\" \"\" 10000 60000)");
+			System.out.println("   or: -attach -vm:vmName/vmId -ap:agentJarPath -ao:agentOptions (e.g -attach -vm:activemq -ap:[ENV_PATH]/tnt-stream-jmx.jar -ao:*:*!!10000)");
+			System.out.println("   or: -connect -vm:vmName/vmId/JMX_URL -ao:agentOptions (e.g -connect -vm:activemq -ao:*:*!!10000");
+			System.out.println();
+			System.out.println("Parameters definition:");
+			System.out.println("   -ao: - agent options string using '!' symbol as delimiter. Options format: mbean-filter!exclude-filter!sample-ms");
+			System.out.println("       mbean-filter - MBean include name filter defined using object name pattern: domainName:keysSet");
+			System.out.println("       exclude-filter - MBean exclude name filter defined using object name pattern: domainName:keysSet");
+			System.out.println("       sample-ms - MBeans sampling rate in milliseconds");
+
+			System.exit(1);
+		}
+	}
+
+	private static boolean parseArgs(Properties props, String... args) {
+		boolean ac = AGENT_MODE_ATTACH.equalsIgnoreCase(args[0]) || AGENT_MODE_CONNECT.equalsIgnoreCase(args[0]);
+
+		if (ac) {
+			props.setProperty(AGENT_ARG_MODE, args[0]);
+
+			for (int ai = 1; ai < args.length; ai++) {
+				String arg = args[ai];
+				if (StringUtils.isEmpty(arg)) {
+					continue;
+				}
+
+				if (arg.startsWith(PARAM_VM_DESCRIPTOR)) {
+					if (StringUtils.isNotEmpty(props.getProperty(AGENT_ARG_VM))) {
+						System.out.println("JVM descriptor aready defined. Can not use argument [" + PARAM_VM_DESCRIPTOR
+								+ "] multiple times.");
+						return false;
+					}
+
+					String pValue = arg.substring(PARAM_VM_DESCRIPTOR.length());
+					if (StringUtils.isEmpty(pValue)) {
+						System.out.println("Missing argument '" + PARAM_VM_DESCRIPTOR + "' value");
+						return false;
+					}
+
+					props.setProperty(AGENT_ARG_VM, pValue);
+				} else if (arg.startsWith(PARAM_AGENT_LIB_PATH)) {
+					if (StringUtils.isNotEmpty(props.getProperty(AGENT_ARG_LIB_PATH))) {
+						System.out.println("Agent library path aready defined. Can not use argument ["
+								+ PARAM_AGENT_LIB_PATH + "] multiple times.");
+						return false;
+					}
+
+					String pValue = arg.substring(PARAM_AGENT_LIB_PATH.length());
+					if (StringUtils.isEmpty(pValue)) {
+						System.out.println("Missing argument '" + PARAM_AGENT_LIB_PATH + "' value");
+						return false;
+					}
+
+					props.setProperty(AGENT_ARG_LIB_PATH, pValue);
+				} else if (arg.startsWith(PARAM_AGENT_OPTIONS)) {
+					if (StringUtils.isNotEmpty(props.getProperty(AGENT_ARG_OPTIONS))) {
+						System.out.println("Agent options aready defined. Can not use argument [" + PARAM_AGENT_OPTIONS
+								+ "] multiple times.");
+						return false;
+					}
+
+					String pValue = arg.substring(PARAM_AGENT_OPTIONS.length());
+					if (StringUtils.isEmpty(pValue)) {
+						System.out.println("Missing argument '" + PARAM_AGENT_OPTIONS + "' value");
+						return false;
+					}
+
+					props.setProperty(AGENT_ARG_OPTIONS, pValue);
+				} else {
+					System.out.println("Invalid argument: " + arg);
+					return false;
+				}
+			}
+
+			if (StringUtils.isEmpty(props.getProperty(AGENT_ARG_VM))) {
+				System.out.println("Missing mandatory argument '" + PARAM_VM_DESCRIPTOR + "' defining JVM descriptor.");
+				return false;
+			}
+
+			if (AGENT_MODE_ATTACH.equalsIgnoreCase(props.getProperty(AGENT_ARG_MODE))
+					&& StringUtils.isEmpty(props.getProperty(AGENT_ARG_LIB_PATH))) {
+				System.out.println(
+						"Missing mandatory argument '" + PARAM_AGENT_LIB_PATH + "' defining agent library path.");
+				return false;
+			}
+		} else {
+			props.setProperty(AGENT_ARG_MODE, AGENT_MODE_AGENT);
+
+			props.setProperty(AGENT_ARG_I_FILTER, args[0]);
+			props.setProperty(AGENT_ARG_E_FILTER, args[1]);
+			props.setProperty(AGENT_ARG_S_TIME, args[2]);
+			if (args.length > 3) {
+				props.setProperty(AGENT_ARG_W_TIME, args[3]);
 			}
 		}
+
+		return true;
 	}
 
 	/**
@@ -215,7 +336,7 @@ public class SamplingAgent {
 	public static void sample() throws IOException {
 		String incFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.include.filter", Sampler.JMX_FILTER_ALL);
 		String excFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.exclude.filter", Sampler.JMX_FILTER_NONE);
-		int period = Integer.getInteger("com.jkoolcloud.tnt4j.stream.jmx.period", 30000);
+		int period = Integer.getInteger("com.jkoolcloud.tnt4j.stream.jmx.period", Sampler.JMX_SAMPLE_PERIOD);
 		sample(incFilter, excFilter, period);
 	}
 
@@ -310,12 +431,8 @@ public class SamplingAgent {
 			throw new RuntimeException("JVM attach VM descriptor and agent Jar path must be not empty!..");
 		}
 
-		VirtualMachineDescriptor descriptor = findVM(vmDescr);
-
-		final VirtualMachine virtualMachine = VirtualMachine.attach(descriptor.id());
 		File pathFile = new File(agentJarPath);
 		String agentPath = pathFile.getAbsolutePath();
-		System.out.println("SamplingAgent.attach: attaching agent: " + agentPath + " to " + descriptor + "");
 
 		agentOptions += "!trace=" + TRACE;
 		agentOptions += "!validate=" + VALIDATE_TYPES;
@@ -329,36 +446,7 @@ public class SamplingAgent {
 			agentOptions += "!-Dtnt4j.config=" + tnt4jPropPath;
 		}
 
-		System.out.println("SamplingAgent.attach: agent.path=" + agentPath 
-			+ ", agent.options=" + agentOptions);
-
-		virtualMachine.loadAgent(agentPath, agentOptions);
-		virtualMachine.detach();
-	}
-
-	private static VirtualMachineDescriptor findVM(String vmDescr) {
-		List<VirtualMachineDescriptor> runningVMsList = VirtualMachine.list();
-
-		VirtualMachineDescriptor descriptor = null;
-		for (VirtualMachineDescriptor rVM : runningVMsList) {
-			if ((rVM.displayName().contains(vmDescr)
-					&& !rVM.displayName().contains(SamplingAgent.class.getSimpleName()))
-					|| rVM.id().equalsIgnoreCase(vmDescr)) {
-				descriptor = rVM;
-				break;
-			}
-		}
-
-		if (descriptor == null) {
-			System.err.println("SamplingAgent: ----------- Available JVMs -----------");
-			for (VirtualMachineDescriptor vmD : runningVMsList) {
-				System.err.println("SamplingAgent: JVM.id=" + vmD.id() + ", name=" + vmD.displayName());
-			}
-			System.err.println("SamplingAgent: ---------------- END ----------------");
-			throw new RuntimeException("Java VM not found using provided descriptor: [" + vmDescr + "]");
-		}
-
-		return descriptor;
+		VMUtils.attachVM(vmDescr, agentPath, agentOptions);
 	}
 
 	/**
@@ -378,15 +466,7 @@ public class SamplingAgent {
 		if (vmDescr.startsWith("service:jmx:")) {
 			connectorAddress = vmDescr;
 		} else {
-			VirtualMachineDescriptor descriptor = findVM(vmDescr);
-
-			final VirtualMachine virtualMachine = VirtualMachine.attach(descriptor.id());
-
-			Properties props = virtualMachine.getAgentProperties();
-			connectorAddress = props.getProperty("com.sun.management.jmxremote.localConnectorAddress");
-			if (connectorAddress == null) {
-				throw new RuntimeException("JVM does not support JMX connection...");
-			}
+			connectorAddress = VMUtils.getVMConnAddress(vmDescr);
 		}
 
 		System.out.println("SamplingAgent.connect: making JMX service URL from address=" + connectorAddress);
@@ -398,7 +478,7 @@ public class SamplingAgent {
 		String incFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.include.filter", Sampler.JMX_FILTER_ALL);
 		String excFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.exclude.filter",
 				Sampler.JMX_FILTER_NONE);
-		int period = Integer.getInteger("com.jkoolcloud.tnt4j.stream.jmx.period", 30000);
+		int period = Integer.getInteger("com.jkoolcloud.tnt4j.stream.jmx.period", Sampler.JMX_SAMPLE_PERIOD);
 		if (options != null) {
 			String[] args = options.split("!");
 			if (args.length > 0) {
