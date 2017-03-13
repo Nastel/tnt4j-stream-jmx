@@ -20,6 +20,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Method;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -159,6 +160,7 @@ public class SamplingAgent {
 			File pathFile;
 			for (String classPathEntry : classPathEntries) {
 				pathFile = new File(classPathEntry);
+				System.out.println("SamplingAgent.agentmain: extending classpath with: " + pathFile.getAbsolutePath());
 				extendClasspath(pathFile.toURI().toURL());
 			}
 		}
@@ -191,7 +193,7 @@ public class SamplingAgent {
 	 * Main entry point for running as a standalone application (test only).
 	 * 
 	 * @param args
-	 *            argument list: mbean-filter sample_time_ms
+	 *            argument list: [sampling-mode vm-descriptor] [mbean-filter sample_time_ms]
 	 */
 	public static void main(String[] args) throws Exception {
 		Properties props = new Properties();
@@ -313,12 +315,12 @@ public class SamplingAgent {
 				return false;
 			}
 
-			if (AGENT_MODE_ATTACH.equalsIgnoreCase(props.getProperty(AGENT_ARG_MODE))
-					&& StringUtils.isEmpty(props.getProperty(AGENT_ARG_LIB_PATH))) {
-				System.out.println(
-						"Missing mandatory argument '" + PARAM_AGENT_LIB_PATH + "' defining agent library path.");
-				return false;
-			}
+			// if (AGENT_MODE_ATTACH.equalsIgnoreCase(props.getProperty(AGENT_ARG_MODE))
+			// && StringUtils.isEmpty(props.getProperty(AGENT_ARG_LIB_PATH))) {
+			// System.out.println(
+			// "Missing mandatory argument '" + PARAM_AGENT_LIB_PATH + "' defining agent library path.");
+			// return false;
+			// }
 		} else {
 			props.setProperty(AGENT_ARG_MODE, AGENT_MODE_AGENT);
 
@@ -430,19 +432,20 @@ public class SamplingAgent {
 	 * @throws Exception if any exception occurs while attaching to JVM
 	 */
 	public static void attach(String vmDescr, String agentJarPath, String agentOptions) throws Exception {
-		if (Utils.isEmpty(vmDescr) || Utils.isEmpty(agentJarPath)) {
-			throw new RuntimeException("JVM attach VM descriptor and agent jar path must be not empty!..");
+		if (Utils.isEmpty(vmDescr)) {
+			throw new RuntimeException("Java VM descriptor must be not empty!..");
 		}
 
-		File pathFile = new File(agentJarPath);
-		if (!pathFile.exists()) {
-			System.out.println("SamplingAgent.attach: could not find parameter defined agent jar: " + agentJarPath);
-			System.out.println("SamplingAgent.attach: fixing agent jar path: " + pathFile.getAbsolutePath());
-			String saPath = SamplingAgent.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
-			pathFile = new File(saPath, pathFile.getName());
-
+		File pathFile;
+		if (StringUtils.isEmpty(agentJarPath)) {
+			System.out.println("SamplingAgent.attach: no agent jar defined");
+			pathFile = getSAPath();
+		} else {
+			pathFile = new File(agentJarPath);
 			if (!pathFile.exists()) {
-				throw new RuntimeException("Could not find agent jar: " + pathFile.getAbsolutePath());
+				System.out.println("SamplingAgent.attach: non-existing argument defined agent jar: " + agentJarPath);
+				System.out.println("                      absolute agent jar path: " + pathFile.getAbsolutePath());
+				pathFile = getSAPath();
 			}
 		}
 
@@ -463,6 +466,18 @@ public class SamplingAgent {
 		VMUtils.attachVM(vmDescr, agentPath, agentOptions);
 	}
 
+	private static File getSAPath() throws URISyntaxException {
+		String saPath = SamplingAgent.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+		System.out.println("SamplingAgent.attach: using SamplingAgent class referenced jar path: " + saPath);
+		File agentFile = new File(saPath);
+
+		if (!agentFile.exists()) {
+			throw new RuntimeException("Could not find agent jar: " + agentFile.getAbsolutePath());
+		}
+
+		return agentFile;
+	}
+
 	/**
 	 * Connects to {@code vmDescr} defined JVM over {@link JMXConnector} an uses {@link MBeanServerConnection} to
 	 * collect samples.
@@ -473,7 +488,7 @@ public class SamplingAgent {
 	 */
 	public static void connect(String vmDescr, String options) throws Exception {
 		if (Utils.isEmpty(vmDescr)) {
-			throw new RuntimeException("JVM attach VM descriptor must be not empty!..");
+			throw new RuntimeException("Java VM descriptor must be not empty!..");
 		}
 
 		String connectorAddress;
@@ -588,13 +603,13 @@ public class SamplingAgent {
 	}
 
 	private static class JarFilter implements FilenameFilter {
-		public JarFilter() {
+		JarFilter() {
 		}
 
 		@Override
-		public boolean accept(File var1, String var2) {
-			String var3 = var2.toLowerCase();
-			return var3.endsWith(".jar") || var3.endsWith(".zip");
+		public boolean accept(File dir, String name) {
+			String nfn = name.toLowerCase();
+			return nfn.endsWith(".jar") || nfn.endsWith(".zip");
 		}
 	}
 }
