@@ -22,7 +22,10 @@ import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -432,6 +435,15 @@ public class SamplingAgent {
 		}
 
 		File pathFile = new File(agentJarPath);
+		if (!pathFile.exists()) {
+			String saPath = SamplingAgent.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+			pathFile = new File(saPath, pathFile.getName());
+
+			if (!pathFile.exists()) {
+				throw new RuntimeException("Could not find agent jar: " + pathFile);
+			}
+		}
+
 		String agentPath = pathFile.getAbsolutePath();
 
 		agentOptions += "!trace=" + TRACE;
