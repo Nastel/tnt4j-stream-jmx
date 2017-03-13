@@ -431,16 +431,18 @@ public class SamplingAgent {
 	 */
 	public static void attach(String vmDescr, String agentJarPath, String agentOptions) throws Exception {
 		if (Utils.isEmpty(vmDescr) || Utils.isEmpty(agentJarPath)) {
-			throw new RuntimeException("JVM attach VM descriptor and agent Jar path must be not empty!..");
+			throw new RuntimeException("JVM attach VM descriptor and agent jar path must be not empty!..");
 		}
 
 		File pathFile = new File(agentJarPath);
 		if (!pathFile.exists()) {
+			System.out.println("SamplingAgent.attach: could not find parameter defined agent jar: " + agentJarPath);
+			System.out.println("SamplingAgent.attach: fixing agent jar path: " + pathFile.getAbsolutePath());
 			String saPath = SamplingAgent.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
 			pathFile = new File(saPath, pathFile.getName());
 
 			if (!pathFile.exists()) {
-				throw new RuntimeException("Could not find agent jar: " + pathFile);
+				throw new RuntimeException("Could not find agent jar: " + pathFile.getAbsolutePath());
 			}
 		}
 
