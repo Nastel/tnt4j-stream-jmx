@@ -87,7 +87,7 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 
 			String name = makeObjNamePath(snap.getName());
 			nvString.append(name).append(PATH_DELIM).append(p.getKey());
-			nvString.append(EQ).append(toString(value)).append(FIELD_SEP);
+			nvString.append(EQ).append(getValueStr(value)).append(FIELD_SEP);
 		}
 		return nvString;
 	}
@@ -120,7 +120,7 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 	}
 
 	private static String makeObjNamePath(String objCanonName) {
-		if (Utils.isEmpty (objCanonName)) {
+		if (Utils.isEmpty(objCanonName)) {
 			return objCanonName;
 		}
 
@@ -157,7 +157,7 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 			for (String pKey : levelKeys) {
 				String pp = (String) props.remove(pKey);
 
-				if (!Utils.isEmpty (pp)) {
+				if (!Utils.isEmpty(pp)) {
 					pathBuilder.append(pathBuilder.length() > 0 ? PATH_DELIM : "").append(pp);
 				}
 			}
@@ -173,7 +173,8 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 		return pathBuilder.toString();
 	}
 
-	private static String toString(Object value) {
+	@Override
+	protected String toString(Object value) {
 		if (value instanceof int[]) {
 			return Arrays.toString((int[]) value);
 		}
@@ -210,7 +211,7 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 			return toString(m.entrySet());
 		}
 
-		return String.valueOf(value);
+		return super.toString(value);
 	}
 
 	/**
@@ -220,7 +221,7 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 	 *
 	 * @return string representation of array
 	 */
-	private static String toStringDeep(Object[] a) {
+	private String toStringDeep(Object[] a) {
 		if (a == null) {
 			return "null"; // NON-NLS
 		}

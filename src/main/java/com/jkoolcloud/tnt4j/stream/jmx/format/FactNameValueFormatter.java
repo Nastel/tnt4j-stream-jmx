@@ -16,6 +16,7 @@
 package com.jkoolcloud.tnt4j.stream.jmx.format;
 
 import java.util.Collection;
+import java.util.Map;
 
 import com.jkoolcloud.tnt4j.core.OpLevel;
 import com.jkoolcloud.tnt4j.core.Operation;
@@ -43,6 +44,8 @@ import com.jkoolcloud.tnt4j.utils.Utils;
 public class FactNameValueFormatter extends DefaultFormatter {
 	public static final String FIELD_SEP = ",";
 	public static final String END_SEP = "\n";
+
+	protected boolean quoteStringValue = false;
 
 	public FactNameValueFormatter() {
 		super("time.stamp={2},level={1},source={3},msg=\"{0}\"");
@@ -151,7 +154,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 			if (isSerializable(value)) {
 				String name = snap.getName().replace("=", "\\").replace(",", "!");
 				nvString.append(name).append("\\").append(p.getKey());
-				nvString.append("=").append(String.valueOf(value)).append(FIELD_SEP);
+				nvString.append("=").append(getValueStr(value)).append(FIELD_SEP);
 			}
 		}
 		return nvString;
@@ -167,5 +170,43 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	public static boolean isSerializable(Object value) {
 		return (value != null && !value.getClass().isArray()) 
 			&& (value.getClass().isPrimitive() || value instanceof String || value instanceof Number || value instanceof Boolean);
+	}
+
+	/**
+	 * Makes decorated string representation of argument attribute value.
+	 * <p>
+	 * If {@link #quoteStringValue} is set to {@code true} - {@link String} types values are surrounded with {@code "}
+	 * symbol.
+	 *
+	 * @param value
+	 *            attribute value
+	 * @return decorated string representation of attribute value
+	 *
+	 * @see #toString(Object)
+	 */
+	protected String getValueStr(Object value) {
+		if (quoteStringValue && (value instanceof String)) {
+			return Utils.quote((String) value);
+		}
+
+		return toString(value);
+	}
+
+	/**
+	 * Makes string representation of argument attribute value.
+	 * 
+	 * @param value
+	 *            attribute value
+	 * @return string representation of attribute value
+	 */
+	protected String toString(Object value) {
+		return String.valueOf(value);
+	}
+
+	@Override
+	public void setConfiguration(Map<String, Object> settings) {
+		super.setConfiguration(settings);
+
+		quoteStringValue = Utils.getBoolean("QuoteStringValues", settings, quoteStringValue);
 	}
 }

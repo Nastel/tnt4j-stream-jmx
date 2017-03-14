@@ -415,9 +415,13 @@ Below is an example of TNT4J stream definition where all Stream-JMX streams are 
 	event.sink.factory.Filter: com.jkoolcloud.tnt4j.filters.EventLevelTimeFilter
 	event.sink.factory.Filter.Level: TRACE
 	
+	; If JMX attributes should be formatted as JMX object names 
 	event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.FactNameValueFormatter
-    ; If file entries should be formatter as JMS object paths
-    event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.FactPathValueFormatter
+	; If JMX attributes should be formatted as JMX object paths
+	;event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.FactPathValueFormatter
+	; If JMX attribute string type values should surounded by double quote symbol
+	;event.formatter.QuoteStringValues: true
+
 	tracking.selector: com.jkoolcloud.tnt4j.selector.DefaultTrackingSelector
 	tracking.selector.Repository: com.jkoolcloud.tnt4j.repository.FileTokenRepository
 }
@@ -446,9 +450,13 @@ To stream Stream-JMX into a log file `MyStream.log`:
 	event.sink.factory.Filter: com.jkoolcloud.tnt4j.filters.EventLevelTimeFilter
 	event.sink.factory.Filter.Level: TRACE
 	
+	; If JMX attributes should be formatted as JMX object names 
 	event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.FactNameValueFormatter
-    ; If file entries should be formatter as JMS object paths
+	; If JMX attributes should be formatted as JMX object paths
 	;event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.FactPathValueFormatter
+	; If JMX attribute string type values should surounded by double quote symbol
+	;event.formatter.QuoteStringValues: true
+
 	tracking.selector: com.jkoolcloud.tnt4j.selector.DefaultTrackingSelector
 	tracking.selector.Repository: com.jkoolcloud.tnt4j.repository.FileTokenRepository
 }
