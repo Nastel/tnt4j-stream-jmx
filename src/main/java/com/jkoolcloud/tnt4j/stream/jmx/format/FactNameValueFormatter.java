@@ -184,6 +184,13 @@ public class FactNameValueFormatter extends DefaultFormatter {
 
 	/**
 	 * Makes decorated string representation of argument attribute value.
+	 * <p>
+	 * If property {@link #serializeSimpleTypesOnly} is set to {@code true} - validates if value can be represented as
+	 * simple type. If no, then actual value is replaced by dummy string
+	 * "{@code <unsupported type=\" + value.getClass() + \">}".
+	 * <p>
+	 * Value representation string containing "{@code \n}" or "{@code \r}" symbols gets those replaced by escaped
+	 * representations "{@code \\n}" amd "{@code \\r}".
 	 *
 	 * @param value attribute value
 	 * @return decorated string representation of attribute value
