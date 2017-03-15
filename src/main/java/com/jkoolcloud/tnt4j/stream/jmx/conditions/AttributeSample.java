@@ -15,10 +15,7 @@
  */
 package com.jkoolcloud.tnt4j.stream.jmx.conditions;
 
-import javax.management.AttributeNotFoundException;
-import javax.management.MBeanAttributeInfo;
-import javax.management.MBeanServerConnection;
-import javax.management.ObjectName;
+import javax.management.*;
 
 import com.jkoolcloud.tnt4j.core.Activity;
 import com.jkoolcloud.tnt4j.core.PropertySnapshot;
@@ -81,10 +78,19 @@ public class AttributeSample {
 	public Object sample() throws Exception {
 		try {
 			value = server.getAttribute(name, ainfo.getName());
-		} catch (UnsupportedOperationException exc) {
-			value = "<unsupported>";
-		} catch (AttributeNotFoundException exc) {
-			value = "<not found>";
+		} catch (Exception exc) {
+			Throwable ct = exc;
+			if (exc instanceof RuntimeMBeanException) {
+				ct = exc.getCause();
+			}
+
+			if (ct instanceof UnsupportedOperationException) {
+				value = "<unsupported>";
+			} else if (ct instanceof AttributeNotFoundException) {
+				value = "<not found>";
+			} else {
+				throw exc;
+			}
 		}
 		timeStamp = Utils.currentTimeUsec();
 		return value;
@@ -198,7 +204,7 @@ public class AttributeSample {
 	 * Obtain age in microseconds since last sampled value. {@link #sample()} must be called prior to calling this call,
 	 * otherwise -1 is returned.
 	 * 
-	 * @return get in microseconds since last sampled value, -1 if no sample was taken. 
+	 * @return get in microseconds since last sampled value, -1 if no sample was taken.
 	 *
 	 * @see #sample()
 	 */
