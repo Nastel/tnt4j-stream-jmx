@@ -33,15 +33,14 @@ import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeSample;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleContext;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.UnsupportedAttributeException;
-import com.jkoolcloud.tnt4j.stream.jmx.format.FactNameValueFormatter;
 
 /**
  * <p>
  * This class provide a default implementation of a {@link SampleListener}
  * </p>
- * 
+ *
  * @version $Revision: 1 $
- * 
+ *
  * @see SampleListener
  */
 public class DefaultSampleListener implements SampleListener {
@@ -50,36 +49,23 @@ public class DefaultSampleListener implements SampleListener {
 
 	boolean trace = false;
 	PrintStream out;
-	boolean validateTypes = true;
 
 	HashSet<MBeanAttributeInfo> excAttrs = new HashSet<MBeanAttributeInfo>(89);
-
-	/**
-	 * Create an instance of {@code DefaultSampleListener} with a a given print stream and trace mode
-	 * 
-	 * @param pstream print stream instance for tracing
-	 * @param trace mode
-	 */
-	public DefaultSampleListener(PrintStream pstream, boolean trace) {
-		this(pstream, trace, true);
-	}
 
 	/**
 	 * Create an instance of {@code DefaultSampleListener} with a a given print stream and trace mode
 	 *
 	 * @param pstream print stream instance for tracing
 	 * @param trace mode
-	 * @param validateTypes flag indicating if attribute value type validation required
 	 */
-	public DefaultSampleListener(PrintStream pstream, boolean trace, boolean validateTypes) {
+	public DefaultSampleListener(PrintStream pstream, boolean trace) {
 		this.trace = trace;
 		this.out = pstream == null ? System.out : pstream;
-		this.validateTypes = validateTypes;
 	}
 
 	/**
 	 * Determine if a given attribute to be excluded from sampling.
-	 * 
+	 *
 	 * @param attr MBean attribute info
 	 * @return true when attribute should be excluded, false otherwise
 	 */
@@ -89,7 +75,7 @@ public class DefaultSampleListener implements SampleListener {
 
 	/**
 	 * Mark a given attribute to be excluded from sampling.
-	 * 
+	 *
 	 * @param attr MBean attribute info
 	 */
 	protected void exclude(MBeanAttributeInfo attr) {
@@ -194,40 +180,15 @@ public class DefaultSampleListener implements SampleListener {
 	}
 
 	/**
-	 * Gets attributes type validation flag value.
-	 * 
-	 * @return {@code true} if attributes type validation is applied, {@code false} - otherwise
-	 */
-	public boolean isValidateTypes() {
-		return validateTypes;
-	}
-
-	/**
-	 * Sets attributes type validation flag value.
-	 *
-	 * @param validateTypes
-	 *            flag indicating if attributes type validation shall be applied
-	 */
-	public void setValidateTypes(boolean validateTypes) {
-		this.validateTypes = validateTypes;
-	}
-
-	/**
 	 * Process/extract value from a given MBean attribute
-	 * 
-	 * @param snapshot
-	 *            instance where extracted attribute is stored
-	 * @param jinfo
-	 *            attribute info
-	 * @param propName
-	 *            name to be assigned to given attribute value
-	 * @param value
-	 *            associated with attribute
-	 * @throws UnsupportedAttributeException
-	 *             if provided attribute not supported
+	 *
+	 * @param snapshot instance where extracted attribute is stored
+	 * @param jinfo attribute info
+	 * @param propName name to be assigned to given attribute value
+	 * @param value associated with attribute
 	 * @return snapshot instance where all attributes are contained
 	 */
-	private PropertySnapshot processAttrValue(PropertySnapshot snapshot, MBeanAttributeInfo jinfo, String propName, Object value) throws UnsupportedAttributeException {
+	private PropertySnapshot processAttrValue(PropertySnapshot snapshot, MBeanAttributeInfo jinfo, String propName, Object value) {
 		if (value instanceof CompositeData) {
 			CompositeData cdata = (CompositeData) value;
 			Set<String> keys = cdata.getCompositeType().keySet();
@@ -242,23 +203,9 @@ public class DefaultSampleListener implements SampleListener {
 			for (Object cval : values) {
 				processAttrValue(snapshot, jinfo, propName + "\\" + (++row), cval);
 			}
-		} else if (typeSupported(value)) {
-			snapshot.add(propName, value);
 		} else {
-			if (value != null) {
-				throw new UnsupportedAttributeException("Unsupported type=" + value.getClass(), jinfo, value);
-			}
+			snapshot.add(propName, value);
 		}
 		return snapshot;
-	}
-
-	/**
-	 * Determine if a given value and its type are supported.
-	 * 
-	 * @param value value to test for support
-	 * @return {@code true} if a given value and its type are supported, {@code false} - otherwise
-	 */
-	protected boolean typeSupported(Object value) {
-		return !validateTypes || FactNameValueFormatter.isSerializable(value);
 	}
 }

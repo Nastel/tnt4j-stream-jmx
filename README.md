@@ -59,7 +59,7 @@ The options are `-javaagent:tnt4j-stream-jmx.jar="mbean-filter!sample-time-ms"`,
 
 ### Command line to run
 ```cmd
-java -Dtnt4j.config=.\config\tnt4j.properties -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.validate.types=false -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -attach -vm:activemq -ap:tnt4j-stream-jmx-0.4.5.jar -ao:*:*!10000
+java -Dtnt4j.config=.\config\tnt4j.properties -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -attach -vm:activemq -ap:tnt4j-stream-jmx-0.4.5.jar -ao:*:*!10000
 ```
 System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [Stream-JMX configuration ](#stream-jmx-configuration).
  
@@ -81,7 +81,7 @@ optional - default value is `*:*!30000`.
 #### To connect to local JVM process
  
 ```cmd
-java -Dtnt4j.config=.\config\tnt4j.properties -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.validate.types=false -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -vm:activemq -ao:*:*!*:dummy!10000
+java -Dtnt4j.config=.\config\tnt4j.properties -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -vm:activemq -ao:*:*!*:dummy!10000
 ```
 
 System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [Stream-JMX configuration ](#stream-jmx-configuration).
@@ -96,7 +96,7 @@ seconds. Sampler options are optional - default value is `*:*!30000`.
 #### To connect to JMX service over URL
  
 ```cmd
-java -Dtnt4j.config=.\config\tnt4j.properties -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.validate.types=false -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -vm:service:jmx:<JMX_URL> -ao:*:*!!10000
+java -Dtnt4j.config=.\config\tnt4j.properties -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -vm:service:jmx:<JMX_URL> -ao:*:*!!10000
 ```
 System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [Stream-JMX configuration ](#stream-jmx-configuration).
  
@@ -176,9 +176,6 @@ java -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -classpath "tnt4j-stream
 * `tnt4j.config` - defines TNT4J properties file path. Example: `-Dtnt4j.config=".\config\tnt4j.properties"`
 * `com.jkoolcloud.tnt4j.stream.jmx.agent.trace` - defines whether to dump trace data to application console output. 
 Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true`
-* `com.jkoolcloud.tnt4j.stream.jmx.agent.validate.types` - defines if MBean attribute value types validation should be applied. If `true` - 
-only non array primitives, Strings, Numbers and Booleans are allowed to be processed. 
-Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.validate.types=false`
 
 ## Stream-JMX event data formatters
 
@@ -395,9 +392,9 @@ Below is an example of TNT4J stream definition where all Stream-JMX streams are 
 	source.factory: com.jkoolcloud.tnt4j.source.SourceFactoryImpl
 	source.factory.GEOADDR: New York
 	source.factory.DATACENTER: YourDC
-	source.factory.RootFQN: SERVER=?#DATACENTER=?#GEOADDR=?	
-	source.factory.RootSSN: tnt4j-stream-jmx	
-	
+	source.factory.RootFQN: SERVER=?#DATACENTER=?#GEOADDR=?
+	source.factory.RootSSN: tnt4j-stream-jmx
+
 	tracker.factory: com.jkoolcloud.tnt4j.tracker.DefaultTrackerFactory
 	dump.sink.factory: com.jkoolcloud.tnt4j.dump.DefaultDumpSinkFactory
 
@@ -405,22 +402,22 @@ Below is an example of TNT4J stream definition where all Stream-JMX streams are 
 
 	event.sink.factory: com.jkoolcloud.tnt4j.sink.impl.BufferedEventSinkFactory
 	event.sink.factory.PooledLoggerFactory: com.jkoolcloud.tnt4j.sink.impl.PooledLoggerFactoryImpl
-	
+
 	event.sink.factory.EventSinkFactory: com.jkoolcloud.tnt4j.sink.impl.SocketEventSinkFactory
 	event.sink.factory.EventSinkFactory.eventSinkFactory: com.jkoolcloud.tnt4j.sink.impl.NullEventSinkFactory
 	event.sink.factory.EventSinkFactory.Host: localhost
 	event.sink.factory.EventSinkFactory.Port: 6060
 
-	; Configure default sink filter 
+	; Configure default sink filter
 	event.sink.factory.Filter: com.jkoolcloud.tnt4j.filters.EventLevelTimeFilter
 	event.sink.factory.Filter.Level: TRACE
-	
-	; If JMX attributes should be formatted as JMX object names 
+
+	; If JMX attributes should be formatted as JMX object names
 	event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.FactNameValueFormatter
 	; If JMX attributes should be formatted as JMX object paths
 	;event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.FactPathValueFormatter
-	; If JMX attribute string type values should surounded by double quote symbol
-	;event.formatter.QuoteStringValues: true
+	; If formatter should serialize only simple types JMX attribute values. Rest are replaced by dummy value.
+	event.formatter.SerializeSimplesOnly: true
 
 	tracking.selector: com.jkoolcloud.tnt4j.selector.DefaultTrackingSelector
 	tracking.selector.Repository: com.jkoolcloud.tnt4j.repository.FileTokenRepository
@@ -434,9 +431,9 @@ To stream Stream-JMX into a log file `MyStream.log`:
 	source.factory: com.jkoolcloud.tnt4j.source.SourceFactoryImpl
 	source.factory.GEOADDR: New York
 	source.factory.DATACENTER: YourDC
-	source.factory.RootFQN: SERVER=?#DATACENTER=?#GEOADDR=?	
-	source.factory.RootSSN: tnt4j-stream-jmx	
-	
+	source.factory.RootFQN: SERVER=?#DATACENTER=?#GEOADDR=?
+	source.factory.RootSSN: tnt4j-stream-jmx
+
 	tracker.factory: com.jkoolcloud.tnt4j.tracker.DefaultTrackerFactory
 	dump.sink.factory: com.jkoolcloud.tnt4j.dump.DefaultDumpSinkFactory
 
@@ -446,16 +443,16 @@ To stream Stream-JMX into a log file `MyStream.log`:
 	event.sink.factory.EventSinkFactory: com.jkoolcloud.tnt4j.sink.impl.FileEventSinkFactory
 	event.sink.factory.EventSinkFactory.FileName: MyStream.log
 
-	; Configure default sink filter 
+	; Configure default sink filter
 	event.sink.factory.Filter: com.jkoolcloud.tnt4j.filters.EventLevelTimeFilter
 	event.sink.factory.Filter.Level: TRACE
-	
-	; If JMX attributes should be formatted as JMX object names 
+
+	; If JMX attributes should be formatted as JMX object names
 	event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.FactNameValueFormatter
 	; If JMX attributes should be formatted as JMX object paths
 	;event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.FactPathValueFormatter
-	; If JMX attribute string type values should surounded by double quote symbol
-	;event.formatter.QuoteStringValues: true
+	; If formatter should serialize only simple types JMX attribute values. Rest are replaced by dummy value.
+	event.formatter.SerializeSimplesOnly: true
 
 	tracking.selector: com.jkoolcloud.tnt4j.selector.DefaultTrackingSelector
 	tracking.selector.Repository: com.jkoolcloud.tnt4j.repository.FileTokenRepository

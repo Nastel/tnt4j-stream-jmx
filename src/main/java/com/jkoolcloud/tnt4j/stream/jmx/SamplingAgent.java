@@ -57,7 +57,6 @@ public class SamplingAgent {
 	protected static Sampler platformJmx;
 	protected static ConcurrentHashMap<MBeanServerConnection, Sampler> STREAM_AGENTS = new ConcurrentHashMap<MBeanServerConnection, Sampler>(89);
 	protected static boolean TRACE = Boolean.getBoolean("com.jkoolcloud.tnt4j.stream.jmx.agent.trace");
-	protected static boolean VALIDATE_TYPES = Boolean.getBoolean("com.jkoolcloud.tnt4j.stream.jmx.agent.validate.types");
 
 	private static final String PARAM_VM_DESCRIPTOR = "-vm:";
 	private static final String PARAM_AGENT_LIB_PATH = "-ap:";
@@ -102,7 +101,6 @@ public class SamplingAgent {
 				+ ", exclude.filter=" + excFilter
 				+ ", sample.ms=" + period 
 				+ ", trace=" + TRACE 
-				+ ", validate.types=" + VALIDATE_TYPES
 				+ ", tnt4j.config=" + System.getProperty("tnt4j.config") 
 				+ ", jmx.sample.list=" + STREAM_AGENTS);
 	}
@@ -141,9 +139,6 @@ public class SamplingAgent {
 				} else if (arg.startsWith("trace=")) {
 					String[] prop = arg.split("=");
 					TRACE = prop.length > 1 ? Boolean.parseBoolean(prop[1]) : TRACE;
-				} else if (arg.startsWith("validate=")) {
-					String[] prop = arg.split("=");
-					VALIDATE_TYPES = prop.length > 1 ? Boolean.parseBoolean(prop[1]) : VALIDATE_TYPES;
 				}
 			}
 		}
@@ -151,7 +146,6 @@ public class SamplingAgent {
 		System.out.println("SamplingAgent.agentmain: agent.params=" + agentParams 
 				+ ", agent.lib.path=" + agentLibPath
 				+ ", trace=" + TRACE 
-				+ ", validate.types=" + VALIDATE_TYPES 
 				+ ", tnt4j.config=" + System.getProperty("tnt4j.config"));
 
 		File agentPath = new File(agentLibPath);
@@ -225,7 +219,6 @@ public class SamplingAgent {
 							+ ", sample.ms=" + sample_time 
 							+ ", wait.ms=" + wait_time 
 							+ ", trace=" + TRACE
-							+ ", validate.types=" + VALIDATE_TYPES 
 							+ ", tnt4j.config=" + System.getProperty("tnt4j.config") 
 							+ ", jmx.sample.list=" + STREAM_AGENTS);
 					synchronized (platformJmx) {
@@ -384,7 +377,7 @@ public class SamplingAgent {
 			if (jmxp == null) {
 				jmxp = pFactory.newInstance(server);
 				jmxp.setSchedule(incFilter, excFilter, period, tunit)
-						.addListener(new DefaultSampleListener(System.out, TRACE, VALIDATE_TYPES)).run();
+						.addListener(new DefaultSampleListener(System.out, TRACE)).run();
 				STREAM_AGENTS.put(jmxp.getMBeanServer(), jmxp);
 			}
 		}
@@ -416,7 +409,7 @@ public class SamplingAgent {
 			platformJmx = mbSrvConn == null ? pFactory.newInstance() : pFactory.newInstance(mbSrvConn);
 			// schedule sample with a given filter and sampling period
 			platformJmx.setSchedule(incFilter, excFilter, period, tunit)
-					.addListener(new DefaultSampleListener(System.out, TRACE, VALIDATE_TYPES)).run();
+					.addListener(new DefaultSampleListener(System.out, TRACE)).run();
 			STREAM_AGENTS.put(platformJmx.getMBeanServer(), platformJmx);
 		}
 
@@ -452,7 +445,6 @@ public class SamplingAgent {
 		String agentPath = pathFile.getAbsolutePath();
 
 		agentOptions += "!trace=" + TRACE;
-		agentOptions += "!validate=" + VALIDATE_TYPES;
 
 		agentOptions += "!-DSamplingAgent.path=" + agentPath;
 
@@ -522,9 +514,12 @@ public class SamplingAgent {
 		try {
 			sample(incFilter, excFilter, period, TimeUnit.MILLISECONDS, connector);
 
-			System.out.println("SamplingAgent.connect: inlcude.filter=" + incFilter + ", exclude.filter=" + excFilter
-					+ ", sample.ms=" + period + ", trace=" + TRACE + ", validate.types=" + VALIDATE_TYPES
-					+ ", tnt4j.config=" + System.getProperty("tnt4j.config") + ", jmx.sample.list=" + STREAM_AGENTS);
+			System.out.println("SamplingAgent.connect: inlcude.filter=" + incFilter 
+					+ ", exclude.filter=" + excFilter
+					+ ", sample.ms=" + period 
+					+ ", trace=" + TRACE 
+					+ ", tnt4j.config=" + System.getProperty("tnt4j.config") 
+					+ ", jmx.sample.list=" + STREAM_AGENTS);
 
 			NotificationListener cnl = new NotificationListener() {
 				@Override

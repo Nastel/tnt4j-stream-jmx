@@ -44,8 +44,10 @@ import com.jkoolcloud.tnt4j.utils.Utils;
 public class FactNameValueFormatter extends DefaultFormatter {
 	public static final String FIELD_SEP = ",";
 	public static final String END_SEP = "\n";
+	public static final String PATH_DELIM = "\\";
+	public static final String EQ = "=";
 
-	protected boolean quoteStringValue = false;
+	protected boolean serializeSimpleTypesOnly = false;
 
 	public FactNameValueFormatter() {
 		super("time.stamp={2},level={1},source={3},msg=\"{0}\"");
@@ -143,19 +145,23 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		if (parent != null) {
 			toString(nvString, source.getSource());
 		}
-		nvString.append("\\").append(source.getName());
+		nvString.append(PATH_DELIM).append(source.getName());
 		return nvString;
 	}
 
+	protected Collection<Property> getProperties(Snapshot snap) {
+		return snap.getSnapshot();
+	}
+
 	protected StringBuilder toString(StringBuilder nvString, Snapshot snap) {
-		Collection<Property> list = snap.getSnapshot();
+		Collection<Property> list = getProperties(snap);
+		String sName = getSnapNameStr(snap.getName());
 		for (Property p : list) {
 			Object value = p.getValue();
-			if (isSerializable(value)) {
-				String name = snap.getName().replace("=", "\\").replace(",", "!");
-				nvString.append(name).append("\\").append(p.getKey());
-				nvString.append("=").append(getValueStr(value)).append(FIELD_SEP);
-			}
+
+			nvString.append(sName).append(PATH_DELIM).append(p.getKey());
+			nvString.append(EQ).append(getValueStr(value)).append(FIELD_SEP);
+
 		}
 		return nvString;
 	}
@@ -163,30 +169,30 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	/**
 	 * Determine if a given value can be meaningfully serialized to string.
 	 *
-	 * @param value
-	 *            value to test for serialization
+	 * @param value value to test for serialization
 	 * @return {@code true} if a given value can be serialized to string meaningfully, {@code false} - otherwise
 	 */
-	public static boolean isSerializable(Object value) {
-		return (value != null && !value.getClass().isArray()) 
-			&& (value.getClass().isPrimitive() || value instanceof String || value instanceof Number || value instanceof Boolean);
+	protected static boolean isSerializable(Object value) {
+		return value == null || value.getClass().isPrimitive() || value instanceof String || value instanceof Number
+				|| value instanceof Boolean || value instanceof Character;
+
+	}
+
+	protected String getSnapNameStr(String propName) {
+		return propName.replace(EQ, PATH_DELIM).replace(FIELD_SEP, "!");
 	}
 
 	/**
 	 * Makes decorated string representation of argument attribute value.
-	 * <p>
-	 * If {@link #quoteStringValue} is set to {@code true} - {@link String} types values are surrounded with {@code "}
-	 * symbol.
 	 *
-	 * @param value
-	 *            attribute value
+	 * @param value attribute value
 	 * @return decorated string representation of attribute value
 	 *
 	 * @see #toString(Object)
 	 */
 	protected String getValueStr(Object value) {
-		if (quoteStringValue && (value instanceof String)) {
-			return Utils.quote((String) value);
+		if (serializeSimpleTypesOnly && !isSerializable(value)) {
+			return value == null ? "<null>" : "<unsupported type=" + value.getClass() + ">";
 		}
 
 		return toString(value);
@@ -195,8 +201,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	/**
 	 * Makes string representation of argument attribute value.
 	 * 
-	 * @param value
-	 *            attribute value
+	 * @param value attribute value
 	 * @return string representation of attribute value
 	 */
 	protected String toString(Object value) {
@@ -207,6 +212,6 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	public void setConfiguration(Map<String, Object> settings) {
 		super.setConfiguration(settings);
 
-		quoteStringValue = Utils.getBoolean("QuoteStringValues", settings, quoteStringValue);
+		serializeSimpleTypesOnly = Utils.getBoolean("SerializeSimplesOnly", settings, serializeSimpleTypesOnly);
 	}
 }

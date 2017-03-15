@@ -27,8 +27,8 @@ import com.jkoolcloud.tnt4j.core.Snapshot;
 import com.jkoolcloud.tnt4j.utils.Utils;
 
 /**
- * This class provides key/value formatting for tnt4j activities, events and 
- * snapshots. The output format follows the following format:
+ * This class provides key/value formatting for tnt4j activities, events and snapshots. The output format follows the
+ * following format:
  * <p>
  * {@code "OBJ:object-path\name1=value1,....,object-path\nameN=valueN"}.
  * </p>
@@ -41,9 +41,6 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 	private static final String[][] PATH_KEYS = new String[][] { { "domain" }, { "type" }, { "name", "brokerName" },
 			{ "service", "connector", "destinationType" }, { "instanceName", "connectorName", "destinationName" } };
 
-	private static final String PATH_DELIM = "\\";
-	private static final String EQ = "=";
-
 	private Comparator<Snapshot> snapshotComparator;
 	private Comparator<Property> propertyComparator;
 
@@ -53,7 +50,7 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 
 	@Override
 	protected Collection<Snapshot> getSnapshots(Operation op) {
-		Collection<Snapshot> sList = op.getSnapshots();
+		Collection<Snapshot> sList = super.getSnapshots(op);
 
 		Snapshot[] sa = new Snapshot[sList.size()];
 		sa = sList.toArray(sa);
@@ -67,9 +64,8 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 			snapshotComparator = new Comparator<Snapshot>() {
 				@Override
 				public int compare(Snapshot s1, Snapshot s2) {
-					// return s1.getCategory().compareTo(s2.getCategory()) + s1.getName().compareTo(s2.getName());
-					String s1Path = makeObjNamePath(s1.getName());
-					String s2Path = makeObjNamePath(s2.getName());
+					String s1Path = getSnapNameStr(s1.getName());
+					String s2Path = getSnapNameStr(s2.getName());
 
 					return s1Path.compareTo(s2Path);
 				}
@@ -80,20 +76,8 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 	}
 
 	@Override
-	protected StringBuilder toString(StringBuilder nvString, Snapshot snap) {
-		Collection<Property> list = getProperties(snap);
-		for (Property p : list) {
-			Object value = p.getValue();
-
-			String name = makeObjNamePath(snap.getName());
-			nvString.append(name).append(PATH_DELIM).append(p.getKey());
-			nvString.append(EQ).append(getValueStr(value)).append(FIELD_SEP);
-		}
-		return nvString;
-	}
-
-	private Collection<Property> getProperties(Snapshot snapshot) {
-		Collection<Property> pList = snapshot.getSnapshot();
+	protected Collection<Property> getProperties(Snapshot snap) {
+		Collection<Property> pList = super.getProperties(snap);
 
 		Property[] pa = new Property[pList.size()];
 		pa = pList.toArray(pa);
@@ -115,11 +99,8 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 		return propertyComparator;
 	}
 
-	private static String makeObjName(String objCanonName) {
-		return objCanonName.replace(EQ, PATH_DELIM).replace(FIELD_SEP, "!");
-	}
-
-	private static String makeObjNamePath(String objCanonName) {
+	@Override
+	protected String getSnapNameStr(String objCanonName) {
 		if (Utils.isEmpty(objCanonName)) {
 			return objCanonName;
 		}
@@ -138,7 +119,7 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 		String propsStr = objCanonName.substring(ddIdx + 1);
 
 		if (propsStr.length() > 0) {
-			propsStr = propsStr.replaceAll(FIELD_SEP, "\n");
+			propsStr = propsStr.replaceAll(FIELD_SEP, END_SEP);
 			Reader rdr = new StringReader(propsStr);
 			try {
 				props.load(rdr);
