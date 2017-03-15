@@ -195,7 +195,10 @@ public class FactNameValueFormatter extends DefaultFormatter {
 			return value == null ? "<null>" : "<unsupported type=" + value.getClass() + ">";
 		}
 
-		return toString(value);
+		String valStr = toString(value);
+		valStr = valStr.replaceAll("\n", "\\n").replaceAll("\r", "\\r");
+
+		return valStr;
 	}
 
 	/**
