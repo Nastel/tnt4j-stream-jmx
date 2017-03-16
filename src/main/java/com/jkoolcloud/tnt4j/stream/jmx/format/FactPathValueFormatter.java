@@ -119,7 +119,7 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 		String propsStr = objCanonName.substring(ddIdx + 1);
 
 		if (propsStr.length() > 0) {
-			propsStr = propsStr.replaceAll(FIELD_SEP, END_SEP);
+			propsStr = propsStr.replace(FIELD_SEP, LF);
 			Reader rdr = new StringReader(propsStr);
 			try {
 				props.load(rdr);

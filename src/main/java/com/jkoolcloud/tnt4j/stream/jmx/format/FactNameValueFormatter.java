@@ -42,8 +42,10 @@ import com.jkoolcloud.tnt4j.utils.Utils;
  * @see SchedulerImpl
  */
 public class FactNameValueFormatter extends DefaultFormatter {
+	public static final String LF = "\n";
+	public static final String CR = "\r";
 	public static final String FIELD_SEP = ",";
-	public static final String END_SEP = "\n";
+	public static final String END_SEP = LF;
 	public static final String PATH_DELIM = "\\";
 	public static final String EQ = "=";
 
@@ -203,7 +205,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		}
 
 		String valStr = toString(value);
-		valStr = valStr.replaceAll("\n", "\\n").replaceAll("\r", "\\r");
+		valStr = valStr.replace(LF, "\\n").replace(CR, "\\r");
 
 		return valStr;
 	}
