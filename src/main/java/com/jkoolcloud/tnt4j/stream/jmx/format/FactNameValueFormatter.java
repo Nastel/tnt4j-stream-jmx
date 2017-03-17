@@ -205,7 +205,8 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		}
 
 		String valStr = toString(value);
-		valStr = valStr.replace(LF, "\\n").replace(CR, "\\r");
+		// valStr = valStr.replace(LF, "\\n").replace(CR, "\\r");
+		valStr = valStr.replace(LF, "_LF_").replace(CR, "_CR_");
 
 		return valStr;
 	}
