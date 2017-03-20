@@ -64,22 +64,22 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		if (event.getCorrelator() != null) {
 			Object[] cids = event.getCorrelator().toArray();
 			if (cids.length > 0) {
-				nvString.append("corrid=").append(cids[0]).append(FIELD_SEP);
+				nvString.append("corrid=").append(getValueStr(cids[0])).append(FIELD_SEP);
 			}
 		}
 		if (event.getTag() != null) {
 			Object[] cids = event.getTag().toArray();
 			if (cids.length > 0) {
-				nvString.append("tag=").append(cids[0]).append(FIELD_SEP);
+				nvString.append("tag=").append(getValueStr(cids[0])).append(FIELD_SEP);
 			}
 		}
-		if (event.getOperation().getUser() != null) nvString.append("user=").append(event.getOperation().getUser()).append(FIELD_SEP);
-		if (event.getLocation() != null) nvString.append("Self\\location=").append(event.getLocation()).append(FIELD_SEP);
-		nvString.append("Self\\level=").append(event.getOperation().getSeverity()).append(FIELD_SEP);
-		nvString.append("Self\\pid=").append(event.getOperation().getPID()).append(FIELD_SEP);
-		nvString.append("Self\\tid=").append(event.getOperation().getTID()).append(FIELD_SEP);
-		nvString.append("Self\\tid=").append(event.getOperation().getTID()).append(FIELD_SEP);
-		nvString.append("Self\\elapsed.usec=").append(event.getOperation().getElapsedTimeUsec()).append(FIELD_SEP);
+		if (event.getOperation().getUser() != null) nvString.append("user=").append(getValueStr(event.getOperation().getUser())).append(FIELD_SEP);
+		if (event.getLocation() != null) nvString.append("Self\\location=").append(getValueStr(event.getLocation())).append(FIELD_SEP);
+		nvString.append("Self\\level=").append(getValueStr(event.getOperation().getSeverity())).append(FIELD_SEP);
+		nvString.append("Self\\pid=").append(getValueStr(event.getOperation().getPID())).append(FIELD_SEP);
+		nvString.append("Self\\tid=").append(getValueStr(event.getOperation().getTID())).append(FIELD_SEP);
+		nvString.append("Self\\tid=").append(getValueStr(event.getOperation().getTID())).append(FIELD_SEP);
+		nvString.append("Self\\elapsed.usec=").append(getValueStr(event.getOperation().getElapsedTimeUsec())).append(FIELD_SEP);
 
 		Collection<Snapshot> slist = getSnapshots(event.getOperation());
 		for (Snapshot snap : slist) {
@@ -102,17 +102,17 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		if (event.getCorrelator() != null) {
 			Object[] cids = event.getCorrelator().toArray();
 			if (cids.length > 0) {
-				nvString.append("Self\\corrid=").append(cids[0]).append(FIELD_SEP);
+				nvString.append("Self\\corrid=").append(getValueStr(cids[0])).append(FIELD_SEP);
 			}
 		}
-		if (event.getUser() != null) nvString.append("user=").append(event.getUser()).append(FIELD_SEP);
-		if (event.getLocation() != null) nvString.append("Self\\location=").append(event.getLocation()).append(FIELD_SEP);
-		nvString.append("Self\\level=").append(event.getSeverity()).append(FIELD_SEP);
-		nvString.append("Self\\id.count=").append(event.getIdCount()).append(FIELD_SEP);
-		nvString.append("Self\\pid=").append(event.getPID()).append(FIELD_SEP);
-		nvString.append("Self\\tid=").append(event.getTID()).append(FIELD_SEP);
-		nvString.append("Self\\snap.count=").append(event.getSnapshotCount()).append(FIELD_SEP);
-		nvString.append("Self\\elapsed.usec=").append(event.getElapsedTimeUsec()).append(FIELD_SEP);
+		if (event.getUser() != null) nvString.append("user=").append(getValueStr(event.getUser())).append(FIELD_SEP);
+		if (event.getLocation() != null) nvString.append("Self\\location=").append(getValueStr(event.getLocation())).append(FIELD_SEP);
+		nvString.append("Self\\level=").append(getValueStr(event.getSeverity())).append(FIELD_SEP);
+		nvString.append("Self\\id.count=").append(getValueStr(event.getIdCount())).append(FIELD_SEP);
+		nvString.append("Self\\pid=").append(getValueStr(event.getPID())).append(FIELD_SEP);
+		nvString.append("Self\\tid=").append(getValueStr(event.getTID())).append(FIELD_SEP);
+		nvString.append("Self\\snap.count=").append(getValueStr(event.getSnapshotCount())).append(FIELD_SEP);
+		nvString.append("Self\\elapsed.usec=").append(getValueStr(event.getElapsedTimeUsec())).append(FIELD_SEP);
 
 		Collection<Snapshot> slist = getSnapshots(event);
 		for (Snapshot snap : slist) {
@@ -137,8 +137,8 @@ public class FactNameValueFormatter extends DefaultFormatter {
 
 		nvString.append("OBJ:Streams");
 		toString(nvString, source).append("\\Message").append(FIELD_SEP);
-		nvString.append("Self\\level=").append(level).append(FIELD_SEP);
-		nvString.append("Self\\msg-text=\"").append(Utils.format(msg, args)).append("\"").append(END_SEP);
+		nvString.append("Self\\level=").append(getValueStr(level)).append(FIELD_SEP);
+		nvString.append("Self\\msg-text=").append(Utils.quote(Utils.format(msg, args))).append(END_SEP);
 		return nvString.toString();
 	}
 
@@ -161,9 +161,8 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		for (Property p : list) {
 			Object value = p.getValue();
 
-			nvString.append(sName).append(PATH_DELIM).append(p.getKey());
-			nvString.append(EQ).append(getValueStr(value)).append(FIELD_SEP);
-
+			nvString.append(getKeyStr(sName, p.getKey()));
+			nvString.append(EQ).append(getValueStr(value)).append(FIELD_SEP);			
 		}
 		return nvString;
 	}
@@ -175,13 +174,21 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	 * @return {@code true} if a given value can be serialized to string meaningfully, {@code false} - otherwise
 	 */
 	protected static boolean isSerializable(Object value) {
-		return value == null || value.getClass().isPrimitive() || value instanceof String || value instanceof Number
-				|| value instanceof Boolean || value instanceof Character;
+		return value == null || value.getClass().isPrimitive() || value.getClass().isEnum() || value instanceof String
+				|| value instanceof Number || value instanceof Boolean || value instanceof Character;
 
 	}
 
 	protected String getSnapNameStr(String propName) {
 		return propName.replace(EQ, PATH_DELIM).replace(FIELD_SEP, "!");
+	}
+
+	protected String getKeyStr(String sName, String pKey) {
+		String keyStr = sName + PATH_DELIM + pKey;
+
+		keyStr = keyStr.replace(" ", "_");
+
+		return keyStr;
 	}
 
 	/**
@@ -200,12 +207,18 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	 * @see #toString(Object)
 	 */
 	protected String getValueStr(Object value) {
+		String valStr;
+
 		if (serializeSimpleTypesOnly && !isSerializable(value)) {
-			return value == null ? "<null>" : "<unsupported type=" + value.getClass() + ">";
+			valStr = value == null ? "<null>" : "<unsupported type>";// : " + value.getClass() + ">";
+			//System.out.println(
+			//		"Unsupported type=" + (value == null ? null : value.getClass()) + " value=" + toString(value));
+		} else {
+			valStr = toString(value);
 		}
 
-		String valStr = toString(value);
 		valStr = valStr.replace(LF, "\\n").replace(CR, "\\r");
+		valStr = valStr.replace(";", "|").replace(",", "|").replace("[", "{(").replace("]", ")}");
 
 		return valStr;
 	}
