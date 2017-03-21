@@ -16,7 +16,12 @@
 package com.jkoolcloud.tnt4j.stream.jmx.format;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.jkoolcloud.tnt4j.core.OpLevel;
 import com.jkoolcloud.tnt4j.core.Operation;
@@ -49,7 +54,12 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	public static final String PATH_DELIM = "\\";
 	public static final String EQ = "=";
 
+	protected static final Pattern REP_CFG_PATTERN = Pattern.compile("\"(\\s*[^\"]+\\s*)\"->\"(\\s*[^\"]+\\s*)\"");
+
 	protected boolean serializeSimpleTypesOnly = false;
+
+	protected Map<String, String> keyReplacements = new HashMap<>();
+	protected Map<String, String> valueReplacements = new HashMap<>();
 
 	public FactNameValueFormatter() {
 		super("time.stamp={2},level={1},source={3},msg=\"{0}\"");
@@ -220,16 +230,20 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	/**
 	 * Makes decorated string representation of argument attribute key.
 	 * <p>
-	 * Key representation string containing {@code " "} symbol gets it replaced by {@code "_"}.
+	 * Key representation string gets symbols replaced using ones defined in {@link #keyReplacements} map.
 	 * 
 	 * @param sName snapshot name
 	 * @param pKey property key
 	 * @return decorated string representation of attribute key
+	 *
+	 * @see #initDefaultKeyReplacements()
 	 */
 	protected String getKeyStr(String sName, String pKey) {
 		String keyStr = sName + PATH_DELIM + pKey;
 
-		keyStr = keyStr.replace(" ", "_");
+		for (Map.Entry<String, String> kre : keyReplacements.entrySet()) {
+			keyStr = keyStr.replace(kre.getKey(), kre.getValue());
+		}
 
 		return keyStr;
 	}
@@ -243,18 +257,13 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	 * Value representation string containing {@code "\n"} or {@code "\r"} symbols gets those replaced by escaped
 	 * representations {@code "\\n"} amd {@code "\\r"}.
 	 * <p>
-	 * Also replaces set of AutoPilot sensitive characters:
-	 * <ul>
-	 * <li>{@code ";"} to {@code "|"}</li>
-	 * <li>{@code ","} to {@code "|"}</li>
-	 * <li>{@code "["} to {@code "{("}</li>
-	 * <li>{@code "["} to {@code ")}"}</li>
-	 * </ul>
+	 * Value representation string gets symbols replaced using ones defined in {@link #valueReplacements} map.
 	 *
 	 * @param value attribute value
 	 * @return decorated string representation of attribute value
 	 *
 	 * @see #toString(Object)
+	 * @see #initDefaultValueReplacements()
 	 */
 	protected String getValueStr(Object value) {
 		String valStr;
@@ -268,8 +277,9 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		}
 
 		valStr = valStr.replace(LF, "\\n").replace(CR, "\\r");
-		// TODO: from configuration
-		valStr = valStr.replace(";", "|").replace(",", "|").replace("[", "{(").replace("]", ")}");
+		for (Map.Entry<String, String> vre : valueReplacements.entrySet()) {
+			valStr = valStr.replace(vre.getKey(), vre.getValue());
+		}
 
 		return valStr;
 	}
@@ -289,5 +299,61 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		super.setConfiguration(settings);
 
 		serializeSimpleTypesOnly = Utils.getBoolean("SerializeSimplesOnly", settings, serializeSimpleTypesOnly);
+
+		String kReplacements = Utils.getString("KeyReplacements", settings, "");
+
+		if (StringUtils.isEmpty(kReplacements)) {
+			initDefaultKeyReplacements();
+		} else {
+			Matcher m = REP_CFG_PATTERN.matcher(kReplacements);
+
+			while (m.find()) {
+				keyReplacements.put(m.group(1), m.group(2));
+			}
+		}
+
+		String vReplacements = Utils.getString("ValueReplacements", settings, "");
+		if (StringUtils.isEmpty(vReplacements)) {
+			initDefaultValueReplacements();
+		} else {
+			Matcher m = REP_CFG_PATTERN.matcher(vReplacements);
+
+			while (m.find()) {
+				valueReplacements.put(m.group(1), m.group(2));
+			}
+		}
+
+		System.currentTimeMillis();
+	}
+
+	/**
+	 * Initializes default set symbol replacements for a attribute keys.
+	 *
+	 * <p>
+	 * Default keys string replacements mapping is:
+	 * <ul>
+	 * <li>{@code " "} to {@code "_"}</li>
+	 * </ul>
+	 */
+	protected void initDefaultKeyReplacements() {
+		keyReplacements.put(" ", "_");
+	}
+
+	/**
+	 * Initializes default set symbol replacements for a attribute values.
+	 * <p>
+	 * Default value string replacements mapping is:
+	 * <ul>
+	 * <li>{@code ";"} to {@code "|"}</li>
+	 * <li>{@code ","} to {@code "|"}</li>
+	 * <li>{@code "["} to {@code "{("}</li>
+	 * <li>{@code "["} to {@code ")}"}</li>
+	 * </ul>
+	 */
+	protected void initDefaultValueReplacements() {
+		valueReplacements.put(";", "|");
+		valueReplacements.put(",", "|");
+		valueReplacements.put("[", "{(");
+		valueReplacements.put("]", ")}");
 	}
 }
