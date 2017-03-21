@@ -54,7 +54,11 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	public static final String PATH_DELIM = "\\";
 	public static final String EQ = "=";
 
-	protected static final Pattern REP_CFG_PATTERN = Pattern.compile("\"(\\s*[^\"]+\\s*)\"->\"(\\s*[^\"]+\\s*)\"");
+	// NOTE: group 1 - original, group 2 - replacement
+	// protected static final Pattern REP_CFG_PATTERN = Pattern.compile("\"(\\s*[^\"]+\\s*)\"->\"(\\s*[^\"]+\\s*)\"");
+	// NOTE: group 1 - original, group 3 - replacement. Properly handles escaped quotes within quotes.
+	protected static final Pattern REP_CFG_PATTERN = Pattern
+			.compile("\"(\\s*([^\"\\\\]|\\\\.)+\\s*)\"->\"(\\s*([^\"\\\\]|\\\\.)+\\s*)\"");
 
 	protected boolean serializeSimpleTypesOnly = false;
 
@@ -308,7 +312,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 			Matcher m = REP_CFG_PATTERN.matcher(kReplacements);
 
 			while (m.find()) {
-				keyReplacements.put(m.group(1), m.group(2));
+				keyReplacements.put(m.group(1), m.group(3));
 			}
 		}
 
@@ -319,11 +323,9 @@ public class FactNameValueFormatter extends DefaultFormatter {
 			Matcher m = REP_CFG_PATTERN.matcher(vReplacements);
 
 			while (m.find()) {
-				valueReplacements.put(m.group(1), m.group(2));
+				valueReplacements.put(m.group(1), m.group(3));
 			}
 		}
-
-		System.currentTimeMillis();
 	}
 
 	/**
