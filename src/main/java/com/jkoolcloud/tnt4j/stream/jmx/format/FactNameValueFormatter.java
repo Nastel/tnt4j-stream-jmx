@@ -88,6 +88,12 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		return nvString.append(END_SEP).toString();
 	}
 
+	/**
+	 * Returns operation contained snpshots collcetion.
+	 * 
+	 * @param op operation isntance
+	 * @return collection of operation snapshots
+	 */
 	protected Collection<Snapshot> getSnapshots(Operation op) {
 		return op.getSnapshots();
 	}
@@ -142,6 +148,13 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		return nvString.toString();
 	}
 
+	/**
+	 * Makes string representaion of source and appends it to provided string builder.
+	 * 
+	 * @param nvString string builder instance to append
+	 * @param source source instance to represent as string
+	 * @return appended string builder reference
+	 */
 	protected StringBuilder toString(StringBuilder nvString, Source source) {
 		Source parent = source.getSource();
 		if (parent != null) {
@@ -151,10 +164,23 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		return nvString;
 	}
 
+	/**
+	 * Returns snapshot contained properties collcetion.
+	 * 
+	 * @param snap snpashot instance
+	 * @return collection of snapshot properties
+	 */
 	protected Collection<Property> getProperties(Snapshot snap) {
 		return snap.getSnapshot();
 	}
 
+	/**
+	 * Makes string representaion of snapshot and appends it to provided string builder.
+	 * 
+	 * @param nvString string builder instance to append
+	 * @param snap snapshot instance to represent as string
+	 * @return appended string builder reference
+	 */
 	protected StringBuilder toString(StringBuilder nvString, Snapshot snap) {
 		Collection<Property> list = getProperties(snap);
 		String sName = getSnapNameStr(snap.getName());
@@ -162,7 +188,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 			Object value = p.getValue();
 
 			nvString.append(getKeyStr(sName, p.getKey()));
-			nvString.append(EQ).append(getValueStr(value)).append(FIELD_SEP);			
+			nvString.append(EQ).append(getValueStr(value)).append(FIELD_SEP);
 		}
 		return nvString;
 	}
@@ -179,10 +205,27 @@ public class FactNameValueFormatter extends DefaultFormatter {
 
 	}
 
-	protected String getSnapNameStr(String propName) {
-		return propName.replace(EQ, PATH_DELIM).replace(FIELD_SEP, "!");
+	/**
+	 * Makes decorated string representation of snpashot name.
+	 * <p>
+	 * Replaces "{@value #EQ}" to "{@value #PATH_DELIM}" and "{@value #FIELD_SEP}" to {@code "!"}.
+	 * 
+	 * @param snapName snapshot name
+	 * @return decorated string representation of snpshot name
+	 */
+	protected String getSnapNameStr(String snapName) {
+		return snapName.replace(EQ, PATH_DELIM).replace(FIELD_SEP, "!");
 	}
 
+	/**
+	 * Makes decorated string representation of argument attribute key.
+	 * <p>
+	 * Key representation string containing {@code " "} symbol gets it replaced by {@code "_"}.
+	 * 
+	 * @param sName snapshot name
+	 * @param pKey property key
+	 * @return decorated string representation of attribute key
+	 */
 	protected String getKeyStr(String sName, String pKey) {
 		String keyStr = sName + PATH_DELIM + pKey;
 
@@ -195,11 +238,18 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	 * Makes decorated string representation of argument attribute value.
 	 * <p>
 	 * If property {@link #serializeSimpleTypesOnly} is set to {@code true} - validates if value can be represented as
-	 * simple type. If no, then actual value is replaced by dummy string
-	 * "{@code <unsupported type=\" + value.getClass() + \">}".
+	 * simple type. If no, then actual value is replaced by dummy string {@code "<unsupported value type>"}.
 	 * <p>
-	 * Value representation string containing "{@code \n}" or "{@code \r}" symbols gets those replaced by escaped
-	 * representations "{@code \\n}" amd "{@code \\r}".
+	 * Value representation string containing {@code "\n"} or {@code "\r"} symbols gets those replaced by escaped
+	 * representations {@code "\\n"} amd {@code "\\r"}.
+	 * <p>
+	 * Also replaces set of AutoPilot sensitive characters:
+	 * <ul>
+	 * <li>{@code ";"} to {@code "|"}</li>
+	 * <li>{@code ","} to {@code "|"}</li>
+	 * <li>{@code "["} to {@code "{("}</li>
+	 * <li>{@code "["} to {@code ")}"}</li>
+	 * </ul>
 	 *
 	 * @param value attribute value
 	 * @return decorated string representation of attribute value
@@ -210,14 +260,15 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		String valStr;
 
 		if (serializeSimpleTypesOnly && !isSerializable(value)) {
-			valStr = value == null ? "<null>" : "<unsupported type>";// : " + value.getClass() + ">";
-			//System.out.println(
-			//		"Unsupported type=" + (value == null ? null : value.getClass()) + " value=" + toString(value));
+			valStr = value == null ? "<null>" : "<unsupported value type>";// : " + value.getClass() + ">";
+			// System.out.println("Unsupported value type=" + (value == null ? null : value.getClass()) + " value="
+			// + toString(value));
 		} else {
 			valStr = toString(value);
 		}
 
 		valStr = valStr.replace(LF, "\\n").replace(CR, "\\r");
+		// TODO: from configuration
 		valStr = valStr.replace(";", "|").replace(",", "|").replace("[", "{(").replace("]", ")}");
 
 		return valStr;
