@@ -418,6 +418,10 @@ Below is an example of TNT4J stream definition where all Stream-JMX streams are 
 	;event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.FactPathValueFormatter
 	; If formatter should serialize only simple types JMX attribute values. Rest are replaced by dummy value.
 	event.formatter.SerializeSimplesOnly: true
+	; Mapping of attribute key string symbol replacements
+	event.formatter.KeyReplacements: " "->"_"
+	; Mapping of attribute value string symbol replacements
+	event.formatter.ValueReplacements: ";"->"|" ","->"|" "["->"{(" "]"->")}"
 
 	tracking.selector: com.jkoolcloud.tnt4j.selector.DefaultTrackingSelector
 	tracking.selector.Repository: com.jkoolcloud.tnt4j.repository.FileTokenRepository
@@ -453,6 +457,10 @@ To stream Stream-JMX into a log file `MyStream.log`:
 	;event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.FactPathValueFormatter
 	; If formatter should serialize only simple types JMX attribute values. Rest are replaced by dummy value.
 	event.formatter.SerializeSimplesOnly: true
+	; Mapping of attribute key string symbol replacements
+	event.formatter.KeyReplacements: " "->"_"
+	; Mapping of attribute value string symbol replacements
+	event.formatter.ValueReplacements: ";"->"|" ","->"|" "["->"{(" "]"->")}"
 
 	tracking.selector: com.jkoolcloud.tnt4j.selector.DefaultTrackingSelector
 	tracking.selector.Repository: com.jkoolcloud.tnt4j.repository.FileTokenRepository
