@@ -40,7 +40,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <release.deploy.dir>../build/${project.name}</release.deploy.dir>
-        <maven.test.skip>true</maven.test.skip>
+        <skipTests>true</skipTests>
         <product.vendor>jKool, LLC</product.vendor>
     </properties>
 
@@ -186,7 +186,7 @@
                 <version>2.19.1</version>
                 <inherited>true</inherited>
                 <configuration>
-                    <skipTests>${maven.test.skip}</skipTests>
+                    <skipTests>${skipTests}</skipTests>
                 </configuration>
             </plugin>
             <plugin>
