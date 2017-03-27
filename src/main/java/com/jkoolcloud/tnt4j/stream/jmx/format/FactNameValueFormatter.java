@@ -18,6 +18,7 @@ package com.jkoolcloud.tnt4j.stream.jmx.format;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -78,22 +79,21 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		toString(nvString, event.getSource()).append(event.getOperation().getName()).append("\\Events").append(FIELD_SEP);
 
 		if (event.getCorrelator() != null) {
-			Object[] cids = event.getCorrelator().toArray();
-			if (cids.length > 0) {
-				nvString.append("corrid=").append(getValueStr(cids[0])).append(FIELD_SEP);
+			Set<String> cids = event.getCorrelator();
+			if (!cids.isEmpty()) {
+				nvString.append("Self\\corrid=").append(getValueStr(toString(cids))).append(FIELD_SEP);
 			}
 		}
 		if (event.getTag() != null) {
-			Object[] cids = event.getTag().toArray();
-			if (cids.length > 0) {
-				nvString.append("tag=").append(getValueStr(cids[0])).append(FIELD_SEP);
+			Set<String> tags = event.getTag();
+			if (!tags.isEmpty()) {
+				nvString.append("Self\\tag=").append(getValueStr(toString(tags))).append(FIELD_SEP);
 			}
 		}
-		if (event.getOperation().getUser() != null) nvString.append("user=").append(getValueStr(event.getOperation().getUser())).append(FIELD_SEP);
+		if (event.getOperation().getUser() != null) nvString.append("Self\\user=").append(getValueStr(event.getOperation().getUser())).append(FIELD_SEP);
 		if (event.getLocation() != null) nvString.append("Self\\location=").append(getValueStr(event.getLocation())).append(FIELD_SEP);
 		nvString.append("Self\\level=").append(getValueStr(event.getOperation().getSeverity())).append(FIELD_SEP);
 		nvString.append("Self\\pid=").append(getValueStr(event.getOperation().getPID())).append(FIELD_SEP);
-		nvString.append("Self\\tid=").append(getValueStr(event.getOperation().getTID())).append(FIELD_SEP);
 		nvString.append("Self\\tid=").append(getValueStr(event.getOperation().getTID())).append(FIELD_SEP);
 		nvString.append("Self\\elapsed.usec=").append(getValueStr(event.getOperation().getElapsedTimeUsec())).append(FIELD_SEP);
 
@@ -123,12 +123,12 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		toString(nvString, activity.getSource()).append("\\Activities").append(FIELD_SEP);
 
 		if (activity.getCorrelator() != null) {
-			Object[] cids = activity.getCorrelator().toArray();
-			if (cids.length > 0) {
-				nvString.append("Self\\corrid=").append(getValueStr(cids[0])).append(FIELD_SEP);
+			Set<String> cids = activity.getCorrelator();
+			if (!cids.isEmpty()) {
+				nvString.append("Self\\corrid=").append(getValueStr(toString(cids))).append(FIELD_SEP);
 			}
 		}
-		if (activity.getUser() != null) nvString.append("user=").append(getValueStr(activity.getUser())).append(FIELD_SEP);
+		if (activity.getUser() != null) nvString.append("Self\\user=").append(getValueStr(activity.getUser())).append(FIELD_SEP);
 		if (activity.getLocation() != null) nvString.append("Self\\location=").append(getValueStr(activity.getLocation())).append(FIELD_SEP);
 		nvString.append("Self\\level=").append(getValueStr(activity.getSeverity())).append(FIELD_SEP);
 		nvString.append("Self\\id.count=").append(getValueStr(activity.getIdCount())).append(FIELD_SEP);
@@ -312,6 +312,13 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	 * @return string representation of attribute value
 	 */
 	protected String toString(Object value) {
+		if (value instanceof Collection) {
+			Collection<?> c = (Collection<?>) value;
+			Object[] dca = c.toArray();
+
+			value = dca[0];
+		}
+
 		return String.valueOf(value);
 	}
 
