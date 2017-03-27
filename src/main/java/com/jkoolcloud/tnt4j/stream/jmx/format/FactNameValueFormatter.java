@@ -24,10 +24,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.jkoolcloud.tnt4j.core.OpLevel;
-import com.jkoolcloud.tnt4j.core.Operation;
-import com.jkoolcloud.tnt4j.core.Property;
-import com.jkoolcloud.tnt4j.core.Snapshot;
+import com.jkoolcloud.tnt4j.core.*;
 import com.jkoolcloud.tnt4j.format.DefaultFormatter;
 import com.jkoolcloud.tnt4j.source.Source;
 import com.jkoolcloud.tnt4j.stream.jmx.scheduler.SchedulerImpl;
@@ -78,24 +75,32 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		nvString.append("OBJ:Streams");
 		toString(nvString, event.getSource()).append(event.getOperation().getName()).append("\\Events").append(FIELD_SEP);
 
+		Snapshot selfSnapshot = new PropertySnapshot("Self");
+
 		if (event.getCorrelator() != null) {
 			Set<String> cids = event.getCorrelator();
 			if (!cids.isEmpty()) {
-				nvString.append("Self\\corrid=").append(getValueStr(toString(cids))).append(FIELD_SEP);
+				selfSnapshot.add("corrid", cids);
 			}
 		}
 		if (event.getTag() != null) {
 			Set<String> tags = event.getTag();
 			if (!tags.isEmpty()) {
-				nvString.append("Self\\tag=").append(getValueStr(toString(tags))).append(FIELD_SEP);
+				selfSnapshot.add("tag", tags);
 			}
 		}
-		if (event.getOperation().getUser() != null) nvString.append("Self\\user=").append(getValueStr(event.getOperation().getUser())).append(FIELD_SEP);
-		if (event.getLocation() != null) nvString.append("Self\\location=").append(getValueStr(event.getLocation())).append(FIELD_SEP);
-		nvString.append("Self\\level=").append(getValueStr(event.getOperation().getSeverity())).append(FIELD_SEP);
-		nvString.append("Self\\pid=").append(getValueStr(event.getOperation().getPID())).append(FIELD_SEP);
-		nvString.append("Self\\tid=").append(getValueStr(event.getOperation().getTID())).append(FIELD_SEP);
-		nvString.append("Self\\elapsed.usec=").append(getValueStr(event.getOperation().getElapsedTimeUsec())).append(FIELD_SEP);
+		if (event.getOperation().getUser() != null) {
+			selfSnapshot.add("user", event.getOperation().getUser());
+		}
+		if (event.getLocation() != null) {
+			selfSnapshot.add("location", event.getLocation());
+		}
+		selfSnapshot.add("level", event.getOperation().getSeverity());
+		selfSnapshot.add("pid", event.getOperation().getPID());
+		selfSnapshot.add("tid", event.getOperation().getTID());
+		selfSnapshot.add("elapsed.usec", event.getOperation().getElapsedTimeUsec());
+
+		event.getOperation().addSnapshot(selfSnapshot);
 
 		Collection<Snapshot> sList = getSnapshots(event.getOperation());
 		for (Snapshot snap : sList) {
@@ -122,20 +127,28 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		nvString.append("OBJ:Streams");
 		toString(nvString, activity.getSource()).append("\\Activities").append(FIELD_SEP);
 
+		Snapshot selfSnapshot = new PropertySnapshot("Self");
+
 		if (activity.getCorrelator() != null) {
 			Set<String> cids = activity.getCorrelator();
 			if (!cids.isEmpty()) {
-				nvString.append("Self\\corrid=").append(getValueStr(toString(cids))).append(FIELD_SEP);
+				selfSnapshot.add("corrid", cids);
 			}
 		}
-		if (activity.getUser() != null) nvString.append("Self\\user=").append(getValueStr(activity.getUser())).append(FIELD_SEP);
-		if (activity.getLocation() != null) nvString.append("Self\\location=").append(getValueStr(activity.getLocation())).append(FIELD_SEP);
-		nvString.append("Self\\level=").append(getValueStr(activity.getSeverity())).append(FIELD_SEP);
-		nvString.append("Self\\id.count=").append(getValueStr(activity.getIdCount())).append(FIELD_SEP);
-		nvString.append("Self\\pid=").append(getValueStr(activity.getPID())).append(FIELD_SEP);
-		nvString.append("Self\\tid=").append(getValueStr(activity.getTID())).append(FIELD_SEP);
-		nvString.append("Self\\snap.count=").append(getValueStr(activity.getSnapshotCount())).append(FIELD_SEP);
-		nvString.append("Self\\elapsed.usec=").append(getValueStr(activity.getElapsedTimeUsec())).append(FIELD_SEP);
+		if (activity.getUser() != null) {
+			selfSnapshot.add("user", activity.getUser());
+		}
+		if (activity.getLocation() != null) {
+			selfSnapshot.add("location", activity.getLocation());
+		}
+		selfSnapshot.add("level", activity.getSeverity());
+		selfSnapshot.add("id.count", activity.getIdCount());
+		selfSnapshot.add("pid", activity.getPID());
+		selfSnapshot.add("tid", activity.getTID());
+		selfSnapshot.add("snap.count", activity.getSnapshotCount());
+		selfSnapshot.add("elapsed.usec", activity.getElapsedTimeUsec());
+
+		activity.addSnapshot(selfSnapshot);
 
 		Collection<Snapshot> sList = getSnapshots(activity);
 		for (Snapshot snap : sList) {
