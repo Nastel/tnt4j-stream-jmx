@@ -55,12 +55,12 @@ public class DefaultSampleListener implements SampleListener {
 	/**
 	 * Create an instance of {@code DefaultSampleListener} with a a given print stream and trace mode
 	 *
-	 * @param pstream print stream instance for tracing
+	 * @param pStream print stream instance for tracing
 	 * @param trace mode
 	 */
-	public DefaultSampleListener(PrintStream pstream, boolean trace) {
+	public DefaultSampleListener(PrintStream pStream, boolean trace) {
 		this.trace = trace;
-		this.out = pstream == null ? System.out : pstream;
+		this.out = pStream == null ? System.out : pStream;
 	}
 
 	/**
@@ -93,7 +93,7 @@ public class DefaultSampleListener implements SampleListener {
 					+ ", total.noop.count=" + context.getTotalNoopCount()
 					+ ", total.exclude.count=" + context.getExcludeAttrCount() 
 					+ ", total.error.count=" + context.getTotalErrorCount() 
-					+ ", trackind.id=" + activity.getTrackingId() 
+					+ ", tracking.id=" + activity.getTrackingId() 
 					+ ", mbean.server=" + context.getMBeanServer()
 					);
 		}
@@ -115,21 +115,21 @@ public class DefaultSampleListener implements SampleListener {
 	public void post(SampleContext context, Activity activity) {
 		if (trace) {
 			out.println("Post: " + activity.getName() 
-				+ ": sample.count=" + context.getSampleCount() 
-				+ ", mbean.count="+ getMBeanCount(context) 
-				+ ", elapsed.usec=" + activity.getElapsedTimeUsec() 
-				+ ", snap.count=" + activity.getSnapshotCount() 
-				+ ", id.count=" + activity.getIdCount() 
-				+ ", sample.mbeans.count=" + context.getMBeanCount() 
-				+ ", sample.metric.count=" + context.getLastMetricCount()
-				+ ", sample.time.usec=" + context.getLastSampleUsec() 
-				+ ", exclude.attr.set=" + excAttrs.size()
-				+ ", total.noop.count=" + context.getTotalNoopCount() 
-				+ ", total.exclude.count=" + context.getExcludeAttrCount() 
-				+ ", total.error.count=" + context.getTotalErrorCount()
-				+ ", trackind.id=" + activity.getTrackingId() 
-				+ ", mbean.server=" + context.getMBeanServer()
-				);
+					+ ": sample.count=" + context.getSampleCount() 
+					+ ", mbean.count=" + getMBeanCount(context) 
+					+ ", elapsed.usec=" + activity.getElapsedTimeUsec() 
+					+ ", snap.count=" + activity.getSnapshotCount() 
+					+ ", id.count=" + activity.getIdCount() 
+					+ ", sample.mbeans.count=" + context.getMBeanCount() 
+					+ ", sample.metric.count=" + context.getLastMetricCount()
+					+ ", sample.time.usec=" + context.getLastSampleUsec() 
+					+ ", exclude.attr.set=" + excAttrs.size()
+					+ ", total.noop.count=" + context.getTotalNoopCount() 
+					+ ", total.exclude.count=" + context.getExcludeAttrCount() 
+					+ ", total.error.count=" + context.getTotalErrorCount()
+					+ ", tracking.id=" + activity.getTrackingId() 
+					+ ", mbean.server=" + context.getMBeanServer()
+					);
 		}
 	}
 
@@ -160,16 +160,16 @@ public class DefaultSampleListener implements SampleListener {
 	}
 
 	@Override
-	public void register(SampleContext context, ObjectName oname) {
+	public void register(SampleContext context, ObjectName oName) {
 		if (trace) {
-			out.println("Register mbean: " + oname + ", mbean.server=" + context.getMBeanServer());
+			out.println("Register mbean: " + oName + ", mbean.server=" + context.getMBeanServer());
 		}
 	}
 
 	@Override
-	public void unregister(SampleContext context, ObjectName oname) {
+	public void unregister(SampleContext context, ObjectName oName) {
 		if (trace) {
-			out.println("Unregister mbean: " + oname + ", mbean.server=" + context.getMBeanServer());
+			out.println("Unregister mbean: " + oName + ", mbean.server=" + context.getMBeanServer());
 		}
 	}
 
@@ -193,19 +193,23 @@ public class DefaultSampleListener implements SampleListener {
 			CompositeData cdata = (CompositeData) value;
 			Set<String> keys = cdata.getCompositeType().keySet();
 			for (String key : keys) {
-				Object cval = cdata.get(key);
-				processAttrValue(snapshot, jinfo, propName + "\\" + key, cval);
+				Object cVal = cdata.get(key);
+				processAttrValue(snapshot, jinfo, propName + "\\" + key, cVal);
 			}
 		} else if (value instanceof TabularData) {
-			TabularData tdata = (TabularData) value;
-			Collection<?> values = tdata.values();
+			TabularData tData = (TabularData) value;
+			Collection<?> values = tData.values();
 			int row = 0;
-			for (Object cval : values) {
-				processAttrValue(snapshot, jinfo, propName + "\\" + (++row), cval);
+			for (Object tVal : values) {
+				processAttrValue(snapshot, jinfo, propName + "\\" + padNumber(++row), tVal);
 			}
 		} else {
 			snapshot.add(propName, value);
 		}
 		return snapshot;
+	}
+
+	private static String padNumber(int idx) {
+		return idx < 10 ? "0" + idx : String.valueOf(idx);
 	}
 }

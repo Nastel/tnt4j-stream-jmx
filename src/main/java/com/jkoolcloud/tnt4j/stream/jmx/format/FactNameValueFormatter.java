@@ -53,6 +53,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	public static final String END_SEP = LF;
 	public static final String PATH_DELIM = "\\";
 	public static final String EQ = "=";
+	public static final String FS_REP = "!";
 
 	// NOTE: group 1 - original, group 2 - replacement
 	// protected static final Pattern REP_CFG_PATTERN = Pattern.compile("\"(\\s*[^\"]+\\s*)\"->\"(\\s*[^\"]+\\s*)\"");
@@ -72,6 +73,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	@Override
 	public String format(TrackingEvent event) {
 		StringBuilder nvString = new StringBuilder(1024);
+
 		nvString.append("OBJ:Streams");
 		toString(nvString, event.getSource()).append(event.getOperation().getName()).append("\\Events").append(FIELD_SEP);
 
@@ -95,17 +97,18 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		nvString.append("Self\\tid=").append(getValueStr(event.getOperation().getTID())).append(FIELD_SEP);
 		nvString.append("Self\\elapsed.usec=").append(getValueStr(event.getOperation().getElapsedTimeUsec())).append(FIELD_SEP);
 
-		Collection<Snapshot> slist = getSnapshots(event.getOperation());
-		for (Snapshot snap : slist) {
+		Collection<Snapshot> sList = getSnapshots(event.getOperation());
+		for (Snapshot snap : sList) {
 			toString(nvString, snap);
 		}
+
 		return nvString.append(END_SEP).toString();
 	}
 
 	/**
-	 * Returns operation contained snpshots collcetion.
+	 * Returns operation contained snapshots collection.
 	 * 
-	 * @param op operation isntance
+	 * @param op operation instance
 	 * @return collection of operation snapshots
 	 */
 	protected Collection<Snapshot> getSnapshots(Operation op) {
@@ -113,29 +116,29 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	}
 
 	@Override
-	public String format(TrackingActivity event) {
+	public String format(TrackingActivity activity) {
 		StringBuilder nvString = new StringBuilder(1024);
 
 		nvString.append("OBJ:Streams");
-		toString(nvString, event.getSource()).append("\\Activities").append(FIELD_SEP);
+		toString(nvString, activity.getSource()).append("\\Activities").append(FIELD_SEP);
 
-		if (event.getCorrelator() != null) {
-			Object[] cids = event.getCorrelator().toArray();
+		if (activity.getCorrelator() != null) {
+			Object[] cids = activity.getCorrelator().toArray();
 			if (cids.length > 0) {
 				nvString.append("Self\\corrid=").append(getValueStr(cids[0])).append(FIELD_SEP);
 			}
 		}
-		if (event.getUser() != null) nvString.append("user=").append(getValueStr(event.getUser())).append(FIELD_SEP);
-		if (event.getLocation() != null) nvString.append("Self\\location=").append(getValueStr(event.getLocation())).append(FIELD_SEP);
-		nvString.append("Self\\level=").append(getValueStr(event.getSeverity())).append(FIELD_SEP);
-		nvString.append("Self\\id.count=").append(getValueStr(event.getIdCount())).append(FIELD_SEP);
-		nvString.append("Self\\pid=").append(getValueStr(event.getPID())).append(FIELD_SEP);
-		nvString.append("Self\\tid=").append(getValueStr(event.getTID())).append(FIELD_SEP);
-		nvString.append("Self\\snap.count=").append(getValueStr(event.getSnapshotCount())).append(FIELD_SEP);
-		nvString.append("Self\\elapsed.usec=").append(getValueStr(event.getElapsedTimeUsec())).append(FIELD_SEP);
+		if (activity.getUser() != null) nvString.append("user=").append(getValueStr(activity.getUser())).append(FIELD_SEP);
+		if (activity.getLocation() != null) nvString.append("Self\\location=").append(getValueStr(activity.getLocation())).append(FIELD_SEP);
+		nvString.append("Self\\level=").append(getValueStr(activity.getSeverity())).append(FIELD_SEP);
+		nvString.append("Self\\id.count=").append(getValueStr(activity.getIdCount())).append(FIELD_SEP);
+		nvString.append("Self\\pid=").append(getValueStr(activity.getPID())).append(FIELD_SEP);
+		nvString.append("Self\\tid=").append(getValueStr(activity.getTID())).append(FIELD_SEP);
+		nvString.append("Self\\snap.count=").append(getValueStr(activity.getSnapshotCount())).append(FIELD_SEP);
+		nvString.append("Self\\elapsed.usec=").append(getValueStr(activity.getElapsedTimeUsec())).append(FIELD_SEP);
 
-		Collection<Snapshot> slist = getSnapshots(event);
-		for (Snapshot snap : slist) {
+		Collection<Snapshot> sList = getSnapshots(activity);
+		for (Snapshot snap : sList) {
 			toString(nvString, snap);
 		}
 
@@ -143,11 +146,13 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	}
 
 	@Override
-	public String format(Snapshot event) {
+	public String format(Snapshot snapshot) {
 		StringBuilder nvString = new StringBuilder(1024);
-		String prefix = "OBJ:Metrics\\" + event.getCategory();
+
+		String prefix = "OBJ:Metrics\\" + snapshot.getCategory();
 		nvString.append(prefix).append(FIELD_SEP);
-		toString(nvString, event).append(END_SEP);
+		toString(nvString, snapshot).append(END_SEP);
+
 		return nvString.toString();
 	}
 
@@ -163,7 +168,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	}
 
 	/**
-	 * Makes string representaion of source and appends it to provided string builder.
+	 * Makes string representation of source and appends it to provided string builder.
 	 * 
 	 * @param nvString string builder instance to append
 	 * @param source source instance to represent as string
@@ -172,16 +177,28 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	protected StringBuilder toString(StringBuilder nvString, Source source) {
 		Source parent = source.getSource();
 		if (parent != null) {
-			toString(nvString, source.getSource());
+			toString(nvString, parent);
 		}
-		nvString.append(PATH_DELIM).append(source.getName());
+		nvString.append(PATH_DELIM).append(getSourceNameStr(source.getName()));
 		return nvString;
 	}
 
 	/**
-	 * Returns snapshot contained properties collcetion.
+	 * Makes decorated string representation of source name.
+	 * <p>
+	 * Replaces "{@value #FIELD_SEP}" to "{@value #FS_REP}".
+	 *
+	 * @param sourceName source name
+	 * @return decorated string representation of source name
+	 */
+	protected String getSourceNameStr(String sourceName) {
+		return sourceName.replace(FIELD_SEP, FS_REP);
+	}
+
+	/**
+	 * Returns snapshot contained properties collection.
 	 * 
-	 * @param snap snpashot instance
+	 * @param snap snapshot instance
 	 * @return collection of snapshot properties
 	 */
 	protected Collection<Property> getProperties(Snapshot snap) {
@@ -189,7 +206,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	}
 
 	/**
-	 * Makes string representaion of snapshot and appends it to provided string builder.
+	 * Makes string representation of snapshot and appends it to provided string builder.
 	 * 
 	 * @param nvString string builder instance to append
 	 * @param snap snapshot instance to represent as string
@@ -220,15 +237,15 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	}
 
 	/**
-	 * Makes decorated string representation of snpashot name.
+	 * Makes decorated string representation of snapshot name.
 	 * <p>
-	 * Replaces "{@value #EQ}" to "{@value #PATH_DELIM}" and "{@value #FIELD_SEP}" to {@code "!"}.
+	 * Replaces "{@value #EQ}" to "{@value #PATH_DELIM}" and "{@value #FIELD_SEP}" to "{@value #FS_REP}".
 	 * 
 	 * @param snapName snapshot name
-	 * @return decorated string representation of snpshot name
+	 * @return decorated string representation of snapshot name
 	 */
 	protected String getSnapNameStr(String snapName) {
-		return snapName.replace(EQ, PATH_DELIM).replace(FIELD_SEP, "!");
+		return snapName.replace(EQ, PATH_DELIM).replace(FIELD_SEP, FS_REP);
 	}
 
 	/**
