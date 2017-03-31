@@ -59,16 +59,16 @@ The options are `-javaagent:tnt4j-stream-jmx.jar="mbean-filter!sample-time-ms"`,
 
 ### Command line to run
 ```cmd
-java -Dtnt4j.config=.\config\tnt4j.properties -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -attach -vm:activemq -ap:tnt4j-stream-jmx-0.4.5.jar -ao:*:*!10000
+java -Dtnt4j.config=.\config\tnt4j.properties -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -attach -vm:activemq -ap:tnt4j-stream-jmx-0.5.0.jar -ao:*:*!10000
 ```
 System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [Stream-JMX configuration ](#stream-jmx-configuration).
  
-StreamAgent arguments `-attach -vm:activemq -ap:tnt4j-stream-jmx-0.4.5.jar -ao:*:*!10000` states:
+StreamAgent arguments `-attach -vm:activemq -ap:tnt4j-stream-jmx-0.5.0.jar -ao:*:*!10000` states:
 * `-attach` - defines that StreamsAgent shall be attached to running JVM process
 * `-vm:activemq` - is JVM descriptor. In this case it is running JVM name fragment `activemq`. But it also may be JVM process identifier - 
 PID. Mandatory argument.
-* `-ap:tnt4j-stream-jmx-0.4.5.jar` - is agent library name. If it is class path - then only name should be sufficient. In any other case 
-define full or relative path i.e. `..\build\tnt4j-stream-jmx\tnt4j-stream-jmx-0.4.5\lib\tnt4j-stream-jmx-0.4.5.jar`. Mandatory argument.
+* `-ap:tnt4j-stream-jmx-0.5.0.jar` - is agent library name. If it is class path - then only name should be sufficient. In any other case 
+define full or relative path i.e. `..\build\tnt4j-stream-jmx\tnt4j-stream-jmx-0.5.0\lib\tnt4j-stream-jmx-0.5.0.jar`. Mandatory argument.
 * `-ao:*:*!10000` - is JMX sampler options stating to include all MBeans and schedule sampling every 30 seconds. Sampler options are 
 optional - default value is `*:*!30000`.   
 

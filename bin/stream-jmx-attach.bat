@@ -10,4 +10,4 @@ set AGENT_OPTIONS=%2
 if "%AGENT_OPTIONS%"=="" set AGENT_OPTIONS=*:*!!10000
 
 @echo on
-java %TNT4JOPTS% -classpath "%CLASSPATH%" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -attach -vm:%1 -ap:.\..\lib\tnt4j-stream-jmx-0.4.5.jar -ao:%AGENT_OPTIONS%
+java %TNT4JOPTS% -classpath "%CLASSPATH%" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -attach -vm:%1 -ap:.\..\lib\tnt4j-stream-jmx-0.5.0.jar -ao:%AGENT_OPTIONS%
