@@ -33,7 +33,7 @@
         <repository>
             <id>bintray-amavashev2-jkoolcloud</id>
             <name>amavashev2-jkoolcloud</name>
-            <url>https://api.bintray.com/maven/amavashev2/jkoolcloud/stream-jmx/;publish=1;override=1</url>
+            <url>https://api.bintray.com/maven/amavashev2/jkoolcloud/tnt4j-stream-jmx/;publish=1;override=1</url>
         </repository>
     </distributionManagement>
 
