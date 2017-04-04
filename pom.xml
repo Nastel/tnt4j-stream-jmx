@@ -4,7 +4,7 @@
 
     <groupId>com.jkoolcloud.tnt4j.stream</groupId>
     <artifactId>tnt4j-stream-jmx</artifactId>
-    <version>0.5.0</version>
+    <version>0.5</version>
     <packaging>jar</packaging>
 
     <name>tnt4j-stream-jmx</name>
@@ -39,22 +39,38 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <product.vendor>jKool, LLC</product.vendor>
         <release.deploy.dir>../build/${project.name}</release.deploy.dir>
         <skipTests>true</skipTests>
-        <product.vendor>jKool, LLC</product.vendor>
+
+        <project.java.version>1.7</project.java.version>
+        <java.source.version>${project.java.version}</java.source.version>
+        <java.target.version>${project.java.version}</java.target.version>
+        <java.compiler.version>${project.java.version}</java.compiler.version>
+        <java.compiler.debuglevel>source,lines,vars</java.compiler.debuglevel>
+        <java.compiler.verbose>false</java.compiler.verbose>
+        <java.compiler.fork>false</java.compiler.fork>
+        <gpg.skip.sign>true</gpg.skip.sign>
+        <build.assemblies.phase>package</build.assemblies.phase>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>com.jkoolcloud</groupId>
             <artifactId>tnt4j</artifactId>
-            <version>2.2.1-SNAPSHOT</version>
+            <version>2.4</version>
         </dependency>
         <dependency>
             <groupId>com.jkoolcloud</groupId>
             <artifactId>jesl</artifactId>
-            <version>0.1.6-SNAPSHOT</version>
+            <version>0.2</version>
             <scope>runtime</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.jkoolcloud.jesl.net</groupId>
+                    <artifactId>tnt4j-syslogd</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.sun</groupId>
@@ -76,33 +92,6 @@
                 <javadoc.failOnError>false</javadoc.failOnError>
             </properties>
         </profile>
-        <profile>
-            <id>release-sign-artifacts</id>
-            <activation>
-                <property>
-                    <name>performRelease</name>
-                    <value>true</value>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.5</version>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
     </profiles>
 
     <build>
@@ -111,16 +100,20 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.5.1</version>
+                <version>3.6.1</version>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <verbose>${java.compiler.verbose}</verbose>
+                    <compilerVersion>${java.compiler.version}</compilerVersion>
+                    <source>${java.source.version}</source>
+                    <target>${java.target.version}</target>
+                    <debuglevel>${java.compiler.debuglevel}</debuglevel>
+                    <fork>${java.compiler.fork}</fork>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>2.2.1</version>
+                <version>2.4</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -133,7 +126,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.9.1</version>
+                <version>2.10.2</version>
                 <configuration>
                     <failOnError>${javadoc.failOnError}</failOnError>
                 </configuration>
@@ -160,7 +153,7 @@
                 <executions>
                     <execution>
                         <id>deploy-assembly</id>
-                        <phase>package</phase>
+                        <phase>${build.assemblies.phase}</phase>
                         <goals>
                             <goal>single</goal>
                         </goals>
@@ -192,7 +185,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.4</version>
+                <version>2.6</version>
                 <configuration>
                     <archive>
                         <!--<index>true</index>-->
@@ -216,6 +209,28 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.6</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${gpg.skip.sign}</skip>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>2.8.2</version>
             </plugin>
         </plugins>
     </build>
