@@ -70,11 +70,11 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	Throwable lastError;
 
 	MBeanServerNotificationFilter MBeanFilter;
-	Vector<ObjectName> iFilters = new Vector<ObjectName>(5, 5), eFilters = new Vector<ObjectName>(5, 5);
+	List<ObjectName> iFilters = new ArrayList<>(5), eFilters = new ArrayList<>(5);
 	Map<AttributeCondition, AttributeAction> conditions = new LinkedHashMap<AttributeCondition, AttributeAction>(89);
 	ConcurrentHashMap<ObjectName, MBeanInfo> mbeans = new ConcurrentHashMap<ObjectName, MBeanInfo>(89);
 
-	Vector<SampleListener> listeners = new Vector<SampleListener>(5, 5);
+	final List<SampleListener> listeners = new ArrayList<>(5);
 
 	/**
 	 * Create new instance of {@code SampleHandlerImpl} with a given MBean server and a set of filters.
