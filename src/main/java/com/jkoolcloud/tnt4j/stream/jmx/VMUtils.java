@@ -52,13 +52,16 @@ public class VMUtils {
 			System.out.println("SamplingAgent.attach: attaching agent " + agentPath + " to " + descriptor + "");
 			VirtualMachine virtualMachine = VirtualMachine.attach(descriptor.id());
 
-			System.out.println("SamplingAgent.attach: VM loading agent agent.path=" + agentPath + ", agent.options="
-					+ agentOptions);
+			try {
+				System.out.println("SamplingAgent.attach: VM loading agent agent.path=" + agentPath + ", agent.options="
+						+ agentOptions);
 
-			virtualMachine.loadAgent(agentPath, agentOptions);
+				virtualMachine.loadAgent(agentPath, agentOptions);
 
-			System.out.println("SamplingAgent.attach: attached and loaded...");
-			virtualMachine.detach();
+				System.out.println("SamplingAgent.attach: attached and loaded...");
+			} finally {
+				virtualMachine.detach();
+			}
 		}
 	}
 
@@ -78,11 +81,16 @@ public class VMUtils {
 		VirtualMachineDescriptor descriptor = findVMs(vmDescr).get(0);
 
 		final VirtualMachine virtualMachine = VirtualMachine.attach(descriptor.id());
+		String connectorAddress;
 
-		Properties props = virtualMachine.getAgentProperties();
-		String connectorAddress = props.getProperty("com.sun.management.jmxremote.localConnectorAddress");
-		if (connectorAddress == null) {
-			throw new RuntimeException("JVM does not support JMX connection...");
+		try {
+			Properties props = virtualMachine.getAgentProperties();
+			connectorAddress = props.getProperty("com.sun.management.jmxremote.localConnectorAddress");
+			if (connectorAddress == null) {
+				throw new RuntimeException("JVM does not support JMX connection...");
+			}
+		} finally {
+			virtualMachine.detach();
 		}
 
 		return connectorAddress;
