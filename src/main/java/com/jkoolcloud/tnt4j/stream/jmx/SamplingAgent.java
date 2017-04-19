@@ -490,12 +490,6 @@ public class SamplingAgent {
 			connectorAddress = VMUtils.getVMConnAddress(vmDescr);
 		}
 
-		System.out.println("SamplingAgent.connect: making JMX service URL from address=" + connectorAddress);
-		JMXServiceURL url = new JMXServiceURL(connectorAddress);
-
-		System.out.println("SamplingAgent.connect: connecting JMX service using URL=" + url);
-		JMXConnector connector = JMXConnectorFactory.connect(url);
-
 		String incFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.include.filter", Sampler.JMX_FILTER_ALL);
 		String excFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.exclude.filter",
 				Sampler.JMX_FILTER_NONE);
@@ -510,6 +504,12 @@ public class SamplingAgent {
 				period = Integer.parseInt(args.length > 2 ? args[2] : args[1]);
 			}
 		}
+
+		System.out.println("SamplingAgent.connect: making JMX service URL from address=" + connectorAddress);
+		JMXServiceURL url = new JMXServiceURL(connectorAddress);
+
+		System.out.println("SamplingAgent.connect: connecting JMX service using URL=" + url);
+		JMXConnector connector = JMXConnectorFactory.connect(url);
 
 		try {
 			sample(incFilter, excFilter, period, TimeUnit.MILLISECONDS, connector);

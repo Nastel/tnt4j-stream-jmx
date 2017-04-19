@@ -16,6 +16,8 @@
 
 package com.jkoolcloud.tnt4j.stream.jmx;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
@@ -30,7 +32,7 @@ import com.sun.tools.attach.VirtualMachineDescriptor;
 public class VMUtils {
 
 	/**
-	 * Attaches to running JVM process.
+	 * Attaches to running JVMs process.
 	 * 
 	 * @param vmDescr
 	 *            JVM descriptor: display name fragment or pid
@@ -41,20 +43,23 @@ public class VMUtils {
 	 * @throws Exception
 	 *             if any exception occurs while attaching to JVM
 	 *
-	 * @see #findVM(String)
+	 * @see #findVMs(String)
 	 */
 	public static void attachVM(String vmDescr, String agentPath, String agentOptions) throws Exception {
-		VirtualMachineDescriptor descriptor = findVM(vmDescr);
-		System.out.println("SamplingAgent.attach: attaching agent " + agentPath + " to " + descriptor + "");
-		final VirtualMachine virtualMachine = VirtualMachine.attach(descriptor.id());
+		Collection<VirtualMachineDescriptor> descriptors = findVMs(vmDescr);
 
-		System.out.println(
-				"SamplingAgent.attach: VM loading agent agent.path=" + agentPath + ", agent.options=" + agentOptions);
+		for (VirtualMachineDescriptor descriptor : descriptors) {
+			System.out.println("SamplingAgent.attach: attaching agent " + agentPath + " to " + descriptor + "");
+			VirtualMachine virtualMachine = VirtualMachine.attach(descriptor.id());
 
-		virtualMachine.loadAgent(agentPath, agentOptions);
+			System.out.println("SamplingAgent.attach: VM loading agent agent.path=" + agentPath + ", agent.options="
+					+ agentOptions);
 
-		System.out.println("SamplingAgent.attach: attached and loaded...");
-		virtualMachine.detach();
+			virtualMachine.loadAgent(agentPath, agentOptions);
+
+			System.out.println("SamplingAgent.attach: attached and loaded...");
+			virtualMachine.detach();
+		}
 	}
 
 	/**
@@ -67,10 +72,10 @@ public class VMUtils {
 	 * @throws Exception
 	 *             if any exception occurs while retrieving JVM connection address
 	 *
-	 * @see #findVM(String)
+	 * @see #findVMs(String)
 	 */
 	public static String getVMConnAddress(String vmDescr) throws Exception {
-		VirtualMachineDescriptor descriptor = findVM(vmDescr);
+		VirtualMachineDescriptor descriptor = findVMs(vmDescr).get(0);
 
 		final VirtualMachine virtualMachine = VirtualMachine.attach(descriptor.id());
 
@@ -84,28 +89,27 @@ public class VMUtils {
 	}
 
 	/**
-	 * Finds running JVM matching defined VM descriptor string cotaining JVM process PID or display name fragment.
+	 * Finds running JVMs matching defined VM descriptor string cotaining JVM process PID or display name fragment.
 	 * 
 	 * @param vmDescr
 	 *            JVM descriptor: display name fragment or pid
-	 * @return found JVM descriptor object
+	 * @return list of found JVM descriptors
 	 * @throws RuntimeException
 	 *             if no running JVM found
 	 */
-	public static VirtualMachineDescriptor findVM(String vmDescr) {
+	public static List<VirtualMachineDescriptor> findVMs(String vmDescr) {
 		List<VirtualMachineDescriptor> runningVMsList = VirtualMachine.list();
 
-		VirtualMachineDescriptor descriptor = null;
+		List<VirtualMachineDescriptor> descriptors = new ArrayList<>(5);
 		for (VirtualMachineDescriptor rVM : runningVMsList) {
 			if ((rVM.displayName().contains(vmDescr)
 					&& !rVM.displayName().contains(SamplingAgent.class.getSimpleName()))
 					|| rVM.id().equalsIgnoreCase(vmDescr)) {
-				descriptor = rVM;
-				break;
+				descriptors.add(rVM);
 			}
 		}
 
-		if (descriptor == null) {
+		if (descriptors.isEmpty()) {
 			System.err.println("SamplingAgent: ----------- Available JVMs -----------");
 			for (VirtualMachineDescriptor vmD : runningVMsList) {
 				System.err.println("SamplingAgent: JVM.id=" + vmD.id() + ", name=" + vmD.displayName());
@@ -114,7 +118,7 @@ public class VMUtils {
 			throw new RuntimeException("Java VM not found using provided descriptor: [" + vmDescr + "]");
 		}
 
-		return descriptor;
+		return descriptors;
 	}
 
 }
