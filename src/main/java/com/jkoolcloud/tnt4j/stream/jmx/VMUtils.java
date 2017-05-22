@@ -25,7 +25,7 @@ import com.sun.tools.attach.VirtualMachine;
 import com.sun.tools.attach.VirtualMachineDescriptor;
 
 /**
- * Running JVM attaching/connecting realated utility methods.
+ * Running JVM attaching/connecting related utility methods.
  * 
  * @version $Revision: 1 $
  */
