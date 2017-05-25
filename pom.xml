@@ -54,7 +54,7 @@
 
         <skipTests>true</skipTests>
         <gpg.skip.sign>true</gpg.skip.sign>
-        <build.assemblies.phase>package</build.assemblies.phase>
+        <build.assemblies.attach>false</build.assemblies.attach>
     </properties>
 
     <dependencies>
@@ -101,7 +101,6 @@
 
             <properties>
                 <release.deploy.assembly>src/assembly/deployAssembly_dev.xml</release.deploy.assembly>
-                <build.assemblies.phase>deploy</build.assemblies.phase>
             </properties>
         </profile>
     </profiles>
@@ -160,12 +159,13 @@
                     <descriptors>
                         <descriptor>${release.deploy.assembly}</descriptor>
                     </descriptors>
+                    <attach>${build.assemblies.attach}</attach>
                     <outputDirectory>${release.deploy.dir}</outputDirectory>
                 </configuration>
                 <executions>
                     <execution>
                         <id>deploy-assembly</id>
-                        <phase>${build.assemblies.phase}</phase>
+                        <phase>package</phase>
                         <goals>
                             <goal>single</goal>
                         </goals>
