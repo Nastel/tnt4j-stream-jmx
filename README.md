@@ -100,10 +100,12 @@ java -Dtnt4j.config=.\config\tnt4j.properties -Dcom.jkoolcloud.tnt4j.stream.jmx.
 ```
 System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [Stream-JMX configuration ](#stream-jmx-configuration).
  
-StreamAgent arguments `-connect -vm:service:jmx:<JMX_URL> -ao:*:*!!10000` states:
+StreamAgent arguments `-connect -vm:service:jmx:<JMX_URL> -ul:admin -up:admin -ao:*:*!!10000` states:
 * `-connect` - defines that StreamsAgent shall connect to running JMX service over JMXConnector (RMI) connection.
 * `-vm:service:jmx:<JMX_URL>` - is JMX service URL to use for connection. Mandatory argument. Full URL may be like 
 `service:jmx:rmi://127.0.0.1/stub/rO0ABXN9AAAAAQAlamF2YXgubWFuYWdlbWVudC5yZW1vdGUucm1pLlJNSVNlcnZlcnhyABdqYXZhLmxhbmcucmVmbGVjdC5Qcm94eeEn2iDMEEPLAgABTAABaHQAJUxqYXZhL2xhbmcvcmVmbGVjdC9JbnZvY2F0aW9uSGFuZGxlcjt4cHNyAC1qYXZhLnJtaS5zZXJ2ZXIuUmVtb3RlT2JqZWN0SW52b2NhdGlvbkhhbmRsZXIAAAAAAAAAAgIAAHhyABxqYXZhLnJtaS5zZXJ2ZXIuUmVtb3RlT2JqZWN002G0kQxhMx4DAAB4cHc2AAtVbmljYXN0UmVmMgAACzE3Mi4xNi42Ljg2AADPWKO5DJD/bZIhG9aBuwAAAVo8DdAkgAEAeA==`.
+* `-ul:admin` - is user login. In this case it is `admin`. User login argument is optional.
+* `-up:admin` - is user password. In this case it is `admin`. User password argument is optional.
 * `-ao:*:*!!10000` - is JMX sampler options stating to include all MBeans and schedule sampling every 10 seconds. Sampler options are 
 optional - default value is `*:*!30000`.  
 
