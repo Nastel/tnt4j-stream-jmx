@@ -95,14 +95,6 @@
                 <javadoc.failOnError>false</javadoc.failOnError>
             </properties>
         </profile>
-
-        <profile>
-            <id>releaseBuild</id>
-
-            <properties>
-                <release.deploy.assembly>src/assembly/deployAssembly_dev.xml</release.deploy.assembly>
-            </properties>
-        </profile>
     </profiles>
 
     <build>
