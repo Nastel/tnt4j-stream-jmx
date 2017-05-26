@@ -55,12 +55,14 @@ import com.jkoolcloud.tnt4j.utils.Utils;
  */
 public class SamplingAgent {
 	protected static Sampler platformJmx;
-	protected static ConcurrentHashMap<MBeanServerConnection, Sampler> STREAM_AGENTS = new ConcurrentHashMap<MBeanServerConnection, Sampler>(89);
+	protected static ConcurrentHashMap<MBeanServerConnection, Sampler> STREAM_AGENTS = new ConcurrentHashMap<>(89);
 	protected static boolean TRACE = Boolean.getBoolean("com.jkoolcloud.tnt4j.stream.jmx.agent.trace");
 
 	private static final String PARAM_VM_DESCRIPTOR = "-vm:";
 	private static final String PARAM_AGENT_LIB_PATH = "-ap:";
 	private static final String PARAM_AGENT_OPTIONS = "-ao:";
+	private static final String PARAM_AGENT_USER_LOGIN = "-ul:";
+	private static final String PARAM_AGENT_USER_PASS = "-up:";
 
 	private static final String AGENT_MODE_AGENT = "-agent";
 	private static final String AGENT_MODE_ATTACH = "-attach";
@@ -68,6 +70,8 @@ public class SamplingAgent {
 
 	private static final String AGENT_ARG_MODE = "agent.mode";
 	private static final String AGENT_ARG_VM = "vm.descriptor";
+	private static final String AGENT_ARG_USER = "user.login";
+	private static final String AGENT_ARG_PASS = "user.password";
 	private static final String AGENT_ARG_LIB_PATH = "agent.lib.path";
 	private static final String AGENT_ARG_OPTIONS = "agent.options";
 	private static final String AGENT_ARG_I_FILTER = "beans.include.filter";
@@ -97,7 +101,7 @@ public class SamplingAgent {
 			}
 		}
 		sample(incFilter, excFilter, period, TimeUnit.MILLISECONDS);
-		System.out.println("SamplingAgent.premain: inlcude.filter=" + incFilter 
+		System.out.println("SamplingAgent.premain: include.filter=" + incFilter 
 				+ ", exclude.filter=" + excFilter
 				+ ", sample.ms=" + period 
 				+ ", trace=" + TRACE 
@@ -197,9 +201,11 @@ public class SamplingAgent {
 			String am = props.getProperty(AGENT_ARG_MODE);
 			if (AGENT_MODE_CONNECT.equalsIgnoreCase(am)) {
 				String vmDescr = props.getProperty(AGENT_ARG_VM);
+				String user = props.getProperty(AGENT_ARG_USER);
+				String pass = props.getProperty(AGENT_ARG_PASS);
 				String agentOptions = props.getProperty(AGENT_ARG_OPTIONS, DEFAULT_AGENT_OPTIONS);
 
-				connect(vmDescr, agentOptions);
+				connect(vmDescr, user, pass, agentOptions);
 			} else if (AGENT_MODE_ATTACH.equalsIgnoreCase(am)) {
 				String vmDescr = props.getProperty(AGENT_ARG_VM);
 				String jarPath = props.getProperty(AGENT_ARG_LIB_PATH);
@@ -214,7 +220,7 @@ public class SamplingAgent {
 							.parseInt(props.getProperty(AGENT_ARG_S_TIME, String.valueOf(Sampler.JMX_SAMPLE_PERIOD)));
 					long wait_time = Integer.parseInt(props.getProperty(AGENT_ARG_W_TIME, "0"));
 					sample(inclF, exclF, sample_time, TimeUnit.MILLISECONDS);
-					System.out.println("SamplingAgent.main: inlcude.filter=" + inclF 
+					System.out.println("SamplingAgent.main: include.filter=" + inclF 
 							+ ", exclude.filter=" + exclF
 							+ ", sample.ms=" + sample_time 
 							+ ", wait.ms=" + wait_time 
@@ -232,6 +238,7 @@ public class SamplingAgent {
 			System.out.println("Usage: mbean-filter exclude-filter sample-ms [wait-ms] (e.g \"*:*\" \"\" 10000 60000)");
 			System.out.println("   or: -attach -vm:vmName/vmId -ap:agentJarPath -ao:agentOptions (e.g -attach -vm:activemq -ap:[ENV_PATH]/tnt-stream-jmx.jar -ao:*:*!!10000)");
 			System.out.println("   or: -connect -vm:vmName/vmId/JMX_URL -ao:agentOptions (e.g -connect -vm:activemq -ao:*:*!!10000");
+			System.out.println("   or: -connect -vm:vmName/vmId/JMX_URL -ul:userLogin -up:userPassword -ao:agentOptions (e.g -connect -vm:activemq -ul:admin -up:admin -ao:*:*!!10000");
 			System.out.println();
 			System.out.println("Parameters definition:");
 			System.out.println("   -ao: - agent options string using '!' symbol as delimiter. Options format: mbean-filter!exclude-filter!sample-ms");
@@ -257,7 +264,7 @@ public class SamplingAgent {
 
 				if (arg.startsWith(PARAM_VM_DESCRIPTOR)) {
 					if (StringUtils.isNotEmpty(props.getProperty(AGENT_ARG_VM))) {
-						System.out.println("JVM descriptor aready defined. Can not use argument [" + PARAM_VM_DESCRIPTOR
+						System.out.println("JVM descriptor already defined. Can not use argument [" + PARAM_VM_DESCRIPTOR 
 								+ "] multiple times.");
 						return false;
 					}
@@ -271,7 +278,7 @@ public class SamplingAgent {
 					props.setProperty(AGENT_ARG_VM, pValue);
 				} else if (arg.startsWith(PARAM_AGENT_LIB_PATH)) {
 					if (StringUtils.isNotEmpty(props.getProperty(AGENT_ARG_LIB_PATH))) {
-						System.out.println("Agent library path aready defined. Can not use argument ["
+						System.out.println("Agent library path already defined. Can not use argument ["
 								+ PARAM_AGENT_LIB_PATH + "] multiple times.");
 						return false;
 					}
@@ -285,7 +292,7 @@ public class SamplingAgent {
 					props.setProperty(AGENT_ARG_LIB_PATH, pValue);
 				} else if (arg.startsWith(PARAM_AGENT_OPTIONS)) {
 					if (StringUtils.isNotEmpty(props.getProperty(AGENT_ARG_OPTIONS))) {
-						System.out.println("Agent options aready defined. Can not use argument [" + PARAM_AGENT_OPTIONS
+						System.out.println("Agent options already defined. Can not use argument [" + PARAM_AGENT_OPTIONS
 								+ "] multiple times.");
 						return false;
 					}
@@ -297,6 +304,34 @@ public class SamplingAgent {
 					}
 
 					props.setProperty(AGENT_ARG_OPTIONS, pValue);
+				} else if (arg.startsWith(PARAM_AGENT_USER_LOGIN)) {
+					if (StringUtils.isNotEmpty(props.getProperty(AGENT_ARG_USER))) {
+						System.out.println("User login already defined. Can not use argument [" + PARAM_AGENT_USER_LOGIN
+								+ "] multiple times.");
+						return false;
+					}
+
+					String pValue = arg.substring(PARAM_AGENT_USER_LOGIN.length());
+					if (StringUtils.isEmpty(pValue)) {
+						System.out.println("Missing argument '" + PARAM_AGENT_USER_LOGIN + "' value");
+						return false;
+					}
+
+					props.setProperty(AGENT_ARG_USER, pValue);
+				} else if (arg.startsWith(PARAM_AGENT_USER_PASS)) {
+					if (StringUtils.isNotEmpty(props.getProperty(AGENT_ARG_PASS))) {
+						System.out.println("User password already defined. Can not use argument ["
+								+ PARAM_AGENT_USER_PASS + "] multiple times.");
+						return false;
+					}
+
+					String pValue = arg.substring(PARAM_AGENT_USER_PASS.length());
+					if (StringUtils.isEmpty(pValue)) {
+						System.out.println("Missing argument '" + PARAM_AGENT_USER_PASS + "' value");
+						return false;
+					}
+
+					props.setProperty(AGENT_ARG_PASS, pValue);
 				} else {
 					System.out.println("Invalid argument: " + arg);
 					return false;
@@ -365,20 +400,20 @@ public class SamplingAgent {
 	 * @param incFilter semicolon separated include filter list
 	 * @param excFilter semicolon separated exclude filter list (null if empty)
 	 * @param period sampling time
-	 * @param tunit time units for sampling period
+	 * @param tUnit time units for sampling period
 	 */
-	public static void sample(String incFilter, String excFilter, long period, TimeUnit tunit) throws IOException {
-		SamplerFactory pFactory = initPlatformJMX(incFilter, excFilter, period, tunit, null);
+	public static void sample(String incFilter, String excFilter, long period, TimeUnit tUnit) throws IOException {
+		SamplerFactory pFactory = initPlatformJMX(incFilter, excFilter, period, tUnit, null);
 
 		// find other registered MBean servers and initiate sampling for all
-		ArrayList<MBeanServer> mlist = MBeanServerFactory.findMBeanServer(null);
-		for (MBeanServer server : mlist) {
-			Sampler jmxp = STREAM_AGENTS.get(server);
-			if (jmxp == null) {
-				jmxp = pFactory.newInstance(server);
-				jmxp.setSchedule(incFilter, excFilter, period, tunit)
+		ArrayList<MBeanServer> mbsList = MBeanServerFactory.findMBeanServer(null);
+		for (MBeanServer server : mbsList) {
+			Sampler jmxSampler = STREAM_AGENTS.get(server);
+			if (jmxSampler == null) {
+				jmxSampler = pFactory.newInstance(server);
+				jmxSampler.setSchedule(incFilter, excFilter, period, tUnit)
 						.addListener(new DefaultSampleListener(System.out, TRACE)).run();
-				STREAM_AGENTS.put(jmxp.getMBeanServer(), jmxp);
+				STREAM_AGENTS.put(jmxSampler.getMBeanServer(), jmxSampler);
 			}
 		}
 	}
@@ -389,17 +424,17 @@ public class SamplingAgent {
 	 * @param incFilter semicolon separated include filter list
 	 * @param excFilter semicolon separated exclude filter list (null if empty)
 	 * @param period sampling time
-	 * @param tunit time units for sampling period
+	 * @param tUnit time units for sampling period
 	 * @param conn JMX connector to get MBean server connection instance
 	 */
-	public static void sample(String incFilter, String excFilter, long period, TimeUnit tunit, JMXConnector conn)
+	public static void sample(String incFilter, String excFilter, long period, TimeUnit tUnit, JMXConnector conn)
 			throws IOException {
 		// get MBeanServerConnection from JMX RMI connector
 		MBeanServerConnection mbSrvConn = conn.getMBeanServerConnection();
-		SamplerFactory pFactory = initPlatformJMX(incFilter, excFilter, period, tunit, mbSrvConn);
+		SamplerFactory pFactory = initPlatformJMX(incFilter, excFilter, period, tUnit, mbSrvConn);
 	}
 
-	private static SamplerFactory initPlatformJMX(String incFilter, String excFilter, long period, TimeUnit tunit,
+	private static SamplerFactory initPlatformJMX(String incFilter, String excFilter, long period, TimeUnit tUnit,
 			MBeanServerConnection mbSrvConn) throws IOException {
 		// obtain a default sample factory
 		SamplerFactory pFactory = DefaultSamplerFactory.getInstance();
@@ -408,7 +443,7 @@ public class SamplingAgent {
 			// create new sampler with default MBeanServer instance
 			platformJmx = mbSrvConn == null ? pFactory.newInstance() : pFactory.newInstance(mbSrvConn);
 			// schedule sample with a given filter and sampling period
-			platformJmx.setSchedule(incFilter, excFilter, period, tunit)
+			platformJmx.setSchedule(incFilter, excFilter, period, tUnit)
 					.addListener(new DefaultSampleListener(System.out, TRACE)).run();
 			STREAM_AGENTS.put(platformJmx.getMBeanServer(), platformJmx);
 		}
@@ -479,6 +514,20 @@ public class SamplingAgent {
 	 * @throws Exception if any exception occurs while connecting to JVM
 	 */
 	public static void connect(String vmDescr, String options) throws Exception {
+		connect(vmDescr, null, null, options);
+	}
+
+	/**
+	 * Connects to {@code vmDescr} defined JVM over {@link JMXConnector} an uses {@link MBeanServerConnection} to
+	 * collect samples.
+	 *
+	 * @param vmDescr JVM descriptor: JMX service URI, local JVM name fragment or pid
+	 * @param user user login used by JMX service connection
+	 * @param pass user password used by JMX service connection
+	 * @param options '!' separated list of options mbean-filter!sample.ms, where mbean-filter is semicolon separated list of mbean filters
+	 * @throws Exception if any exception occurs while connecting to JVM
+	 */
+	public static void connect(String vmDescr, String user, String pass, String options) throws Exception {
 		if (Utils.isEmpty(vmDescr)) {
 			throw new RuntimeException("Java VM descriptor must be not empty!..");
 		}
@@ -508,13 +557,21 @@ public class SamplingAgent {
 		System.out.println("SamplingAgent.connect: making JMX service URL from address=" + connectorAddress);
 		JMXServiceURL url = new JMXServiceURL(connectorAddress);
 
+		Map<String, Object> params = new HashMap<>(2);
+
+		if (StringUtils.isNotEmpty(user) && StringUtils.isNotEmpty(pass)) {
+			System.out.println("SamplingAgent.connect: adding user login and password to connection credentials...");
+			String[] credentials = new String[] { user, pass };
+			params.put("jmx.remote.credentials", credentials);
+		}
+
 		System.out.println("SamplingAgent.connect: connecting JMX service using URL=" + url);
-		JMXConnector connector = JMXConnectorFactory.connect(url);
+		JMXConnector connector = JMXConnectorFactory.connect(url, params);
 
 		try {
 			sample(incFilter, excFilter, period, TimeUnit.MILLISECONDS, connector);
 
-			System.out.println("SamplingAgent.connect: inlcude.filter=" + incFilter 
+			System.out.println("SamplingAgent.connect: include.filter=" + incFilter 
 					+ ", exclude.filter=" + excFilter
 					+ ", sample.ms=" + period 
 					+ ", trace=" + TRACE 
@@ -569,7 +626,7 @@ public class SamplingAgent {
 	 * @return map of all scheduled MBeanServerConnections and associated sample references.
 	 */
 	public static Map<MBeanServerConnection, Sampler> getSamplers() {
-		HashMap<MBeanServerConnection, Sampler> copy = new HashMap<MBeanServerConnection, Sampler>(89);
+		HashMap<MBeanServerConnection, Sampler> copy = new HashMap<>(89);
 		copy.putAll(STREAM_AGENTS);
 		return copy;
 	}
