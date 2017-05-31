@@ -96,11 +96,11 @@ seconds. Sampler options are optional - default value is `*:*!30000`.
 #### To connect to JMX service over URL
  
 ```cmd
-java -Dtnt4j.config=.\config\tnt4j.properties -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -vm:service:jmx:<JMX_URL> -ao:*:*!!10000
+java -Dtnt4j.config=.\config\tnt4j.properties -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -vm:service:jmx:<JMX_URL> -ul:admin -up:admin -ao:*:*!!10000 -cp:javax.net.ssl.trustStore=/your/path/to/truststore.jks -cp:javax.net.ssl.trustStorePassword=truststore_pwd
 ```
 System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [Stream-JMX configuration ](#stream-jmx-configuration).
  
-StreamAgent arguments `-connect -vm:service:jmx:<JMX_URL> -ul:admin -up:admin -ao:*:*!!10000` states:
+StreamAgent arguments `-connect -vm:service:jmx:<JMX_URL> -ul:admin -up:admin -ao:*:*!!10000 -cp:javax.net.ssl.trustStore=/your/path/to/truststore.jks -cp:javax.net.ssl.trustStorePassword=truststore_pwd` states:
 * `-connect` - defines that StreamsAgent shall connect to running JMX service over JMXConnector (RMI) connection.
 * `-vm:service:jmx:<JMX_URL>` - is JMX service URL to use for connection. Mandatory argument. Full URL may be like 
 `service:jmx:rmi://127.0.0.1/stub/rO0ABXN9AAAAAQAlamF2YXgubWFuYWdlbWVudC5yZW1vdGUucm1pLlJNSVNlcnZlcnhyABdqYXZhLmxhbmcucmVmbGVjdC5Qcm94eeEn2iDMEEPLAgABTAABaHQAJUxqYXZhL2xhbmcvcmVmbGVjdC9JbnZvY2F0aW9uSGFuZGxlcjt4cHNyAC1qYXZhLnJtaS5zZXJ2ZXIuUmVtb3RlT2JqZWN0SW52b2NhdGlvbkhhbmRsZXIAAAAAAAAAAgIAAHhyABxqYXZhLnJtaS5zZXJ2ZXIuUmVtb3RlT2JqZWN002G0kQxhMx4DAAB4cHc2AAtVbmljYXN0UmVmMgAACzE3Mi4xNi42Ljg2AADPWKO5DJD/bZIhG9aBuwAAAVo8DdAkgAEAeA==`.
@@ -108,6 +108,9 @@ StreamAgent arguments `-connect -vm:service:jmx:<JMX_URL> -ul:admin -up:admin -a
 * `-up:admin` - is user password. In this case it is `admin`. User password argument is optional.
 * `-ao:*:*!!10000` - is JMX sampler options stating to include all MBeans and schedule sampling every 10 seconds. Sampler options are 
 optional - default value is `*:*!30000`.  
+* `-cp:javax.net.ssl.trustStore=/your/path/to/truststore.jks -cp:javax.net.ssl.trustStorePassword=truststore_pwd` - is JMX connector 
+parameters definitions in properties format `key=value`. JMX connector parameters are optional and can be defined multiple times - as many 
+as there are required JMX connector parameters.  
 
 ## Embed Stream-JMX code into your application
 

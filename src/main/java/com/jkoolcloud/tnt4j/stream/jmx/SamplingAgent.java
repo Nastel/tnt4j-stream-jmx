@@ -63,6 +63,7 @@ public class SamplingAgent {
 	private static final String PARAM_AGENT_OPTIONS = "-ao:";
 	private static final String PARAM_AGENT_USER_LOGIN = "-ul:";
 	private static final String PARAM_AGENT_USER_PASS = "-up:";
+	private static final String PARAM_AGENT_CONN_PARAM = "-cp:";
 
 	private static final String AGENT_MODE_AGENT = "-agent";
 	private static final String AGENT_MODE_ATTACH = "-attach";
@@ -78,6 +79,8 @@ public class SamplingAgent {
 	private static final String AGENT_ARG_E_FILTER = "beans.exclude.filter";
 	private static final String AGENT_ARG_S_TIME = "agent.sample.time";
 	private static final String AGENT_ARG_W_TIME = "agent.wait.time";
+
+	private static final String AGENT_CONN_PARAMS = "agent.connection.params";
 
 	private static final String DEFAULT_AGENT_OPTIONS = Sampler.JMX_FILTER_ALL + "!" + Sampler.JMX_FILTER_NONE + "!"
 			+ Sampler.JMX_SAMPLE_PERIOD;
@@ -204,8 +207,10 @@ public class SamplingAgent {
 				String user = props.getProperty(AGENT_ARG_USER);
 				String pass = props.getProperty(AGENT_ARG_PASS);
 				String agentOptions = props.getProperty(AGENT_ARG_OPTIONS, DEFAULT_AGENT_OPTIONS);
+				@SuppressWarnings("unchecked")
+				Map<String, ?> connParams = (Map<String, ?>) props.get(AGENT_CONN_PARAMS);
 
-				connect(vmDescr, user, pass, agentOptions);
+				connect(vmDescr, user, pass, agentOptions, connParams);
 			} else if (AGENT_MODE_ATTACH.equalsIgnoreCase(am)) {
 				String vmDescr = props.getProperty(AGENT_ARG_VM);
 				String jarPath = props.getProperty(AGENT_ARG_LIB_PATH);
@@ -239,6 +244,7 @@ public class SamplingAgent {
 			System.out.println("   or: -attach -vm:vmName/vmId -ap:agentJarPath -ao:agentOptions (e.g -attach -vm:activemq -ap:[ENV_PATH]/tnt-stream-jmx.jar -ao:*:*!!10000)");
 			System.out.println("   or: -connect -vm:vmName/vmId/JMX_URL -ao:agentOptions (e.g -connect -vm:activemq -ao:*:*!!10000");
 			System.out.println("   or: -connect -vm:vmName/vmId/JMX_URL -ul:userLogin -up:userPassword -ao:agentOptions (e.g -connect -vm:activemq -ul:admin -up:admin -ao:*:*!!10000");
+			System.out.println("   or: -connect -vm:vmName/vmId/JMX_URL -ul:userLogin -up:userPassword -ao:agentOptions -cp:jmcConnParam1 -cp:jmcConnParam2 -cp:... (e.g -connect -vm:activemq -ul:admin -up:admin -ao:*:*!!10000 -cp:javax.net.ssl.trustStorePassword=trustPass");
 			System.out.println();
 			System.out.println("Parameters definition:");
 			System.out.println("   -ao: - agent options string using '!' symbol as delimiter. Options format: mbean-filter!exclude-filter!sample-ms");
@@ -332,6 +338,29 @@ public class SamplingAgent {
 					}
 
 					props.setProperty(AGENT_ARG_PASS, pValue);
+				} else if (arg.startsWith(PARAM_AGENT_CONN_PARAM)) {
+					String pValue = arg.substring(PARAM_AGENT_CONN_PARAM.length());
+					if (StringUtils.isEmpty(pValue)) {
+						System.out.println("Missing argument '" + PARAM_AGENT_CONN_PARAM + "' value");
+						return false;
+					}
+
+					String[] cp = pValue.split("=");
+
+					if (cp.length < 2) {
+						System.out
+								.println("Malformed argument '" + PARAM_AGENT_CONN_PARAM + "' value '" + pValue + "'");
+						return false;
+					}
+
+					@SuppressWarnings("unchecked")
+					Map<String, Object> connParams = (Map<String, Object>) props.get(AGENT_CONN_PARAMS);
+					if (connParams == null) {
+						connParams = new HashMap<>(5);
+						props.put(AGENT_CONN_PARAMS, connParams);
+					}
+
+					connParams.put(cp[0], cp[1]);
 				} else {
 					System.out.println("Invalid argument: " + arg);
 					return false;
@@ -514,7 +543,20 @@ public class SamplingAgent {
 	 * @throws Exception if any exception occurs while connecting to JVM
 	 */
 	public static void connect(String vmDescr, String options) throws Exception {
-		connect(vmDescr, null, null, options);
+		connect(vmDescr, null, null, options, null);
+	}
+
+	/**
+	 * Connects to {@code vmDescr} defined JVM over {@link JMXConnector} an uses {@link MBeanServerConnection} to
+	 * collect samples.
+	 *
+	 * @param vmDescr JVM descriptor: JMX service URI, local JVM name fragment or pid
+	 * @param options '!' separated list of options mbean-filter!sample.ms, where mbean-filter is semicolon separated list of mbean filters
+	 * @param connParams map of JMX connection parameters
+	 * @throws Exception if any exception occurs while connecting to JVM
+	 */
+	public static void connect(String vmDescr, String options, Map<String, ?> connParams) throws Exception {
+		connect(vmDescr, null, null, options, connParams);
 	}
 
 	/**
@@ -525,9 +567,11 @@ public class SamplingAgent {
 	 * @param user user login used by JMX service connection
 	 * @param pass user password used by JMX service connection
 	 * @param options '!' separated list of options mbean-filter!sample.ms, where mbean-filter is semicolon separated list of mbean filters
+	 * @param connParams map of JMX connection parameters
 	 * @throws Exception if any exception occurs while connecting to JVM
 	 */
-	public static void connect(String vmDescr, String user, String pass, String options) throws Exception {
+	public static void connect(String vmDescr, String user, String pass, String options, Map<String, ?> connParams)
+			throws Exception {
 		if (Utils.isEmpty(vmDescr)) {
 			throw new RuntimeException("Java VM descriptor must be not empty!..");
 		}
@@ -557,12 +601,16 @@ public class SamplingAgent {
 		System.out.println("SamplingAgent.connect: making JMX service URL from address=" + connectorAddress);
 		JMXServiceURL url = new JMXServiceURL(connectorAddress);
 
-		Map<String, Object> params = new HashMap<>(2);
+		Map<String, Object> params = new HashMap<>(connParams == null ? 1 : connParams.size() + 1);
 
 		if (StringUtils.isNotEmpty(user) && StringUtils.isNotEmpty(pass)) {
 			System.out.println("SamplingAgent.connect: adding user login and password to connection credentials...");
 			String[] credentials = new String[] { user, pass };
-			params.put("jmx.remote.credentials", credentials);
+			params.put(JMXConnector.CREDENTIALS, credentials);
+		}
+
+		if (connParams != null) {
+			params.putAll(connParams);
 		}
 
 		System.out.println("SamplingAgent.connect: connecting JMX service using URL=" + url);
