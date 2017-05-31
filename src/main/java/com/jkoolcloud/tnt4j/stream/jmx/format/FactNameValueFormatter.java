@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.jkoolcloud.tnt4j.core.*;
@@ -66,6 +67,10 @@ public class FactNameValueFormatter extends DefaultFormatter {
 
 	public FactNameValueFormatter() {
 		super("time.stamp={2},level={1},source={3},msg=\"{0}\"");
+
+		// adding mandatory value symbols replacements
+		valueReplacements.put(CR, "\\r");
+		valueReplacements.put(LF, "\\n");
 	}
 
 	@Override
@@ -310,7 +315,6 @@ public class FactNameValueFormatter extends DefaultFormatter {
 			valStr = toString(value);
 		}
 
-		valStr = valStr.replace(LF, "\\n").replace(CR, "\\r");
 		for (Map.Entry<String, String> vre : valueReplacements.entrySet()) {
 			valStr = valStr.replace(vre.getKey(), vre.getValue());
 		}
@@ -349,7 +353,8 @@ public class FactNameValueFormatter extends DefaultFormatter {
 			Matcher m = REP_CFG_PATTERN.matcher(kReplacements);
 
 			while (m.find()) {
-				keyReplacements.put(m.group(1), m.group(3));
+				keyReplacements.put(StringEscapeUtils.unescapeJava(m.group(1)),
+						StringEscapeUtils.unescapeJava(m.group(3)));
 			}
 		}
 
@@ -360,7 +365,8 @@ public class FactNameValueFormatter extends DefaultFormatter {
 			Matcher m = REP_CFG_PATTERN.matcher(vReplacements);
 
 			while (m.find()) {
-				valueReplacements.put(m.group(1), m.group(3));
+				valueReplacements.put(StringEscapeUtils.unescapeJava(m.group(1)),
+						StringEscapeUtils.unescapeJava(m.group(3)));
 			}
 		}
 	}
