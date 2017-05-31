@@ -611,7 +611,7 @@ public class MyAttributeAction implements AttributeAction {
 		Activity activity = sample.getActivity();
 		// obtain a collection of all sampled metrics
 		Collection<Snapshot> metrics = activity.getSnapshots();
-		System.out.println("Myaction called with value=" + sample.get()
+		System.out.println("MyAction called with value=" + sample.get()
 			+ ", age.usec=" + sample.ageUsec()
 			+ ", count=" + metrics.size());
 		return null;
@@ -633,15 +633,27 @@ Stream-JMX requires the following:
               <systemPath>${java.home}/../lib/tools.jar</systemPath>
           </dependency>
           ```
-        * from system executables `bin/stream-jmx.bat` or `bin/stream-jmx.sh` by environment variable `TOOLS_PATH`
+        * from system executables `bin/stream-jmx*.bat` or `bin/stream-jmx*.sh` by environment variable `TOOLS_PATH`
           ```cmd
           set TOOLS_PATH="%JAVA_HOME%\lib\tools.jar"
           ```
           ```bash
           TOOLS_PATH="$JAVA_HOME/lib/tools.jar"
           ```          
-     **NOTE:** you may need to change paths if these do not match your enviroment.     
+     **NOTE:** you may need to change paths if these do not match your environment.     
 * TNT4J (https://github.com/Nastel/TNT4J)
+* (Optional) WAS, JBoss, etc. additional libraries. To use them:
+    * from system executables `bin/stream-jmx*.bat` or `bin/stream-jmx*.sh` by extending environment variable `LIBPATH` value
+    ```cmd
+    set WAS_HOME="c:\IBM\WebSphere\AppServer"
+    set WAS_PATH="%WAS_HOME%\runtimes\*"
+    set LIBPATH="%RUNDIR%\..\tnt4j-stream-jmx*.jar;%RUNDIR%\..\lib\*;%TOOLS_PATH%;%WAS_PATH%"
+    ```
+    ```bash
+    WAS_HOME=/opt/IBM/WebSphere/AppServer
+    WAS_PATH="$WAS_HOME/runtimes/*"
+    LIBPATH="$RUNDIR/../tnt4j-stream-jmx*.jar:$RUNDIR/../lib/*:$TOOLS_PATH:$WAS_PATH"
+    ```          
 
 Please use JCenter or Maven and dependencies will be downloaded automatically. 
 
