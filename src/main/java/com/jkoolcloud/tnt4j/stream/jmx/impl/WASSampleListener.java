@@ -20,9 +20,13 @@ import java.io.PrintStream;
 import javax.management.MBeanAttributeInfo;
 import javax.management.j2ee.statistics.*;
 
+import com.jkoolcloud.tnt4j.core.Property;
 import com.jkoolcloud.tnt4j.core.PropertySnapshot;
+import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeSample;
 import com.jkoolcloud.tnt4j.stream.jmx.core.DefaultSampleListener;
+import com.jkoolcloud.tnt4j.stream.jmx.core.SampleContext;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
+import com.jkoolcloud.tnt4j.stream.jmx.core.UnsupportedAttributeException;
 
 /**
  * This class provide a specific implementation of a {@link SampleListener} for a WebSphere Application Server.
@@ -41,6 +45,18 @@ public class WASSampleListener extends DefaultSampleListener {
 	 */
 	public WASSampleListener(PrintStream pStream, boolean trace) {
 		super(pStream, trace);
+	}
+
+	@Override
+	public void post(SampleContext context, AttributeSample sample) throws UnsupportedAttributeException {
+		super.post(context, sample);
+
+		MBeanAttributeInfo mbAttrInfo = sample.getAttributeInfo();
+		PropertySnapshot snapshot = sample.getSnapshot();
+		Property onp = snapshot.get("objectName");
+		if (onp == null) {
+			processAttrValue(snapshot, mbAttrInfo, "objectName", sample.getObjetName());
+		}
 	}
 
 	@Override

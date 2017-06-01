@@ -41,6 +41,8 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 	private static final String[][] PATH_KEYS = new String[][] { { "domain" }, { "type" }, { "name", "brokerName" },
 			{ "service", "connector", "destinationType" }, { "instanceName", "connectorName", "destinationName" } };
 
+	protected boolean useAllProperties = true;
+
 	private Comparator<Snapshot> snapshotComparator;
 	private Comparator<Property> propertyComparator;
 
@@ -111,6 +113,37 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 			return objCanonName;
 		}
 
+		Properties props = makeProps(objCanonName, ddIdx);
+		StringBuilder pathBuilder = new StringBuilder();
+		String pv;
+
+		for (String[] levelKeys : PATH_KEYS) {
+			for (String pKey : levelKeys) {
+				pv = (String) props.remove(pKey);
+
+				appendPath(pathBuilder, pv);
+			}
+		}
+
+		if (useAllProperties && !props.isEmpty()) {
+			for (Map.Entry<Object, Object> pe : props.entrySet()) {
+				String pk = String.valueOf(pe.getKey());
+				pv = String.valueOf(pe.getValue());
+				appendPath(pathBuilder, pk).append(":").append(pv);
+			}
+		}
+
+		return pathBuilder.toString();
+	}
+
+	/**
+	 * Resolves properties map from provided canonical object name string.
+	 *
+	 * @param objCanonName object canonical name string
+	 * @param ddIdx domain separator index
+	 * @return properties resolved from provided object name
+	 */
+	protected Properties makeProps(String objCanonName, int ddIdx) {
 		String domainStr = objCanonName.substring(0, ddIdx);
 
 		Properties props = new Properties();
@@ -132,26 +165,22 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 			}
 		}
 
-		StringBuilder pathBuilder = new StringBuilder();
+		return props;
+	}
 
-		for (String[] levelKeys : PATH_KEYS) {
-			for (String pKey : levelKeys) {
-				String pp = (String) props.remove(pKey);
-
-				if (!Utils.isEmpty(pp)) {
-					pathBuilder.append(pathBuilder.length() > 0 ? PATH_DELIM : "").append(pp);
-				}
-			}
+	/**
+	 * Appends provided path string builder with path token string.
+	 *
+	 * @param pathBuilder path string builder to append
+	 * @param pathToken path token string
+	 * @return appended path string builder instance
+	 */
+	protected StringBuilder appendPath(StringBuilder pathBuilder, String pathToken) {
+		if (!Utils.isEmpty(pathToken)) {
+			pathBuilder.append(pathBuilder.length() > 0 ? PATH_DELIM : "").append(pathToken);
 		}
 
-		if (!props.isEmpty()) {
-			for (Map.Entry<Object, Object> pe : props.entrySet()) {
-				pathBuilder.append(pathBuilder.length() > 0 ? PATH_DELIM : "").append(String.valueOf(pe.getKey()))
-						.append(":").append(String.valueOf(pe.getValue()));
-			}
-		}
-
-		return pathBuilder.toString();
+		return pathBuilder;
 	}
 
 	@Override
