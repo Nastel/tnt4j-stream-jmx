@@ -122,8 +122,7 @@ public class AttributeSample {
 	 * @return true if attribute to be marked for exclusion, false otherwise
 	 */
 	public boolean excludeNext(boolean exclude) {
-		excludeNext = exclude;
-		return excludeNext;
+		return excludeNext = exclude;
 	}
 
 	/**

@@ -17,50 +17,48 @@ package com.jkoolcloud.tnt4j.stream.jmx.core;
 
 import javax.management.MBeanAttributeInfo;
 
-
 /**
- * <p> 
- * This exception is thrown when attribute type is not supported by the
- * underlying sampler.
+ * <p>
+ * This exception is thrown when attribute type is not supported by the underlying sampler.
  * </p>
  * 
  * 
  * @version $Revision: 1 $
  */
 public class UnsupportedAttributeException extends Exception {
-    private static final long serialVersionUID = -7960293489472854680L;
+	private static final long serialVersionUID = -7960293489472854680L;
 
-    private Object value;
-    private MBeanAttributeInfo info;
-    
+	private Object value;
+	private MBeanAttributeInfo info;
+
 	/**
 	 * Create exception with a given message, attribute info and its value
 	 * 
 	 * @param msg exception message
-	 * @param jinfo MBean attribute info
+	 * @param mbAttrInfo MBean attribute info
 	 * @param value MBean attribute value
 	 */
-    public UnsupportedAttributeException (String msg, MBeanAttributeInfo jinfo, Object value) {
-    	super(msg);
-    	this.value = value;
-    	this.info = jinfo;
-    }
-    
+	public UnsupportedAttributeException(String msg, MBeanAttributeInfo mbAttrInfo, Object value) {
+		super(msg);
+		this.value = value;
+		this.info = mbAttrInfo;
+	}
+
 	/**
 	 * Obtain MBean attribute info associated with this exception
 	 * 
-	 * @return value  MBean attribute info associated with this exception
+	 * @return value MBean attribute info associated with this exception
 	 */
-    public MBeanAttributeInfo getAttrInfo() {
-    	return info;
-    }
-    
+	public MBeanAttributeInfo getAttrInfo() {
+		return info;
+	}
+
 	/**
 	 * Obtain MBean attribute value associated with this exception
 	 * 
-	 * @return value  MBean attribute value associated with this exception
+	 * @return value MBean attribute value associated with this exception
 	 */
-    public Object getValue() {
-    	return value;
-    }
+	public Object getValue() {
+		return value;
+	}
 }

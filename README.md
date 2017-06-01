@@ -505,7 +505,7 @@ You may create your own dump providers and handlers (https://github.com/Nastel/T
 `SamplerFactory` instances are used to generate `Sampler` implementation for a specific runtime environment. Stream-JMX supplies sampler and ping factories for standard JVMs, JBoss,
 WebSphere Application Server. You may want to override default `SamplerFactory` with your own or an alternative by specifying:
 ```cmd
-java -Dcom.jkoolcloud.tnt4j.stream.jmx.factory=com.jkoolcloud.tnt4j.stream.jmx.PlatformSamplerFactory ...
+java -Dcom.jkoolcloud.tnt4j.stream.jmx.sampler.factory=com.jkoolcloud.tnt4j.stream.jmx.impl.PlatformSamplerFactory ...
 ```
 `SamplerFactory` is used to generate instances of the underlying sampler implementations (objects that provide sampling of underlying mbeans).
 ```java

@@ -19,8 +19,7 @@ import com.jkoolcloud.tnt4j.stream.jmx.impl.PlatformSamplerFactory;
 
 /**
  * <p>
- * This class provides a generic way to get a default {@link SamplerFactory}
- * instance.
+ * This class provides a generic way to get a default {@link SamplerFactory} instance.
  * </p>
  * 
  * @version $Revision: 1 $
@@ -42,7 +41,8 @@ public class DefaultSamplerFactory {
 		}
 	}
 
-	private DefaultSamplerFactory() {}
+	private DefaultSamplerFactory() {
+	}
 
 	/**
 	 * Obtain a default instance of {@link SamplerFactory}

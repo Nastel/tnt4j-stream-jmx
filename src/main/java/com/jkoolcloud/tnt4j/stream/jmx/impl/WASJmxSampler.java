@@ -38,7 +38,7 @@ public class WASJmxSampler extends PlatformJmxSampler {
 
 	/**
 	 * Dynamically identify and load WebSphere JMX MBean Server
-	 * {@code com.ibm.websphere.management.AdminServiceFactory}. Throws exception if WAS specific MBeanServer is not
+	 * {@link com.ibm.websphere.management.AdminServiceFactory}. Throws exception if WAS specific MBeanServer is not
 	 * found.
 	 * 
 	 * @return WebSphere JMX MBean server instance

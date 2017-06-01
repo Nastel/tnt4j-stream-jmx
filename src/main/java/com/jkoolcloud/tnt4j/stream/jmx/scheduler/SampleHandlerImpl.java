@@ -196,12 +196,10 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 		for (Entry<ObjectName, MBeanInfo> entry : mbeans.entrySet()) {
 			ObjectName name = entry.getKey();
 			MBeanInfo info = entry.getValue();
-			MBeanAttributeInfo[] attr = info.getAttributes();
 
 			PropertySnapshot snapshot = new PropertySnapshot(name.getDomain(), name.getCanonicalName());
-			for (MBeanAttributeInfo jinfo : attr) {
-				AttributeSample sample = AttributeSample.newAttributeSample(activity, snapshot, mbeanServer, name,
-						jinfo);
+			for (MBeanAttributeInfo attr : info.getAttributes()) {
+				AttributeSample sample = AttributeSample.newAttributeSample(activity, snapshot, mbeanServer, name, attr);
 				try {
 					if (doPre(sample)) {
 						sample.sample(); // obtain a sample
