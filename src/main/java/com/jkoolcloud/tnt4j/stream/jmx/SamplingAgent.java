@@ -55,7 +55,7 @@ import com.jkoolcloud.tnt4j.utils.Utils;
  */
 public class SamplingAgent {
 	protected static Sampler platformJmx;
-	protected static ConcurrentHashMap<MBeanServerConnection, Sampler> STREAM_AGENTS = new ConcurrentHashMap<>(89);
+	protected static ConcurrentHashMap<MBeanServerConnection, Sampler> STREAM_AGENTS = new ConcurrentHashMap<MBeanServerConnection, Sampler>(89);
 	protected static boolean TRACE = Boolean.getBoolean("com.jkoolcloud.tnt4j.stream.jmx.agent.trace");
 
 	private static final String PARAM_VM_DESCRIPTOR = "-vm:";
@@ -371,7 +371,7 @@ public class SamplingAgent {
 					@SuppressWarnings("unchecked")
 					Map<String, Object> connParams = (Map<String, Object>) props.get(AGENT_CONN_PARAMS);
 					if (connParams == null) {
-						connParams = new HashMap<>(5);
+						connParams = new HashMap<String, Object>(5);
 						props.put(AGENT_CONN_PARAMS, connParams);
 					}
 
@@ -638,7 +638,7 @@ public class SamplingAgent {
 		System.out.println("SamplingAgent.connect: making JMX service URL from address=" + connectorAddress);
 		JMXServiceURL url = new JMXServiceURL(connectorAddress);
 
-		Map<String, Object> params = new HashMap<>(connParams == null ? 1 : connParams.size() + 1);
+		Map<String, Object> params = new HashMap<String, Object>(connParams == null ? 1 : connParams.size() + 1);
 
 		if (StringUtils.isNotEmpty(user) && StringUtils.isNotEmpty(pass)) {
 			System.out.println("SamplingAgent.connect: adding user login and password to connection credentials...");
@@ -712,7 +712,7 @@ public class SamplingAgent {
 	 * @return map of all scheduled MBeanServerConnections and associated sample references.
 	 */
 	public static Map<MBeanServerConnection, Sampler> getSamplers() {
-		HashMap<MBeanServerConnection, Sampler> copy = new HashMap<>(89);
+		HashMap<MBeanServerConnection, Sampler> copy = new HashMap<MBeanServerConnection, Sampler>(89);
 		copy.putAll(STREAM_AGENTS);
 		return copy;
 	}

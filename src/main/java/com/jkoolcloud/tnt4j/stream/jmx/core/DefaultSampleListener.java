@@ -47,7 +47,7 @@ public class DefaultSampleListener implements SampleListener {
 	boolean trace = false;
 	PrintStream out;
 
-	Collection<MBeanAttributeInfo> excAttrs = new ArrayList<>(89);
+	Collection<MBeanAttributeInfo> excAttrs = new ArrayList<MBeanAttributeInfo>(89);
 
 	/**
 	 * Create an instance of {@code DefaultSampleListener} with a a given print stream and trace mode

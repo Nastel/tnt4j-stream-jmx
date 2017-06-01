@@ -62,8 +62,8 @@ public class FactNameValueFormatter extends DefaultFormatter {
 
 	protected boolean serializeSimpleTypesOnly = false;
 
-	protected Map<String, String> keyReplacements = new HashMap<>();
-	protected Map<String, String> valueReplacements = new HashMap<>();
+	protected Map<String, String> keyReplacements = new HashMap<String, String>();
+	protected Map<String, String> valueReplacements = new HashMap<String, String>();
 
 	public FactNameValueFormatter() {
 		super("time.stamp={2},level={1},source={3},msg=\"{0}\"");

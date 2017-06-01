@@ -108,7 +108,7 @@ public class VMUtils {
 	public static List<VirtualMachineDescriptor> findVMs(String vmDescr) {
 		List<VirtualMachineDescriptor> runningVMsList = VirtualMachine.list();
 
-		List<VirtualMachineDescriptor> descriptors = new ArrayList<>(5);
+		List<VirtualMachineDescriptor> descriptors = new ArrayList<VirtualMachineDescriptor>(5);
 		for (VirtualMachineDescriptor rVM : runningVMsList) {
 			if ((rVM.displayName().contains(vmDescr)
 					&& !rVM.displayName().contains(SamplingAgent.class.getSimpleName()))
