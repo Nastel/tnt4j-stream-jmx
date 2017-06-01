@@ -493,7 +493,7 @@ public class SamplingAgent {
 			JMXConnector conn) throws IOException {
 		// get MBeanServerConnection from JMX RMI connector
 		MBeanServerConnection mbSrvConn = conn.getMBeanServerConnection();
-		SamplerFactory pFactory = initPlatformJMX(incFilter, excFilter, initDelay, period, tUnit, mbSrvConn);
+		initPlatformJMX(incFilter, excFilter, initDelay, period, tUnit, mbSrvConn);
 	}
 
 	private static SamplerFactory initPlatformJMX(String incFilter, String excFilter, long initDelay, long period,
