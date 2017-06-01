@@ -87,15 +87,20 @@ public class PlatformJmxSampler implements Sampler {
 	}
 
 	@Override
-	public Sampler setSchedule(String incfilter, String excFilter, long period) throws IOException {
-		return setSchedule(incfilter, excFilter, period, TimeUnit.MILLISECONDS);
+	public Sampler setSchedule(String incFilter, String excFilter, long period) throws IOException {
+		return setSchedule(incFilter, excFilter, period, TimeUnit.MILLISECONDS);
 	}
 
 	@Override
-	public synchronized Sampler setSchedule(String incfilter, String excFilter, long period, TimeUnit tunit)
-			throws IOException {
+	public Sampler setSchedule(String incFilter, String excFilter, long period, TimeUnit tUnit) throws IOException {
+		return setSchedule(incFilter, excFilter, Sampler.JMX_SAMPLE_INIT_DELAY, period, tUnit);
+	}
+
+	@Override
+	public synchronized Sampler setSchedule(String incFilter, String excFilter, long initDelay, long period,
+			TimeUnit tUnit) throws IOException {
 		if (sampler == null) {
-			sampler = newScheduler(getMBeanServer(), incfilter, excFilter, period, tunit);
+			sampler = newScheduler(targetServer, incFilter, excFilter, initDelay, period, tUnit);
 			sampler.open();
 			return this;
 		} else {
@@ -117,16 +122,34 @@ public class PlatformJmxSampler implements Sampler {
 	 * Create new instance of {@link Scheduler}. Override this call to return your instance of {@link Scheduler}.
 	 *
 	 * @param mServerConn MBean server connection instance
-	 * @param incfilter MBean include filters semicolon separated
-	 * @param excfilter MBean exclude filters semicolon separated
+	 * @param incFilter MBean include filters semicolon separated
+	 * @param excFilter MBean exclude filters semicolon separated
 	 * @param period time period for sampling
-	 * @param tunit time units for period
+	 * @param tUnit time units for period
 	 * 
 	 * @return new {@link Scheduler} instance
 	 */
-	protected Scheduler newScheduler(MBeanServerConnection mServerConn, String incfilter, String excfilter, long period,
-			TimeUnit tunit) {
-		return new SchedulerImpl(this.getClass().getName(), mServerConn, incfilter, excfilter, period, tunit);
+	protected Scheduler newScheduler(MBeanServerConnection mServerConn, String incFilter, String excFilter, long period,
+			TimeUnit tUnit) {
+		return newScheduler(mServerConn, incFilter, excFilter, 0, period, tUnit);
+	}
+
+	/**
+	 * Create new instance of {@link Scheduler}. Override this call to return your instance of {@link Scheduler}.
+	 *
+	 * @param mServerConn MBean server connection instance
+	 * @param incFilter MBean include filters semicolon separated
+	 * @param excFilter MBean exclude filters semicolon separated
+	 * @param initDelay initial delay before first sampling
+	 * @param period time period for sampling
+	 * @param tUnit time units for period
+	 *
+	 * @return new {@link Scheduler} instance
+	 */
+	protected Scheduler newScheduler(MBeanServerConnection mServerConn, String incFilter, String excFilter,
+			long initDelay, long period, TimeUnit tUnit) {
+		return new SchedulerImpl(this.getClass().getName(), mServerConn, incFilter, excFilter, initDelay, period,
+				tUnit);
 	}
 
 	@Override

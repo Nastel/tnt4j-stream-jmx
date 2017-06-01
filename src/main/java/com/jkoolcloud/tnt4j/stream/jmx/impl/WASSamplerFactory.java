@@ -15,8 +15,11 @@
  */
 package com.jkoolcloud.tnt4j.stream.jmx.impl;
 
+import java.io.PrintStream;
+
 import javax.management.MBeanServerConnection;
 
+import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
 import com.jkoolcloud.tnt4j.stream.jmx.factory.SamplerFactory;
 
@@ -41,5 +44,10 @@ public class WASSamplerFactory implements SamplerFactory {
 	@Override
 	public Sampler newInstance(MBeanServerConnection mServerConn) {
 		return mServerConn == null ? new WASJmxSampler() : new WASJmxSampler(mServerConn);
+	}
+
+	@Override
+	public SampleListener newListener(PrintStream pStream, boolean trace) {
+		return new WASSampleListener(pStream, trace);
 	}
 }

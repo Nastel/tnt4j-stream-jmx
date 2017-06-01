@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.jkoolcloud.tnt4j.stream.jmx;
+package com.jkoolcloud.tnt4j.stream.jmx.core;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -30,9 +30,6 @@ import javax.management.openmbean.TabularData;
 import com.jkoolcloud.tnt4j.core.Activity;
 import com.jkoolcloud.tnt4j.core.PropertySnapshot;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeSample;
-import com.jkoolcloud.tnt4j.stream.jmx.core.SampleContext;
-import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
-import com.jkoolcloud.tnt4j.stream.jmx.core.UnsupportedAttributeException;
 
 /**
  * <p>
@@ -50,7 +47,7 @@ public class DefaultSampleListener implements SampleListener {
 	boolean trace = false;
 	PrintStream out;
 
-	HashSet<MBeanAttributeInfo> excAttrs = new HashSet<MBeanAttributeInfo>(89);
+	Collection<MBeanAttributeInfo> excAttrs = new ArrayList<>(89);
 
 	/**
 	 * Create an instance of {@code DefaultSampleListener} with a a given print stream and trace mode
@@ -79,7 +76,9 @@ public class DefaultSampleListener implements SampleListener {
 	 * @param attr MBean attribute info
 	 */
 	protected void exclude(MBeanAttributeInfo attr) {
-		excAttrs.add(attr);
+		if (attr != null && !isExcluded(attr)) {
+			excAttrs.add(attr);
+		}
 	}
 
 	@Override
@@ -106,9 +105,9 @@ public class DefaultSampleListener implements SampleListener {
 
 	@Override
 	public void post(SampleContext context, AttributeSample sample) throws UnsupportedAttributeException {
-		MBeanAttributeInfo jinfo = sample.getAttributeInfo();
+		MBeanAttributeInfo mbAttrInfo = sample.getAttributeInfo();
 		PropertySnapshot snapshot = sample.getSnapshot();
-		processAttrValue(snapshot, jinfo, jinfo.getName(), sample.get());
+		processAttrValue(snapshot, mbAttrInfo, mbAttrInfo.getName(), sample.get());
 	}
 
 	@Override
@@ -183,25 +182,25 @@ public class DefaultSampleListener implements SampleListener {
 	 * Process/extract value from a given MBean attribute
 	 *
 	 * @param snapshot instance where extracted attribute is stored
-	 * @param jinfo attribute info
+	 * @param mbAttrInfo MBean attribute info
 	 * @param propName name to be assigned to given attribute value
 	 * @param value associated with attribute
 	 * @return snapshot instance where all attributes are contained
 	 */
-	private PropertySnapshot processAttrValue(PropertySnapshot snapshot, MBeanAttributeInfo jinfo, String propName, Object value) {
+	protected PropertySnapshot processAttrValue(PropertySnapshot snapshot, MBeanAttributeInfo mbAttrInfo, String propName, Object value) {
 		if (value instanceof CompositeData) {
 			CompositeData cdata = (CompositeData) value;
 			Set<String> keys = cdata.getCompositeType().keySet();
 			for (String key : keys) {
 				Object cVal = cdata.get(key);
-				processAttrValue(snapshot, jinfo, propName + "\\" + key, cVal);
+				processAttrValue(snapshot, mbAttrInfo, propName + "\\" + key, cVal);
 			}
 		} else if (value instanceof TabularData) {
 			TabularData tData = (TabularData) value;
 			Collection<?> values = tData.values();
 			int row = 0;
 			for (Object tVal : values) {
-				processAttrValue(snapshot, jinfo, propName + "\\" + padNumber(++row), tVal);
+				processAttrValue(snapshot, mbAttrInfo, propName + "\\" + padNumber(++row), tVal);
 			}
 		} else {
 			snapshot.add(propName, value);

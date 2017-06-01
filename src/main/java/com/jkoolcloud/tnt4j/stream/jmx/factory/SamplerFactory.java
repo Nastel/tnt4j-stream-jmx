@@ -15,8 +15,11 @@
  */
 package com.jkoolcloud.tnt4j.stream.jmx.factory;
 
+import java.io.PrintStream;
+
 import javax.management.MBeanServerConnection;
 
+import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
 
 /**
@@ -32,17 +35,29 @@ import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
 public interface SamplerFactory {
 
 	/**
-	 * Create a default instance with default MBean server instance {@code ManagementFactory.getPlatformMBeanServer()}
+	 * Create a default instance with default MBean server instance
+	 * {@link java.lang.management.ManagementFactory#getPlatformMBeanServer()}.
 	 * 
 	 * @see Sampler
 	 */
 	Sampler newInstance();
 
 	/**
-	 * Create a default instance with a given MBean server instance
+	 * Create a default instance with a given MBean server instance.
 	 * 
 	 * @param mServerConn MBean server connection instance
 	 * @see Sampler
 	 */
 	Sampler newInstance(MBeanServerConnection mServerConn);
+
+	/**
+	 * Creates instance of {@link SampleListener} to be used by {@link Sampler}.
+	 * 
+	 * @param pStream print stream instance for tracing
+	 * @param trace mode
+	 * @return sample listener instance to use
+	 *
+	 * @see SampleListener
+	 */
+	SampleListener newListener(PrintStream pStream, boolean trace);
 }

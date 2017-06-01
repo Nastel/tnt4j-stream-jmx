@@ -78,6 +78,7 @@ public class SamplingAgent {
 	private static final String AGENT_ARG_I_FILTER = "beans.include.filter";
 	private static final String AGENT_ARG_E_FILTER = "beans.exclude.filter";
 	private static final String AGENT_ARG_S_TIME = "agent.sample.time";
+	private static final String AGENT_ARG_D_TIME = "agent.sample.delay.time";
 	private static final String AGENT_ARG_W_TIME = "agent.wait.time";
 
 	private static final String AGENT_CONN_PARAMS = "agent.connection.params";
@@ -96,17 +97,23 @@ public class SamplingAgent {
 		String incFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.include.filter", Sampler.JMX_FILTER_ALL);
 		String excFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.exclude.filter", Sampler.JMX_FILTER_NONE);
 		int period = Integer.getInteger("com.jkoolcloud.tnt4j.stream.jmx.period", Sampler.JMX_SAMPLE_PERIOD);
+		int initDelay = Integer.getInteger("com.jkoolcloud.tnt4j.stream.jmx.init.delay", Sampler.JMX_SAMPLE_INIT_DELAY);
 		if (options != null) {
 			String[] args = options.split("!");
 			if (args.length >= 2) {
 				incFilter = args[0];
 				period = Integer.parseInt(args[1]);
 			}
+			if (args.length >= 3) {
+				initDelay = Integer.parseInt(args[2]);
+			}
+
 		}
-		sample(incFilter, excFilter, period, TimeUnit.MILLISECONDS);
+		sample(incFilter, excFilter, initDelay, period, TimeUnit.MILLISECONDS);
 		System.out.println("SamplingAgent.premain: include.filter=" + incFilter 
 				+ ", exclude.filter=" + excFilter
 				+ ", sample.ms=" + period 
+				+ ", initDelay.ms=" + initDelay 
 				+ ", trace=" + TRACE 
 				+ ", tnt4j.config=" + System.getProperty("tnt4j.config") 
 				+ ", jmx.sample.list=" + STREAM_AGENTS);
@@ -223,11 +230,14 @@ public class SamplingAgent {
 					String exclF = props.getProperty(AGENT_ARG_E_FILTER, Sampler.JMX_FILTER_NONE);
 					long sample_time = Integer
 							.parseInt(props.getProperty(AGENT_ARG_S_TIME, String.valueOf(Sampler.JMX_SAMPLE_PERIOD)));
+					long delay_time = Integer.parseInt(
+							props.getProperty(AGENT_ARG_D_TIME, String.valueOf(Sampler.JMX_SAMPLE_INIT_DELAY)));
 					long wait_time = Integer.parseInt(props.getProperty(AGENT_ARG_W_TIME, "0"));
-					sample(inclF, exclF, sample_time, TimeUnit.MILLISECONDS);
+					sample(inclF, exclF, delay_time, sample_time, TimeUnit.MILLISECONDS);
 					System.out.println("SamplingAgent.main: include.filter=" + inclF 
 							+ ", exclude.filter=" + exclF
 							+ ", sample.ms=" + sample_time 
+							+ ", delay.ms=" + delay_time 
 							+ ", wait.ms=" + wait_time 
 							+ ", trace=" + TRACE
 							+ ", tnt4j.config=" + System.getProperty("tnt4j.config") 
@@ -387,6 +397,9 @@ public class SamplingAgent {
 			if (args.length > 3) {
 				props.setProperty(AGENT_ARG_W_TIME, args[3]);
 			}
+			if (args.length > 4) {
+				props.setProperty(AGENT_ARG_D_TIME, args[4]);
+			}
 		}
 
 		return true;
@@ -399,7 +412,8 @@ public class SamplingAgent {
 		String incFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.include.filter", Sampler.JMX_FILTER_ALL);
 		String excFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.exclude.filter", Sampler.JMX_FILTER_NONE);
 		int period = Integer.getInteger("com.jkoolcloud.tnt4j.stream.jmx.period", Sampler.JMX_SAMPLE_PERIOD);
-		sample(incFilter, excFilter, period);
+		int initDelay = Integer.getInteger("com.jkoolcloud.tnt4j.stream.jmx.init.delay", Sampler.JMX_SAMPLE_INIT_DELAY);
+		sample(incFilter, excFilter, initDelay, period);
 	}
 
 	/**
@@ -420,7 +434,19 @@ public class SamplingAgent {
 	 * @param period sampling in milliseconds.
 	 */
 	public static void sample(String incFilter, String excFilter, long period) throws IOException {
-		sample(incFilter, excFilter, period, TimeUnit.MILLISECONDS);
+		sample(incFilter, excFilter, Sampler.JMX_SAMPLE_INIT_DELAY, period);
+	}
+
+	/**
+	 * Schedule sample with default MBean server instance as well as all registered MBean servers within the JVM.
+	 *
+	 * @param incFilter semicolon separated include filter list
+	 * @param excFilter semicolon separated exclude filter list (null if empty)
+	 * @param initDelay initial delay before first sampling
+	 * @param period sampling in milliseconds.
+	 */
+	public static void sample(String incFilter, String excFilter, long initDelay, long period) throws IOException {
+		sample(incFilter, excFilter, initDelay, period, TimeUnit.MILLISECONDS);
 	}
 
 	/**
@@ -428,11 +454,12 @@ public class SamplingAgent {
 	 * 
 	 * @param incFilter semicolon separated include filter list
 	 * @param excFilter semicolon separated exclude filter list (null if empty)
+	 * @param initDelay initial delay before first sampling
 	 * @param period sampling time
 	 * @param tUnit time units for sampling period
 	 */
-	public static void sample(String incFilter, String excFilter, long period, TimeUnit tUnit) throws IOException {
-		SamplerFactory pFactory = initPlatformJMX(incFilter, excFilter, period, tUnit, null);
+	public static void sample(String incFilter, String excFilter, long initDelay, long period, TimeUnit tUnit) throws IOException {
+		SamplerFactory pFactory = initPlatformJMX(incFilter, excFilter, initDelay, period, tUnit, null);
 
 		// find other registered MBean servers and initiate sampling for all
 		ArrayList<MBeanServer> mbsList = MBeanServerFactory.findMBeanServer(null);
@@ -440,8 +467,8 @@ public class SamplingAgent {
 			Sampler jmxSampler = STREAM_AGENTS.get(server);
 			if (jmxSampler == null) {
 				jmxSampler = pFactory.newInstance(server);
-				jmxSampler.setSchedule(incFilter, excFilter, period, tUnit)
-						.addListener(new DefaultSampleListener(System.out, TRACE)).run();
+				jmxSampler.setSchedule(incFilter, excFilter, initDelay, period, tUnit)
+						.addListener(pFactory.newListener(System.out, TRACE)).run();
 				STREAM_AGENTS.put(jmxSampler.getMBeanServer(), jmxSampler);
 			}
 		}
@@ -452,19 +479,20 @@ public class SamplingAgent {
 	 * 
 	 * @param incFilter semicolon separated include filter list
 	 * @param excFilter semicolon separated exclude filter list (null if empty)
+	 * @param initDelay initial delay before first sampling
 	 * @param period sampling time
 	 * @param tUnit time units for sampling period
 	 * @param conn JMX connector to get MBean server connection instance
 	 */
-	public static void sample(String incFilter, String excFilter, long period, TimeUnit tUnit, JMXConnector conn)
-			throws IOException {
+	public static void sample(String incFilter, String excFilter, long initDelay, long period, TimeUnit tUnit,
+			JMXConnector conn) throws IOException {
 		// get MBeanServerConnection from JMX RMI connector
 		MBeanServerConnection mbSrvConn = conn.getMBeanServerConnection();
-		SamplerFactory pFactory = initPlatformJMX(incFilter, excFilter, period, tUnit, mbSrvConn);
+		SamplerFactory pFactory = initPlatformJMX(incFilter, excFilter, initDelay, period, tUnit, mbSrvConn);
 	}
 
-	private static SamplerFactory initPlatformJMX(String incFilter, String excFilter, long period, TimeUnit tUnit,
-			MBeanServerConnection mbSrvConn) throws IOException {
+	private static SamplerFactory initPlatformJMX(String incFilter, String excFilter, long initDelay, long period,
+			TimeUnit tUnit, MBeanServerConnection mbSrvConn) throws IOException {
 		// obtain a default sample factory
 		SamplerFactory pFactory = DefaultSamplerFactory.getInstance();
 
@@ -472,8 +500,8 @@ public class SamplingAgent {
 			// create new sampler with default MBeanServer instance
 			platformJmx = mbSrvConn == null ? pFactory.newInstance() : pFactory.newInstance(mbSrvConn);
 			// schedule sample with a given filter and sampling period
-			platformJmx.setSchedule(incFilter, excFilter, period, tUnit)
-					.addListener(new DefaultSampleListener(System.out, TRACE)).run();
+			platformJmx.setSchedule(incFilter, excFilter, initDelay, period, tUnit)
+					.addListener(pFactory.newListener(System.out, TRACE)).run();
 			STREAM_AGENTS.put(platformJmx.getMBeanServer(), platformJmx);
 		}
 
@@ -587,6 +615,7 @@ public class SamplingAgent {
 		String excFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.exclude.filter",
 				Sampler.JMX_FILTER_NONE);
 		int period = Integer.getInteger("com.jkoolcloud.tnt4j.stream.jmx.period", Sampler.JMX_SAMPLE_PERIOD);
+		int initDelay = Integer.getInteger("com.jkoolcloud.tnt4j.stream.jmx.init.delay", Sampler.JMX_SAMPLE_INIT_DELAY);
 		if (options != null) {
 			String[] args = options.split("!");
 			if (args.length > 0) {
@@ -595,6 +624,9 @@ public class SamplingAgent {
 			if (args.length > 1) {
 				excFilter = args.length > 2 ? args[1] : Sampler.JMX_FILTER_NONE;
 				period = Integer.parseInt(args.length > 2 ? args[2] : args[1]);
+			}
+			if (args.length > 2) {
+				initDelay = Integer.parseInt(args.length > 3 ? args[3] : args[2]);
 			}
 		}
 
@@ -617,11 +649,12 @@ public class SamplingAgent {
 		JMXConnector connector = JMXConnectorFactory.connect(url, params);
 
 		try {
-			sample(incFilter, excFilter, period, TimeUnit.MILLISECONDS, connector);
+			sample(incFilter, excFilter, initDelay, period, TimeUnit.MILLISECONDS, connector);
 
 			System.out.println("SamplingAgent.connect: include.filter=" + incFilter 
 					+ ", exclude.filter=" + excFilter
 					+ ", sample.ms=" + period 
+					+ ", initDelay.ms=" + initDelay 
 					+ ", trace=" + TRACE 
 					+ ", tnt4j.config=" + System.getProperty("tnt4j.config") 
 					+ ", jmx.sample.list=" + STREAM_AGENTS);

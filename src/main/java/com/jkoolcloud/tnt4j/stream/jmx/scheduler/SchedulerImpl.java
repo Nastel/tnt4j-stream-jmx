@@ -34,6 +34,7 @@ import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
  */
 public class SchedulerImpl extends ActivityScheduler implements Scheduler {
 	protected SampleHandler listener;
+	protected long initDelay;
 	protected long period;
 	protected TimeUnit timeUnit;
 	protected String incFilter;
@@ -70,11 +71,11 @@ public class SchedulerImpl extends ActivityScheduler implements Scheduler {
 	 * @param mServerConn MBean server connection instance
 	 * @param incFilterList MBean filters semicolon separated
 	 * @param period sampling period
-	 * @param tunit time unit for the sampling period
+	 * @param tUnit time unit for the sampling period
 	 */
 	public SchedulerImpl(String name, MBeanServerConnection mServerConn, String incFilterList, long period,
-			TimeUnit tunit) {
-		this(name, mServerConn, incFilterList, null, period, tunit);
+			TimeUnit tUnit) {
+		this(name, mServerConn, incFilterList, null, period, tUnit);
 	}
 
 	/**
@@ -82,17 +83,34 @@ public class SchedulerImpl extends ActivityScheduler implements Scheduler {
 	 *
 	 * @param name name of assigned to the sampler
 	 * @param mServerConn MBean server connection instance
-	 * @param incFilterList Bean filters semicolon separated
-	 * @param excFilterList MBean filters semicolon separated
+	 * @param incFilterList MBean include filters semicolon separated
+	 * @param excFilterList MBean exclude filters semicolon separated
 	 * @param period sampling period
-	 * @param tunit time unit for the sampling period
+	 * @param tUnit time unit for the sampling period
 	 */
 	public SchedulerImpl(String name, MBeanServerConnection mServerConn, String incFilterList, String excFilterList,
-			long period, TimeUnit tunit) {
+			long period, TimeUnit tUnit) {
+		this(name, mServerConn, incFilterList, null, 0, period, tUnit);
+	}
+
+	/**
+	 * Create new instance of {@code SchedulerImpl} with a given name, MBean server, filter list and sampling period.
+	 *
+	 * @param name name of assigned to the sampler
+	 * @param mServerConn MBean server connection instance
+	 * @param incFilterList MBean include filters semicolon separated
+	 * @param excFilterList MBean exclude filters semicolon separated
+	 * @param initDelay initial delay before first sampling
+	 * @param period sampling period
+	 * @param tUnit time unit for the sampling period
+	 */
+	public SchedulerImpl(String name, MBeanServerConnection mServerConn, String incFilterList, String excFilterList,
+			long initDelay, long period, TimeUnit tUnit) {
 		super(name, newSampleHandlerImpl(mServerConn, incFilterList, excFilterList));
 		this.listener = (SampleHandler) this.getListener();
+		this.initDelay = initDelay;
 		this.period = period;
-		this.timeUnit = tunit;
+		this.timeUnit = tUnit;
 		this.incFilter = incFilterList;
 		this.excFilter = excFilterList;
 	}
@@ -102,14 +120,15 @@ public class SchedulerImpl extends ActivityScheduler implements Scheduler {
 	 * implementation.
 	 *
 	 * @param mServerConn MBean server connection instance
-	 * @param filterList MBean filters semicolon separated
+	 * @param incFilterList MBean include filters semicolon separated
+	 * @param excFilterList MBean exclude filters semicolon separated
 	 * @return new sample handler implementation instance
 	 * 
-	 * @see SampleHandler	 
+	 * @see SampleHandler
 	 */
-	protected static SampleHandler newSampleHandlerImpl(MBeanServerConnection mServerConn, String filterList,
-			String excfilterList) {
-		return new SampleHandlerImpl(mServerConn, filterList, excfilterList);
+	protected static SampleHandler newSampleHandlerImpl(MBeanServerConnection mServerConn, String incFilterList,
+			String excFilterList) {
+		return new SampleHandlerImpl(mServerConn, incFilterList, excFilterList);
 	}
 
 	@Override
@@ -139,6 +158,6 @@ public class SchedulerImpl extends ActivityScheduler implements Scheduler {
 
 	@Override
 	public void run() {
-		this.schedule(this.getName(), period, timeUnit);
+		this.schedule(this.getName(), initDelay, period, timeUnit);
 	}
 }
