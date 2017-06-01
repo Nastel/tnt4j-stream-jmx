@@ -69,8 +69,9 @@ StreamAgent arguments `-attach -vm:activemq -ap:tnt4j-stream-jmx-0.5.0.jar -ao:*
 PID. Mandatory argument.
 * `-ap:tnt4j-stream-jmx-0.5.0.jar` - is agent library name. If it is class path - then only name should be sufficient. In any other case 
 define full or relative path i.e. `..\build\tnt4j-stream-jmx\tnt4j-stream-jmx-0.5.0\lib\tnt4j-stream-jmx-0.5.0.jar`. Mandatory argument.
-* `-ao:*:*!10000` - is JMX sampler options stating to include all MBeans and schedule sampling every 30 seconds. Sampler options are 
-optional - default value is `*:*!30000`.   
+* `-ao:*:*!10000` - is JMX sampler options stating to include all MBeans and schedule sampling every 10 seconds. Sampler options are 
+optional - default value is `*:*!30000`. Initial sampler delay can be configured by adding numeric parameter `*:*!30000!1000` defining 
+initial sampler delay as 1 second. Default sampler delay value is equal to sampling period value.
 
 **NOTE:** arguments and properties defined running `StreamAgent.main` is forwarded to `StreamsAgent` agent attached to JVM process. 
 
@@ -90,8 +91,9 @@ StreamAgent arguments `-connect -vm:activemq -ao:*:*!*:dummy!10000` states:
 * `-connect` - defines that StreamsAgent shall connect to running JVM process over JMXConnector (RMI) connection.
 * `-vm:activemq` - is JVM descriptor. In this case it is running JVM name fragment `activemq`. But it also may be JVM process identifier - 
 PID. Mandatory argument.
-* `-ao:*:*!*:dummy!10000` - is JMX sampler options stating to include all MBeans, exclude all `dummy` MBeans and schedule sampling every 30 
-seconds. Sampler options are optional - default value is `*:*!30000`.  
+* `-ao:*:*!*:dummy!10000` - is JMX sampler options stating to include all MBeans, exclude all `dummy` MBeans and schedule sampling every 10 
+seconds. Sampler options are optional - default value is `*:*!30000`. Initial sampler delay can be configured by adding numeric parameter 
+`*:*!30000!1000` defining initial sampler delay as 1 second. Default sampler delay value is equal to sampling period value.
 
 #### To connect to JMX service over URL
  
@@ -107,7 +109,8 @@ StreamAgent arguments `-connect -vm:service:jmx:<JMX_URL> -ul:admin -up:admin -a
 * `-ul:admin` - is user login. In this case it is `admin`. User login argument is optional.
 * `-up:admin` - is user password. In this case it is `admin`. User password argument is optional.
 * `-ao:*:*!!10000` - is JMX sampler options stating to include all MBeans and schedule sampling every 10 seconds. Sampler options are 
-optional - default value is `*:*!30000`.  
+optional - default value is `*:*!30000`. Initial sampler delay can be configured by adding numeric parameter `*:*!30000!1000` defining 
+initial sampler delay as 1 second. Default sampler delay value is equal to sampling period value.
 * `-cp:javax.net.ssl.trustStore=/your/path/to/truststore.jks -cp:javax.net.ssl.trustStorePassword=truststore_pwd` - is JMX connector 
 parameters definitions in properties format `key=value`. JMX connector parameters are optional and can be defined multiple times - as many 
 as there are required JMX connector parameters.  

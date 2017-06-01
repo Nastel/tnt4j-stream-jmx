@@ -93,7 +93,7 @@ public class PlatformJmxSampler implements Sampler {
 
 	@Override
 	public Sampler setSchedule(String incFilter, String excFilter, long period, TimeUnit tUnit) throws IOException {
-		return setSchedule(incFilter, excFilter, Sampler.JMX_SAMPLE_INIT_DELAY, period, tUnit);
+		return setSchedule(incFilter, excFilter, period, period, tUnit);
 	}
 
 	@Override

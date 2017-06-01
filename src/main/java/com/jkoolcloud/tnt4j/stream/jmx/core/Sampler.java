@@ -38,7 +38,6 @@ public interface Sampler extends NestedHandler<Sampler, SampleListener>, Runnabl
 	public static final String JMX_FILTER_ALL = "*:*";
 	public static final String JMX_FILTER_NONE = "";
 	public static final int JMX_SAMPLE_PERIOD = 30000;
-	public static final int JMX_SAMPLE_INIT_DELAY = JMX_SAMPLE_PERIOD;
 
 	/**
 	 * Name associated with this Sampler
