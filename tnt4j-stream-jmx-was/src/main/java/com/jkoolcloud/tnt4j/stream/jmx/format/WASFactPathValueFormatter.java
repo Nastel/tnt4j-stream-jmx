@@ -57,15 +57,15 @@ public class WASFactPathValueFormatter extends FactPathValueFormatter {
 			if (!Utils.isEmpty(pv) && !"null".equals(pv)) {
 				pv = pv.replace('#', '\\');
 				pv = pv.replace('/', '\\');
-				pv = replace(pv, "\\\\", PATH_DELIM);
-				if (pv.startsWith(PATH_DELIM)) {
+				pv = replace(pv, "\\\\", FactNameValueFormatter.PATH_DELIM);
+				if (pv.startsWith(FactNameValueFormatter.PATH_DELIM)) {
 					pv = pv.substring(1);
 				}
-				if (pv.endsWith(PATH_DELIM)) {
+				if (pv.endsWith(FactNameValueFormatter.PATH_DELIM)) {
 					pv = pv.substring(0, pv.length() - 1);
 				}
 
-				pathBuilder.append(pathBuilder.length() > 0 ? PATH_DELIM : "").append(pv);
+				pathBuilder.append(pathBuilder.length() > 0 ? FactNameValueFormatter.PATH_DELIM : "").append(pv);
 				break;
 			}
 		}

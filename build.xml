@@ -1,4 +1,4 @@
-<project name="tnt4j-streams-jmx" default="all" basedir=".">
+<project name="tnt4j-stream-jmx" default="all" basedir=".">
 
     <echo message="Processing ${ant.project.name}${line.separator}" level="info"/>
 

@@ -41,7 +41,7 @@ For more information on JESL visit: http://nastel.github.io/JESL/
 It is simple, do one of the following: 
  * run Stream-JMX as a `-javaagent` 
  * attach Stream-JMX as agent to running JVM 
- * connect Streams-JMX over JMXConnector to locally running JVM or remote JMX service
+ * connect Stream-JMX over JMXConnector to locally running JVM or remote JMX service
  * embed Stream-JMX code into your application
  
 **NOTE:** Running Stream-JMX as `-javaagent`, attaching agent to running JVM or connecting over JMXConnector to locally running JVM or 
@@ -63,8 +63,8 @@ java -Dtnt4j.config=.\config\tnt4j.properties -Dcom.jkoolcloud.tnt4j.stream.jmx.
 ```
 System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [Stream-JMX configuration ](#stream-jmx-configuration).
  
-StreamAgent arguments `-attach -vm:activemq -ap:tnt4j-stream-jmx-0.5.0.jar -ao:*:*!10000` states:
-* `-attach` - defines that StreamsAgent shall be attached to running JVM process
+`SamplingAgent` arguments `-attach -vm:activemq -ap:tnt4j-stream-jmx-0.5.0.jar -ao:*:*!10000` states:
+* `-attach` - defines that `SamplingAgent` shall be attached to running JVM process
 * `-vm:activemq` - is JVM descriptor. In this case it is running JVM name fragment `activemq`. But it also may be JVM process identifier - 
 PID. Mandatory argument.
 * `-ap:tnt4j-stream-jmx-0.5.0.jar` - is agent library name. If it is class path - then only name should be sufficient. In any other case 
@@ -73,7 +73,7 @@ define full or relative path i.e. `..\build\tnt4j-stream-jmx\tnt4j-stream-jmx-0.
 optional - default value is `*:*!30000`. Initial sampler delay can be configured by adding numeric parameter `*:*!30000!1000` defining 
 initial sampler delay as 1 second. Default sampler delay value is equal to sampling period value.
 
-**NOTE:** arguments and properties defined running `StreamAgent.main` is forwarded to `StreamsAgent` agent attached to JVM process. 
+**NOTE:** arguments and properties defined running `SamplingAgent.main` is forwarded to `SamplingAgent` agent attached to JVM process. 
 
 ## Connecting Stream-JMX to local or remote JMX service
 
@@ -87,8 +87,8 @@ java -Dtnt4j.config=.\config\tnt4j.properties -Dcom.jkoolcloud.tnt4j.stream.jmx.
 
 System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [Stream-JMX configuration ](#stream-jmx-configuration).
  
-StreamAgent arguments `-connect -vm:activemq -ao:*:*!*:dummy!10000` states:
-* `-connect` - defines that StreamsAgent shall connect to running JVM process over JMXConnector (RMI) connection.
+`SamplingAgent` arguments `-connect -vm:activemq -ao:*:*!*:dummy!10000` states:
+* `-connect` - defines that `SamplingAgent` shall connect to running JVM process over JMXConnector (RMI) connection.
 * `-vm:activemq` - is JVM descriptor. In this case it is running JVM name fragment `activemq`. But it also may be JVM process identifier - 
 PID. Mandatory argument.
 * `-ao:*:*!*:dummy!10000` - is JMX sampler options stating to include all MBeans, exclude all `dummy` MBeans and schedule sampling every 10 
@@ -102,8 +102,8 @@ java -Dtnt4j.config=.\config\tnt4j.properties -Dcom.jkoolcloud.tnt4j.stream.jmx.
 ```
 System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [Stream-JMX configuration ](#stream-jmx-configuration).
  
-StreamAgent arguments `-connect -vm:service:jmx:<JMX_URL> -ul:admin -up:admin -ao:*:*!!10000 -cp:javax.net.ssl.trustStore=/your/path/to/truststore.jks -cp:javax.net.ssl.trustStorePassword=truststore_pwd` states:
-* `-connect` - defines that StreamsAgent shall connect to running JMX service over JMXConnector (RMI) connection.
+`SamplingAgent` arguments `-connect -vm:service:jmx:<JMX_URL> -ul:admin -up:admin -ao:*:*!!10000 -cp:javax.net.ssl.trustStore=/your/path/to/truststore.jks -cp:javax.net.ssl.trustStorePassword=truststore_pwd` states:
+* `-connect` - defines that `SamplingAgent` shall connect to running JMX service over JMXConnector (RMI) connection.
 * `-vm:service:jmx:<JMX_URL>` - is JMX service URL to use for connection. Mandatory argument. Full URL may be like 
 `service:jmx:rmi://127.0.0.1/stub/rO0ABXN9AAAAAQAlamF2YXgubWFuYWdlbWVudC5yZW1vdGUucm1pLlJNSVNlcnZlcnhyABdqYXZhLmxhbmcucmVmbGVjdC5Qcm94eeEn2iDMEEPLAgABTAABaHQAJUxqYXZhL2xhbmcvcmVmbGVjdC9JbnZvY2F0aW9uSGFuZGxlcjt4cHNyAC1qYXZhLnJtaS5zZXJ2ZXIuUmVtb3RlT2JqZWN0SW52b2NhdGlvbkhhbmRsZXIAAAAAAAAAAgIAAHhyABxqYXZhLnJtaS5zZXJ2ZXIuUmVtb3RlT2JqZWN002G0kQxhMx4DAAB4cHc2AAtVbmljYXN0UmVmMgAACzE3Mi4xNi42Ljg2AADPWKO5DJD/bZIhG9aBuwAAAVo8DdAkgAEAeA==`.
 * `-ul:admin` - is user login. In this case it is `admin`. User login argument is optional.

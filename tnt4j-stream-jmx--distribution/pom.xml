@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.jkoolcloud.tnt4j.stream</groupId>
+        <artifactId>tnt4j-stream-jmx</artifactId>
+        <version>0.6-SNAPSHOT</version>
+    </parent>
+    <packaging>pom</packaging>
+
+    <prerequisites>
+        <maven>3.0.0</maven>
+    </prerequisites>
+
+    <artifactId>tnt4j-stream-jmx--distribution</artifactId>
+
+    <properties>
+        <release.deploy.name>${project.parent.artifactId}</release.deploy.name>
+        <release.deploy.dir>../../build/${release.deploy.name}</release.deploy.dir>
+        <release.deploy.finalName>${release.deploy.name}-${project.version}</release.deploy.finalName>
+        <release.deploy.assembly>src/assembly/deployAssembly_dev.xml</release.deploy.assembly>
+        <build.assemblies.attach>false</build.assemblies.attach>
+    </properties>
+
+    <build>
+        <defaultGoal>clean package</defaultGoal>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.0.0</version>
+                <inherited>false</inherited>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>${release.deploy.dir}</directory>
+                            <includes>
+                                <include>${release.deploy.finalName}/</include>
+                                <include>${release.deploy.finalName}.*</include>
+                            </includes>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.6</version>
+                <executions>
+                    <execution>
+                        <id>make-deploy-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <appendAssemblyId>false</appendAssemblyId>
+                            <descriptors>
+                                <descriptor>${release.deploy.assembly}</descriptor>
+                            </descriptors>
+                            <outputDirectory>${release.deploy.dir}</outputDirectory>
+                            <attach>${build.assemblies.attach}</attach>
+                            <finalName>${release.deploy.finalName}</finalName>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <!-- Just to make sure distribution assemblies are made after all modules have been built -->
+    <!-- It is enough to have dependency to single (mandatory) module to have modules correctly ordered by Maven -->
+    <dependencies>
+        <dependency>
+            <groupId>com.jkoolcloud.tnt4j.stream</groupId>
+            <artifactId>tnt4j-stream-jmx-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+</project>

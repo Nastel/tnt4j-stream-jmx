@@ -114,9 +114,13 @@ public class SamplingAgent {
 
 		}
 		sample(incFilter, excFilter, initDelay, period, TimeUnit.MILLISECONDS);
-		System.out.println("SamplingAgent.premain: include.filter=" + incFilter + ", exclude.filter=" + excFilter
-				+ ", sample.ms=" + period + ", initDelay.ms=" + initDelay + ", trace=" + TRACE + ", tnt4j.config="
-				+ System.getProperty("tnt4j.config") + ", jmx.sample.list=" + STREAM_AGENTS);
+		System.out.println("SamplingAgent.premain: include.filter=" + incFilter
+				+ ", exclude.filter=" + excFilter
+				+ ", sample.ms=" + period
+				+ ", initDelay.ms=" + initDelay
+				+ ", trace=" + TRACE
+				+ ", tnt4j.config=" + System.getProperty("tnt4j.config")
+				+ ", jmx.sample.list=" + STREAM_AGENTS);
 	}
 
 	/**
@@ -671,7 +675,7 @@ public class SamplingAgent {
 							|| notification.getType().contains("lost")) {
 						System.out.println(
 								"SamplingAgent.connect: JMX connection status change: " + notification.getType());
-						stopConnection();
+						stopPlatformJMX();
 					}
 				}
 			};
@@ -679,7 +683,7 @@ public class SamplingAgent {
 			Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 				@Override
 				public void run() {
-					stopConnection();
+					stopPlatformJMX();
 				}
 			}));
 
@@ -698,7 +702,7 @@ public class SamplingAgent {
 		}
 	}
 
-	private static void stopConnection() {
+	private static void stopPlatformJMX() {
 		if (platformJmx != null) {
 			synchronized (platformJmx) {
 				platformJmx.notifyAll();
@@ -738,6 +742,17 @@ public class SamplingAgent {
 		if (sampler != null) {
 			sampler.cancel();
 		}
+	}
+
+	/**
+	 * Stops platform JMX sampler, cancels and close all outstanding {@link Sampler} instances and stop all
+	 * sampling for all {@code MBeanServer} instances.
+	 *         
+	 * @see #cancel()
+	 */
+	public static void destroy() {
+		stopPlatformJMX();
+		cancel();
 	}
 
 	private static class JarFilter implements FilenameFilter {
