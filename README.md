@@ -114,7 +114,7 @@ optional - default value is `*:*!30000`. Initial sampler delay can be configured
 initial sampler delay as 1 second. Default sampler delay value is equal to sampling period value.
 * `-cp:javax.net.ssl.trustStore=/your/path/to/truststore.jks -cp:javax.net.ssl.trustStorePassword=truststore_pwd` - is JMX connector 
 parameters definitions in properties format `key=value`. JMX connector parameters are optional and can be defined multiple times - as many 
-as there are required JMX connector parameters.  
+as there are required JMX connector parameters.
 
 ## Embed Stream-JMX code into your application
 
@@ -266,7 +266,7 @@ SampleContext\listener.trace.mode=false,
 ...
 ```
 **NOTE:** Entries are not sorted, sequence is same as returned by activity contained snapshots map entries and snapshot properties 
-iterators.  
+iterators.
 
 * FactPathValueFormatter - This class provides key/value formatting for tnt4j activities, events and snapshots. The output format follows 
 the following format:
@@ -360,7 +360,7 @@ org.apache.activemq\Broker\localhost\VMURL=vm://localhost,
 ...
 ```
 **NOTE:** Entries are sorted by key alphanumeric ordering and key representation is more common to be used for, e.g., tree model construction 
-to represent JMX structure more like `JConsole` does.  
+to represent JMX structure more like `JConsole` does.
 
 ## Where do the streams go?
 Stream-JMX streams all collected metrics based on a scheduled interval via TNT4J event streaming framework.
@@ -652,7 +652,7 @@ Modules list:
 
 All optional modules (extensions) depends to `core` module and can't be build and run without it.
 
-**NOTE:** `Distribution` module performs `maven post build` release assemblies delivery to `../build/tnt4j-stream-jmx` directory.  
+**NOTE:** `Distribution` module performs `maven post build` release assemblies delivery to `../build/tnt4j-stream-jmx` directory.
 
 ## Requirements
 * JDK 1.6+
@@ -689,14 +689,14 @@ set TOOLS_PATH="%JAVA_HOME%\lib\tools.jar"
 ```
 ```bash
 TOOLS_PATH="$JAVA_HOME/lib/tools.jar"
-```          
-**NOTE:** you may need to change paths if these do not match your environment.   
+```
+**NOTE:** you may need to change paths if these do not match your environment.
 
 #### `WAS` module
 
 **NOTE:** Because this module requires manually downloaded libraries, it is commented out in main project pom file `tnt4j-stream-jmx/pom.xml` 
 by default. If You want to use it uncomment this line of `pom.xml` file. But `WAS` module will be ready to build only when manually 
-downloaded libraries will be installed to local maven repository.    
+downloaded libraries will be installed to local maven repository.
 
 What to download manually or copy from your existing IBM MQ installation:
 * IBM WAS (e.g., version 8.5) client libs
@@ -708,7 +708,7 @@ Download the above libraries and place into the `tnt4j-stream-jmx/tnt4j-stream-j
      + was
          |- com.ibm.ws.admin.client_8.5.0.jar
          |- com.ibm.ws.ejb.thinclient_8.5.0.jar
-         |- com.ibm.ws.orb_8.5.0.jar         
+         |- com.ibm.ws.orb_8.5.0.jar
      j2ee.jar
 ```
 (O) marked libraries are optional
@@ -731,7 +731,7 @@ directory.
 ## Building
    * to build project and make release assemblies run maven goals `clean package`
    * to build project, make release assemblies and install to local repo run maven goals `clean install`
-   
+
 By default maven will build all modules defined in `tnt4j-stream-jmx/pom.xml` file. 
 
 If You do not want to build some of optional modules, comment those out like `WAS` module is. Or You can define maven to build your 
