@@ -39,10 +39,15 @@
                         <outputDirectory></outputDirectory>
                         <directory>${project.build.directory}</directory>
                         <includes>
+                            <include>*.jar</include>
+                            <include>*.war</include>
                             <include>*-sources.jar</include>
                             <include>*-tests.jar</include>
                             <include>*-javadoc.jar</include>
                         </includes>
+                        <excludes>
+                            <exclude>*-classes.jar</exclude>
+                        </excludes>
                     </fileSet>
                 </fileSets>
             </sources>
