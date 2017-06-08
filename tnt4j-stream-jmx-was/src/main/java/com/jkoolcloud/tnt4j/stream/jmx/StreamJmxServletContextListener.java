@@ -16,6 +16,8 @@
 
 package com.jkoolcloud.tnt4j.stream.jmx;
 
+import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -62,13 +64,15 @@ public class StreamJmxServletContextListener extends HttpServlet implements Serv
 	private static final String DEFAULT_VM = "service:jmx:iiop://localhost:2809/jndi/JMXConnector";
 	private static final String TNT4J_CONFIG_KEY = "tnt4j.config";
 	private static final String[] displayProperties = new String[] { TNT4J_CONFIG_KEY, VM_KEY, AO_KEY,
-			JMX_SAMPLER_FACTORY_KEY, TRACE_KEY, VALIDATE_TYPES_KEY };
+			JMX_SAMPLER_FACTORY_KEY, TRACE_KEY, /* VALIDATE_TYPES_KEY */ };
 
 	private String vm = null;
 	private String ao = null;
 	private String tntConfig = null;
 
 	private static ConsoleOutputCaptor console = new ConsoleOutputCaptor();
+
+	private Thread sampler;
 
 	static {
 		console.start();
@@ -77,60 +81,72 @@ public class StreamJmxServletContextListener extends HttpServlet implements Serv
 	@Override
 	public void contextInitialized(ServletContextEvent event) {
 		System.out.println(
-				"###############################     Starting TNT4J-stream-JMX    ###############################");
+				"###############################     Starting TNT4J-stream-JMX as Servlet   ###############################");
 		try {
 			System.setProperty(TRACE_KEY, "true");
 			System.setProperty(VALIDATE_TYPES_KEY, "false");
 			System.setProperty(JMX_SAMPLER_FACTORY_KEY, "com.jkoolcloud.tnt4j.stream.jmx.impl.WASSamplerFactory");
-			try {
-				tntConfig = System.getProperty(TNT4J_CONFIG_KEY);
-				vm = System.getProperty(VM_KEY);
-				ao = System.getProperty(AO_KEY);
-			} catch (SecurityException e) {
-				// TODO: handle exception
-			} finally {
-				if (StringUtils.isEmpty(tntConfig)) {
-					System.setProperty(TNT4J_CONFIG_KEY, DEFAULT_TNT4J_PROPERTIES);
-				}
-				if (StringUtils.isEmpty(vm)) {
-					vm = DEFAULT_VM;
-				}
-				System.setProperty(VM_KEY, DEFAULT_VM);
-				if (StringUtils.isEmpty(ao)) {
-					ao = DEFAULT_AO;
-				}
-				System.setProperty(AO_KEY, DEFAULT_AO);
-			}
 
-			console.start();
-
-			Thread agent = new Thread(new Runnable() {
-
-				@Override
-				public void run() {
-					try {
-						console.start();
-						SamplingAgent.connect(DEFAULT_VM, DEFAULT_AO);
-
-					} catch (Exception e) {
-						System.out.println(
-								"!!!!!!!!!!!!!!!!!!!!!!     Failed TNT4J-stream-JMX    !!!!!!!!!!!!!!!!!!!!!!");
-						e.printStackTrace();
-					}
-				}
-			});
-			agent.start();
+			samplerStart();
 		} catch (Exception e) {
-			System.out.println("!!!!!!!!!!!!!!!!!!!!!!     Failed TNT4J-stream-JMX    !!!!!!!!!!!!!!!!!!!!!!");
-			e.printStackTrace();
+			System.out.println("!!!!!!!!!!!!!!!!!!!!!!     Failed to start TNT4J-stream-JMX    !!!!!!!!!!!!!!!!!!!!!!");
+			e.printStackTrace(System.out);
 		}
 
 	}
 
+	private void samplerStart() {
+		configure();
+		sampler = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					System.out.println(
+							"-------------------------------     Connecting Sampler Agent     -------------------------------");
+					SamplingAgent.connect(vm, ao);
+				} catch (Exception e) {
+					System.out.println(
+							"!!!!!!!!!!!!!!!!!!!!!!     Failed to connect Sampler Agent    !!!!!!!!!!!!!!!!!!!!!!");
+					e.printStackTrace(System.out);
+				}
+			}
+		});
+		sampler.start();
+	}
+
+	private void configure() {
+		try {
+			tntConfig = System.getProperty(TNT4J_CONFIG_KEY);
+			vm = System.getProperty(VM_KEY);
+			ao = System.getProperty(AO_KEY);
+		} catch (SecurityException e) {
+			// TODO: handle exception
+		} finally {
+			if (StringUtils.isEmpty(tntConfig)) {
+				System.setProperty(TNT4J_CONFIG_KEY, DEFAULT_TNT4J_PROPERTIES);
+			}
+			if (StringUtils.isEmpty(vm)) {
+				vm = DEFAULT_VM;
+			}
+			System.setProperty(VM_KEY, vm);
+			if (StringUtils.isEmpty(ao)) {
+				ao = DEFAULT_AO;
+			}
+			System.setProperty(AO_KEY, ao);
+		}
+	}
+
 	@Override
 	public void contextDestroyed(ServletContextEvent event) {
-		System.out.println("Stopping TNT4J-stream-JMX");
+		System.out.println(
+				"###############################     Stopping TNT4J-stream-JMX as Servlet   ###############################");
+		samplerDestroy();
 		console.stop();
+	}
+
+	private static void samplerDestroy() {
+		System.out.println(
+				"-------------------------------     Destroying Sampler Agent     -------------------------------");
 		SamplingAgent.destroy();
 	}
 
@@ -153,8 +169,8 @@ public class StreamJmxServletContextListener extends HttpServlet implements Serv
 			out.println("<tr>");
 			out.println("<td>" + property + " </td>");
 
-			out.println("<td><input type=\"text\" name=\"" + property + "\" value=\"" + System.getProperty(property)
-					+ "\"></td>");
+			out.println("<td><input type=\"text\" name=\"" + property + "\" value=\""
+					+ escapeHtml4(System.getProperty(property)) + "\"></td>");
 			out.println("<td> " + propertyPermitted(property) + "  </td>");
 			out.println("</tr>");
 		}
@@ -178,7 +194,13 @@ public class StreamJmxServletContextListener extends HttpServlet implements Serv
 		out.println("</table><br>");
 
 		out.println("<input type=\"submit\" value=\"Submit\"><br>");
+		out.println("</form>");
+		out.println("<br>");
+		out.println("<form action=\"" + req.getServletPath() + "\" method=\"post\">");
+
 		outputTNT4JConfig(out);
+		out.println("<input type=\"submit\" value=\"Submit tnt4j.config\"><br>");
+		out.println("<br>");
 		outputConsole(out);
 
 		out.println("</form>");
@@ -189,31 +211,44 @@ public class StreamJmxServletContextListener extends HttpServlet implements Serv
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		boolean set = false;
 		for (String property : displayProperties) {
 			String propertySet = req.getParameter(property);
 			if (propertySet != null) {
 				System.setProperty(property, propertySet);
+				System.out.println("Setting property: " + property + " value: " + propertySet);
+				set = true;
 			}
 		}
-
+		if (set) {
+			samplerDestroy();
+			samplerStart();
+		}
 		resp.sendRedirect(req.getContextPath());
 	}
 
 	private void outputTNT4JConfig(PrintWriter out) throws IOException {
-		out.println("<textarea name=\"tnt4jConfig\" cols=\"120\" rows=\"55\">");
+		out.println("<H3>TNT4J config</H3>");
+		out.println("<textarea name=\"" + TNT4J_CONFIG_KEY + "\" cols=\"120\" rows=\"55\">");
 
-		String tnt4jConfig = getString(
-				getClass().getClassLoader().getResourceAsStream(System.getProperty(TNT4J_CONFIG_KEY)));
+		final String tnt4JConfig = System.getProperty(TNT4J_CONFIG_KEY);
+
+		String tnt4jConfigString;
+		if (StringUtils.containsAny(tnt4JConfig, ";#:={}")) {
+			tnt4jConfigString = tnt4JConfig;
+		} else {
+			tnt4jConfigString = getString(getClass().getClassLoader().getResourceAsStream(tnt4JConfig));
+		}
 		try {
-
-			out.println(tnt4jConfig);
+			out.println(tnt4jConfigString);
 		} catch (Exception e) {
-			out.println("No tnt4j.properties found:" + System.getProperty(TNT4J_CONFIG_KEY));
+			out.println("No tnt4j.properties found: " + tnt4JConfig);
 		}
 		out.println("</textarea>");
 	}
 
 	private static void outputConsole(PrintWriter out) throws IOException {
+		out.println("<H3>Console Output</H3>");
 		out.println("<textarea name=\"tnt4jConfig\" cols=\"120\" rows=\"55\">");
 		try {
 			out.println(console.getCaptured());

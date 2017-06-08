@@ -48,9 +48,9 @@ import com.jkoolcloud.tnt4j.utils.Utils;
  * {@link #agentmain(String, Instrumentation)} as well as {@link #main(String[])} entry point to run as a standalone
  * application.
  * </p>
- * 
+ *
  * @version $Revision: 1 $
- * 
+ *
  * @see SamplerFactory
  */
 public class SamplingAgent {
@@ -89,7 +89,7 @@ public class SamplingAgent {
 	/**
 	 * Entry point to be loaded as {@code -javaagent:jarpath="mbean-filter!sample.ms!initDelay.ms"} command line where
 	 * {@code initDelay} is optional. Example: {@code -javaagent:tnt4j-sample-jmx.jar="*:*!30000!1000"}
-	 * 
+	 *
 	 * @param options
 	 *            '!' separated list of options mbean-filter!sample.ms!initDelay.ms, where mbean-filter is semicolon
 	 *            separated list of mbean filters and {@code initDelay} is optional
@@ -125,7 +125,7 @@ public class SamplingAgent {
 
 	/**
 	 * Entry point to bea loaded as JVM agent. Does same as {@link #premain(String, Instrumentation)}.
-	 * 
+	 *
 	 * @param agentArgs
 	 *            '!' separated list of options mbean-filter!sample.ms!initDelay.ms, where mbean-filter is semicolon
 	 *            separated list of mbean filters and {@code initDelay} is optional
@@ -165,9 +165,9 @@ public class SamplingAgent {
 			}
 		}
 
-		System.out.println("SamplingAgent.agentmain: agent.params=" + agentParams 
+		System.out.println("SamplingAgent.agentmain: agent.params=" + agentParams
 				+ ", agent.lib.path=" + agentLibPath
-				+ ", trace=" + TRACE 
+				+ ", trace=" + TRACE
 				+ ", tnt4j.config=" + System.getProperty("tnt4j.config"));
 
 		File agentPath = new File(agentLibPath);
@@ -207,7 +207,7 @@ public class SamplingAgent {
 
 	/**
 	 * Main entry point for running as a standalone application (test only).
-	 * 
+	 *
 	 * @param args
 	 *            argument list: [sampling-mode vm-descriptor] [mbean-filter sample_time_ms]
 	 */
@@ -242,13 +242,13 @@ public class SamplingAgent {
 							.parseInt(props.getProperty(AGENT_ARG_D_TIME, String.valueOf(sample_time)));
 					long wait_time = Integer.parseInt(props.getProperty(AGENT_ARG_W_TIME, "0"));
 					sample(inclF, exclF, delay_time, sample_time, TimeUnit.MILLISECONDS);
-					System.out.println("SamplingAgent.main: include.filter=" + inclF 
+					System.out.println("SamplingAgent.main: include.filter=" + inclF
 							+ ", exclude.filter=" + exclF
-							+ ", sample.ms=" + sample_time 
-							+ ", delay.ms=" + delay_time 
-							+ ", wait.ms=" + wait_time 
+							+ ", sample.ms=" + sample_time
+							+ ", delay.ms=" + delay_time
+							+ ", wait.ms=" + wait_time
 							+ ", trace=" + TRACE
-							+ ", tnt4j.config=" + System.getProperty("tnt4j.config") 
+							+ ", tnt4j.config=" + System.getProperty("tnt4j.config")
 							+ ", jmx.sample.list=" + STREAM_AGENTS);
 					synchronized (platformJmx) {
 						platformJmx.wait(wait_time);
@@ -289,8 +289,8 @@ public class SamplingAgent {
 
 				if (arg.startsWith(PARAM_VM_DESCRIPTOR)) {
 					if (StringUtils.isNotEmpty(props.getProperty(AGENT_ARG_VM))) {
-						System.out.println("JVM descriptor already defined. Can not use argument [" + PARAM_VM_DESCRIPTOR 
-								+ "] multiple times.");
+						System.out.println("JVM descriptor already defined. Can not use argument ["
+								+ PARAM_VM_DESCRIPTOR + "] multiple times.");
 						return false;
 					}
 
@@ -427,7 +427,7 @@ public class SamplingAgent {
 
 	/**
 	 * Schedule sample with default MBean server instance as well as all registered MBean servers within the JVM.
-	 * 
+	 *
 	 * @param incFilter semicolon separated include filter list
 	 * @param period sampling in milliseconds.
 	 */
@@ -437,7 +437,7 @@ public class SamplingAgent {
 
 	/**
 	 * Schedule sample with default MBean server instance as well as all registered MBean servers within the JVM.
-	 * 
+	 *
 	 * @param incFilter semicolon separated include filter list
 	 * @param excFilter semicolon separated exclude filter list (null if empty)
 	 * @param period sampling in milliseconds.
@@ -460,7 +460,7 @@ public class SamplingAgent {
 
 	/**
 	 * Schedule sample with default MBean server instance as well as all registered MBean servers within the JVM.
-	 * 
+	 *
 	 * @param incFilter semicolon separated include filter list
 	 * @param excFilter semicolon separated exclude filter list (null if empty)
 	 * @param initDelay initial delay before first sampling
@@ -485,7 +485,7 @@ public class SamplingAgent {
 
 	/**
 	 * Schedule sample using defined JMX connector to get MBean server connection instance to monitored JVM.
-	 * 
+	 *
 	 * @param incFilter semicolon separated include filter list
 	 * @param excFilter semicolon separated exclude filter list (null if empty)
 	 * @param initDelay initial delay before first sampling
@@ -519,7 +519,7 @@ public class SamplingAgent {
 
 	/**
 	 * Attaches to {@code vmDescr} defined JVM as agent.
-	 * 
+	 *
 	 * @param vmDescr JVM descriptor: name fragment or pid
 	 * @param agentJarPath agent JAR path
 	 * @param agentOptions agent options
@@ -574,7 +574,7 @@ public class SamplingAgent {
 	/**
 	 * Connects to {@code vmDescr} defined JVM over {@link JMXConnector} an uses {@link MBeanServerConnection} to
 	 * collect samples.
-	 * 
+	 *
 	 * @param vmDescr JVM descriptor: JMX service URI, local JVM name fragment or pid
 	 * @param options '!' separated list of options mbean-filter!sample.ms!initDelay.ms, where mbean-filter is semicolon separated list of mbean filters and {@code initDelay} is optional
 	 * @throws Exception if any exception occurs while connecting to JVM
@@ -660,12 +660,12 @@ public class SamplingAgent {
 		try {
 			sample(incFilter, excFilter, initDelay, period, TimeUnit.MILLISECONDS, connector);
 
-			System.out.println("SamplingAgent.connect: include.filter=" + incFilter 
+			System.out.println("SamplingAgent.connect: include.filter=" + incFilter
 					+ ", exclude.filter=" + excFilter
-					+ ", sample.ms=" + period 
-					+ ", initDelay.ms=" + initDelay 
-					+ ", trace=" + TRACE 
-					+ ", tnt4j.config=" + System.getProperty("tnt4j.config") 
+					+ ", sample.ms=" + period
+					+ ", initDelay.ms=" + initDelay
+					+ ", trace=" + TRACE
+					+ ", tnt4j.config=" + System.getProperty("tnt4j.config")
 					+ ", jmx.sample.list=" + STREAM_AGENTS);
 
 			NotificationListener cnl = new NotificationListener() {
@@ -712,7 +712,7 @@ public class SamplingAgent {
 
 	/**
 	 * Obtain a map of all scheduled MBeanServerConnections and associated sample references.
-	 * 
+	 *
 	 * @return map of all scheduled MBeanServerConnections and associated sample references.
 	 */
 	public static Map<MBeanServerConnection, Sampler> getSamplers() {
@@ -734,7 +734,7 @@ public class SamplingAgent {
 
 	/**
 	 * Cancel and close all sampling for a given {@code MBeanServer} instance.
-	 * 
+	 *
 	 * @param mServerConn MBeanServerConnection instance
 	 */
 	public static void cancel(MBeanServerConnection mServerConn) {
@@ -747,12 +747,13 @@ public class SamplingAgent {
 	/**
 	 * Stops platform JMX sampler, cancels and close all outstanding {@link Sampler} instances and stop all
 	 * sampling for all {@code MBeanServer} instances.
-	 *         
+	 *
 	 * @see #cancel()
 	 */
 	public static void destroy() {
 		stopPlatformJMX();
 		cancel();
+		platformJmx = null;
 	}
 
 	private static class JarFilter implements FilenameFilter {
