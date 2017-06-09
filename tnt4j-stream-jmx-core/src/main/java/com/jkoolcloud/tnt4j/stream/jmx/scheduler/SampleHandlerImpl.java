@@ -516,4 +516,12 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 		}
 	}
 
+	@Override
+	public void cleanup() {
+		eFilters.clear();
+		conditions.clear();
+		mbeans.clear();
+		listeners.clear();
+	}
+
 }

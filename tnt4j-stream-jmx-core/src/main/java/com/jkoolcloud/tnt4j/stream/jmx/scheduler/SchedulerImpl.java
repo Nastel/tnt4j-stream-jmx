@@ -160,4 +160,11 @@ public class SchedulerImpl extends ActivityScheduler implements Scheduler {
 	public void run() {
 		this.schedule(this.getName(), initDelay, period, timeUnit);
 	}
+
+	@Override
+	public void close() {
+		super.close();
+
+		listener.cleanup();
+	}
 }

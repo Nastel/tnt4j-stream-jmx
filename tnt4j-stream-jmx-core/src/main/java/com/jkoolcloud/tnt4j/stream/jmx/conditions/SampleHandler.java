@@ -15,15 +15,13 @@
  */
 package com.jkoolcloud.tnt4j.stream.jmx.conditions;
 
+import com.jkoolcloud.tnt4j.core.ActivityListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleContext;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
 
-import com.jkoolcloud.tnt4j.core.ActivityListener;
-
 /**
- * <p> 
- * This interface defines {@link SampleHandler} which provides
- * a way to conditionally process activities.
+ * <p>
+ * This interface defines {@link SampleHandler} which provides a way to conditionally process activities.
  * </p>
  * 
  * @see AttributeCondition
@@ -38,20 +36,25 @@ public interface SampleHandler extends ActivityListener, NestedHandler<SampleHan
 	 * @param cond user defined condition with {@link NoopAction}
 	 */
 	SampleHandler register(AttributeCondition cond);
-	
+
 	/**
 	 * Register and associate condition with an action
 	 * 
 	 * @param cond user defined condition
 	 * @param action action to be triggered when condition evaluates to true
 	 */
-	SampleHandler register(AttributeCondition cond, AttributeAction action);	
-	
+	SampleHandler register(AttributeCondition cond, AttributeAction action);
+
 	/**
 	 * Obtain sample context associated with the handler
 	 *
 	 * @return sample context associated with the handler
-	 *  
+	 * 
 	 */
-	SampleContext getContext();		
+	SampleContext getContext();
+
+	/**
+	 * Releases handler associated resources.
+	 */
+	void cleanup();
 }
