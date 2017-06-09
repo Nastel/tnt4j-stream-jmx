@@ -94,6 +94,13 @@
                                 <include>*.jar</include>
                             </includes>
                         </resource>
+                        <resource>
+                            <directory>config</directory>
+                            <targetPath>.</targetPath>
+                            <includes>
+                                <include>*.properties</include>
+                            </includes>
+                        </resource>
                     </webResources>
                     <archive>
                         <manifest>

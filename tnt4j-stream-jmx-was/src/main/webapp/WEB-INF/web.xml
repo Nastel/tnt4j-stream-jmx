@@ -17,12 +17,12 @@
     </session-config>
 
     <listener>
-        <listener-class>com.jkoolcloud.tnt4j.stream.jmx.StreamJmxServletContextListener</listener-class>
+        <listener-class>com.jkoolcloud.tnt4j.stream.jmx.servlet.StreamJmxServletContextListener</listener-class>
     </listener>
 
     <servlet>
         <servlet-name>StreamJmx</servlet-name>
-        <servlet-class>com.jkoolcloud.tnt4j.stream.jmx.StreamJmxServletContextListener</servlet-class>
+        <servlet-class>com.jkoolcloud.tnt4j.stream.jmx.servlet.StreamJMXServlet</servlet-class>
     </servlet>
 
     <servlet-mapping>

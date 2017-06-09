@@ -680,29 +680,45 @@ public class SamplingAgent {
 				}
 			};
 			connector.addConnectionNotificationListener(cnl, null, null);
-			Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+
+			final Thread mainThread = Thread.currentThread(); // Reference to the current thread.
+			Thread shutdownHook = new Thread(new Runnable() {
 				@Override
 				public void run() {
 					stopPlatformJMX();
+
+					long startTime = System.currentTimeMillis();
+					try {
+						mainThread.join(TimeUnit.SECONDS.toMillis(2));
+					} catch (Exception exc) {
+					}
+					System.out.println("SamplingAgent.connect: waited " + (System.currentTimeMillis() - startTime)
+							+ "ms. on Stream-JMX to complete...");
 				}
-			}));
+			});
+			Runtime.getRuntime().addShutdownHook(shutdownHook);
 
 			synchronized (platformJmx) {
 				platformJmx.wait();
 			}
 
+			System.out.println("SamplingAgent.connect: sampler post wait...");
+
 			connector.removeConnectionNotificationListener(cnl);
 
 			System.out.println("SamplingAgent.connect: Stopping Stream-JMX...");
-		} finally {
 			try {
-				connector.close();
-			} catch (IOException exc) {
+				Runtime.getRuntime().removeShutdownHook(shutdownHook);
+			} catch (IllegalStateException exc) {
 			}
+		} finally {
+			Utils.close(connector);
 		}
 	}
 
 	private static void stopPlatformJMX() {
+		System.out.println("SamplingAgent.stopPlatformJMX: releasing sampler lock...");
+
 		if (platformJmx != null) {
 			synchronized (platformJmx) {
 				platformJmx.notifyAll();
