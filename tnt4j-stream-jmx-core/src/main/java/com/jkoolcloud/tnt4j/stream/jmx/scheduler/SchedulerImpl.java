@@ -19,15 +19,22 @@ import java.util.concurrent.TimeUnit;
 
 import javax.management.MBeanServerConnection;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.jkoolcloud.tnt4j.ActivityScheduler;
+import com.jkoolcloud.tnt4j.config.DefaultConfigFactory;
+import com.jkoolcloud.tnt4j.config.TrackerConfig;
+import com.jkoolcloud.tnt4j.config.TrackerConfigStore;
+import com.jkoolcloud.tnt4j.core.ActivityListener;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeAction;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeCondition;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.SampleHandler;
 import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
+import com.jkoolcloud.tnt4j.stream.jmx.factory.SamplerFactory;
 
 /**
  * <p>
- * This class provides scheduled sample/heart-beat for a given JMX {@code MBeanServerConnection}.
+ * This class provides scheduled sample/heart-beat for a given JMX {@link MBeanServerConnection}.
  * </p>
  * 
  * @version $Revision: 1 $
@@ -116,7 +123,30 @@ public class SchedulerImpl extends ActivityScheduler implements Scheduler {
 	}
 
 	/**
-	 * Create new instance of {@code SampleHandler}. Override this call to return your instance of the sample handler
+	 * Create new instance of {@code SchedulerImpl} with a given name, MBean server, filter list and sampling period.
+	 *
+	 * @param name name of assigned to the sampler
+	 * @param mServerConn MBean server connection instance
+	 * @param incFilterList MBean include filters semicolon separated
+	 * @param excFilterList MBean exclude filters semicolon separated
+	 * @param initDelay initial delay before first sampling
+	 * @param period sampling period
+	 * @param tUnit time unit for the sampling period
+	 * @param sFactory sampler factory instance
+	 */
+	public SchedulerImpl(String name, MBeanServerConnection mServerConn, String incFilterList, String excFilterList,
+			long initDelay, long period, TimeUnit tUnit, SamplerFactory sFactory) {
+		super(name, loadLoggerConfig(name, sFactory, newSampleHandlerImpl(mServerConn, incFilterList, excFilterList)));
+		this.listener = (SampleHandler) this.getListener();
+		this.initDelay = initDelay;
+		this.period = period;
+		this.timeUnit = tUnit;
+		this.incFilter = incFilterList;
+		this.excFilter = excFilterList;
+	}
+
+	/**
+	 * Create new instance of {@link SampleHandler}. Override this call to return your instance of the sample handler
 	 * implementation.
 	 *
 	 * @param mServerConn MBean server connection instance
@@ -129,6 +159,29 @@ public class SchedulerImpl extends ActivityScheduler implements Scheduler {
 	protected static SampleHandler newSampleHandlerImpl(MBeanServerConnection mServerConn, String incFilterList,
 			String excFilterList) {
 		return new SampleHandlerImpl(mServerConn, incFilterList, excFilterList);
+	}
+
+	/**
+	 * Loads and sets up instance of {@link TrackerConfig} to be used to create scheduler logger.
+	 *
+	 * @param name name of assigned to the sampler
+	 * @param sFactory sampler factory instance
+	 * @param listener activity listener invoked when scheduled activity starts and stops
+	 * @return tracker configuration used to create scheduler logger
+	 */
+	protected static TrackerConfig loadLoggerConfig(String name, SamplerFactory sFactory, ActivityListener listener) {
+		TrackerConfig config = DefaultConfigFactory.getInstance().getConfig(name);
+
+		if (sFactory != null && StringUtils.isEmpty(config.getProperty("event.formatter"))) {
+			config.setProperty("event.formatter", sFactory.defaultEventFormatterClassName());
+			((TrackerConfigStore) config).applyProperties();
+		}
+
+		if (listener != null) {
+			config.setActivityListener(listener);
+		}
+
+		return config;
 	}
 
 	@Override

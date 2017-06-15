@@ -60,4 +60,11 @@ public interface SamplerFactory {
 	 * @see SampleListener
 	 */
 	SampleListener newListener(PrintStream pStream, boolean trace);
+
+	/**
+	 * Returns default class name for a event formatter to be used by sampler logger.
+	 *
+	 * @return name of default event formatter class
+	 */
+	String defaultEventFormatterClassName();
 }

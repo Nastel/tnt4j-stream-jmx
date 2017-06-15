@@ -27,13 +27,14 @@ import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeCondition;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleContext;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
+import com.jkoolcloud.tnt4j.stream.jmx.factory.SamplerFactory;
 import com.jkoolcloud.tnt4j.stream.jmx.scheduler.Scheduler;
 import com.jkoolcloud.tnt4j.stream.jmx.scheduler.SchedulerImpl;
 
 /**
  * <p>
- * This class provides scheduled execution and sampling of a JMX metrics for a given {@code MBeanServerConnection}
- * instance. By default the class will use {@code ManagementFactory.getPlatformMBeanServer()} instance.
+ * This class provides scheduled execution and sampling of a JMX metrics for a given {@link MBeanServerConnection}
+ * instance. By default the class will use {@link ManagementFactory#getPlatformMBeanServer()} instance.
  * </p>
  * 
  * 
@@ -48,7 +49,7 @@ public class PlatformJmxSampler implements Sampler {
 	protected MBeanServerConnection targetServer;
 
 	/**
-	 * Create a default instance with default MBean server instance {@code ManagementFactory.getPlatformMBeanServer()}
+	 * Create a default instance with default MBean server instance {@link ManagementFactory#getPlatformMBeanServer()}
 	 */
 	protected PlatformJmxSampler() {
 		this(ManagementFactory.getPlatformMBeanServer());
@@ -97,10 +98,16 @@ public class PlatformJmxSampler implements Sampler {
 	}
 
 	@Override
-	public synchronized Sampler setSchedule(String incFilter, String excFilter, long initDelay, long period,
+	public Sampler setSchedule(String incFilter, String excFilter, long initDelay, long period,
 			TimeUnit tUnit) throws IOException {
+		return setSchedule(incFilter, excFilter, initDelay, period, tUnit, null);
+	}
+
+	@Override
+	public synchronized Sampler setSchedule(String incFilter, String excFilter, long initDelay, long period,
+			TimeUnit tUnit, SamplerFactory sFactory) throws IOException {
 		if (sampler == null) {
-			sampler = newScheduler(targetServer, incFilter, excFilter, initDelay, period, tUnit);
+			sampler = newScheduler(targetServer, incFilter, excFilter, initDelay, period, tUnit, sFactory);
 			sampler.open();
 			return this;
 		} else {
@@ -150,6 +157,25 @@ public class PlatformJmxSampler implements Sampler {
 			long initDelay, long period, TimeUnit tUnit) {
 		return new SchedulerImpl(this.getClass().getName(), mServerConn, incFilter, excFilter, initDelay, period,
 				tUnit);
+	}
+
+	/**
+	 * Create new instance of {@link Scheduler}. Override this call to return your instance of {@link Scheduler}.
+	 *
+	 * @param mServerConn MBean server connection instance
+	 * @param incFilter MBean include filters semicolon separated
+	 * @param excFilter MBean exclude filters semicolon separated
+	 * @param initDelay initial delay before first sampling
+	 * @param period time period for sampling
+	 * @param tUnit time units for period
+	 * @param sFactory sampler factory instance
+	 *
+	 * @return new {@link Scheduler} instance
+	 */
+	protected Scheduler newScheduler(MBeanServerConnection mServerConn, String incFilter, String excFilter,
+			long initDelay, long period, TimeUnit tUnit, SamplerFactory sFactory) {
+		return new SchedulerImpl(this.getClass().getName(), mServerConn, incFilter, excFilter, initDelay, period, tUnit,
+				sFactory);
 	}
 
 	@Override

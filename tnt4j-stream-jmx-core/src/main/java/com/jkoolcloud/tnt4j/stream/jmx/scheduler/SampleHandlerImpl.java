@@ -121,17 +121,17 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	/**
 	 * Determine if a given object name matches include/exclusion filters
 	 * 
-	 * @param oname object name
+	 * @param oName object name
 	 * @return true if included, false otherwise
 	 */
-	public boolean isFilterIncluded(ObjectName oname) {
+	public boolean isFilterIncluded(ObjectName oName) {
 		for (ObjectName eFilter : eFilters) {
-			if (eFilter.apply(oname)) {
+			if (eFilter.apply(oName)) {
 				return false;
 			}
 		}
 		for (ObjectName incFilter : iFilters) {
-			if (incFilter.apply(oname)) {
+			if (incFilter.apply(oName)) {
 				return true;
 			}
 		}
@@ -151,13 +151,13 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 
 			// run inclusion
 			for (ObjectName nameFilter : iFilters) {
-				Set<ObjectName> set = mbeanServer.queryNames(nameFilter, nameFilter);
+				Set<ObjectName> objSet = mbeanServer.queryNames(nameFilter, null);
 				if (!eFilters.isEmpty()) {
-					excludeFromSet(set, eFilters);
+					excludeFromSet(objSet, eFilters);
 				}
-				for (ObjectName oname : set) {
-					mbeans.put(oname, mbeanServer.getMBeanInfo(oname));
-					runRegister(oname);
+				for (ObjectName oName : objSet) {
+					mbeans.put(oName, mbeanServer.getMBeanInfo(oName));
+					runRegister(oName);
 				}
 			}
 		} catch (Exception ex) {
@@ -173,11 +173,11 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	 * @param eFilters list of MBean exclusions
 	 */
 	private static void excludeFromSet(Set<ObjectName> objSet, List<ObjectName> eFilters) {
-		for (ObjectName ename : eFilters) {
+		for (ObjectName eName : eFilters) {
 			Iterator<ObjectName> it = objSet.iterator();
 			while (it.hasNext()) {
 				ObjectName name = it.next();
-				if (ename.apply(name)) {
+				if (eName.apply(name)) {
 					it.remove();
 				}
 			}

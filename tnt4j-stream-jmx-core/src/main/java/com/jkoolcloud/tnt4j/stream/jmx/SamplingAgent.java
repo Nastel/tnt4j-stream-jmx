@@ -68,6 +68,7 @@ public class SamplingAgent {
 	private static final String AGENT_MODE_AGENT = "-agent";
 	private static final String AGENT_MODE_ATTACH = "-attach";
 	private static final String AGENT_MODE_CONNECT = "-connect";
+	private static final String AGENT_MODE_LOCAL = "-local";
 
 	private static final String AGENT_ARG_MODE = "agent.mode";
 	private static final String AGENT_ARG_VM = "vm.descriptor";
@@ -232,6 +233,10 @@ public class SamplingAgent {
 				String agentOptions = props.getProperty(AGENT_ARG_OPTIONS, DEFAULT_AGENT_OPTIONS);
 
 				attach(vmDescr, jarPath, agentOptions);
+			} else if (AGENT_MODE_LOCAL.equalsIgnoreCase(am)) {
+				String agentOptions = props.getProperty(AGENT_ARG_OPTIONS, DEFAULT_AGENT_OPTIONS);
+
+				sampleLocalVM(agentOptions, true);
 			} else {
 				try {
 					String inclF = props.getProperty(AGENT_ARG_I_FILTER, Sampler.JMX_FILTER_ALL);
@@ -263,6 +268,7 @@ public class SamplingAgent {
 			System.out.println("   or: -connect -vm:vmName/vmId/JMX_URL -ao:agentOptions (e.g -connect -vm:activemq -ao:*:*!!10000");
 			System.out.println("   or: -connect -vm:vmName/vmId/JMX_URL -ul:userLogin -up:userPassword -ao:agentOptions (e.g -connect -vm:activemq -ul:admin -up:admin -ao:*:*!!10000");
 			System.out.println("   or: -connect -vm:vmName/vmId/JMX_URL -ul:userLogin -up:userPassword -ao:agentOptions -cp:jmcConnParam1 -cp:jmcConnParam2 -cp:... (e.g -connect -vm:activemq -ul:admin -up:admin -ao:*:*!!10000 -cp:javax.net.ssl.trustStorePassword=trustPass");
+			System.out.println("   or: -local -ao:agentOptions (e.g -local -ao:*:*!!10000");
 			System.out.println();
 			System.out.println("Parameters definition:");
 			System.out.println("   -ao: - agent options string using '!' symbol as delimiter. Options format: mbean-filter!exclude-filter!sample-ms!init-delay-ms");
@@ -276,117 +282,93 @@ public class SamplingAgent {
 	}
 
 	private static boolean parseArgs(Properties props, String... args) {
-		boolean ac = AGENT_MODE_ATTACH.equalsIgnoreCase(args[0]) || AGENT_MODE_CONNECT.equalsIgnoreCase(args[0]);
+		boolean ac = StringUtils.equalsAnyIgnoreCase(args[0], AGENT_MODE_ATTACH, AGENT_MODE_CONNECT);
+		boolean local = AGENT_MODE_LOCAL.equalsIgnoreCase(args[0]);
 
-		if (ac) {
+		if (ac || local) {
 			props.setProperty(AGENT_ARG_MODE, args[0]);
 
-			for (int ai = 1; ai < args.length; ai++) {
-				String arg = args[ai];
-				if (StringUtils.isEmpty(arg)) {
-					continue;
+			try {
+				for (int ai = 1; ai < args.length; ai++) {
+					String arg = args[ai];
+					if (StringUtils.isEmpty(arg)) {
+						continue;
+					}
+
+					if (arg.startsWith(PARAM_VM_DESCRIPTOR)) {
+						if (StringUtils.isNotEmpty(props.getProperty(AGENT_ARG_VM))) {
+							System.out.println("JVM descriptor already defined. Can not use argument ["
+									+ PARAM_VM_DESCRIPTOR + "] multiple times.");
+							return false;
+						}
+
+						setProperty(props, arg, PARAM_VM_DESCRIPTOR, AGENT_ARG_VM);
+					} else if (arg.startsWith(PARAM_AGENT_LIB_PATH)) {
+						if (StringUtils.isNotEmpty(props.getProperty(AGENT_ARG_LIB_PATH))) {
+							System.out.println("Agent library path already defined. Can not use argument ["
+									+ PARAM_AGENT_LIB_PATH + "] multiple times.");
+							return false;
+						}
+
+						setProperty(props, arg, PARAM_AGENT_LIB_PATH, AGENT_ARG_LIB_PATH);
+					} else if (arg.startsWith(PARAM_AGENT_OPTIONS)) {
+						if (StringUtils.isNotEmpty(props.getProperty(AGENT_ARG_OPTIONS))) {
+							System.out.println("Agent options already defined. Can not use argument ["
+									+ PARAM_AGENT_OPTIONS + "] multiple times.");
+							return false;
+						}
+
+						setProperty(props, arg, PARAM_AGENT_OPTIONS, AGENT_ARG_OPTIONS);
+					} else if (arg.startsWith(PARAM_AGENT_USER_LOGIN)) {
+						if (StringUtils.isNotEmpty(props.getProperty(AGENT_ARG_USER))) {
+							System.out.println("User login already defined. Can not use argument ["
+									+ PARAM_AGENT_USER_LOGIN + "] multiple times.");
+							return false;
+						}
+
+						setProperty(props, arg, PARAM_AGENT_USER_LOGIN, AGENT_ARG_USER);
+					} else if (arg.startsWith(PARAM_AGENT_USER_PASS)) {
+						if (StringUtils.isNotEmpty(props.getProperty(AGENT_ARG_PASS))) {
+							System.out.println("User password already defined. Can not use argument ["
+									+ PARAM_AGENT_USER_PASS + "] multiple times.");
+							return false;
+						}
+
+						setProperty(props, arg, PARAM_AGENT_USER_PASS, AGENT_ARG_PASS);
+					} else if (arg.startsWith(PARAM_AGENT_CONN_PARAM)) {
+						String pValue = arg.substring(PARAM_AGENT_CONN_PARAM.length());
+						if (StringUtils.isEmpty(pValue)) {
+							System.out.println("Missing argument '" + PARAM_AGENT_CONN_PARAM + "' value");
+							return false;
+						}
+
+						String[] cp = pValue.split("=");
+
+						if (cp.length < 2) {
+							System.out.println(
+									"Malformed argument '" + PARAM_AGENT_CONN_PARAM + "' value '" + pValue + "'");
+							return false;
+						}
+
+						@SuppressWarnings("unchecked")
+						Map<String, Object> connParams = (Map<String, Object>) props.get(AGENT_CONN_PARAMS);
+						if (connParams == null) {
+							connParams = new HashMap<String, Object>(5);
+							props.put(AGENT_CONN_PARAMS, connParams);
+						}
+
+						connParams.put(cp[0], cp[1]);
+					} else {
+						System.out.println("Invalid argument: " + arg);
+						return false;
+					}
 				}
-
-				if (arg.startsWith(PARAM_VM_DESCRIPTOR)) {
-					if (StringUtils.isNotEmpty(props.getProperty(AGENT_ARG_VM))) {
-						System.out.println("JVM descriptor already defined. Can not use argument ["
-								+ PARAM_VM_DESCRIPTOR + "] multiple times.");
-						return false;
-					}
-
-					String pValue = arg.substring(PARAM_VM_DESCRIPTOR.length());
-					if (StringUtils.isEmpty(pValue)) {
-						System.out.println("Missing argument '" + PARAM_VM_DESCRIPTOR + "' value");
-						return false;
-					}
-
-					props.setProperty(AGENT_ARG_VM, pValue);
-				} else if (arg.startsWith(PARAM_AGENT_LIB_PATH)) {
-					if (StringUtils.isNotEmpty(props.getProperty(AGENT_ARG_LIB_PATH))) {
-						System.out.println("Agent library path already defined. Can not use argument ["
-								+ PARAM_AGENT_LIB_PATH + "] multiple times.");
-						return false;
-					}
-
-					String pValue = arg.substring(PARAM_AGENT_LIB_PATH.length());
-					if (StringUtils.isEmpty(pValue)) {
-						System.out.println("Missing argument '" + PARAM_AGENT_LIB_PATH + "' value");
-						return false;
-					}
-
-					props.setProperty(AGENT_ARG_LIB_PATH, pValue);
-				} else if (arg.startsWith(PARAM_AGENT_OPTIONS)) {
-					if (StringUtils.isNotEmpty(props.getProperty(AGENT_ARG_OPTIONS))) {
-						System.out.println("Agent options already defined. Can not use argument [" + PARAM_AGENT_OPTIONS
-								+ "] multiple times.");
-						return false;
-					}
-
-					String pValue = arg.substring(PARAM_AGENT_OPTIONS.length());
-					if (StringUtils.isEmpty(pValue)) {
-						System.out.println("Missing argument '" + PARAM_AGENT_OPTIONS + "' value");
-						return false;
-					}
-
-					props.setProperty(AGENT_ARG_OPTIONS, pValue);
-				} else if (arg.startsWith(PARAM_AGENT_USER_LOGIN)) {
-					if (StringUtils.isNotEmpty(props.getProperty(AGENT_ARG_USER))) {
-						System.out.println("User login already defined. Can not use argument [" + PARAM_AGENT_USER_LOGIN
-								+ "] multiple times.");
-						return false;
-					}
-
-					String pValue = arg.substring(PARAM_AGENT_USER_LOGIN.length());
-					if (StringUtils.isEmpty(pValue)) {
-						System.out.println("Missing argument '" + PARAM_AGENT_USER_LOGIN + "' value");
-						return false;
-					}
-
-					props.setProperty(AGENT_ARG_USER, pValue);
-				} else if (arg.startsWith(PARAM_AGENT_USER_PASS)) {
-					if (StringUtils.isNotEmpty(props.getProperty(AGENT_ARG_PASS))) {
-						System.out.println("User password already defined. Can not use argument ["
-								+ PARAM_AGENT_USER_PASS + "] multiple times.");
-						return false;
-					}
-
-					String pValue = arg.substring(PARAM_AGENT_USER_PASS.length());
-					if (StringUtils.isEmpty(pValue)) {
-						System.out.println("Missing argument '" + PARAM_AGENT_USER_PASS + "' value");
-						return false;
-					}
-
-					props.setProperty(AGENT_ARG_PASS, pValue);
-				} else if (arg.startsWith(PARAM_AGENT_CONN_PARAM)) {
-					String pValue = arg.substring(PARAM_AGENT_CONN_PARAM.length());
-					if (StringUtils.isEmpty(pValue)) {
-						System.out.println("Missing argument '" + PARAM_AGENT_CONN_PARAM + "' value");
-						return false;
-					}
-
-					String[] cp = pValue.split("=");
-
-					if (cp.length < 2) {
-						System.out
-								.println("Malformed argument '" + PARAM_AGENT_CONN_PARAM + "' value '" + pValue + "'");
-						return false;
-					}
-
-					@SuppressWarnings("unchecked")
-					Map<String, Object> connParams = (Map<String, Object>) props.get(AGENT_CONN_PARAMS);
-					if (connParams == null) {
-						connParams = new HashMap<String, Object>(5);
-						props.put(AGENT_CONN_PARAMS, connParams);
-					}
-
-					connParams.put(cp[0], cp[1]);
-				} else {
-					System.out.println("Invalid argument: " + arg);
-					return false;
-				}
+			} catch (IllegalArgumentException exc) {
+				System.out.println(exc.getLocalizedMessage());
+				return false;
 			}
 
-			if (StringUtils.isEmpty(props.getProperty(AGENT_ARG_VM))) {
+			if (StringUtils.isEmpty(props.getProperty(AGENT_ARG_VM)) && ac) {
 				System.out.println("Missing mandatory argument '" + PARAM_VM_DESCRIPTOR + "' defining JVM descriptor.");
 				return false;
 			}
@@ -412,6 +394,16 @@ public class SamplingAgent {
 		}
 
 		return true;
+	}
+
+	private static void setProperty(Properties props, String arg, String argName, String agentArgName)
+			throws IllegalArgumentException {
+		String pValue = arg.substring(argName.length());
+		if (StringUtils.isEmpty(pValue)) {
+			throw new IllegalArgumentException("Missing argument '" + argName + "' value");
+		}
+
+		props.setProperty(agentArgName, pValue);
 	}
 
 	/**
@@ -468,16 +460,16 @@ public class SamplingAgent {
 	 * @param tUnit time units for sampling period
 	 */
 	public static void sample(String incFilter, String excFilter, long initDelay, long period, TimeUnit tUnit) throws IOException {
-		SamplerFactory pFactory = initPlatformJMX(incFilter, excFilter, initDelay, period, tUnit, null);
+		SamplerFactory sFactory = initPlatformJMX(incFilter, excFilter, initDelay, period, tUnit, null);
 
 		// find other registered MBean servers and initiate sampling for all
 		ArrayList<MBeanServer> mbsList = MBeanServerFactory.findMBeanServer(null);
 		for (MBeanServer server : mbsList) {
 			Sampler jmxSampler = STREAM_AGENTS.get(server);
 			if (jmxSampler == null) {
-				jmxSampler = pFactory.newInstance(server);
-				jmxSampler.setSchedule(incFilter, excFilter, initDelay, period, tUnit)
-						.addListener(pFactory.newListener(System.out, TRACE)).run();
+				jmxSampler = sFactory.newInstance(server);
+				jmxSampler.setSchedule(incFilter, excFilter, initDelay, period, tUnit, sFactory)
+						.addListener(sFactory.newListener(System.out, TRACE)).run();
 				STREAM_AGENTS.put(jmxSampler.getMBeanServer(), jmxSampler);
 			}
 		}
@@ -503,18 +495,18 @@ public class SamplingAgent {
 	private static SamplerFactory initPlatformJMX(String incFilter, String excFilter, long initDelay, long period,
 			TimeUnit tUnit, MBeanServerConnection mbSrvConn) throws IOException {
 		// obtain a default sample factory
-		SamplerFactory pFactory = DefaultSamplerFactory.getInstance();
+		SamplerFactory sFactory = DefaultSamplerFactory.getInstance();
 
 		if (platformJmx == null) {
 			// create new sampler with default MBeanServer instance
-			platformJmx = mbSrvConn == null ? pFactory.newInstance() : pFactory.newInstance(mbSrvConn);
+			platformJmx = mbSrvConn == null ? sFactory.newInstance() : sFactory.newInstance(mbSrvConn);
 			// schedule sample with a given filter and sampling period
-			platformJmx.setSchedule(incFilter, excFilter, initDelay, period, tUnit)
-					.addListener(pFactory.newListener(System.out, TRACE)).run();
+			platformJmx.setSchedule(incFilter, excFilter, initDelay, period, tUnit, sFactory)
+					.addListener(sFactory.newListener(System.out, TRACE)).run();
 			STREAM_AGENTS.put(platformJmx.getMBeanServer(), platformJmx);
 		}
 
-		return pFactory;
+		return sFactory;
 	}
 
 	/**
@@ -604,6 +596,20 @@ public class SamplingAgent {
 	 * @param user user login used by JMX service connection
 	 * @param pass user password used by JMX service connection
 	 * @param options '!' separated list of options mbean-filter!sample.ms!initDelay.ms, where mbean-filter is semicolon separated list of mbean filters and {@code initDelay} is optional
+	 * @throws Exception if any exception occurs while connecting to JVM
+	 */
+	public static void connect(String vmDescr, String user, String pass, String options) throws Exception {
+		connect(vmDescr, user, pass, options, null);
+	}
+
+	/**
+	 * Connects to {@code vmDescr} defined JVM over {@link JMXConnector} an uses {@link MBeanServerConnection} to
+	 * collect samples.
+	 *
+	 * @param vmDescr JVM descriptor: JMX service URI, local JVM name fragment or pid
+	 * @param user user login used by JMX service connection
+	 * @param pass user password used by JMX service connection
+	 * @param options '!' separated list of options mbean-filter!sample.ms!initDelay.ms, where mbean-filter is semicolon separated list of mbean filters and {@code initDelay} is optional
 	 * @param connParams map of JMX connection parameters
 	 * @throws Exception if any exception occurs while connecting to JVM
 	 */
@@ -618,25 +624,6 @@ public class SamplingAgent {
 			connectorAddress = vmDescr;
 		} else {
 			connectorAddress = VMUtils.getVMConnAddress(vmDescr);
-		}
-
-		String incFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.include.filter", Sampler.JMX_FILTER_ALL);
-		String excFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.exclude.filter",
-				Sampler.JMX_FILTER_NONE);
-		int period = Integer.getInteger("com.jkoolcloud.tnt4j.stream.jmx.period", Sampler.JMX_SAMPLE_PERIOD);
-		int initDelay = Integer.getInteger("com.jkoolcloud.tnt4j.stream.jmx.init.delay", period);
-		if (options != null) {
-			String[] args = options.split("!");
-			if (args.length > 0) {
-				incFilter = args[0];
-			}
-			if (args.length > 1) {
-				excFilter = args.length > 2 ? args[1] : Sampler.JMX_FILTER_NONE;
-				period = Integer.parseInt(args.length > 2 ? args[2] : args[1]);
-			}
-			if (args.length > 2) {
-				initDelay = Integer.parseInt(args.length > 3 ? args[3] : args[2]);
-			}
 		}
 
 		System.out.println("SamplingAgent.connect: making JMX service URL from address=" + connectorAddress);
@@ -658,16 +645,6 @@ public class SamplingAgent {
 		JMXConnector connector = JMXConnectorFactory.connect(url, params);
 
 		try {
-			sample(incFilter, excFilter, initDelay, period, TimeUnit.MILLISECONDS, connector);
-
-			System.out.println("SamplingAgent.connect: include.filter=" + incFilter
-					+ ", exclude.filter=" + excFilter
-					+ ", sample.ms=" + period
-					+ ", initDelay.ms=" + initDelay
-					+ ", trace=" + TRACE
-					+ ", tnt4j.config=" + System.getProperty("tnt4j.config")
-					+ ", jmx.sample.list=" + STREAM_AGENTS);
-
 			NotificationListener cnl = new NotificationListener() {
 				@Override
 				public void handleNotification(Notification notification, Object key) {
@@ -681,36 +658,9 @@ public class SamplingAgent {
 			};
 			connector.addConnectionNotificationListener(cnl, null, null);
 
-			final Thread mainThread = Thread.currentThread(); // Reference to the current thread.
-			Thread shutdownHook = new Thread(new Runnable() {
-				@Override
-				public void run() {
-					stopPlatformJMX();
-
-					long startTime = System.currentTimeMillis();
-					try {
-						mainThread.join(TimeUnit.SECONDS.toMillis(2));
-					} catch (Exception exc) {
-					}
-					System.out.println("SamplingAgent.connect: waited " + (System.currentTimeMillis() - startTime)
-							+ "ms. on Stream-JMX to complete...");
-				}
-			});
-			Runtime.getRuntime().addShutdownHook(shutdownHook);
-
-			synchronized (platformJmx) {
-				platformJmx.wait();
-			}
-
-			System.out.println("SamplingAgent.connect: sampler post wait...");
+			startSamplerAndWait(options, connector);
 
 			connector.removeConnectionNotificationListener(cnl);
-
-			System.out.println("SamplingAgent.connect: Stopping Stream-JMX...");
-			try {
-				Runtime.getRuntime().removeShutdownHook(shutdownHook);
-			} catch (IllegalStateException exc) {
-			}
 		} finally {
 			Utils.close(connector);
 		}
@@ -724,6 +674,94 @@ public class SamplingAgent {
 				platformJmx.notifyAll();
 			}
 		}
+	}
+
+	/**
+	 * Initiates MBeans attributes sampling on local process runner JVM.
+	 * 
+	 * @param options '!' separated list of options mbean-filter!sample.ms!initDelay.ms, where mbean-filter is semicolon separated list of mbean filters and {@code initDelay} is optional
+	 * @param wait flag indicating whether to wait for a runner process to complete
+	 * @throws Exception if any exception occurs while initializing local JVM sampler or stopping sampling process
+	 */
+	public static void sampleLocalVM(String options, boolean wait) throws Exception {
+		if (wait) {
+			startSamplerAndWait(options);
+		} else {
+			startSampler(options);
+		}
+	}
+
+	private static void startSamplerAndWait(String options) throws Exception {
+		startSamplerAndWait(options, null);
+	}
+
+	private static void startSamplerAndWait(String options, JMXConnector connector) throws Exception {
+		startSampler(options, connector);
+
+		final Thread mainThread = Thread.currentThread(); // Reference to the current thread.
+		Thread shutdownHook = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				stopPlatformJMX();
+
+				long startTime = System.currentTimeMillis();
+				try {
+					mainThread.join(TimeUnit.SECONDS.toMillis(2));
+				} catch (Exception exc) {
+				}
+				System.out.println("SamplingAgent.startSamplerAndWait: waited "
+						+ (System.currentTimeMillis() - startTime) + "ms. on Stream-JMX to complete...");
+			}
+		});
+		Runtime.getRuntime().addShutdownHook(shutdownHook);
+
+		synchronized (platformJmx) {
+			platformJmx.wait();
+		}
+
+		System.out.println("SamplingAgent.startSamplerAndWait: Stopping Stream-JMX...");
+		try {
+			Runtime.getRuntime().removeShutdownHook(shutdownHook);
+		} catch (IllegalStateException exc) {
+		}
+	}
+
+	private static void startSampler(String options) throws Exception {
+		startSampler(options, null);
+	}
+
+	private static void startSampler(String options, JMXConnector connector) throws Exception {
+		String incFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.include.filter", Sampler.JMX_FILTER_ALL);
+		String excFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.exclude.filter", Sampler.JMX_FILTER_NONE);
+		int period = Integer.getInteger("com.jkoolcloud.tnt4j.stream.jmx.period", Sampler.JMX_SAMPLE_PERIOD);
+		int initDelay = Integer.getInteger("com.jkoolcloud.tnt4j.stream.jmx.init.delay", period);
+		if (options != null) {
+			String[] args = options.split("!");
+			if (args.length > 0) {
+				incFilter = args[0];
+			}
+			if (args.length > 1) {
+				excFilter = args.length > 2 ? args[1] : Sampler.JMX_FILTER_NONE;
+				period = Integer.parseInt(args.length > 2 ? args[2] : args[1]);
+			}
+			if (args.length > 2) {
+				initDelay = Integer.parseInt(args.length > 3 ? args[3] : args[2]);
+			}
+		}
+
+		if (connector == null) {
+			sample(incFilter, excFilter, initDelay, period, TimeUnit.MILLISECONDS);
+		} else {
+			sample(incFilter, excFilter, initDelay, period, TimeUnit.MILLISECONDS, connector);
+		}
+
+		System.out.println("SamplingAgent.startSampler: include.filter=" + incFilter 
+				+ ", exclude.filter=" + excFilter
+				+ ", sample.ms=" + period 
+				+ ", initDelay.ms=" + initDelay 
+				+ ", trace=" + TRACE 
+				+ ", tnt4j.config=" + System.getProperty("tnt4j.config") 
+				+ ", jmx.sample.list=" + STREAM_AGENTS);
 	}
 
 	/**

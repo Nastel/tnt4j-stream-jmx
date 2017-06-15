@@ -24,6 +24,7 @@ import com.jkoolcloud.tnt4j.TrackingLogger;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeAction;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeCondition;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.NestedHandler;
+import com.jkoolcloud.tnt4j.stream.jmx.factory.SamplerFactory;
 
 /**
  * <p>
@@ -141,6 +142,23 @@ public interface Sampler extends NestedHandler<Sampler, SampleListener>, Runnabl
 	 */
 	Sampler setSchedule(String incFilter, String excFilter, long initDelay, long period, TimeUnit tUnit)
 			throws IOException;
+
+	/**
+	 * Set schedule sample with associated MBean server instance
+	 *
+	 * @param incFilter semicolon separated include filter list
+	 * @param excFilter semicolon separated exclude filter list
+	 * @param initDelay initial delay before first sampling
+	 * @param period sampling time
+	 * @param tUnit time units for sampling period
+	 * @param sFactory sampler factory instance
+	 * @throws IOException
+	 *             if I/O exception occurs opening sampler
+	 * @throws IllegalStateException
+	 *             if setSchedule is not called first
+	 */
+	Sampler setSchedule(String incFilter, String excFilter, long initDelay, long period, TimeUnit tUnit,
+			SamplerFactory sFactory) throws IOException;
 
 	/**
 	 * Register a condition/action pair which will be evaluated every sampling interval.

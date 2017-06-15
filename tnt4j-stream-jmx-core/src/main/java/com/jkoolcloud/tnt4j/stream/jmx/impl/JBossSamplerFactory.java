@@ -51,4 +51,9 @@ public class JBossSamplerFactory implements SamplerFactory {
 	public SampleListener newListener(PrintStream pStream, boolean trace) {
 		return new DefaultSampleListener(pStream, trace);
 	}
+
+	@Override
+	public String defaultEventFormatterClassName() {
+		return "com.jkoolcloud.tnt4j.stream.jmx.format.FactPathValueFormatter";
+	}
 }

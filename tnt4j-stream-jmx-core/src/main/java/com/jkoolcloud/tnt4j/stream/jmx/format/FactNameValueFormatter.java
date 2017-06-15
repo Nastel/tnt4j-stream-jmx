@@ -378,10 +378,12 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	 * Default keys string replacements mapping is:
 	 * <ul>
 	 * <li>{@code " "} to {@code "_"}</li>
+	 * <li>{@code "\""} to {@code "'"}</li>
 	 * </ul>
 	 */
 	protected void initDefaultKeyReplacements() {
 		keyReplacements.put(" ", "_");
+		keyReplacements.put("\"", "'");
 	}
 
 	/**
@@ -393,6 +395,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	 * <li>{@code ","} to {@code "|"}</li>
 	 * <li>{@code "["} to {@code "{("}</li>
 	 * <li>{@code "["} to {@code ")}"}</li>
+	 * <li>{@code "\""} to {@code "'"}</li>
 	 * </ul>
 	 */
 	protected void initDefaultValueReplacements() {
@@ -400,5 +403,6 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		valueReplacements.put(",", "|");
 		valueReplacements.put("[", "{(");
 		valueReplacements.put("]", ")}");
+		valueReplacements.put("\"", "'");
 	}
 }
