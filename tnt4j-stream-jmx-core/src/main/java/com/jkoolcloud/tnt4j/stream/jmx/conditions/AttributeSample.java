@@ -79,21 +79,52 @@ public class AttributeSample {
 		try {
 			value = server.getAttribute(name, ainfo.getName());
 		} catch (Exception exc) {
-			Throwable ct = exc;
-			if (exc instanceof RuntimeMBeanException) {
-				ct = exc.getCause();
-			}
-
-			if (ct instanceof UnsupportedOperationException) {
-				value = "<unsupported>";
-			} else if (ct instanceof AttributeNotFoundException) {
-				value = "<not found>";
-			} else {
-				throw exc;
-			}
+			value = getValueFromException(exc);
 		}
 		timeStamp = Utils.currentTimeUsec();
 		return value;
+	}
+
+	private static String getValueFromException(Throwable exc) throws Exception {
+		Throwable ct = exc;
+		if (exc instanceof RuntimeMBeanException) {
+			ct = exc.getCause();
+		}
+		String eName = ct.getClass().getSimpleName();
+
+		if (eName.contains("Unsupported")) {
+			return "<unsupported>";
+		} else if (eName.contains("NotFound")) {
+			return "<not found>";
+		}
+
+		if (exc instanceof MBeanException) {
+			ct = getTopCause(exc);
+		}
+		eName = ct.getClass().getSimpleName();
+
+		if (eName.contains("NoSuch")) {
+			return "<unsupported>";
+		} else if (eName.contains("Illegal")) {
+			return "<illegal>";
+		} else if (eName.contains("NotRunning")) {
+			return "<not running>";
+		} else {
+			// throw exc;
+			return "<" + eName + ">";
+		}
+	}
+
+	private static Throwable getTopCause(Throwable exc) {
+		if (exc == null) {
+			return exc;
+		}
+
+		while (exc.getCause() != null) {
+			exc = exc.getCause();
+		}
+
+		return exc;
 	}
 
 	/**
