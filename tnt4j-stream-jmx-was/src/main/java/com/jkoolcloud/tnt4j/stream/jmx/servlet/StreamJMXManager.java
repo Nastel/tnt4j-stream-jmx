@@ -35,21 +35,21 @@ import com.jkoolcloud.tnt4j.stream.jmx.utils.ConsoleOutputCaptor;
 public class StreamJMXManager {
 
 	public enum StreamJMXProperties {
-		JMX_SAMPLER_FACTORY(JMX_SAMPLER_FACTORY_KEY			, "com.jkoolcloud.tnt4j.stream.jmx.impl.WASSamplerFactory"	, Display.READ_ONLY		, Scope.SYSTEM),
-		VALIDATE_TYPES(VALIDATE_TYPES_KEY					, "false"													, Display.READ_ONLY		, Scope.SYSTEM),
-		TRACE(TRACE_KEY										, "true"													, Display.READ_ONLY		, Scope.SYSTEM),
-		AO(AO_KEY											, "*:*!!60000!0"											, Display.READ_ONLY		, Scope.LOCAL),
-		AO_INCLUDE(AO_KEY_INCLUDE							, "*:*"																				, Scope.SYNTETIC, Scope.LOCAL),
-		AO_EXCLUDE(AO_KEY_EXCLUDE							, ""																				, Scope.SYNTETIC, Scope.LOCAL),
-		AO_PERIOD(AO_KEY_PERIOD								, String.valueOf(TimeUnit.SECONDS.toMillis(60))								, Scope.SYNTETIC, Scope.LOCAL),
-		AO_DELAY(AO_KEY_INIT_DELAY							, "0"																				, Scope.SYNTETIC, Scope.LOCAL),
-		VM(VM_KEY											, ""																				, Scope.LOCAL),
-		TNT4J_CONFIG(TNT4J_CONFIG_KEY						, DEFAULT_TNT4J_PROPERTIES															, Scope.SYSTEM, Scope.LOCAL),
-		TNT4J_CONFIG_CONTS(TNT4J_CONFIG_CONTENTS			, ""														, Display.HIDDEN		, Scope.SYNTETIC),
-		USERNAME("com.jkoolcloud.tnt4j.stream.jmx.agent.user", ""														, Display.EDITABLE		, Scope.LOCAL),
-		PASSWORD("com.jkoolcloud.tnt4j.stream.jmx.agent.pass", ""														, Display.EDITABLE_PW	, Scope.LOCAL),
-		HOST("com.jkoolcloud.tnt4j.stream.jmx.tnt4j.out.host", "localhost"												, Display.EDITABLE		, Scope.SYSTEM, Scope.LOCAL),
-		PORT("com.jkoolcloud.tnt4j.stream.jmx.tnt4j.out.port", "6000"													, Display.EDITABLE		, Scope.SYSTEM, Scope.LOCAL);
+		JMX_SAMPLER_FACTORY("com.jkoolcloud.tnt4j.stream.jmx.sampler.factory", "com.jkoolcloud.tnt4j.stream.jmx.impl.WASSamplerFactory", Display.READ_ONLY  , Scope.SYSTEM),
+		VALIDATE_TYPES("com.jkoolcloud.tnt4j.stream.jmx.agent.validate.types", "false"                                                 , Display.READ_ONLY  , Scope.SYSTEM),
+		TRACE("com.jkoolcloud.tnt4j.stream.jmx.agent.trace"                  , "true"                                                  , Display.READ_ONLY  , Scope.SYSTEM),
+		AO("com.jkoolcloud.tnt4j.stream.jmx.agent.options"                   , "*:*!!60000!0"                                          , Display.READ_ONLY  , Scope.LOCAL),
+		AO_INCLUDE("com.jkoolcloud.tnt4j.stream.jmx.agent.options.include"   , "*:*"                                                   ,                      Scope.SYNTETIC, Scope.LOCAL),
+		AO_EXCLUDE("com.jkoolcloud.tnt4j.stream.jmx.agent.options.exclude"   , ""                                                      ,                      Scope.SYNTETIC, Scope.LOCAL),
+		AO_PERIOD("com.jkoolcloud.tnt4j.stream.jmx.agent.options.period"     , String.valueOf(TimeUnit.SECONDS.toMillis(60))  ,                      Scope.SYNTETIC, Scope.LOCAL),
+		AO_DELAY("com.jkoolcloud.tnt4j.stream.jmx.agent.options.init.delay"  , "0"                                                     ,                      Scope.SYNTETIC, Scope.LOCAL),
+		VM("com.jkoolcloud.tnt4j.stream.jmx.agent.vm"                        , ""                                                      ,                      Scope.LOCAL),
+		TNT4J_CONFIG("tnt4j.config"                                          , "tnt4j.properties"                                      ,                      Scope.SYSTEM, Scope.LOCAL),
+		TNT4J_CONFIG_CONTS("tnt4j.config.contents"                           , ""                                                      , Display.HIDDEN     , Scope.SYNTETIC),
+		USERNAME("com.jkoolcloud.tnt4j.stream.jmx.agent.user"                , ""                                                      , Display.EDITABLE   , Scope.LOCAL),
+		PASSWORD("com.jkoolcloud.tnt4j.stream.jmx.agent.pass"                , ""                                                      , Display.EDITABLE_PW, Scope.LOCAL),
+		HOST("com.jkoolcloud.tnt4j.stream.jmx.tnt4j.out.host"                , "localhost"                                             , Display.EDITABLE   , Scope.SYSTEM, Scope.LOCAL),
+		PORT("com.jkoolcloud.tnt4j.stream.jmx.tnt4j.out.port"                , "6000"                                                  , Display.EDITABLE   , Scope.SYSTEM, Scope.LOCAL);
 
 		String key;
 		String defaultValue;
@@ -92,23 +92,6 @@ public class StreamJMXManager {
 	public enum Display {
 		EDITABLE, READ_ONLY, HIDDEN, EDITABLE_PW
 	}
-
-	static final String JMX_SAMPLER_FACTORY_KEY = "com.jkoolcloud.tnt4j.stream.jmx.sampler.factory";
-	static final String VALIDATE_TYPES_KEY = "com.jkoolcloud.tnt4j.stream.jmx.agent.validate.types";
-	static final String TRACE_KEY = "com.jkoolcloud.tnt4j.stream.jmx.agent.trace";
-	static final String AO_KEY = "com.jkoolcloud.tnt4j.stream.jmx.agent.options";
-	static final String TNT4J_CONFIG_KEY = "tnt4j.config";
-	static final String TNT4J_CONFIG_CONTENTS = "tnt4j.config.contents";
-
-	static final String AO_KEY_INCLUDE = "com.jkoolcloud.tnt4j.stream.jmx.agent.options.include";
-	static final String AO_KEY_EXCLUDE = "com.jkoolcloud.tnt4j.stream.jmx.agent.options.exclude";
-	static final String AO_KEY_PERIOD = "com.jkoolcloud.tnt4j.stream.jmx.agent.options.period";
-	static final String AO_KEY_INIT_DELAY = "com.jkoolcloud.tnt4j.stream.jmx.agent.options.init.delay";
-
-	static final String VM_KEY = "com.jkoolcloud.tnt4j.stream.jmx.agent.vm";
-
-	static final String DEFAULT_TNT4J_PROPERTIES = "tnt4j.properties";
-	static final String DEFAULT_AO = "*:*!!60000!0";
 
 	private Properties inAppCfgProperties = new Properties();
 
@@ -260,15 +243,6 @@ public class StreamJMXManager {
 		return inAppCfgProperties;
 	}
 
-	public Object setProperty(String key, String value) {
-		for (StreamJMXProperties propery : StreamJMXProperties.values()) {
-			if (propery.key.equals(key)) {
-				return setProperty(key, value);
-			}
-		}
-		return null;
-	}
-
 	public boolean setProperty(StreamJMXProperties property, String value) {
 		boolean set = false;
 		Object last = null;
@@ -279,10 +253,10 @@ public class StreamJMXManager {
 			last = System.setProperty(property.key, value);
 		}
 		if (property.isInScope(Scope.SYNTETIC)) {
-			if (inAppCfgProperties.getProperty(AO_KEY_EXCLUDE) != null
-					&& inAppCfgProperties.getProperty(AO_KEY_INCLUDE) != null
-					&& inAppCfgProperties.getProperty(AO_KEY_INIT_DELAY) != null
-					&& inAppCfgProperties.getProperty(AO_KEY_PERIOD) != null) {
+			if (inAppCfgProperties.getProperty(StreamJMXProperties.AO_EXCLUDE.key) != null
+					&& inAppCfgProperties.getProperty(StreamJMXProperties.AO_INCLUDE.key) != null
+					&& inAppCfgProperties.getProperty(StreamJMXProperties.AO_DELAY.key) != null
+					&& inAppCfgProperties.getProperty(StreamJMXProperties.AO_PERIOD.key) != null) {
 				last = setProperty(StreamJMXProperties.AO, compileAO());
 			}
 		}

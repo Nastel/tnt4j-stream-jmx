@@ -16,13 +16,42 @@
         <session-timeout>30</session-timeout>
     </session-config>
 
-    <listener>
-        <listener-class>com.jkoolcloud.tnt4j.stream.jmx.servlet.StreamJmxServletContextListener</listener-class>
-    </listener>
-
     <servlet>
         <servlet-name>StreamJmx</servlet-name>
         <servlet-class>com.jkoolcloud.tnt4j.stream.jmx.servlet.StreamJMXServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+
+        <init-param>
+            <param-name>com.jkoolcloud.tnt4j.stream.jmx.agent.vm</param-name>
+            <param-value></param-value>
+            <description>Sampled JVM descriptor: part of local process name/pid or RMI service URL</description>
+        </init-param>
+        <init-param>
+            <param-name>com.jkoolcloud.tnt4j.stream.jmx.agent.options</param-name>
+            <param-value>WebSphere:name=JVM,*;WebSphere:name=isclite*,*!!60000!0</param-value>
+            <description>Sampler options separated by '!': include_pattern!exclude_pattern!sampling_rate_ms!initial_sampler_delay_ms
+            </description>
+        </init-param>
+        <init-param>
+            <param-name>com.jkoolcloud.tnt4j.stream.jmx.tnt4j.out.host</param-name>
+            <param-value>localhost</param-value>
+            <description>Sampler tracking logger socket event sink host</description>
+        </init-param>
+        <init-param>
+            <param-name>com.jkoolcloud.tnt4j.stream.jmx.tnt4j.out.port</param-name>
+            <param-value>6001</param-value>
+            <description>Sampler tracking logger socket event sink port</description>
+        </init-param>
+        <init-param>
+            <param-name>com.jkoolcloud.tnt4j.stream.jmx.agent.user</param-name>
+            <param-value></param-value>
+            <description>Secure JMX username</description>
+        </init-param>
+        <init-param>
+            <param-name>com.jkoolcloud.tnt4j.stream.jmx.agent.user</param-name>
+            <param-value></param-value>
+            <description>Secure JMX pass</description>
+        </init-param>
     </servlet>
 
     <servlet-mapping>

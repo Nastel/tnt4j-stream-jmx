@@ -76,24 +76,32 @@
                     <archiveClasses>false</archiveClasses>
                     <attachClasses>true</attachClasses>
                     <webResources>
-                        <resource>
-                            <!-- this is relative to the pom.xml directory -->
-                            <directory>../config/</directory>
-                        </resource>
-                        <resource>
-                            <directory>lib</directory>
-                            <targetPath>WEB-INF/lib</targetPath>
-                            <includes>
-                                <include>*.jar</include>
-                            </includes>
-                        </resource>
-                        <resource>
-                            <directory>lib/was</directory>
-                            <targetPath>WEB-INF/lib</targetPath>
-                            <includes>
-                                <include>*.jar</include>
-                            </includes>
-                        </resource>
+                        <!-- Stream-JMX config resource -->
+                        <!--<resource>-->
+                        <!--&lt;!&ndash; this is relative to the pom.xml directory &ndash;&gt;-->
+                        <!--<directory>../config/</directory>-->
+                        <!--<targetPath>.</targetPath>-->
+                        <!--<includes>-->
+                        <!--<include>*.*</include>-->
+                        <!--</includes>-->
+                        <!--</resource>-->
+                        <!-- J2EE LIB -->
+                        <!--<resource>-->
+                        <!--<directory>lib</directory>-->
+                        <!--<targetPath>WEB-INF/lib</targetPath>-->
+                        <!--<includes>-->
+                        <!--<include>*.jar</include>-->
+                        <!--</includes>-->
+                        <!--</resource>-->
+                        <!-- WAS CLIENT LIBS -->
+                        <!--<resource>-->
+                        <!--<directory>lib/was</directory>-->
+                        <!--<targetPath>WEB-INF/lib</targetPath>-->
+                        <!--<includes>-->
+                        <!--<include>*.jar</include>-->
+                        <!--</includes>-->
+                        <!--</resource>-->
+                        <!-- WAS module config resource -->
                         <resource>
                             <directory>config</directory>
                             <targetPath>.</targetPath>
