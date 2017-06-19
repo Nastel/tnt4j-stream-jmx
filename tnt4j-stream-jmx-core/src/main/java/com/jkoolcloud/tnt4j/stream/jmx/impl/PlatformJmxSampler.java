@@ -98,8 +98,8 @@ public class PlatformJmxSampler implements Sampler {
 	}
 
 	@Override
-	public Sampler setSchedule(String incFilter, String excFilter, long initDelay, long period,
-			TimeUnit tUnit) throws IOException {
+	public Sampler setSchedule(String incFilter, String excFilter, long initDelay, long period, TimeUnit tUnit)
+			throws IOException {
 		return setSchedule(incFilter, excFilter, initDelay, period, tUnit, null);
 	}
 

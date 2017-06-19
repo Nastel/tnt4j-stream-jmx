@@ -18,6 +18,8 @@ package com.jkoolcloud.tnt4j.stream.jmx.format;
 
 import java.util.Properties;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.jkoolcloud.tnt4j.utils.Utils;
 
 /**
@@ -27,6 +29,9 @@ import com.jkoolcloud.tnt4j.utils.Utils;
  */
 public class WASFactPathValueFormatter extends FactPathValueFormatter {
 	private static final String[] SHORT_NAME_KEYS = new String[] { "mbeanIdentifier", "name", "type" };
+
+	private String[] replaceable = new String[] { "\\\\", "#", "/" };
+	private String[] replacement = new String[] { PATH_DELIM, "\\", "\\" };
 
 	public WASFactPathValueFormatter() {
 		super();
@@ -47,7 +52,7 @@ public class WASFactPathValueFormatter extends FactPathValueFormatter {
 		}
 
 		Properties props = makeProps(objCanonName, ddIdx);
-		StringBuilder pathBuilder = new StringBuilder();
+		StringBuilder pathBuilder = new StringBuilder(256);
 		String pv = (String) props.remove("domain");
 
 		super.appendPath(pathBuilder, pv);
@@ -55,37 +60,21 @@ public class WASFactPathValueFormatter extends FactPathValueFormatter {
 		for (String snKey : SHORT_NAME_KEYS) {
 			pv = (String) props.remove(snKey);
 			if (!Utils.isEmpty(pv) && !"null".equals(pv)) {
-				pv = pv.replace('#', '\\');
-				pv = pv.replace('/', '\\');
-				pv = replace(pv, "\\\\", FactNameValueFormatter.PATH_DELIM);
-				if (pv.startsWith(FactNameValueFormatter.PATH_DELIM)) {
+				pv = StringUtils.replaceEach(pv, replaceable, replacement);
+				if (pv.startsWith(PATH_DELIM)) {
 					pv = pv.substring(1);
 				}
-				if (pv.endsWith(FactNameValueFormatter.PATH_DELIM)) {
+				if (pv.endsWith(PATH_DELIM)) {
 					pv = pv.substring(0, pv.length() - 1);
 				}
 
-				pathBuilder.append(pathBuilder.length() > 0 ? FactNameValueFormatter.PATH_DELIM : "").append(pv);
+				pathBuilder.append(pathBuilder.length() > 0 ? PATH_DELIM : "").append(pv);
 				break;
 			}
 		}
 
+		props.clear();
+
 		return pathBuilder.toString();
-	}
-
-	public static String replace(String in, String o, String n) {
-		StringBuilder buffer = new StringBuilder(2048);
-
-		int start = 0;
-		for (;;) {
-			int index = in.indexOf(o, start);
-			if (index == -1)
-				break;
-			buffer.append(in.substring(start, index));
-			buffer.append(n);
-			start = index + o.length();
-		}
-		buffer.append(in.substring(start));
-		return buffer.toString();
 	}
 }

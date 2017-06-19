@@ -22,6 +22,8 @@ import java.lang.reflect.Method;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerConnection;
 
+import com.jkoolcloud.tnt4j.utils.Utils;
+
 /**
  * <p>
  * This class provides scheduled execution and sampling of JMX metrics for a WebSphere Application Server
@@ -52,11 +54,11 @@ public class WASJmxSampler extends PlatformJmxSampler {
 	public static MBeanServer getAdminServer() throws ClassNotFoundException, IllegalAccessException,
 			IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
 		Class<?> adminClass = Class.forName(WAS_JMX_ADMIN_CLASS);
-		Method getMbeanFactory = adminClass.getDeclaredMethod("getMBeanFactory", (Class<?>) null);
-		Object mbeanFactory = getMbeanFactory.invoke(null);
+		Method getMbeanFactory = adminClass.getDeclaredMethod("getMBeanFactory", Utils.NO_PARAMS_C);
+		Object mbeanFactory = getMbeanFactory.invoke(null, Utils.NO_PARAMS_O);
 		if (mbeanFactory != null) {
-			Method mserverMethod = mbeanFactory.getClass().getMethod("getMBeanServer", (Class<?>) null);
-			return (MBeanServer) mserverMethod.invoke(mbeanFactory);
+			Method mserverMethod = mbeanFactory.getClass().getMethod("getMBeanServer", Utils.NO_PARAMS_C);
+			return (MBeanServer) mserverMethod.invoke(mbeanFactory, Utils.NO_PARAMS_O);
 		}
 		throw new RuntimeException("No admin mbeanFactory found: class=" + WAS_JMX_ADMIN_CLASS);
 	}

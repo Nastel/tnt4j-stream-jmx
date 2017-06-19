@@ -17,8 +17,8 @@ package com.jkoolcloud.tnt4j.stream.jmx.core;
 
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -47,7 +47,7 @@ public class DefaultSampleListener implements SampleListener {
 	boolean trace = false;
 	PrintStream out;
 
-	Collection<MBeanAttributeInfo> excAttrs = new ArrayList<MBeanAttributeInfo>(89);
+	Collection<MBeanAttributeInfo> excAttrs = new HashSet<MBeanAttributeInfo>(89);
 
 	/**
 	 * Create an instance of {@code DefaultSampleListener} with a a given print stream and trace mode
@@ -67,7 +67,11 @@ public class DefaultSampleListener implements SampleListener {
 	 * @return true when attribute should be excluded, false otherwise
 	 */
 	protected boolean isExcluded(MBeanAttributeInfo attr) {
-		return excAttrs.contains(attr);
+		try { // NOTE: sometimes MBeanAttributeInfo.equals throws internal NPE
+			return excAttrs.contains(attr);
+		} catch (NullPointerException exc) {
+			return false;
+		}
 	}
 
 	/**
@@ -76,8 +80,9 @@ public class DefaultSampleListener implements SampleListener {
 	 * @param attr MBean attribute info
 	 */
 	protected void exclude(MBeanAttributeInfo attr) {
-		if (attr != null && !isExcluded(attr)) {
+		try { // NOTE: sometimes MBeanAttributeInfo.equals throws internal NPE
 			excAttrs.add(attr);
+		} catch (NullPointerException exc) {
 		}
 	}
 
@@ -107,7 +112,8 @@ public class DefaultSampleListener implements SampleListener {
 	public void post(SampleContext context, AttributeSample sample) throws UnsupportedAttributeException {
 		MBeanAttributeInfo mbAttrInfo = sample.getAttributeInfo();
 		PropertySnapshot snapshot = sample.getSnapshot();
-		processAttrValue(snapshot, mbAttrInfo, mbAttrInfo.getName(), sample.get());
+		StringBuilder nsb = new StringBuilder(mbAttrInfo.getName());
+		processAttrValue(snapshot, mbAttrInfo, nsb, sample.get());
 	}
 
 	@Override
@@ -187,23 +193,24 @@ public class DefaultSampleListener implements SampleListener {
 	 * @param value associated with attribute
 	 * @return snapshot instance where all attributes are contained
 	 */
-	protected PropertySnapshot processAttrValue(PropertySnapshot snapshot, MBeanAttributeInfo mbAttrInfo, String propName, Object value) {
+	protected PropertySnapshot processAttrValue(PropertySnapshot snapshot, MBeanAttributeInfo mbAttrInfo,
+			StringBuilder propName, Object value) {
 		if (value instanceof CompositeData) {
 			CompositeData cdata = (CompositeData) value;
 			Set<String> keys = cdata.getCompositeType().keySet();
 			for (String key : keys) {
 				Object cVal = cdata.get(key);
-				processAttrValue(snapshot, mbAttrInfo, propName + "\\" + key, cVal);
+				processAttrValue(snapshot, mbAttrInfo, propName.append("\\").append(key), cVal);
 			}
 		} else if (value instanceof TabularData) {
 			TabularData tData = (TabularData) value;
 			Collection<?> values = tData.values();
 			int row = 0;
 			for (Object tVal : values) {
-				processAttrValue(snapshot, mbAttrInfo, propName + "\\" + padNumber(++row), tVal);
+				processAttrValue(snapshot, mbAttrInfo, propName.append("\\").append(padNumber(++row)), tVal);
 			}
 		} else {
-			snapshot.add(propName, value);
+			snapshot.add(propName.toString(), value);
 		}
 		return snapshot;
 	}

@@ -55,18 +55,18 @@ public class WASSampleListener extends DefaultSampleListener {
 		PropertySnapshot snapshot = sample.getSnapshot();
 		Property onp = snapshot.get("objectName");
 		if (onp == null) {
-			processAttrValue(snapshot, mbAttrInfo, "objectName", sample.getObjetName());
+			processAttrValue(snapshot, mbAttrInfo, new StringBuilder("objectName"), sample.getObjetName());
 		}
 	}
 
 	@Override
 	protected PropertySnapshot processAttrValue(PropertySnapshot snapshot, MBeanAttributeInfo mbAttrInfo,
-			String propName, Object value) {
+			StringBuilder propName, Object value) {
 		if (value instanceof Stats) {
 			Stats stats = (Stats) value;
 			Statistic[] statistics = stats.getStatistics();
 			for (Statistic stat : statistics) {
-				processAttrValue(snapshot, mbAttrInfo, propName + "\\" + stat.getName(), stat);
+				processAttrValue(snapshot, mbAttrInfo, propName.append("\\").append(stat.getName()), stat);
 			}
 
 			return snapshot;
@@ -75,40 +75,40 @@ public class WASSampleListener extends DefaultSampleListener {
 		}
 	}
 
-	private void processAttrValue(PropertySnapshot snapshot, MBeanAttributeInfo mbAttrInfo, String propName,
+	private void processAttrValue(PropertySnapshot snapshot, MBeanAttributeInfo mbAttrInfo, StringBuilder propName,
 			Statistic stat) {
 		if (stat == null) {
 			return;
 		}
 
-		processAttrValue(snapshot, mbAttrInfo, propName + "\\Name", stat.getName());
-		processAttrValue(snapshot, mbAttrInfo, propName + "\\Description", stat.getDescription());
-		processAttrValue(snapshot, mbAttrInfo, propName + "\\LastSampleTime", stat.getLastSampleTime());
-		processAttrValue(snapshot, mbAttrInfo, propName + "\\StartTime", stat.getStartTime());
+		processAttrValue(snapshot, mbAttrInfo, propName.append("\\Name"), stat.getName());
+		processAttrValue(snapshot, mbAttrInfo, propName.append("\\Description"), stat.getDescription());
+		processAttrValue(snapshot, mbAttrInfo, propName.append("\\LastSampleTime"), stat.getLastSampleTime());
+		processAttrValue(snapshot, mbAttrInfo, propName.append("\\StartTime"), stat.getStartTime());
 
 		if (stat instanceof CountStatistic) {
 			CountStatistic cs = (CountStatistic) stat;
-			processAttrValue(snapshot, mbAttrInfo, propName + "\\Count", cs.getCount());
+			processAttrValue(snapshot, mbAttrInfo, propName.append("\\Count"), cs.getCount());
 		}
 		if (stat instanceof BoundaryStatistic) {
 			BoundaryStatistic bs = (BoundaryStatistic) stat;
-			processAttrValue(snapshot, mbAttrInfo, propName + "\\LowerBound", bs.getLowerBound());
-			processAttrValue(snapshot, mbAttrInfo, propName + "\\UpperBound", bs.getUpperBound());
+			processAttrValue(snapshot, mbAttrInfo, propName.append("\\LowerBound"), bs.getLowerBound());
+			processAttrValue(snapshot, mbAttrInfo, propName.append("\\UpperBound"), bs.getUpperBound());
 		}
 		if (stat instanceof RangeStatistic) {
 			RangeStatistic rs = (RangeStatistic) stat;
-			processAttrValue(snapshot, mbAttrInfo, propName + "\\Current", rs.getCurrent());
-			processAttrValue(snapshot, mbAttrInfo, propName + "\\LowWaterMark", rs.getLowWaterMark());
-			processAttrValue(snapshot, mbAttrInfo, propName + "\\HighWaterMark", rs.getHighWaterMark());
+			processAttrValue(snapshot, mbAttrInfo, propName.append("\\Current"), rs.getCurrent());
+			processAttrValue(snapshot, mbAttrInfo, propName.append("\\LowWaterMark"), rs.getLowWaterMark());
+			processAttrValue(snapshot, mbAttrInfo, propName.append("\\HighWaterMark"), rs.getHighWaterMark());
 		}
 		if (stat instanceof TimeStatistic) {
 			TimeStatistic ts = (TimeStatistic) stat;
-			processAttrValue(snapshot, mbAttrInfo, propName + "\\Count", ts.getCount());
-			processAttrValue(snapshot, mbAttrInfo, propName + "\\MaxTime", ts.getMaxTime());
-			processAttrValue(snapshot, mbAttrInfo, propName + "\\MinTime", ts.getMinTime());
-			processAttrValue(snapshot, mbAttrInfo, propName + "\\TotalTime", ts.getTotalTime());
+			processAttrValue(snapshot, mbAttrInfo, propName.append("\\Count"), ts.getCount());
+			processAttrValue(snapshot, mbAttrInfo, propName.append("\\MaxTime"), ts.getMaxTime());
+			processAttrValue(snapshot, mbAttrInfo, propName.append("\\MinTime"), ts.getMinTime());
+			processAttrValue(snapshot, mbAttrInfo, propName.append("\\TotalTime"), ts.getTotalTime());
 		}
 
-		processAttrValue(snapshot, mbAttrInfo, propName + "\\Unit", stat.getUnit());
+		processAttrValue(snapshot, mbAttrInfo, propName.append("\\Unit"), stat.getUnit());
 	}
 }

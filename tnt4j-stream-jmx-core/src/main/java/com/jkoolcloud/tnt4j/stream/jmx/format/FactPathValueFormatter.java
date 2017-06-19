@@ -54,11 +54,7 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 	protected Collection<Snapshot> getSnapshots(Operation op) {
 		Collection<Snapshot> sList = super.getSnapshots(op);
 
-		Snapshot[] sa = new Snapshot[sList.size()];
-		sa = sList.toArray(sa);
-		Arrays.sort(sa, getSnapshotComparator());
-
-		return Arrays.asList(sa);
+		return getSortedCollection(sList, getSnapshotComparator());
 	}
 
 	private Comparator<Snapshot> getSnapshotComparator() {
@@ -66,8 +62,8 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 			snapshotComparator = new Comparator<Snapshot>() {
 				@Override
 				public int compare(Snapshot s1, Snapshot s2) {
-					String s1Path = getSnapNameStr(s1.getName());
-					String s2Path = getSnapNameStr(s2.getName());
+					String s1Path = getSnapName(s1);
+					String s2Path = getSnapName(s2);
 
 					return s1Path.compareTo(s2Path);
 				}
@@ -81,11 +77,19 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 	protected Collection<Property> getProperties(Snapshot snap) {
 		Collection<Property> pList = super.getProperties(snap);
 
-		Property[] pa = new Property[pList.size()];
-		pa = pList.toArray(pa);
-		Arrays.sort(pa, getPropertyComparator());
+		return getSortedCollection(pList, getPropertyComparator());
+	}
 
-		return Arrays.asList(pa);
+	private static <T> Collection<T> getSortedCollection(Collection<T> col, Comparator<T> comp) {
+		List<T> cList;
+		if (col instanceof List<?>) {
+			cList = (List<T>) col;
+		} else {
+			cList = Collections.list(Collections.enumeration(col));
+		}
+		Collections.sort(cList, comp);
+
+		return cList;
 	}
 
 	private Comparator<Property> getPropertyComparator() {
@@ -114,7 +118,7 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 		}
 
 		Properties props = makeProps(objCanonName, ddIdx);
-		StringBuilder pathBuilder = new StringBuilder();
+		StringBuilder pathBuilder = new StringBuilder(128);
 		String pv;
 
 		for (String[] levelKeys : PATH_KEYS) {
@@ -133,6 +137,8 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 			}
 		}
 
+		props.clear();
+
 		return pathBuilder.toString();
 	}
 
@@ -143,7 +149,7 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 	 * @param ddIdx domain separator index
 	 * @return properties resolved from provided object name
 	 */
-	protected Properties makeProps(String objCanonName, int ddIdx) {
+	protected static Properties makeProps(String objCanonName, int ddIdx) {
 		String domainStr = objCanonName.substring(0, ddIdx);
 
 		Properties props = new Properties();
@@ -152,16 +158,13 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 		String propsStr = objCanonName.substring(ddIdx + 1);
 
 		if (propsStr.length() > 0) {
-			propsStr = propsStr.replace(FIELD_SEP, LF);
+			propsStr = replace(propsStr, FIELD_SEP, LF);
 			Reader rdr = new StringReader(propsStr);
 			try {
 				props.load(rdr);
 			} catch (IOException exc) {
 			} finally {
-				try {
-					rdr.close();
-				} catch (IOException exc) {
-				}
+				Utils.close(rdr);
 			}
 		}
 
@@ -241,7 +244,7 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 			return "[]"; // NON-NLS
 		}
 
-		StringBuilder b = new StringBuilder();
+		StringBuilder b = new StringBuilder(128);
 		b.append('[');
 		for (int i = 0;; i++) {
 			b.append(toString(a[i]));

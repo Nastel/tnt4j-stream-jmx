@@ -50,4 +50,9 @@ public class WASSamplerFactory implements SamplerFactory {
 	public SampleListener newListener(PrintStream pStream, boolean trace) {
 		return new WASSampleListener(pStream, trace);
 	}
+
+	@Override
+	public String defaultEventFormatterClassName() {
+		return "com.jkoolcloud.tnt4j.stream.jmx.format.WASFactPathValueFormatter";
+	}
 }

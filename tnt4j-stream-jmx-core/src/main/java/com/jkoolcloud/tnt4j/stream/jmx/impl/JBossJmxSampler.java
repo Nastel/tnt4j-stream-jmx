@@ -21,6 +21,8 @@ import java.lang.reflect.Method;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerConnection;
 
+import com.jkoolcloud.tnt4j.utils.Utils;
+
 /**
  * <p>
  * This class provides scheduled execution and sampling of JMX metrics for a JBoss Application Server
@@ -44,9 +46,9 @@ public class JBossJmxSampler extends PlatformJmxSampler {
 	protected static MBeanServer getAdminServer() {
 		try {
 			Class<?> adminClass = Class.forName(JBOSS_JMX_ADMIN_CLASS);
-			Method mserverMethod = adminClass.getMethod("locate", (Class<?>) null);
+			Method mserverMethod = adminClass.getMethod("locate", Utils.NO_PARAMS_C);
 			if (mserverMethod != null) {
-				return (MBeanServer) mserverMethod.invoke(null);
+				return (MBeanServer) mserverMethod.invoke(null, Utils.NO_PARAMS_O);
 			}
 		} catch (Throwable ex) {
 			ex.printStackTrace();

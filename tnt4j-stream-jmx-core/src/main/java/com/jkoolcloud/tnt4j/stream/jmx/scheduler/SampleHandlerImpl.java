@@ -100,7 +100,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	private static void tokenizeFilters(String filter, List<ObjectName> filters) throws MalformedObjectNameException {
 		StringTokenizer itk = new StringTokenizer(filter, ";");
 		while (itk.hasMoreTokens()) {
-			filters.add(new ObjectName(itk.nextToken()));
+			filters.add(new ObjectName(itk.nextToken().trim()));
 		}
 	}
 

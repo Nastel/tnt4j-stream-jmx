@@ -54,6 +54,11 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	public static final String EQ = "=";
 	public static final String FS_REP = "!";
 
+	private String[] replaceable = new String[] { EQ, FIELD_SEP };
+	private String[] replacement = new String[] { PATH_DELIM, FS_REP };
+
+	private static final String SNAP_NAME_PROP = "JMX_SNAP_NAME";
+
 	// NOTE: group 1 - original, group 2 - replacement
 	// protected static final Pattern REP_CFG_PATTERN = Pattern.compile("\"(\\s*[^\"]+\\s*)\"->\"(\\s*[^\"]+\\s*)\"");
 	// NOTE: group 1 - original, group 3 - replacement. Properly handles escaped quotes within quotes.
@@ -181,7 +186,8 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		nvString.append("OBJ:Streams");
 		toString(nvString, source).append("\\Message").append(FIELD_SEP);
 		nvString.append("Self\\level=").append(getValueStr(level)).append(FIELD_SEP);
-		nvString.append("Self\\msg-text=").append(Utils.quote(Utils.format(msg, args))).append(END_SEP);
+		nvString.append("Self\\msg-text=");
+		Utils.quote(Utils.format(msg, args), nvString).append(END_SEP);
 		return nvString.toString();
 	}
 
@@ -210,7 +216,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	 * @return decorated string representation of source name
 	 */
 	protected String getSourceNameStr(String sourceName) {
-		return sourceName.replace(FIELD_SEP, FS_REP);
+		return replace(sourceName, FIELD_SEP, FS_REP);
 	}
 
 	/**
@@ -225,15 +231,23 @@ public class FactNameValueFormatter extends DefaultFormatter {
 
 	/**
 	 * Makes string representation of snapshot and appends it to provided string builder.
+	 * <p>
+	 * Note: Custom internal use snapshot property named {@code 'JMX_SNAP_NAME'} is ignored.
 	 * 
-	 * @param nvString string builder instance to append
-	 * @param snap snapshot instance to represent as string
+	 * @param nvString
+	 *            string builder instance to append
+	 * @param snap
+	 *            snapshot instance to represent as string
 	 * @return appended string builder reference
 	 */
 	protected StringBuilder toString(StringBuilder nvString, Snapshot snap) {
 		Collection<Property> list = getProperties(snap);
-		String sName = getSnapNameStr(snap.getName());
+		String sName = getSnapName(snap);
 		for (Property p : list) {
+			if (p.getKey().equals(SNAP_NAME_PROP)) {
+				continue;
+			}
+
 			Object value = p.getValue();
 
 			nvString.append(getKeyStr(sName, p.getKey()));
@@ -263,7 +277,26 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	 * @return decorated string representation of snapshot name
 	 */
 	protected String getSnapNameStr(String snapName) {
-		return snapName.replace(EQ, PATH_DELIM).replace(FIELD_SEP, FS_REP);
+		return StringUtils.replaceEach(snapName, replaceable, replacement);
+	}
+
+	/**
+	 * Makes decorated string representation of {@link Snapshot} name and puts it as snapshot property
+	 * {@code 'JMX_SNAP_NAME'} for a later use.
+	 *
+	 * @param snap
+	 *            snapshot instance
+	 * @return decorated string representation of snapshot name
+	 *
+	 * @see #getSnapNameStr(String)
+	 */
+	protected String getSnapName(Snapshot snap) {
+		Property pSnapName = snap.get(SNAP_NAME_PROP);
+		if (pSnapName == null) {
+			pSnapName = new Property(SNAP_NAME_PROP, getSnapNameStr(snap.getName()));
+		}
+
+		return (String) pSnapName.getValue();
 	}
 
 	/**
@@ -281,7 +314,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		String keyStr = sName + PATH_DELIM + pKey;
 
 		for (Map.Entry<String, String> kre : keyReplacements.entrySet()) {
-			keyStr = keyStr.replace(kre.getKey(), kre.getValue());
+			keyStr = replace(keyStr, kre.getKey(), kre.getValue());
 		}
 
 		return keyStr;
@@ -316,7 +349,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		}
 
 		for (Map.Entry<String, String> vre : valueReplacements.entrySet()) {
-			valStr = valStr.replace(vre.getKey(), vre.getValue());
+			valStr = replace(valStr, vre.getKey(), vre.getValue());
 		}
 
 		return valStr;
@@ -404,5 +437,38 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		valueReplacements.put("[", "{(");
 		valueReplacements.put("]", ")}");
 		valueReplacements.put("\"", "'");
+	}
+
+	/**
+	 * Performs source string contents replacement with provided new fragment.
+	 *
+	 * @param source source string
+	 * @param os fragment to be replaced
+	 * @param ns replacement fragment
+	 * @return string having replaced content
+	 */
+	public static String replace(String source, String os, String ns) {
+		if (source == null) {
+			return null;
+		}
+		int i = 0;
+		if ((i = source.indexOf(os, i)) >= 0) {
+			char[] sourceArray = source.toCharArray();
+			char[] nsArray = ns.toCharArray();
+			int oLength = os.length();
+			StringBuilder buf = new StringBuilder(sourceArray.length);
+			buf.append(sourceArray, 0, i).append(nsArray);
+			i += oLength;
+			int j = i;
+			// Replace all remaining instances of oldString with newString.
+			while ((i = source.indexOf(os, i)) > 0) {
+				buf.append(sourceArray, j, i - j).append(nsArray);
+				i += oLength;
+				j = i;
+			}
+			buf.append(sourceArray, j, sourceArray.length - j);
+			source = Utils.getString(buf);
+		}
+		return source;
 	}
 }
