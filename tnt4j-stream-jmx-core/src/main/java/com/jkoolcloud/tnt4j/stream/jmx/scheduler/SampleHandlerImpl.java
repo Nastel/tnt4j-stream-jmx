@@ -25,6 +25,7 @@ import javax.management.*;
 import javax.management.relation.MBeanServerNotificationFilter;
 
 import com.jkoolcloud.tnt4j.core.Activity;
+import com.jkoolcloud.tnt4j.core.OpLevel;
 import com.jkoolcloud.tnt4j.core.PropertySnapshot;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.*;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleContext;
@@ -77,7 +78,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	final List<SampleListener> listeners = new ArrayList<SampleListener>(5);
 
 	/**
-	 * Create new instance of {@code SampleHandlerImpl} with a given MBean server and a set of filters.
+	 * Create new instance of {@link SampleHandlerImpl} with a given MBean server and a set of filters.
 	 *
 	 * @param mServerConn MBean server connection instance
 	 * @param incFilter MBean include filters semicolon separated
@@ -122,7 +123,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	 * Determine if a given object name matches include/exclusion filters
 	 * 
 	 * @param oName object name
-	 * @return true if included, false otherwise
+	 * @return {@code true} if included, {@code false} otherwise
 	 */
 	public boolean isFilterIncluded(ObjectName oName) {
 		for (ObjectName eFilter : eFilters) {
@@ -204,9 +205,12 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 					if (doPre(sample)) {
 						sample.sample(); // obtain a sample
 						doPost(sample);
+						if (sample.isError() && !sample.isSilence()) {
+							doError(sample, OpLevel.WARNING);
+						}
 					}
 				} catch (Throwable ex) {
-					doError(sample, ex);
+					doError(sample, ex, OpLevel.ERROR);
 				} finally {
 					if (sample.excludeNext()) {
 						excCount++;
@@ -223,7 +227,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	}
 
 	/**
-	 * Run and evaluate all registered conditions and invoke associated {@code MBeanAction} instances.
+	 * Run and evaluate all registered conditions and invoke associated {@link AttributeAction} instances.
 	 * 
 	 * @param sample MBean sample instance
 	 * @see AttributeSample
@@ -420,19 +424,33 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	}
 
 	/**
-	 * Run {@link com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener#error(SampleContext, AttributeSample)} for all
-	 * registered listeners.
+	 * Run {@link com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener#error(SampleContext, AttributeSample, OpLevel)}
+	 * for all registered listeners.
 	 * 
 	 * @param sample current attribute sample instance
 	 * @param ex exception associated with the error
+	 * @param level error severity level
+	 *
+	 * @see #doError(AttributeSample, OpLevel)
 	 */
-	private void doError(AttributeSample sample, Throwable ex) {
-		errorCount++;
-		lastError = ex;
+	private void doError(AttributeSample sample, Throwable ex, OpLevel level) {
 		sample.setError(ex);
+		doError(sample, level);
+	}
+
+	/**
+	 * Run {@link com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener#error(SampleContext, AttributeSample, OpLevel)}
+	 * for all registered listeners.
+	 *
+	 * @param sample current attribute sample instance
+	 * @param level error severity level
+	 */
+	private void doError(AttributeSample sample, OpLevel level) {
+		errorCount++;
+		lastError = sample.getError();
 		synchronized (this.listeners) {
 			for (SampleListener lst : listeners) {
-				lst.error(context, sample);
+				lst.error(context, sample, level);
 			}
 		}
 	}

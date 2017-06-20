@@ -28,6 +28,7 @@ import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 
 import com.jkoolcloud.tnt4j.core.Activity;
+import com.jkoolcloud.tnt4j.core.OpLevel;
 import com.jkoolcloud.tnt4j.core.PropertySnapshot;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeSample;
 
@@ -43,17 +44,21 @@ import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeSample;
 public class DefaultSampleListener implements SampleListener {
 	public static String STAT_TRACE_MODE = "listener.trace.mode";
 	public static String STAT_EXCLUDE_SET_COUNT = "listener.exclude.set.count";
+	public static String STAT_SILENCE_SET_COUNT = "listener.silence.set.count";
 
 	boolean trace = false;
 	PrintStream out;
 
 	Collection<MBeanAttributeInfo> excAttrs = new HashSet<MBeanAttributeInfo>(89);
+	Collection<MBeanAttributeInfo> silenceAttrs = new HashSet<MBeanAttributeInfo>(89);
 
 	/**
 	 * Create an instance of {@code DefaultSampleListener} with a a given print stream and trace mode
 	 *
-	 * @param pStream print stream instance for tracing
-	 * @param trace mode
+	 * @param pStream
+	 *            print stream instance for tracing
+	 * @param trace
+	 *            mode
 	 */
 	public DefaultSampleListener(PrintStream pStream, boolean trace) {
 		this.trace = trace;
@@ -63,49 +68,63 @@ public class DefaultSampleListener implements SampleListener {
 	/**
 	 * Determine if a given attribute to be excluded from sampling.
 	 *
-	 * @param attr MBean attribute info
+	 * @param attr
+	 *            MBean attribute info
 	 * @return true when attribute should be excluded, false otherwise
 	 */
 	protected boolean isExcluded(MBeanAttributeInfo attr) {
-		try { // NOTE: sometimes MBeanAttributeInfo.equals throws internal NPE
-			return excAttrs.contains(attr);
-		} catch (NullPointerException exc) {
-			return false;
-		}
+		return isInCollection(excAttrs, attr);
 	}
 
 	/**
 	 * Mark a given attribute to be excluded from sampling.
 	 *
-	 * @param attr MBean attribute info
+	 * @param attr
+	 *            MBean attribute info
 	 */
 	protected void exclude(MBeanAttributeInfo attr) {
+		addToCollection(excAttrs, attr);
+	}
+
+	protected boolean isSilenced(MBeanAttributeInfo attr) {
+		return isInCollection(silenceAttrs, attr);
+	}
+
+	protected void silence(MBeanAttributeInfo attr) {
+		addToCollection(silenceAttrs, attr);
+	}
+
+	private static void addToCollection(Collection<MBeanAttributeInfo> coll, MBeanAttributeInfo attr) {
 		try { // NOTE: sometimes MBeanAttributeInfo.equals throws internal NPE
-			excAttrs.add(attr);
+			coll.add(attr);
 		} catch (NullPointerException exc) {
+		}
+	}
+
+	private static boolean isInCollection(Collection<MBeanAttributeInfo> coll, MBeanAttributeInfo attr) {
+		try { // NOTE: sometimes MBeanAttributeInfo.equals throws internal NPE
+			return coll.contains(attr);
+		} catch (NullPointerException exc) {
+			return false;
 		}
 	}
 
 	@Override
 	public void pre(SampleContext context, Activity activity) {
 		if (trace) {
-			out.println("Pre: " + activity.getName() 
-					+ ": sample.count=" + context.getSampleCount() 
-					+ ", mbean.count=" + getMBeanCount(context) 
-					+ ", sample.mbeans.count=" + context.getMBeanCount()
-					+ ", exclude.attr.set=" + excAttrs.size() 
-					+ ", total.noop.count=" + context.getTotalNoopCount()
-					+ ", total.exclude.count=" + context.getExcludeAttrCount() 
-					+ ", total.error.count=" + context.getTotalErrorCount() 
-					+ ", tracking.id=" + activity.getTrackingId() 
-					+ ", mbean.server=" + context.getMBeanServer()
-					);
+			out.println("Pre: " + activity.getName() + ": sample.count=" + context.getSampleCount() + ", mbean.count="
+					+ getMBeanCount(context) + ", sample.mbeans.count=" + context.getMBeanCount()
+					+ ", exclude.attr.set=" + excAttrs.size() + ", silence.attr.set=" + silenceAttrs.size()
+					+ ", total.noop.count=" + context.getTotalNoopCount() + ", total.exclude.count="
+					+ context.getExcludeAttrCount() + ", total.error.count=" + context.getTotalErrorCount()
+					+ ", tracking.id=" + activity.getTrackingId() + ", mbean.server=" + context.getMBeanServer());
 		}
 	}
 
 	@Override
 	public void pre(SampleContext context, AttributeSample sample) {
 		sample.excludeNext(!sample.getAttributeInfo().isReadable() || isExcluded(sample.getAttributeInfo()));
+		sample.silence(isSilenced(sample.getAttributeInfo()));
 	}
 
 	@Override
@@ -119,22 +138,15 @@ public class DefaultSampleListener implements SampleListener {
 	@Override
 	public void post(SampleContext context, Activity activity) {
 		if (trace) {
-			out.println("Post: " + activity.getName() 
-					+ ": sample.count=" + context.getSampleCount() 
-					+ ", mbean.count=" + getMBeanCount(context) 
-					+ ", elapsed.usec=" + activity.getElapsedTimeUsec() 
-					+ ", snap.count=" + activity.getSnapshotCount() 
-					+ ", id.count=" + activity.getIdCount() 
-					+ ", sample.mbeans.count=" + context.getMBeanCount() 
-					+ ", sample.metric.count=" + context.getLastMetricCount()
-					+ ", sample.time.usec=" + context.getLastSampleUsec() 
-					+ ", exclude.attr.set=" + excAttrs.size()
-					+ ", total.noop.count=" + context.getTotalNoopCount() 
-					+ ", total.exclude.count=" + context.getExcludeAttrCount() 
-					+ ", total.error.count=" + context.getTotalErrorCount()
-					+ ", tracking.id=" + activity.getTrackingId() 
-					+ ", mbean.server=" + context.getMBeanServer()
-					);
+			out.println("Post: " + activity.getName() + ": sample.count=" + context.getSampleCount() + ", mbean.count="
+					+ getMBeanCount(context) + ", elapsed.usec=" + activity.getElapsedTimeUsec() + ", snap.count="
+					+ activity.getSnapshotCount() + ", id.count=" + activity.getIdCount() + ", sample.mbeans.count="
+					+ context.getMBeanCount() + ", sample.metric.count=" + context.getLastMetricCount()
+					+ ", sample.time.usec=" + context.getLastSampleUsec() + ", exclude.attr.set=" + excAttrs.size()
+					+ ", silence.attr.set=" + silenceAttrs.size() + ", total.noop.count=" + context.getTotalNoopCount()
+					+ ", total.exclude.count=" + context.getExcludeAttrCount() + ", total.error.count="
+					+ context.getTotalErrorCount() + ", tracking.id=" + activity.getTrackingId() + ", mbean.server="
+					+ context.getMBeanServer());
 		}
 	}
 
@@ -147,21 +159,31 @@ public class DefaultSampleListener implements SampleListener {
 	}
 
 	@Override
-	public void error(SampleContext context, AttributeSample sample) {
-		sample.excludeNext(true);
+	public void error(SampleContext context, AttributeSample sample, OpLevel level) {
+		sample.excludeNext(isFatalError(level == null ? OpLevel.ERROR : level));
+		sample.silence(true);
 		if (trace) {
-			out.println("Failed to sample: " + sample.getAttributeInfo() + ", exclude=" + sample.excludeNext() + ", ex=" + sample.getError());
+			out.println("Failed to sample:\n ojbName=" + sample.getObjetName() + ",\n info=" + sample.getAttributeInfo()
+					+ ",\n exclude=" + sample.excludeNext() + ",\n ex=" + sample.getError());
 			sample.getError().printStackTrace(out);
 		}
 		if (sample.excludeNext()) {
 			exclude(sample.getAttributeInfo());
 		}
+		if (sample.isSilence()) {
+			silence(sample.getAttributeInfo());
+		}
+	}
+
+	private static boolean isFatalError(OpLevel level) {
+		return level.ordinal() >= OpLevel.ERROR.ordinal();
 	}
 
 	@Override
 	public void getStats(SampleContext context, Map<String, Object> stats) {
 		stats.put(STAT_TRACE_MODE, trace);
 		stats.put(STAT_EXCLUDE_SET_COUNT, excAttrs.size());
+		stats.put(STAT_SILENCE_SET_COUNT, silenceAttrs.size());
 	}
 
 	@Override
@@ -187,10 +209,14 @@ public class DefaultSampleListener implements SampleListener {
 	/**
 	 * Process/extract value from a given MBean attribute
 	 *
-	 * @param snapshot instance where extracted attribute is stored
-	 * @param mbAttrInfo MBean attribute info
-	 * @param propName name to be assigned to given attribute value
-	 * @param value associated with attribute
+	 * @param snapshot
+	 *            instance where extracted attribute is stored
+	 * @param mbAttrInfo
+	 *            MBean attribute info
+	 * @param propName
+	 *            name to be assigned to given attribute value
+	 * @param value
+	 *            associated with attribute
 	 * @return snapshot instance where all attributes are contained
 	 */
 	protected PropertySnapshot processAttrValue(PropertySnapshot snapshot, MBeanAttributeInfo mbAttrInfo,

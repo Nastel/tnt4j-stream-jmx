@@ -39,6 +39,7 @@ public class AttributeSample {
 	Throwable ex;
 	PropertySnapshot snapshot;
 	boolean excludeNext = false;
+	boolean silence = false;
 
 	/**
 	 * Create an attribute sample
@@ -80,12 +81,13 @@ public class AttributeSample {
 			value = server.getAttribute(name, ainfo.getName());
 		} catch (Exception exc) {
 			value = getValueFromException(exc);
+			ex = exc;
 		}
 		timeStamp = Utils.currentTimeUsec();
 		return value;
 	}
 
-	private static String getValueFromException(Throwable exc) throws Exception {
+	private static String getValueFromException(Exception exc) throws Exception {
 		Throwable ct = exc;
 		if (exc instanceof RuntimeMBeanException) {
 			ct = exc.getCause();
@@ -128,19 +130,19 @@ public class AttributeSample {
 	}
 
 	/**
-	 * Returns true if sample failed with error, false otherwise. Call {@link #getError()} to obtain {@code Throwable}
-	 * instance when true.
+	 * Returns {@code true} if sample failed with error, {@code false} otherwise. Call {@link #getError()} to obtain
+	 * {@code Throwable} instance when {@code true}.
 	 * 
-	 * @return true if sample failed with error, false otherwise
+	 * @return {@code true} if sample failed with error, {@code false} otherwise
 	 */
-	public boolean isError(Throwable error) {
+	public boolean isError() {
 		return ex != null;
 	}
 
 	/**
 	 * Has the attribute been marked for exclusion
 	 * 
-	 * @return true if attribute to be marked for exclusion, false otherwise
+	 * @return {@code true} if attribute to be marked for exclusion, {@code false} otherwise
 	 */
 	public boolean excludeNext() {
 		return excludeNext;
@@ -150,10 +152,28 @@ public class AttributeSample {
 	 * Mark attribute to be excluded from sampling
 	 * 
 	 * @param exclude {@code true} to exclude, {@code false} to include
-	 * @return true if attribute to be marked for exclusion, false otherwise
+	 * @return {@code true} if attribute to be marked for exclusion, {@code false} otherwise
 	 */
 	public boolean excludeNext(boolean exclude) {
 		return excludeNext = exclude;
+	}
+
+	/**
+	 * Has the attribute been marked to suppress exceptions printing to console output.
+	 *
+	 * @return {@code true} if attribute to be marked for suppression, {@code false} otherwise
+	 */
+	public boolean isSilence() {
+		return silence;
+	}
+
+	/**
+	 * Marks attribute to suppress exceptions printing to console output.
+	 *
+	 * @param silence {@code true} to suppress exceptions printing to console output, {@code false} otherwise
+	 */
+	public boolean silence(boolean silence) {
+		return this.silence = silence;
 	}
 
 	/**

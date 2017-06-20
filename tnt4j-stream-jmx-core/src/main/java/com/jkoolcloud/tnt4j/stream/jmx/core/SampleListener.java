@@ -19,15 +19,14 @@ import java.util.Map;
 
 import javax.management.ObjectName;
 
+import com.jkoolcloud.tnt4j.core.Activity;
+import com.jkoolcloud.tnt4j.core.OpLevel;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeSample;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.NestedHandler;
 
-import com.jkoolcloud.tnt4j.core.Activity;
-
 /**
- * <p> 
- * This interface provides a way to get call backs on every sample:pre, during, post
- * each sample.
+ * <p>
+ * This interface provides a way to get call backs on every sample:pre, during, post each sample.
  * </p>
  * 
  * @see Sampler
@@ -44,7 +43,7 @@ public interface SampleListener {
 	 * @param oname MBean object name
 	 */
 	void register(SampleContext context, ObjectName oname);
-	
+
 	/**
 	 * This method is called on a new MBean is removed/unregistered
 	 * 
@@ -52,12 +51,11 @@ public interface SampleListener {
 	 * @param oname MBean object name
 	 */
 	void unregister(SampleContext context, ObjectName oname);
-	
+
 	/**
-	 * This method is called before each attribute is sampled.
-	 * Throw a runtime exception if you want all further samples to halt.
-	 * Set {@link AttributeSample#excludeNext(boolean)} to true to skip 
-	 * sampling this attribute.
+	 * This method is called before each attribute is sampled. Throw a runtime exception if you want all further samples
+	 * to halt. Set {@link AttributeSample#excludeNext(boolean)} to {@code true} to skip sampling this attribute. Set
+	 * {@link AttributeSample#silence(boolean)} to {@code true} to suppress exception trace printing for this attribute.
 	 * 
 	 * @param context current sample context
 	 * @param sample current attribute sample
@@ -65,12 +63,11 @@ public interface SampleListener {
 	void pre(SampleContext context, AttributeSample sample);
 
 	/**
-	 * This method is called for after attribute is sampled.
-	 * Throw a runtime exception if you want samples to halt.
+	 * This method is called for after attribute is sampled. Throw a runtime exception if you want samples to halt.
 	 * 
 	 * @param context current sample context
 	 * @param sample current attribute sample
-	 * @throws UnsupportedAttributeException 
+	 * @throws UnsupportedAttributeException
 	 */
 	void post(SampleContext context, AttributeSample sample) throws UnsupportedAttributeException;
 
@@ -79,8 +76,9 @@ public interface SampleListener {
 	 * 
 	 * @param context current sample context
 	 * @param sample current attribute sample
+	 * @param level severity of error
 	 */
-	void error(SampleContext context, AttributeSample sample);
+	void error(SampleContext context, AttributeSample sample, OpLevel level);
 
 	/**
 	 * This method is called when generic error occurs
@@ -91,27 +89,24 @@ public interface SampleListener {
 	void error(SampleContext context, Throwable ex);
 
 	/**
-	 * This method is called before a sample begins
-	 * Set activity {@code OpType} to NOOP to ignore
-	 * activity reporting. Setting this to NOOP at pre-stage
-	 * cancels current sample.
+	 * This method is called before a sample begins Set activity {@link com.jkoolcloud.tnt4j.core.OpType} to NOOP to
+	 * ignore activity reporting. Setting this to NOOP at pre-stage cancels current sample.
 	 * 
 	 * @param context current sample context
 	 * @param activity instance
 	 */
 	void pre(SampleContext context, Activity activity);
-	
+
 	/**
-	 * This method is called after current sample is completed
-	 * Set activity {@code OpType} to NOOP to ignore
-	 * activity reporting. Setting this to NOOP at post stage
-	 * cancels reporting of the current sample.
+	 * This method is called after current sample is completed. Set activity
+	 * {@link com.jkoolcloud.tnt4j.core.OpType#NOOP} to ignore activity reporting. Setting this to
+	 * {@link com.jkoolcloud.tnt4j.core.OpType#NOOP} at post stage cancels reporting of the current sample.
 	 * 
 	 * @param context current sample context
 	 * @param activity instance
 	 */
 	void post(SampleContext context, Activity activity);
-	
+
 	/**
 	 * This method is called to collect accumulated metrics maintained by a listener
 	 * 
