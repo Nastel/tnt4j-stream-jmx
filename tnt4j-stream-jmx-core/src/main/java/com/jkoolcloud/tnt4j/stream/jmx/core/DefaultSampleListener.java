@@ -55,10 +55,8 @@ public class DefaultSampleListener implements SampleListener {
 	/**
 	 * Create an instance of {@code DefaultSampleListener} with a a given print stream and trace mode
 	 *
-	 * @param pStream
-	 *            print stream instance for tracing
-	 * @param trace
-	 *            mode
+	 * @param pStream print stream instance for tracing
+	 * @param trace mode
 	 */
 	public DefaultSampleListener(PrintStream pStream, boolean trace) {
 		this.trace = trace;
@@ -68,8 +66,7 @@ public class DefaultSampleListener implements SampleListener {
 	/**
 	 * Determine if a given attribute to be excluded from sampling.
 	 *
-	 * @param attr
-	 *            MBean attribute info
+	 * @param attr MBean attribute info
 	 * @return true when attribute should be excluded, false otherwise
 	 */
 	protected boolean isExcluded(MBeanAttributeInfo attr) {
@@ -79,8 +76,7 @@ public class DefaultSampleListener implements SampleListener {
 	/**
 	 * Mark a given attribute to be excluded from sampling.
 	 *
-	 * @param attr
-	 *            MBean attribute info
+	 * @param attr MBean attribute info
 	 */
 	protected void exclude(MBeanAttributeInfo attr) {
 		addToCollection(excAttrs, attr);
@@ -112,12 +108,18 @@ public class DefaultSampleListener implements SampleListener {
 	@Override
 	public void pre(SampleContext context, Activity activity) {
 		if (trace) {
-			out.println("Pre: " + activity.getName() + ": sample.count=" + context.getSampleCount() + ", mbean.count="
-					+ getMBeanCount(context) + ", sample.mbeans.count=" + context.getMBeanCount()
-					+ ", exclude.attr.set=" + excAttrs.size() + ", silence.attr.set=" + silenceAttrs.size()
-					+ ", total.noop.count=" + context.getTotalNoopCount() + ", total.exclude.count="
-					+ context.getExcludeAttrCount() + ", total.error.count=" + context.getTotalErrorCount()
-					+ ", tracking.id=" + activity.getTrackingId() + ", mbean.server=" + context.getMBeanServer());
+			out.println("Pre: " + activity.getName() 
+					+ ": sample.count=" + context.getSampleCount() 
+					+ ", mbean.count=" + getMBeanCount(context) 
+					+ ", sample.mbeans.count=" + context.getMBeanCount() 
+					+ ", exclude.attr.set=" + excAttrs.size() 
+					+ ", silence.attr.set=" + silenceAttrs.size() 
+					+ ", total.noop.count=" + context.getTotalNoopCount() 
+					+ ", total.exclude.count=" + context.getExcludeAttrCount() 
+					+ ", total.error.count=" + context.getTotalErrorCount() 
+					+ ", tracking.id=" + activity.getTrackingId() 
+					+ ", mbean.server=" + context.getMBeanServer()
+					);
 		}
 	}
 
@@ -131,22 +133,29 @@ public class DefaultSampleListener implements SampleListener {
 	public void post(SampleContext context, AttributeSample sample) throws UnsupportedAttributeException {
 		MBeanAttributeInfo mbAttrInfo = sample.getAttributeInfo();
 		PropertySnapshot snapshot = sample.getSnapshot();
-		StringBuilder nsb = new StringBuilder(mbAttrInfo.getName());
-		processAttrValue(snapshot, mbAttrInfo, nsb, sample.get());
+		processAttrValue(snapshot, mbAttrInfo, mbAttrInfo.getName(), sample.get());
 	}
 
 	@Override
 	public void post(SampleContext context, Activity activity) {
 		if (trace) {
-			out.println("Post: " + activity.getName() + ": sample.count=" + context.getSampleCount() + ", mbean.count="
-					+ getMBeanCount(context) + ", elapsed.usec=" + activity.getElapsedTimeUsec() + ", snap.count="
-					+ activity.getSnapshotCount() + ", id.count=" + activity.getIdCount() + ", sample.mbeans.count="
-					+ context.getMBeanCount() + ", sample.metric.count=" + context.getLastMetricCount()
-					+ ", sample.time.usec=" + context.getLastSampleUsec() + ", exclude.attr.set=" + excAttrs.size()
-					+ ", silence.attr.set=" + silenceAttrs.size() + ", total.noop.count=" + context.getTotalNoopCount()
-					+ ", total.exclude.count=" + context.getExcludeAttrCount() + ", total.error.count="
-					+ context.getTotalErrorCount() + ", tracking.id=" + activity.getTrackingId() + ", mbean.server="
-					+ context.getMBeanServer());
+			out.println("Post: " + activity.getName() 
+					+ ": sample.count=" + context.getSampleCount() 
+					+ ", mbean.count=" + getMBeanCount(context) 
+					+ ", elapsed.usec=" + activity.getElapsedTimeUsec() 
+					+ ", snap.count=" + activity.getSnapshotCount() 
+					+ ", id.count=" + activity.getIdCount() 
+					+ ", sample.mbeans.count=" + context.getMBeanCount() 
+					+ ", sample.metric.count=" + context.getLastMetricCount() 
+					+ ", sample.time.usec=" + context.getLastSampleUsec() 
+					+ ", exclude.attr.set=" + excAttrs.size() 
+					+ ", silence.attr.set=" + silenceAttrs.size() 
+					+ ", total.noop.count=" + context.getTotalNoopCount() 
+					+ ", total.exclude.count=" + context.getExcludeAttrCount() 
+					+ ", total.error.count=" + context.getTotalErrorCount() 
+					+ ", tracking.id=" + activity.getTrackingId() 
+					+ ", mbean.server=" + context.getMBeanServer()
+					);
 		}
 	}
 
@@ -209,31 +218,27 @@ public class DefaultSampleListener implements SampleListener {
 	/**
 	 * Process/extract value from a given MBean attribute
 	 *
-	 * @param snapshot
-	 *            instance where extracted attribute is stored
-	 * @param mbAttrInfo
-	 *            MBean attribute info
-	 * @param propName
-	 *            name to be assigned to given attribute value
-	 * @param value
-	 *            associated with attribute
+	 * @param snapshot instance where extracted attribute is stored
+	 * @param mbAttrInfo MBean attribute info
+	 * @param propName name to be assigned to given attribute value
+	 * @param value associated with attribute
 	 * @return snapshot instance where all attributes are contained
 	 */
 	protected PropertySnapshot processAttrValue(PropertySnapshot snapshot, MBeanAttributeInfo mbAttrInfo,
-			StringBuilder propName, Object value) {
+			String propName, Object value) {
 		if (value instanceof CompositeData) {
 			CompositeData cdata = (CompositeData) value;
 			Set<String> keys = cdata.getCompositeType().keySet();
 			for (String key : keys) {
 				Object cVal = cdata.get(key);
-				processAttrValue(snapshot, mbAttrInfo, propName.append("\\").append(key), cVal);
+				processAttrValue(snapshot, mbAttrInfo, propName + "\\" + key, cVal);
 			}
 		} else if (value instanceof TabularData) {
 			TabularData tData = (TabularData) value;
 			Collection<?> values = tData.values();
 			int row = 0;
 			for (Object tVal : values) {
-				processAttrValue(snapshot, mbAttrInfo, propName.append("\\").append(padNumber(++row)), tVal);
+				processAttrValue(snapshot, mbAttrInfo, propName + "\\" + padNumber(++row), tVal);
 			}
 		} else {
 			snapshot.add(propName.toString(), value);
