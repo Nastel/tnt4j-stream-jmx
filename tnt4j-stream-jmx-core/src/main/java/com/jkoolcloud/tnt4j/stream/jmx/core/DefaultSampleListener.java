@@ -241,7 +241,7 @@ public class DefaultSampleListener implements SampleListener {
 				processAttrValue(snapshot, mbAttrInfo, propName + "\\" + padNumber(++row), tVal);
 			}
 		} else {
-			snapshot.add(propName.toString(), value);
+			snapshot.add(propName, value);
 		}
 		return snapshot;
 	}

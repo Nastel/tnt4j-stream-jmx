@@ -4,17 +4,12 @@
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
          id="WebApp_ID" version="3.0">
 
-    <display-name>TNT4J-Stream-JMX-WAS</display-name>
+    <display-name>TNT4J-Stream-JMX</display-name>
+    <description>TNT4J Stream-JMX web servlet</description>
 
-    <!-- Change to "Production" when you are ready to deploy -->
-    <context-param>
-        <param-name>javax.faces.PROJECT_STAGE</param-name>
-        <param-value>Development</param-value>
-    </context-param>
-
-    <session-config>
-        <session-timeout>30</session-timeout>
-    </session-config>
+    <!--<session-config>-->
+    <!--<session-timeout>30</session-timeout>-->
+    <!--</session-config>-->
 
     <servlet>
         <servlet-name>StreamJmx</servlet-name>
@@ -28,7 +23,7 @@
         </init-param>
         <init-param>
             <param-name>com.jkoolcloud.tnt4j.stream.jmx.agent.options</param-name>
-            <param-value>WebSphere:name=JVM,*;WebSphere:name=isclite*,*!!60000!0</param-value>
+            <param-value>WebSphere:name=JVM,*;WebSphere:name=AriesThreadPool,*;WebSphere:mbeanIdentifier=cells*,*!!60000!0</param-value>
             <description>Sampler options separated by '!': include_pattern!exclude_pattern!sampling_rate_ms!initial_sampler_delay_ms
             </description>
         </init-param>
@@ -59,4 +54,33 @@
         <url-pattern>/</url-pattern>
     </servlet-mapping>
 
+    <!--security-constraint>
+        <display-name>TNT4J Stream-JMX configuration console</display-name>
+
+        <web-resource-collection>
+            <web-resource-name>Main servlet configuration page</web-resource-name>
+            <url-pattern>/*</url-pattern>
+        </web-resource-collection>
+
+        <user-data-constraint>
+            <transport-guarantee>NONE</transport-guarantee>
+        </user-data-constraint>
+
+        <auth-constraint>
+            <role-name>StreamJmxAdmin</role-name>
+            <role-name>StreamJmxManager</role-name>
+        </auth-constraint>
+    </security-constraint-->
+
+    <login-config>
+        <auth-method>BASIC</auth-method>
+        <realm-name>default</realm-name>
+    </login-config>
+
+    <security-role>
+        <role-name>StreamJmxAdmin</role-name>
+    </security-role>
+    <security-role>
+        <role-name>StreamJmxManager</role-name>
+    </security-role>
 </web-app>

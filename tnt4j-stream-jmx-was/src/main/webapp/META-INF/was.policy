@@ -1,0 +1,11 @@
+// The following permissions apply to all the components under the application.
+grant codeBase "file:${application}" {
+    permission com.ibm.websphere.management.AdminPermission "getAdminService"
+    permission com.ibm.websphere.management.AdminPermission "getMBeanFactory"
+    permission com.tivoli.jmx.MBeanServerPermission "MBeanServerFactory.*"
+    permission com.tivoli.jmx.MBeanServerPermission "MBeanServer.*"
+
+    permission java.net.SocketPermission "*", "connect";
+    permission java.util.PropertyPermission "*", "read";
+    permission java.util.PropertyPermission "*", "write";
+};
