@@ -43,6 +43,8 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 
 	protected boolean useAllProperties = true;
 
+	protected final Properties objNameProps = new Properties();
+
 	private Comparator<Snapshot> snapshotComparator;
 	private Comparator<Property> propertyComparator;
 
@@ -117,47 +119,48 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 			return objCanonName;
 		}
 
-		Properties props = makeProps(objCanonName, ddIdx);
-		StringBuilder pathBuilder = new StringBuilder(128);
-		String pv;
+		synchronized (objNameProps) {
+			loadProps(objNameProps, objCanonName, ddIdx);
+			StringBuilder pathBuilder = new StringBuilder(128);
+			String pv;
 
-		for (String[] levelKeys : PATH_KEYS) {
-			for (String pKey : levelKeys) {
-				pv = (String) props.remove(pKey);
+			for (String[] levelKeys : PATH_KEYS) {
+				for (String pKey : levelKeys) {
+					pv = (String) objNameProps.remove(pKey);
 
-				appendPath(pathBuilder, pv);
+					appendPath(pathBuilder, pv);
+				}
 			}
-		}
 
-		if (useAllProperties && !props.isEmpty()) {
-			for (Map.Entry<Object, Object> pe : props.entrySet()) {
-				String pk = String.valueOf(pe.getKey());
-				pv = String.valueOf(pe.getValue());
-				appendPath(pathBuilder, pk).append(":").append(pv);
+			if (useAllProperties && !objNameProps.isEmpty()) {
+				for (Map.Entry<Object, Object> pe : objNameProps.entrySet()) {
+					String pk = String.valueOf(pe.getKey());
+					pv = String.valueOf(pe.getValue());
+					appendPath(pathBuilder, pk).append(":").append(pv);
+				}
 			}
+
+			return pathBuilder.toString();
 		}
-
-		props.clear();
-
-		return pathBuilder.toString();
 	}
 
 	/**
-	 * Resolves properties map from provided canonical object name string.
+	 * Resolves properties map from provided canonical object name string and puts into provided {@link Properties}
+	 * instance.
 	 *
+	 * @param props properties to load into
 	 * @param objCanonName object canonical name string
 	 * @param ddIdx domain separator index
-	 * @return properties resolved from provided object name
 	 */
-	protected static Properties makeProps(String objCanonName, int ddIdx) {
+	protected static void loadProps(Properties props, String objCanonName, int ddIdx) {
 		String domainStr = objCanonName.substring(0, ddIdx);
 
-		Properties props = new Properties();
+		props.clear();
 		props.setProperty("domain", domainStr);
 
 		String propsStr = objCanonName.substring(ddIdx + 1);
 
-		if (propsStr.length() > 0) {
+		if (!propsStr.isEmpty()) {
 			propsStr = replace(propsStr, FIELD_SEP, LF);
 			Reader rdr = new StringReader(propsStr);
 			try {
@@ -167,8 +170,6 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 				Utils.close(rdr);
 			}
 		}
-
-		return props;
 	}
 
 	/**

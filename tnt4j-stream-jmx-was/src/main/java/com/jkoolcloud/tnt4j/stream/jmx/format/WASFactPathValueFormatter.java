@@ -16,8 +16,6 @@
 
 package com.jkoolcloud.tnt4j.stream.jmx.format;
 
-import java.util.Properties;
-
 import org.apache.commons.lang3.StringUtils;
 
 import com.jkoolcloud.tnt4j.utils.Utils;
@@ -51,30 +49,30 @@ public class WASFactPathValueFormatter extends FactPathValueFormatter {
 			return objCanonName;
 		}
 
-		Properties props = makeProps(objCanonName, ddIdx);
-		StringBuilder pathBuilder = new StringBuilder(256);
-		String pv = (String) props.remove("domain");
+		synchronized (objNameProps) {
+			loadProps(objNameProps, objCanonName, ddIdx);
+			StringBuilder pathBuilder = new StringBuilder(256);
+			String pv = (String) objNameProps.remove("domain");
 
-		super.appendPath(pathBuilder, pv);
+			super.appendPath(pathBuilder, pv);
 
-		for (String snKey : SHORT_NAME_KEYS) {
-			pv = (String) props.remove(snKey);
-			if (!Utils.isEmpty(pv) && !"null".equals(pv)) {
-				pv = StringUtils.replaceEach(pv, replaceable, replacement);
-				if (pv.startsWith(PATH_DELIM)) {
-					pv = pv.substring(1);
+			for (String snKey : SHORT_NAME_KEYS) {
+				pv = (String) objNameProps.remove(snKey);
+				if (!Utils.isEmpty(pv) && !"null".equals(pv)) {
+					pv = StringUtils.replaceEach(pv, replaceable, replacement);
+					if (pv.startsWith(PATH_DELIM)) {
+						pv = pv.substring(1);
+					}
+					if (pv.endsWith(PATH_DELIM)) {
+						pv = pv.substring(0, pv.length() - 1);
+					}
+
+					pathBuilder.append(pathBuilder.length() > 0 ? PATH_DELIM : "").append(pv);
+					break;
 				}
-				if (pv.endsWith(PATH_DELIM)) {
-					pv = pv.substring(0, pv.length() - 1);
-				}
-
-				pathBuilder.append(pathBuilder.length() > 0 ? PATH_DELIM : "").append(pv);
-				break;
 			}
+
+			return pathBuilder.toString();
 		}
-
-		props.clear();
-
-		return pathBuilder.toString();
 	}
 }
