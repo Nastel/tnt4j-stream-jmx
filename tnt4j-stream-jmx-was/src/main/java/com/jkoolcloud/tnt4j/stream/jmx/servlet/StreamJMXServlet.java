@@ -16,14 +16,16 @@
 
 package com.jkoolcloud.tnt4j.stream.jmx.servlet;
 
-import static com.jkoolcloud.tnt4j.stream.jmx.servlet.StreamJMXManager.console;
 import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
 
 import java.io.*;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -31,10 +33,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+
 import com.jkoolcloud.tnt4j.config.TrackerConfigStore;
-import com.jkoolcloud.tnt4j.stream.jmx.servlet.StreamJMXManager.Display;
-import com.jkoolcloud.tnt4j.stream.jmx.servlet.StreamJMXManager.Scope;
-import com.jkoolcloud.tnt4j.stream.jmx.servlet.StreamJMXManager.StreamJMXProperties;
+import com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent;
+import com.jkoolcloud.tnt4j.stream.jmx.utils.ConsoleOutputCaptor;
 import com.jkoolcloud.tnt4j.utils.Utils;
 
 /**
@@ -44,11 +48,84 @@ import com.jkoolcloud.tnt4j.utils.Utils;
  *
  * @version $Revision: 1 $
  *
+ * @see HttpServlet#init(ServletConfig)
  * @see HttpServlet#doGet(HttpServletRequest, HttpServletResponse)
  * @see HttpServlet#doPost(HttpServletRequest, HttpServletResponse)
+ * @see HttpServlet#destroy()
  */
 public class StreamJMXServlet extends HttpServlet {
 	private static final long serialVersionUID = -8291650473147748942L;
+
+	public enum StreamJMXProperties {
+		JMX_SAMPLER_FACTORY("com.jkoolcloud.tnt4j.stream.jmx.sampler.factory", "com.jkoolcloud.tnt4j.stream.jmx.impl.WASSamplerFactory", Display.READ_ONLY  , Scope.SYSTEM),
+		VALIDATE_TYPES("com.jkoolcloud.tnt4j.stream.jmx.agent.validate.types", "false"                                                 , Display.READ_ONLY  , Scope.SYSTEM),
+		TRACE("com.jkoolcloud.tnt4j.stream.jmx.agent.trace"                  , "true"                                                  , Display.READ_ONLY  , Scope.SYSTEM),
+		AO("com.jkoolcloud.tnt4j.stream.jmx.agent.options"                   , "*:*!!60000!0"                                          , Display.READ_ONLY  , Scope.LOCAL),
+		AO_INCLUDE("com.jkoolcloud.tnt4j.stream.jmx.agent.options.include"   , "*:*"                                                   ,                      Scope.SYNTHETIC, Scope.LOCAL),
+		AO_EXCLUDE("com.jkoolcloud.tnt4j.stream.jmx.agent.options.exclude"   , ""                                                      ,                      Scope.SYNTHETIC, Scope.LOCAL),
+		AO_PERIOD("com.jkoolcloud.tnt4j.stream.jmx.agent.options.period"     , String.valueOf(TimeUnit.SECONDS.toMillis(60))  ,                      Scope.SYNTHETIC, Scope.LOCAL),
+		AO_DELAY("com.jkoolcloud.tnt4j.stream.jmx.agent.options.init.delay"  , "0"                                                     ,                      Scope.SYNTHETIC, Scope.LOCAL),
+		VM("com.jkoolcloud.tnt4j.stream.jmx.agent.vm"                        , ""                                                      ,                      Scope.LOCAL),
+		TNT4J_CONFIG("tnt4j.config"                                          , "tnt4j.properties"                                      ,                      Scope.SYSTEM, Scope.LOCAL),
+		TNT4J_CONFIG_CONT("tnt4j.config.contents"                            , ""                                                      , Display.HIDDEN     , Scope.SYNTHETIC),
+		USERNAME("com.jkoolcloud.tnt4j.stream.jmx.agent.user"                , ""                                                      , Display.EDITABLE   , Scope.LOCAL),
+		PASSWORD("com.jkoolcloud.tnt4j.stream.jmx.agent.pass"                , ""                                                      , Display.EDITABLE_PW, Scope.LOCAL),
+		HOST("com.jkoolcloud.tnt4j.stream.jmx.tnt4j.out.host"                , "localhost"                                             , Display.EDITABLE   , Scope.SYSTEM, Scope.LOCAL),
+		PORT("com.jkoolcloud.tnt4j.stream.jmx.tnt4j.out.port"                , "6000"                                                  , Display.EDITABLE   , Scope.SYSTEM, Scope.LOCAL);
+
+		String key;
+		String defaultValue;
+		Display display;
+		Scope[] scope;
+
+		private StreamJMXProperties(String key, String defaultValue, Scope... scopes) {
+			this(key, defaultValue, Display.EDITABLE, scopes);
+		}
+
+		private StreamJMXProperties(String key, String defaultValue, Display display, Scope... scopes) {
+			this.key = key;
+			this.defaultValue = defaultValue;
+			this.display = display;
+			this.scope = scopes;
+		}
+
+		static StreamJMXProperties[] values(Display... filters) {
+			List<StreamJMXProperties> result = new ArrayList<StreamJMXProperties>(StreamJMXProperties.values().length);
+			for (Display filter : filters) {
+				for (StreamJMXProperties property : StreamJMXProperties.values()) {
+					if (property.display.equals(filter)) {
+						result.add(property);
+					}
+				}
+			}
+			return result.toArray(new StreamJMXProperties[result.size()]);
+		}
+
+		public boolean isInScope(Scope scope) {
+			return ArrayUtils.contains(this.scope, scope);
+		}
+
+	}
+
+	public enum Scope {
+		LOCAL, SYNTHETIC, SYSTEM
+	}
+
+	public enum Display {
+		EDITABLE, READ_ONLY, HIDDEN, EDITABLE_PW
+	}
+
+	private Properties inAppCfgProperties = new Properties();
+	private static Thread sampler;
+
+	@Override
+	public void init(ServletConfig config) throws ServletException {
+		ConsoleOutputCaptor.getInstance().start();
+
+		getPropertiesFromContext(config);
+		initStream();
+		super.init(config);
+	}
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -111,15 +188,76 @@ public class StreamJMXServlet extends HttpServlet {
 		out.println("</html>");
 	}
 
-	private static void printTableLine(PrintWriter out, StreamJMXProperties property, boolean editable,
-			boolean password) {
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		boolean changed = false;
+		for (StreamJMXProperties property : StreamJMXProperties.values(Display.EDITABLE, Display.EDITABLE_PW)) {
+			String propertyValue = req.getParameter(property.key);
+			if (propertyValue != null) {
+				changed |= setProperty(property, propertyValue);
+				System.out.println("==> Setting property: name=" + property.key + ", value=" + propertyValue);
+			}
+		}
+		String tnt4jConfigContents = req.getParameter(StreamJMXProperties.TNT4J_CONFIG_CONT.key);
+		if (tnt4jConfigContents != null) {
+			FileOutputStream tnt4jProperties = null;
+			try {
+				tnt4jProperties = new FileOutputStream(getClass().getClassLoader()
+						.getResource(StreamJMXProperties.TNT4J_CONFIG.defaultValue).getFile());
+				tnt4jProperties.write(tnt4jConfigContents.getBytes());
+				System.setProperty(StreamJMXProperties.TNT4J_CONFIG.key, StreamJMXProperties.TNT4J_CONFIG.defaultValue);
+				changed = true;
+			} catch (Exception e) {
+				System.out.println("!!!!  Failed writing " + StreamJMXProperties.TNT4J_CONFIG.defaultValue + "  !!!!");
+			} finally {
+				Utils.close(tnt4jProperties);
+			}
+		}
+
+		if (changed) {
+			samplerDestroy();
+			samplerStart();
+		}
+
+		resp.sendRedirect(req.getContextPath());
+	}
+
+	@Override
+	public void destroy() {
+		System.out.println("######################     Stopping TNT4J-stream-JMX as Servlet   ######################");
+		samplerDestroy();
+
+		super.destroy();
+
+		Exception last = null;
+		for (StreamJMXProperties prop : StreamJMXProperties.values()) {
+			String propertyValue = getProperty(prop.key, null);
+
+			try {
+				System.out.println("==> Saving parameters to servlet context...");
+				Method method = getServletConfig().getClass().getMethod("setInitParameter", String.class, String.class);
+
+				method.invoke(getServletConfig(), prop.key, propertyValue);
+			} catch (Exception e) {
+				System.out.println("!!!!!   Save failed " + e.getClass().getName() + " " + e.getMessage() + "   !!!!!");
+				last = e;
+			}
+		}
+		if (last != null) {
+			last.printStackTrace();
+		}
+
+		ConsoleOutputCaptor.getInstance().stop();
+	}
+
+	private void printTableLine(PrintWriter out, StreamJMXProperties property, boolean editable, boolean password) {
 		String propertyKey = property.key;
 		out.println("<tr>");
 		out.println("<td>" + propertyKey + " </td>");
 
 		String editableStr = editable ? "" : "readonly disabled";
 		String inputType = password ? "password" : "text";
-		String text = escapeHtml4(getPropertyOrEmpty(propertyKey));
+		String text = escapeHtml4(getProperty(propertyKey, ""));
 		if (password) {
 			text = text.replaceAll(".", "*");
 		}
@@ -131,15 +269,11 @@ public class StreamJMXServlet extends HttpServlet {
 		if (property.isInScope(Scope.SYSTEM)) {
 			out.print(propertyPermitted(propertyKey));
 		} else {
-			out.print("&nbsp");
+			out.print("&nbsp;");
 		}
 
 		out.println("  </td>");
 		out.println("</tr>");
-	}
-
-	private static String getPropertyOrEmpty(String property) {
-		return StreamJMXManager.getInstance().getProperty(property);
 	}
 
 	private static void printTableSplitLine(PrintWriter out) {
@@ -150,49 +284,11 @@ public class StreamJMXServlet extends HttpServlet {
 		out.println("</tr>");
 	}
 
-	@Override
-	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		boolean set = false;
-		boolean setTNTFile = false;
-		StreamJMXManager manager = StreamJMXManager.getInstance();
-		Properties currentProperties = manager.getCurrentProperties();
-		for (StreamJMXProperties property : StreamJMXProperties.values(Display.EDITABLE, Display.EDITABLE_PW)) {
-			String propertyValue = req.getParameter(property.key);
-			if (propertyValue != null) {
-				boolean propertyIsSet = manager.setProperty(property, propertyValue);
-				set = !set ? propertyIsSet : set;
-				System.out.println("==> Setting property: name=" + property.key + ", value=" + propertyValue);
-			}
-		}
-		final String tnt4jConfigContents = req.getParameter(StreamJMXProperties.TNT4J_CONFIG_CONTS.key);
-		if (tnt4jConfigContents != null) {
-			FileOutputStream tnt4jProperties = null;
-			try {
-				tnt4jProperties = new FileOutputStream(getClass().getClassLoader()
-						.getResource(StreamJMXProperties.TNT4J_CONFIG.defaultValue).getFile());
-				tnt4jProperties.write(tnt4jConfigContents.getBytes());
-				System.setProperty(StreamJMXProperties.TNT4J_CONFIG.key, StreamJMXProperties.TNT4J_CONFIG.defaultValue);
-				setTNTFile = true;
-			} catch (Exception e) {
-				System.out.println("!!!!  Failed writing " + StreamJMXProperties.TNT4J_CONFIG.defaultValue + "  !!!!");
-			} finally {
-				Utils.close(tnt4jProperties);
-			}
-		}
-
-		if (set || setTNTFile) {
-			manager.samplerDestroy();
-			manager.samplerStart();
-		}
-
-		resp.sendRedirect(req.getContextPath());
-	}
-
-	private static void outputTNT4JConfig(PrintWriter out) throws IOException {
+	private void outputTNT4JConfig(PrintWriter out) throws IOException {
 		out.println("<H3>TNT4J config</H3>");
-		out.println("<textarea name=\"" + StreamJMXProperties.TNT4J_CONFIG_CONTS.key + "\" cols=\"120\" rows=\"55\">");
+		out.println("<textarea name=\"" + StreamJMXProperties.TNT4J_CONFIG_CONT.key + "\" cols=\"120\" rows=\"55\">");
 
-		final String tnt4JConfig = StreamJMXManager.getInstance().getProperty(StreamJMXProperties.TNT4J_CONFIG.key);
+		String tnt4JConfig = getProperty(StreamJMXProperties.TNT4J_CONFIG.key, null);
 
 		String tnt4jConfigString;
 		if (tnt4JConfig.startsWith(TrackerConfigStore.CFG_LINE_PREFIX)) {
@@ -212,7 +308,7 @@ public class StreamJMXServlet extends HttpServlet {
 		out.println("<H3>Console Output</H3>");
 		out.println("<textarea name=\"tnt4jConfig\" cols=\"120\" rows=\"55\">");
 		try {
-			out.println(console.getCaptured());
+			out.println(ConsoleOutputCaptor.getInstance().getCaptured());
 		} catch (Exception e) {
 			out.println("N/A");
 			out.println(e.getMessage());
@@ -249,35 +345,26 @@ public class StreamJMXServlet extends HttpServlet {
 		return permitted;
 	}
 
-	@Override
-	public void init(ServletConfig config) throws ServletException {
-		getPropertiesFromContext(config);
-		initStream();
-		super.init(config);
-	}
-
-	private static void getPropertiesFromContext(ServletConfig servletConfig) {
-		StreamJMXManager manager = StreamJMXManager.getInstance();
-		System.out.println(">>>>>> Getting initial parameter from servlet context");
-		final Enumeration<String> initParameterNames = servletConfig.getInitParameterNames();
+	private void getPropertiesFromContext(ServletConfig servletConfig) {
+		System.out.println(">>>>>> Servlet context initial parameters: start");
+		@SuppressWarnings("unchecked")
+		Enumeration<String> initParameterNames = (Enumeration<String>) servletConfig.getInitParameterNames();
 		while (initParameterNames.hasMoreElements()) {
 			String initParam = (String) initParameterNames.nextElement();
 			System.out.println("==> Parameter found: " + initParam);
 		}
 		for (StreamJMXProperties prop : StreamJMXProperties.values()) {
-			final String initParameter = servletConfig.getInitParameter(prop.key);
+			String initParameter = servletConfig.getInitParameter(prop.key);
 			if (initParameter != null) {
-				manager.setProperty(prop, initParameter);
+				setProperty(prop, initParameter);
 				System.out.println("==> Property: " + prop.key + " value changed to: " + initParameter);
 			}
 		}
 
-		System.out.println("<<<<<< End of servlet context parameter initialisation");
+		System.out.println("<<<<<< Servlet context initial parameters: end");
 	}
 
-	private static void initStream() {
-		console.start();
-
+	private void initStream() {
 		System.out.println("######################     Starting TNT4J-stream-JMX as Servlet   ######################");
 		try {
 			System.out.println(">>>>>>>>>>>>>>>>>>    TNT4J-stream-JMX environment check start   >>>>>>>>>>>>>>>>>>");
@@ -287,9 +374,7 @@ public class StreamJMXServlet extends HttpServlet {
 			System.out.println("==> IBM.ADMIN.CLIENT: " + getClassLocation("com.ibm.ws.pmi.j2ee.StatisticImpl"));
 			System.out.println("<<<<<<<<<<<<<<<<<<<    TNT4J-stream-JMX environment check end   <<<<<<<<<<<<<<<<<<<");
 
-			StreamJMXManager manager = StreamJMXManager.getInstance();
-
-			manager.samplerStart();
+			samplerStart();
 		} catch (Exception e) {
 			System.out.println("!!!!!!!!!!!!     Failed to start TNT4J-stream-JMX    !!!!!!!!!!!!");
 			e.printStackTrace(System.out);
@@ -304,32 +389,145 @@ public class StreamJMXServlet extends HttpServlet {
 		return StreamJMXServlet.class.getResource('/' + clazzName.replace('.', '/') + ".class");
 	}
 
-	@Override
-	public void destroy() {
-		System.out.println("######################     Stopping TNT4J-stream-JMX as Servlet   ######################");
-		StreamJMXManager manager = StreamJMXManager.getInstance();
-		manager.samplerDestroy();
+	private String getVM() {
+		return inAppCfgProperties.getProperty(StreamJMXProperties.VM.key, StreamJMXProperties.VM.defaultValue);
+	}
 
-		super.destroy();
+	private String getAO() {
+		return inAppCfgProperties.getProperty(StreamJMXProperties.AO.key, StreamJMXProperties.AO.defaultValue);
+	}
 
-		Exception last = null;
-		for (StreamJMXProperties prop : StreamJMXProperties.values()) {
-			final String propertyValue = manager.getProperty(prop.key);
+	private void samplerStart() {
+		configure();
+		sampler = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					System.out.println("---------------------     Connecting Sampler Agent     ---------------------");
+					String vm = getVM();
+					String ao = getAO();
+					String user = inAppCfgProperties.getProperty(StreamJMXProperties.USERNAME.key,
+							StreamJMXProperties.USERNAME.defaultValue);
+					String pass = inAppCfgProperties.getProperty(StreamJMXProperties.PASSWORD.key,
+							StreamJMXProperties.PASSWORD.defaultValue);
+					if (StringUtils.isEmpty(vm)) {
+						System.out.println("==> Sampling from local process runner JVM: options=" + ao);
+						SamplingAgent.sampleLocalVM(ao, true);
+					} else {
+						System.out.println("==> Connecting to remote JVM: vm=" + vm + ", options=" + ao + ", user="
+								+ user + ", pass=" + pass.replaceAll(".", "*"));
+						SamplingAgent.connect(vm, user, pass, ao);
+					}
+				} catch (Exception e) {
+					System.out.println("!!!!!!!!!!!!     Failed to connect Sampler Agent    !!!!!!!!!!!!");
+					e.printStackTrace(System.out);
+				}
+			}
+		}, "Stream-JMX_servlet_sampler_thread");
+		sampler.start();
+	}
 
-			try {
-				System.out.println("==> Saving parameters to servlet context...");
-				final Method method = getServletConfig().getClass().getMethod("setInitParameter", String.class,
-						String.class);
-
-				method.invoke(getServletConfig(), prop.key, propertyValue);
-			} catch (Exception e) {
-				System.out.println("!!!!!   Save failed " + e.getClass().getName() + " " + e.getMessage() + "   !!!!!");
-				last = e;
+	private void configure() {
+		for (StreamJMXProperties property : StreamJMXProperties.values()) {
+			if (!property.isInScope(Scope.SYNTHETIC)) {
+				setProperty(property, getParam(property));
 			}
 		}
-		if (last != null)
-			last.printStackTrace();
+		expandAO(getParam(StreamJMXProperties.AO));
+	}
 
-		console.stop();
+	private static String compileAO(Properties props) {
+		StringBuilder sb = new StringBuilder(64);
+
+		sb.append(props.getProperty(StreamJMXProperties.AO_INCLUDE.key, "*.*"));
+		sb.append("!");
+		sb.append(props.getProperty(StreamJMXProperties.AO_EXCLUDE.key, ""));
+		sb.append("!");
+		sb.append(props.getProperty(StreamJMXProperties.AO_PERIOD.key, "60000"));
+		sb.append("!");
+		sb.append(props.getProperty(StreamJMXProperties.AO_DELAY.key, "0"));
+		return sb.toString();
+	}
+
+	private void expandAO(String ao) {
+		String[] args = ao.split("!");
+		if (args.length > 0) {
+			setProperty(StreamJMXProperties.AO_INCLUDE, args[0]);
+		}
+		if (args.length > 1) {
+			setProperty(StreamJMXProperties.AO_EXCLUDE, args[1]);
+		}
+		if (args.length > 2) {
+			setProperty(StreamJMXProperties.AO_PERIOD, args[2]);
+		}
+		if (args.length > 3) {
+			setProperty(StreamJMXProperties.AO_DELAY, args[3]);
+		}
+	}
+
+	private String getProperty(String key, String defValue) {
+		for (StreamJMXProperties property : StreamJMXProperties.values()) {
+			if (property.key.equals(key)) {
+				if (ArrayUtils.contains(property.scope, Scope.SYSTEM)) {
+					return System.getProperty(property.key, defValue);
+				}
+				if (ArrayUtils.contains(property.scope, Scope.LOCAL)) {
+					return inAppCfgProperties.getProperty(property.key, defValue);
+				}
+			}
+		}
+		return null;
+	}
+
+	private String getParam(StreamJMXProperties property) {
+		String systemPropertyKey = property.key;
+
+		String pValue = null;
+		if (pValue == null) {
+			pValue = inAppCfgProperties.getProperty(systemPropertyKey);
+		}
+
+		if (pValue == null) {
+			try {
+				pValue = System.getProperty(systemPropertyKey);
+			} catch (SecurityException e) {
+				System.out.println(e.getMessage() + "\n " + systemPropertyKey);
+			}
+		}
+
+		if (pValue == null) {
+			pValue = String.valueOf(property.defaultValue);
+		}
+
+		if (pValue == null) {
+			System.out.println("!!!!!!!!!!!!     Failed to get property " + systemPropertyKey + "    !!!!!!!!!!!!");
+		}
+		return pValue;
+	}
+
+	private void samplerDestroy() {
+		System.out.println("------------------------     Destroying Sampler Agent     ------------------------");
+		SamplingAgent.destroy();
+		try {
+			sampler.join(TimeUnit.SECONDS.toMillis(2));
+		} catch (InterruptedException exc) {
+		}
+	}
+
+	private boolean setProperty(StreamJMXProperties property, String value) {
+		Object last = null;
+		if (property.isInScope(Scope.LOCAL)) {
+			last = inAppCfgProperties.setProperty(property.key, value);
+		}
+		if (property.isInScope(Scope.SYSTEM)) {
+			last = System.setProperty(property.key, value);
+		}
+		if (property.isInScope(Scope.SYNTHETIC)) {
+			last = setProperty(StreamJMXProperties.AO, compileAO(inAppCfgProperties));
+		}
+		if (last != null) {
+			return true;
+		}
+		return false;
 	}
 }

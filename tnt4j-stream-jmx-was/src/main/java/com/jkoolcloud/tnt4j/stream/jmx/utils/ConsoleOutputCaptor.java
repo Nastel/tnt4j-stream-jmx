@@ -15,7 +15,10 @@
  */
 package com.jkoolcloud.tnt4j.stream.jmx.utils;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -32,28 +35,39 @@ import com.jkoolcloud.tnt4j.utils.Utils;
 public class ConsoleOutputCaptor {
 	private static final int OUT_BUF_SIZE = 8192;
 
-	private RollingOutputStream captorOutput;
 	private CaptorPrintStream outStream;
 	private CaptorPrintStream errStream;
 
-	private boolean capturing;
+	private static ConsoleOutputCaptor instance;
 
-	public void start() {
-		if (capturing) {
-			return;
+	private ConsoleOutputCaptor() {
+	}
+
+	public static synchronized ConsoleOutputCaptor getInstance() {
+		if (instance == null) {
+			instance = new ConsoleOutputCaptor();
 		}
 
-		capturing = true;
-		captorOutput = new RollingOutputStream(OUT_BUF_SIZE);
-		outStream = new CaptorPrintStream(System.out, captorOutput, "OUT");
-		errStream = new CaptorPrintStream(System.err, captorOutput, "ERR");
+		return instance;
+	}
 
-		System.setOut(outStream);
-		System.setErr(errStream);
+	public void start() {
+		if (System.out instanceof CaptorPrintStream) {
+			System.err.println("!!!!!!!!!   ConsoleOutputCaptor must be already running!..   !!!!!!!!!");
+			outStream = (CaptorPrintStream) System.out;
+			errStream = (CaptorPrintStream) System.err;
+		} else {
+			ByteArrayOutputStream captorOutput = new RollingOutputStream(OUT_BUF_SIZE);
+			outStream = new CaptorPrintStream(System.out, captorOutput, "OUT");
+			errStream = new CaptorPrintStream(System.err, captorOutput, "ERR");
+
+			System.setOut(outStream);
+			System.setErr(errStream);
+		}
 	}
 
 	public String stop() {
-		if (!capturing) {
+		if (outStream == null) {
 			return "";
 		}
 
@@ -64,22 +78,21 @@ public class ConsoleOutputCaptor {
 
 		Utils.close(outStream);
 		Utils.close(errStream);
-		Utils.close(captorOutput);
+
+		Utils.close(outStream.delegate);
 
 		outStream = null;
 		errStream = null;
-		captorOutput = null;
-		capturing = false;
 
 		return capturedValue;
 	}
 
 	public String getCaptured() {
-		if (capturing) {
+		if (outStream != null) {
 			try {
-				return captorOutput.toString(Utils.UTF8);
+				return outStream.delegate.toString(Utils.UTF8);
 			} catch (UnsupportedEncodingException exc) {
-				return captorOutput.toString();
+				return outStream.delegate.toString();
 			}
 		} else {
 			return "Not capturing System.out and System.err streams...";
@@ -95,10 +108,10 @@ public class ConsoleOutputCaptor {
 		}
 
 		private PrintStream original;
-		private OutputStream delegate;
+		private ByteArrayOutputStream delegate;
 		private String prefix;
 
-		public CaptorPrintStream(PrintStream original, OutputStream delegate, String prefix) {
+		public CaptorPrintStream(PrintStream original, ByteArrayOutputStream delegate, String prefix) {
 			super(delegate);
 
 			this.original = original;
