@@ -53,7 +53,7 @@ public class ConsoleOutputCaptor {
 
 	public void start() {
 		if (System.out instanceof CaptorPrintStream) {
-			System.err.println("!!!!!!!!!   ConsoleOutputCaptor must be already running!..   !!!!!!!!!");
+			System.err.println("!!!!   ConsoleOutputCaptor must be already running!..   !!!!");
 			outStream = (CaptorPrintStream) System.out;
 			errStream = (CaptorPrintStream) System.err;
 		} else {
@@ -95,7 +95,7 @@ public class ConsoleOutputCaptor {
 				return outStream.delegate.toString();
 			}
 		} else {
-			return "Not capturing System.out and System.err streams...";
+			return "!!!   Not capturing System.out and System.err streams...   !!!!";
 		}
 	}
 

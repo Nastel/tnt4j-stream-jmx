@@ -19,9 +19,11 @@ import java.io.PrintStream;
 
 import javax.management.MBeanServerConnection;
 
+import com.jkoolcloud.tnt4j.stream.jmx.conditions.SampleHandler;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
 import com.jkoolcloud.tnt4j.stream.jmx.factory.SamplerFactory;
+import com.jkoolcloud.tnt4j.stream.jmx.scheduler.WASSampleHandlerImpl;
 
 /**
  * <p>
@@ -38,12 +40,12 @@ public class WASSamplerFactory implements SamplerFactory {
 
 	@Override
 	public Sampler newInstance() {
-		return new WASJmxSampler();
+		return new WASJmxSampler(this);
 	}
 
 	@Override
 	public Sampler newInstance(MBeanServerConnection mServerConn) {
-		return mServerConn == null ? new WASJmxSampler() : new WASJmxSampler(mServerConn);
+		return mServerConn == null ? new WASJmxSampler(this) : new WASJmxSampler(mServerConn, this);
 	}
 
 	@Override
@@ -54,5 +56,11 @@ public class WASSamplerFactory implements SamplerFactory {
 	@Override
 	public String defaultEventFormatterClassName() {
 		return "com.jkoolcloud.tnt4j.stream.jmx.format.WASFactPathValueFormatter";
+	}
+
+	@Override
+	public SampleHandler newSampleHandler(MBeanServerConnection mServerConn, String incFilterList,
+			String excFilterList) {
+		return new WASSampleHandlerImpl(mServerConn, incFilterList, excFilterList);
 	}
 }

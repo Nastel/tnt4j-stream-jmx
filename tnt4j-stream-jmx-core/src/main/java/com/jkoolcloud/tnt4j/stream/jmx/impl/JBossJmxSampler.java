@@ -21,6 +21,7 @@ import java.lang.reflect.Method;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerConnection;
 
+import com.jkoolcloud.tnt4j.stream.jmx.factory.SamplerFactory;
 import com.jkoolcloud.tnt4j.utils.Utils;
 
 /**
@@ -57,18 +58,21 @@ public class JBossJmxSampler extends PlatformJmxSampler {
 	}
 
 	/**
-	 * Create an instance with JBoss MBean Server instance
+	 * Create an instance with JBoss MBean Server instance.
+	 *
+	 * @param sFactory sampler factory instance
 	 */
-	protected JBossJmxSampler() {
-		super(getAdminServer());
+	protected JBossJmxSampler(SamplerFactory sFactory) {
+		super(getAdminServer(), sFactory);
 	}
 
 	/**
-	 * Create a default instance with a given MBean server instance
+	 * Create a default instance with a given MBean server instance.
 	 * 
 	 * @param mServerConn MBean server connection instance
+	 * @param sFactory sampler factory instance
 	 */
-	protected JBossJmxSampler(MBeanServerConnection mServerConn) {
-		super(mServerConn);
+	protected JBossJmxSampler(MBeanServerConnection mServerConn, SamplerFactory sFactory) {
+		super(mServerConn, sFactory);
 	}
 }

@@ -50,7 +50,7 @@ public interface Sampler extends NestedHandler<Sampler, SampleListener>, Runnabl
 
 	/**
 	 * MBean include filter associated with this sampler
-	 * 
+	 *
 	 * @return filter list
 	 * @throws IllegalStateException if setSchedule is not called first
 	 */
@@ -58,7 +58,7 @@ public interface Sampler extends NestedHandler<Sampler, SampleListener>, Runnabl
 
 	/**
 	 * MBean exclude filter associated with this sampler
-	 * 
+	 *
 	 * @return filter list
 	 * @throws IllegalStateException if setSchedule is not called first
 	 */
@@ -66,7 +66,7 @@ public interface Sampler extends NestedHandler<Sampler, SampleListener>, Runnabl
 
 	/**
 	 * Sampling period in milliseconds
-	 * 
+	 *
 	 * @return Sampling period in milliseconds
 	 * @throws IllegalStateException if setSchedule is not called first
 	 */
@@ -74,14 +74,14 @@ public interface Sampler extends NestedHandler<Sampler, SampleListener>, Runnabl
 
 	/**
 	 * Obtain MBean server associated with this object
-	 * 
+	 *
 	 * @return MBean server connection instance
 	 */
 	MBeanServerConnection getMBeanServer();
 
 	/**
 	 * Obtain {@code TrackingLogger} instance for logging
-	 * 
+	 *
 	 * @return tracking logger instance associated with this sampler
 	 * @throws IllegalStateException if setSchedule is not called first
 	 */
@@ -89,7 +89,7 @@ public interface Sampler extends NestedHandler<Sampler, SampleListener>, Runnabl
 
 	/**
 	 * Set schedule sample with associated MBean server instance and all MBeans.
-	 * 
+	 *
 	 * @param period sampling time in milliseconds
 	 * @throws IOException if I/O exception occurs opening sampler
 	 * @throws IllegalStateException if setSchedule is not called first
@@ -98,7 +98,7 @@ public interface Sampler extends NestedHandler<Sampler, SampleListener>, Runnabl
 
 	/**
 	 * Set schedule sample with associated MBean server instance
-	 * 
+	 *
 	 * @param incFilter semicolon separated filter list
 	 * @param period sampling time in milliseconds
 	 * @throws IOException if I/O exception occurs opening sampler
@@ -108,7 +108,7 @@ public interface Sampler extends NestedHandler<Sampler, SampleListener>, Runnabl
 
 	/**
 	 * Set schedule sample with associated MBean server instance
-	 * 
+	 *
 	 * @param incFilter semicolon separated include filter list
 	 * @param excFilter semicolon separated exclude filter list
 	 * @param period sampling time in milliseconds
@@ -119,7 +119,7 @@ public interface Sampler extends NestedHandler<Sampler, SampleListener>, Runnabl
 
 	/**
 	 * Set schedule sample with associated MBean server instance
-	 * 
+	 *
 	 * @param incFilter semicolon separated include filter list
 	 * @param excFilter semicolon separated exclude filter list
 	 * @param period sampling time
@@ -152,10 +152,8 @@ public interface Sampler extends NestedHandler<Sampler, SampleListener>, Runnabl
 	 * @param period sampling time
 	 * @param tUnit time units for sampling period
 	 * @param sFactory sampler factory instance
-	 * @throws IOException
-	 *             if I/O exception occurs opening sampler
-	 * @throws IllegalStateException
-	 *             if setSchedule is not called first
+	 * @throws IOException if I/O exception occurs opening sampler
+	 * @throws IllegalStateException if setSchedule is not called first
 	 */
 	Sampler setSchedule(String incFilter, String excFilter, long initDelay, long period, TimeUnit tUnit,
 			SamplerFactory sFactory) throws IOException;
@@ -179,7 +177,7 @@ public interface Sampler extends NestedHandler<Sampler, SampleListener>, Runnabl
 
 	/**
 	 * Cancel/close this object instance and cancel all outstanding or scheduled samplers.
-	 * 
+	 *
 	 * @throws IllegalStateException if setSchedule is not called first
 	 */
 	void cancel();

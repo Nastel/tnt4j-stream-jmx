@@ -36,9 +36,11 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import com.ibm.websphere.security.WSSecurityException;
 import com.jkoolcloud.tnt4j.config.TrackerConfigStore;
 import com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.ConsoleOutputCaptor;
+import com.jkoolcloud.tnt4j.stream.jmx.utils.WASSecurityHelper;
 import com.jkoolcloud.tnt4j.utils.Utils;
 
 /**
@@ -121,7 +123,12 @@ public class StreamJMXServlet extends HttpServlet {
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		ConsoleOutputCaptor.getInstance().start();
-
+		try {
+			WASSecurityHelper.loginCurrent();
+		} catch (WSSecurityException e) {
+			System.err.println("!!!!   Failed to acquire RunAs subject!..   !!!!");
+			e.printStackTrace();
+		}
 		getPropertiesFromContext(config);
 		initStream();
 		super.init(config);
@@ -208,7 +215,8 @@ public class StreamJMXServlet extends HttpServlet {
 				System.setProperty(StreamJMXProperties.TNT4J_CONFIG.key, StreamJMXProperties.TNT4J_CONFIG.defaultValue);
 				changed = true;
 			} catch (Exception e) {
-				System.out.println("!!!!  Failed writing " + StreamJMXProperties.TNT4J_CONFIG.defaultValue + "  !!!!");
+				System.err.println("!!!!   Failed writing " + StreamJMXProperties.TNT4J_CONFIG.defaultValue + "   !!!!");
+				e.printStackTrace();
 			} finally {
 				Utils.close(tnt4jProperties);
 			}
@@ -239,7 +247,7 @@ public class StreamJMXServlet extends HttpServlet {
 
 				method.invoke(getServletConfig(), prop.key, propertyValue);
 			} catch (Exception e) {
-				System.out.println("!!!!!   Save failed " + e.getClass().getName() + " " + e.getMessage() + "   !!!!!");
+				System.err.println("!!!!   Save failed " + e.getClass().getName() + " " + e.getMessage() + "   !!!!");
 				last = e;
 			}
 		}
@@ -300,6 +308,7 @@ public class StreamJMXServlet extends HttpServlet {
 			out.println(tnt4jConfigString);
 		} catch (Exception e) {
 			out.println("No tnt4j.properties found: " + tnt4JConfig);
+			e.printStackTrace();
 		}
 		out.println("</textarea>");
 	}
@@ -310,8 +319,7 @@ public class StreamJMXServlet extends HttpServlet {
 		try {
 			out.println(ConsoleOutputCaptor.getInstance().getCaptured());
 		} catch (Exception e) {
-			out.println("N/A");
-			out.println(e.getMessage());
+			out.println("!!! NO captured output available !!!");
 			e.printStackTrace(out);
 		}
 		out.println("</textarea>");
@@ -376,8 +384,8 @@ public class StreamJMXServlet extends HttpServlet {
 
 			samplerStart();
 		} catch (Exception e) {
-			System.out.println("!!!!!!!!!!!!     Failed to start TNT4J-stream-JMX    !!!!!!!!!!!!");
-			e.printStackTrace(System.out);
+			System.err.println("!!!!   Failed to start TNT4J-stream-JMX   !!!!");
+			e.printStackTrace();
 		}
 	}
 
@@ -419,8 +427,8 @@ public class StreamJMXServlet extends HttpServlet {
 						SamplingAgent.connect(vm, user, pass, ao);
 					}
 				} catch (Exception e) {
-					System.out.println("!!!!!!!!!!!!     Failed to connect Sampler Agent    !!!!!!!!!!!!");
-					e.printStackTrace(System.out);
+					System.err.println("!!!!   Failed to connect Sampler Agent   !!!!");
+					e.printStackTrace();
 				}
 			}
 		}, "Stream-JMX_servlet_sampler_thread");
@@ -491,7 +499,7 @@ public class StreamJMXServlet extends HttpServlet {
 			try {
 				pValue = System.getProperty(systemPropertyKey);
 			} catch (SecurityException e) {
-				System.out.println(e.getMessage() + "\n " + systemPropertyKey);
+				System.err.println(e.getMessage() + "\n " + systemPropertyKey);
 			}
 		}
 
@@ -500,7 +508,7 @@ public class StreamJMXServlet extends HttpServlet {
 		}
 
 		if (pValue == null) {
-			System.out.println("!!!!!!!!!!!!     Failed to get property " + systemPropertyKey + "    !!!!!!!!!!!!");
+			System.err.println("!!!!   Failed to get property " + systemPropertyKey + "   !!!!");
 		}
 		return pValue;
 	}

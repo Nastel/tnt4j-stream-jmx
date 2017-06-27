@@ -19,6 +19,7 @@ import java.io.PrintStream;
 
 import javax.management.MBeanServerConnection;
 
+import com.jkoolcloud.tnt4j.stream.jmx.conditions.SampleHandler;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
 
@@ -67,4 +68,14 @@ public interface SamplerFactory {
 	 * @return name of default event formatter class
 	 */
 	String defaultEventFormatterClassName();
+
+	/**
+	 * Creates instance of {@link SampleHandler} to be used by {@link Sampler}.
+	 * 
+	 * @param mServerConn  MBean server connection instance
+	 * @param incFilterList MBean include filters semicolon separated
+	 * @param excFilterList MBean exclude filters semicolon separated
+	 * @return sample handler instance to use
+	 */
+	SampleHandler newSampleHandler(MBeanServerConnection mServerConn, String incFilterList, String excFilterList);
 }

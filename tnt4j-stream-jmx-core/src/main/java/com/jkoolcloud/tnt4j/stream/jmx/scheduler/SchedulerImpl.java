@@ -52,68 +52,67 @@ public class SchedulerImpl extends ActivityScheduler implements Scheduler {
 	 * all MBeans.
 	 *
 	 * @param name name of assigned to the sampler
-	 * @param mServerConn MBean server connection instance
+	 * @param handler sample handler instance
 	 * @param period sampling period in milliseconds
 	 */
-	public SchedulerImpl(String name, MBeanServerConnection mServerConn, long period) {
-		this(name, mServerConn, Sampler.JMX_FILTER_ALL, period);
+	public SchedulerImpl(String name, SampleHandler handler, long period) {
+		this(name, handler, Sampler.JMX_FILTER_ALL, period);
 	}
 
 	/**
 	 * Create new instance of {@code SchedulerImpl} with a given name, MBean server, filter list and sampling period.
 	 *
 	 * @param name name of assigned to the sampler
-	 * @param mServerConn MBean server connection instance
-	 * @param filterList MBean filters semicolon separated
+	 * @param handler sample handler instance
+	 * @param incFilterList MBean filters semicolon separated
 	 * @param period sampling period in milliseconds
 	 */
-	public SchedulerImpl(String name, MBeanServerConnection mServerConn, String filterList, long period) {
-		this(name, mServerConn, filterList, null, period, TimeUnit.MILLISECONDS);
+	public SchedulerImpl(String name, SampleHandler handler, String incFilterList, long period) {
+		this(name, handler, incFilterList, null, period, TimeUnit.MILLISECONDS);
 	}
 
 	/**
 	 * Create new instance of {@code SchedulerImpl} with a given name, MBean server, filter list and sampling period.
 	 *
 	 * @param name name of assigned to the sampler
-	 * @param mServerConn MBean server connection instance
+	 * @param handler sample handler instance
 	 * @param incFilterList MBean filters semicolon separated
 	 * @param period sampling period
 	 * @param tUnit time unit for the sampling period
 	 */
-	public SchedulerImpl(String name, MBeanServerConnection mServerConn, String incFilterList, long period,
-			TimeUnit tUnit) {
-		this(name, mServerConn, incFilterList, null, period, tUnit);
+	public SchedulerImpl(String name, SampleHandler handler, String incFilterList, long period, TimeUnit tUnit) {
+		this(name, handler, incFilterList, null, period, tUnit);
 	}
 
 	/**
 	 * Create new instance of {@code SchedulerImpl} with a given name, MBean server, filter list and sampling period.
 	 *
 	 * @param name name of assigned to the sampler
-	 * @param mServerConn MBean server connection instance
+	 * @param handler sample handler instance
 	 * @param incFilterList MBean include filters semicolon separated
 	 * @param excFilterList MBean exclude filters semicolon separated
 	 * @param period sampling period
 	 * @param tUnit time unit for the sampling period
 	 */
-	public SchedulerImpl(String name, MBeanServerConnection mServerConn, String incFilterList, String excFilterList,
-			long period, TimeUnit tUnit) {
-		this(name, mServerConn, incFilterList, null, 0, period, tUnit);
+	public SchedulerImpl(String name, SampleHandler handler, String incFilterList, String excFilterList, long period,
+			TimeUnit tUnit) {
+		this(name, handler, incFilterList, excFilterList, 0, period, tUnit);
 	}
 
 	/**
 	 * Create new instance of {@code SchedulerImpl} with a given name, MBean server, filter list and sampling period.
 	 *
 	 * @param name name of assigned to the sampler
-	 * @param mServerConn MBean server connection instance
+	 * @param handler sample handler instance
 	 * @param incFilterList MBean include filters semicolon separated
 	 * @param excFilterList MBean exclude filters semicolon separated
 	 * @param initDelay initial delay before first sampling
 	 * @param period sampling period
 	 * @param tUnit time unit for the sampling period
 	 */
-	public SchedulerImpl(String name, MBeanServerConnection mServerConn, String incFilterList, String excFilterList,
-			long initDelay, long period, TimeUnit tUnit) {
-		super(name, newSampleHandlerImpl(mServerConn, incFilterList, excFilterList));
+	public SchedulerImpl(String name, SampleHandler handler, String incFilterList, String excFilterList, long initDelay,
+			long period, TimeUnit tUnit) {
+		super(name, handler);
 		this.listener = (SampleHandler) this.getListener();
 		this.initDelay = initDelay;
 		this.period = period;
@@ -126,7 +125,7 @@ public class SchedulerImpl extends ActivityScheduler implements Scheduler {
 	 * Create new instance of {@code SchedulerImpl} with a given name, MBean server, filter list and sampling period.
 	 *
 	 * @param name name of assigned to the sampler
-	 * @param mServerConn MBean server connection instance
+	 * @param handler sample handler instance
 	 * @param incFilterList MBean include filters semicolon separated
 	 * @param excFilterList MBean exclude filters semicolon separated
 	 * @param initDelay initial delay before first sampling
@@ -134,31 +133,15 @@ public class SchedulerImpl extends ActivityScheduler implements Scheduler {
 	 * @param tUnit time unit for the sampling period
 	 * @param sFactory sampler factory instance
 	 */
-	public SchedulerImpl(String name, MBeanServerConnection mServerConn, String incFilterList, String excFilterList,
-			long initDelay, long period, TimeUnit tUnit, SamplerFactory sFactory) {
-		super(name, loadLoggerConfig(name, sFactory, newSampleHandlerImpl(mServerConn, incFilterList, excFilterList)));
+	public SchedulerImpl(String name, SampleHandler handler, String incFilterList, String excFilterList, long initDelay,
+			long period, TimeUnit tUnit, SamplerFactory sFactory) {
+		super(name, loadLoggerConfig(name, sFactory, handler));
 		this.listener = (SampleHandler) this.getListener();
 		this.initDelay = initDelay;
 		this.period = period;
 		this.timeUnit = tUnit;
 		this.incFilter = incFilterList;
 		this.excFilter = excFilterList;
-	}
-
-	/**
-	 * Create new instance of {@link SampleHandler}. Override this call to return your instance of the sample handler
-	 * implementation.
-	 *
-	 * @param mServerConn MBean server connection instance
-	 * @param incFilterList MBean include filters semicolon separated
-	 * @param excFilterList MBean exclude filters semicolon separated
-	 * @return new sample handler implementation instance
-	 * 
-	 * @see SampleHandler
-	 */
-	protected static SampleHandler newSampleHandlerImpl(MBeanServerConnection mServerConn, String incFilterList,
-			String excFilterList) {
-		return new SampleHandlerImpl(mServerConn, incFilterList, excFilterList);
 	}
 
 	/**

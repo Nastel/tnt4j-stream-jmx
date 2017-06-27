@@ -208,6 +208,7 @@
     <modules>
         <module>tnt4j-stream-jmx-core</module>
         <module>tnt4j-stream-jmx-was</module>
+        <module>tnt4j-stream-jmx-ear</module>
         <module>tnt4j-stream-jmx--distribution</module>
     </modules>
 </project>

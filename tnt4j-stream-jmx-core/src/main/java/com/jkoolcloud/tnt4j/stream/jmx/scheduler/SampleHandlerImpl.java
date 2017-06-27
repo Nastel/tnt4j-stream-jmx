@@ -188,8 +188,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	/**
 	 * Sample MBeans based on a configured MBean filter list and store within given activity as snapshots.
 	 * 
-	 * @param activity
-	 *            instance where sampled MBean attributes are stored
+	 * @param activity instance where sampled MBean attributes are stored
 	 * @return number of metrics loaded from all MBeans
 	 */
 	private int sampleMBeans(Activity activity) {
@@ -203,7 +202,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 				AttributeSample sample = AttributeSample.newAttributeSample(activity, snapshot, mbeanServer, name, attr);
 				try {
 					if (doPre(sample)) {
-						sample.sample(); // obtain a sample
+						sample(sample); // obtain a sample
 						doPost(sample);
 						if (sample.isError() && !sample.isSilence()) {
 							doError(sample, OpLevel.WARNING);
@@ -224,6 +223,19 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 			}
 		}
 		return pCount;
+	}
+
+	/**
+	 * Sample and retrieve the value associated with the MBean attribute.
+	 *
+	 * @param sample MBean sample instance
+	 * @return the value associated with the current attribute
+	 * @throws Exception if exception occurs while sampling attribute value
+	 *
+	 * @see AttributeSample#sample()
+	 */
+	protected Object sample(AttributeSample sample) throws Exception {
+		return sample.sample();
 	}
 
 	/**

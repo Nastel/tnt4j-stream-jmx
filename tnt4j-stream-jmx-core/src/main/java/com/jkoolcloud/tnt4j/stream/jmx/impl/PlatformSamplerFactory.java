@@ -19,10 +19,12 @@ import java.io.PrintStream;
 
 import javax.management.MBeanServerConnection;
 
+import com.jkoolcloud.tnt4j.stream.jmx.conditions.SampleHandler;
 import com.jkoolcloud.tnt4j.stream.jmx.core.DefaultSampleListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
 import com.jkoolcloud.tnt4j.stream.jmx.factory.SamplerFactory;
+import com.jkoolcloud.tnt4j.stream.jmx.scheduler.SampleHandlerImpl;
 
 /**
  * <p>
@@ -39,12 +41,12 @@ public class PlatformSamplerFactory implements SamplerFactory {
 
 	@Override
 	public Sampler newInstance() {
-		return new PlatformJmxSampler();
+		return new PlatformJmxSampler(this);
 	}
 
 	@Override
 	public Sampler newInstance(MBeanServerConnection mServerConn) {
-		return mServerConn == null ? new PlatformJmxSampler() : new PlatformJmxSampler(mServerConn);
+		return mServerConn == null ? new PlatformJmxSampler(this) : new PlatformJmxSampler(mServerConn, this);
 	}
 
 	@Override
@@ -55,5 +57,11 @@ public class PlatformSamplerFactory implements SamplerFactory {
 	@Override
 	public String defaultEventFormatterClassName() {
 		return "com.jkoolcloud.tnt4j.stream.jmx.format.FactPathValueFormatter";
+	}
+
+	@Override
+	public SampleHandler newSampleHandler(MBeanServerConnection mServerConn, String incFilterList,
+			String excFilterList) {
+		return new SampleHandlerImpl(mServerConn, incFilterList, excFilterList);
 	}
 }

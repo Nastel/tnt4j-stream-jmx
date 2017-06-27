@@ -28,7 +28,6 @@ import org.apache.commons.lang3.StringUtils;
 import com.jkoolcloud.tnt4j.core.*;
 import com.jkoolcloud.tnt4j.format.DefaultFormatter;
 import com.jkoolcloud.tnt4j.source.Source;
-import com.jkoolcloud.tnt4j.stream.jmx.scheduler.SchedulerImpl;
 import com.jkoolcloud.tnt4j.tracker.TrackingActivity;
 import com.jkoolcloud.tnt4j.tracker.TrackingEvent;
 import com.jkoolcloud.tnt4j.utils.Utils;
@@ -43,7 +42,7 @@ import com.jkoolcloud.tnt4j.utils.Utils;
  *
  * @version $Revision: 1 $
  * 
- * @see SchedulerImpl
+ * @see com.jkoolcloud.tnt4j.stream.jmx.scheduler.SchedulerImpl
  */
 public class FactNameValueFormatter extends DefaultFormatter {
 	public static final String LF = "\n";

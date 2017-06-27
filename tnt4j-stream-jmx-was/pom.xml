@@ -70,6 +70,7 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
                 <version>3.1.0</version>
                 <configuration>
@@ -157,6 +158,13 @@
             <version>1.4</version>
             <scope>system</scope>
             <systemPath>${pom.basedir}/lib/j2ee.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.ibm.ws</groupId>
+            <artifactId>admin.client</artifactId>
+            <version>8.5.0</version>
+            <scope>system</scope>
+            <systemPath>${pom.basedir}/lib/was/com.ibm.ws.admin.client_8.5.0.jar</systemPath>
         </dependency>
 
         <!--<dependency>-->

@@ -15,12 +15,8 @@
  */
 package com.jkoolcloud.tnt4j.stream.jmx.impl;
 
-import java.io.PrintStream;
-
 import javax.management.MBeanServerConnection;
 
-import com.jkoolcloud.tnt4j.stream.jmx.core.DefaultSampleListener;
-import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
 import com.jkoolcloud.tnt4j.stream.jmx.factory.SamplerFactory;
 
@@ -35,25 +31,15 @@ import com.jkoolcloud.tnt4j.stream.jmx.factory.SamplerFactory;
  * @see Sampler
  * @see JBossJmxSampler
  */
-public class JBossSamplerFactory implements SamplerFactory {
+public class JBossSamplerFactory extends PlatformSamplerFactory {
 
 	@Override
 	public Sampler newInstance() {
-		return new JBossJmxSampler();
+		return new JBossJmxSampler(this);
 	}
 
 	@Override
 	public Sampler newInstance(MBeanServerConnection mServerConn) {
-		return mServerConn == null ? new JBossJmxSampler() : new JBossJmxSampler(mServerConn);
-	}
-
-	@Override
-	public SampleListener newListener(PrintStream pStream, boolean trace) {
-		return new DefaultSampleListener(pStream, trace);
-	}
-
-	@Override
-	public String defaultEventFormatterClassName() {
-		return "com.jkoolcloud.tnt4j.stream.jmx.format.FactPathValueFormatter";
+		return mServerConn == null ? new JBossJmxSampler(this) : new JBossJmxSampler(mServerConn, this);
 	}
 }

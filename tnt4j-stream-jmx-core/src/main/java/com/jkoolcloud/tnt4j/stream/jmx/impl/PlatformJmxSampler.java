@@ -47,21 +47,26 @@ import com.jkoolcloud.tnt4j.stream.jmx.scheduler.SchedulerImpl;
 public class PlatformJmxSampler implements Sampler {
 	protected Scheduler sampler;
 	protected MBeanServerConnection targetServer;
+	protected SamplerFactory sFactory;
 
 	/**
 	 * Create a default instance with default MBean server instance {@link ManagementFactory#getPlatformMBeanServer()}
+	 *
+	 * @param sFactory sampler factory instance
 	 */
-	protected PlatformJmxSampler() {
-		this(ManagementFactory.getPlatformMBeanServer());
+	protected PlatformJmxSampler(SamplerFactory sFactory) {
+		this(ManagementFactory.getPlatformMBeanServer(), sFactory);
 	}
 
 	/**
 	 * Create a default instance with a given MBean server connection instance
 	 * 
 	 * @param mServerConn MBean server connection instance
+	 * @param sFactory sampler factory instance
 	 */
-	protected PlatformJmxSampler(MBeanServerConnection mServerConn) {
+	protected PlatformJmxSampler(MBeanServerConnection mServerConn, SamplerFactory sFactory) {
 		targetServer = mServerConn;
+		this.sFactory = sFactory;
 	}
 
 	@Override
@@ -155,7 +160,8 @@ public class PlatformJmxSampler implements Sampler {
 	 */
 	protected Scheduler newScheduler(MBeanServerConnection mServerConn, String incFilter, String excFilter,
 			long initDelay, long period, TimeUnit tUnit) {
-		return new SchedulerImpl(this.getClass().getName(), mServerConn, incFilter, excFilter, initDelay, period,
+		return new SchedulerImpl(this.getClass().getName(),
+				sFactory.newSampleHandler(mServerConn, incFilter, excFilter), incFilter, excFilter, initDelay, period,
 				tUnit);
 	}
 
@@ -174,8 +180,9 @@ public class PlatformJmxSampler implements Sampler {
 	 */
 	protected Scheduler newScheduler(MBeanServerConnection mServerConn, String incFilter, String excFilter,
 			long initDelay, long period, TimeUnit tUnit, SamplerFactory sFactory) {
-		return new SchedulerImpl(this.getClass().getName(), mServerConn, incFilter, excFilter, initDelay, period, tUnit,
-				sFactory);
+		return new SchedulerImpl(this.getClass().getName(),
+				sFactory.newSampleHandler(mServerConn, incFilter, excFilter), incFilter, excFilter, initDelay, period,
+				tUnit, sFactory);
 	}
 
 	@Override
