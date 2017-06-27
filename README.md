@@ -76,6 +76,18 @@ initial sampler delay as 1 second. Default sampler delay value is equal to sampl
 
 **NOTE:** arguments and properties defined running `SamplingAgent.main` is forwarded to `SamplingAgent` agent attached to JVM process. 
 
+### Coding into API
+You can attach `SamplingAgent` to JVM from your custom API by calling [SamplingAgent.attach(String,String,String)](./tnt4j-stream-jmx-core/src/main/java/com/jkoolcloud/tnt4j/stream/jmx/SamplingAgent.java#L520) method. 
+
+Sample `attach` call:
+```java
+try {
+  SamplingAgent.attach("activemq", "tnt4j-stream-jmx-0.5.0.jar", "*:*!10000");
+} catch (Exception exc) {
+  exc.printStackTrace();  
+} 
+```
+
 ## Connecting Stream-JMX to local or remote JMX service
 
 ### Command line to run
@@ -115,6 +127,95 @@ initial sampler delay as 1 second. Default sampler delay value is equal to sampl
 * `-cp:javax.net.ssl.trustStore=/your/path/to/truststore.jks -cp:javax.net.ssl.trustStorePassword=truststore_pwd` - is JMX connector 
 parameters definitions in properties format `key=value`. JMX connector parameters are optional and can be defined multiple times - as many 
 as there are required JMX connector parameters.
+
+### Coding into API
+You can connect `SamplingAgent` to JVM from your custom API by calling [SamplingAgent.connect(String,String)](./tnt4j-stream-jmx-core/src/main/java/com/jkoolcloud/tnt4j/stream/jmx/SamplingAgent.java#L574) method. 
+
+Sample `connect` call for local JVM:
+```java
+try {
+  SamplingAgent.connect("activemq", "*:*!!10000");
+} catch (Exception exc) {
+  exc.printStackTrace();  
+} 
+```
+
+Sample `connect` call for remote JVM:
+```java
+try {
+  SamplingAgent.connect("service:jmx:iiop://172.16.6.40:2809/jndi/JMXConnector", "*:*!!10000");
+} catch (Exception exc) {
+  exc.printStackTrace();  
+} 
+```
+
+Sample `connect` call for remote JVM defining user name and password:
+```java
+try {
+  SamplingAgent.connect("activemq", "admin", "admin", "*:*!!10000");
+} catch (Exception exc) {
+  exc.printStackTrace();  
+} 
+```
+or defining map of connection configuration parameters: 
+```java
+try {
+  Map<String, Object> connParams = new HashMap<String, Object>();
+  connParams.put("javax.net.ssl.trustStore", "/your/path/to/truststore.jks");
+  connParams.put("javax.net.ssl.trustStorePassword", "truststore_pwd");
+  SamplingAgent.connect("activemq", "*:*!!10000", connParams);
+} catch (Exception exc) {
+  exc.printStackTrace();  
+}
+```
+
+## Sampling local process runner JVM
+
+### Command line to run
+```cmd
+java -Dtnt4j.config=.\config\tnt4j.properties -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -local -ao:*:*!*:dummy!10000
+```
+
+System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [Stream-JMX configuration ](#stream-jmx-configuration).
+ 
+`SamplingAgent` arguments `-connect -vm:activemq -ao:*:*!*:dummy!10000` states:
+* `-local` - defines that `SamplingAgent` shall run sampling on local process runner JVM.
+* `-ao:*:*!*:dummy!10000` - is JMX sampler options stating to include all MBeans, exclude all `dummy` MBeans and schedule sampling every 10 
+seconds. Sampler options are optional - default value is `*:*!30000`. Initial sampler delay can be configured by adding numeric parameter 
+`*:*!30000!1000` defining initial sampler delay as 1 second. Default sampler delay value is equal to sampling period value.
+
+### Coding into API
+You can run `SamplingAgent` for local process runner JVM from your custom API by calling [SamplingAgent.sampleLocalVM(String,boolean)](./tnt4j-stream-jmx-core/src/main/java/com/jkoolcloud/tnt4j/stream/jmx/SamplingAgent.java#L686) method. 
+
+Sample `sampleLocalVM` call for a local process runner JVM:
+```java
+try {
+  SamplingAgent.sampleLocalVM("*:*!!10000", true);
+} catch (Exception exc) {
+  exc.printStackTrace();  
+} 
+```
+
+## Running Stream-JMX as servlet
+
+### WebSphere Application Server (WAS)
+
+Build Stream-JMX and find tnt4j-stream-jmx-was-*.ear in distribution build directory or archives produced.
+
+Login to WebSphere Integrated Solutions Console and install TNT4J-Stream-JMX ear you've built:
+* Navigate Applications->New application and choose New Enterprise Application. Choose file you have built and install Stream-JMX 
+application you usually do, or fallowing IBM's instruction. Keep in mind context path.
+* Start the application. 
+
+Navigate to `http://localhost:9080/YOUR_CHOOSEN_CONTEXT_PATH/`. TNT4J-Stream-JMX configuration/monitoring page should be displayed. By 
+default Stream-JMX connects to local WebSphere `service:jmx:iiop://localhost:2809/jndi/JMXConnector`.
+
+Change properties as you like in input field and press `Sumbit` button to apply changes. JMX sampler service will restart. 
+
+`tnt4j.properties` file is displayed bellow. You can change that online. Press `Submit TNT4.config` to update configuration. JMX sampler 
+service will restart. 
+
+Bellow you can see Stream-JMX console output. You need refresh page to update console.
 
 ## Embed Stream-JMX code into your application
 
