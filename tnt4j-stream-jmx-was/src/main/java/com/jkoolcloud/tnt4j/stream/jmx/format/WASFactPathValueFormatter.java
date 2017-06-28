@@ -26,7 +26,8 @@ import com.jkoolcloud.tnt4j.utils.Utils;
  * @version $Revision: 1 $
  */
 public class WASFactPathValueFormatter extends FactPathValueFormatter {
-	private static final String[] SHORT_NAME_KEYS = new String[] { "mbeanIdentifier", "name", "type" };
+	private static final String[][] PATH_LEVEL_ATTR_KEYS = new String[][] { { "domain" }, { "node" },
+			{ "mbeanIdentifier", "name", "type" } };
 
 	private String[] replaceable = new String[] { "\\\\", "#", "/" };
 	private String[] replacement = new String[] { PATH_DELIM, "\\", "\\" };
@@ -35,6 +36,7 @@ public class WASFactPathValueFormatter extends FactPathValueFormatter {
 		super();
 
 		useAllProperties = false;
+		pathLevelAttrKeys = PATH_LEVEL_ATTR_KEYS;
 	}
 
 	@Override
@@ -52,23 +54,25 @@ public class WASFactPathValueFormatter extends FactPathValueFormatter {
 		synchronized (objNameProps) {
 			loadProps(objNameProps, objCanonName, ddIdx);
 			StringBuilder pathBuilder = new StringBuilder(256);
-			String pv = (String) objNameProps.remove("domain");
+			String pv;
 
-			super.appendPath(pathBuilder, pv);
+			for (String[] levelAttrKeys : pathLevelAttrKeys) {
+				for (String pKey : levelAttrKeys) {
+					pv = (String) objNameProps.remove(pKey);
+					if (!Utils.isEmpty(pv) && !"null".equals(pv)) {
+						pv = StringUtils.replaceEach(pv, replaceable, replacement);
+						if (pv.startsWith(PATH_DELIM)) {
+							pv = pv.substring(1);
+						}
+						if (pv.endsWith(PATH_DELIM)) {
+							pv = pv.substring(0, pv.length() - 1);
+						}
 
-			for (String snKey : SHORT_NAME_KEYS) {
-				pv = (String) objNameProps.remove(snKey);
-				if (!Utils.isEmpty(pv) && !"null".equals(pv)) {
-					pv = StringUtils.replaceEach(pv, replaceable, replacement);
-					if (pv.startsWith(PATH_DELIM)) {
-						pv = pv.substring(1);
+						pathBuilder.append(pathBuilder.length() > 0 ? PATH_DELIM : "").append(pv);
+						if (levelAttrKeys.length > 1) {
+							break;
+						}
 					}
-					if (pv.endsWith(PATH_DELIM)) {
-						pv = pv.substring(0, pv.length() - 1);
-					}
-
-					pathBuilder.append(pathBuilder.length() > 0 ? PATH_DELIM : "").append(pv);
-					break;
 				}
 			}
 

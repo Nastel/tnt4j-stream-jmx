@@ -23,10 +23,7 @@ import javax.management.j2ee.statistics.*;
 import com.jkoolcloud.tnt4j.core.Property;
 import com.jkoolcloud.tnt4j.core.PropertySnapshot;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeSample;
-import com.jkoolcloud.tnt4j.stream.jmx.core.DefaultSampleListener;
-import com.jkoolcloud.tnt4j.stream.jmx.core.SampleContext;
-import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
-import com.jkoolcloud.tnt4j.stream.jmx.core.UnsupportedAttributeException;
+import com.jkoolcloud.tnt4j.stream.jmx.core.*;
 
 /**
  * This class provide a specific implementation of a {@link SampleListener} for a WebSphere Application Server.
@@ -53,8 +50,15 @@ public class WASSampleListener extends DefaultSampleListener {
 
 		MBeanAttributeInfo mbAttrInfo = sample.getAttributeInfo();
 		PropertySnapshot snapshot = sample.getSnapshot();
-		Property onp = snapshot.get("objectName");
-		if (onp == null) {
+		boolean found = false;
+		for (Property prop : snapshot.getSnapshot()) {
+			if (prop.getKey().equalsIgnoreCase("objectName")) {
+				found = true;
+				break;
+			}
+		}
+
+		if (!found) {
 			processAttrValue(snapshot, mbAttrInfo, "objectName", sample.getObjetName());
 		}
 	}

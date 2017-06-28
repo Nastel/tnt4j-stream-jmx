@@ -19,6 +19,7 @@ import java.io.PrintStream;
 
 import javax.management.MBeanServerConnection;
 
+import com.ibm.websphere.security.WSSecurityHelper;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.SampleHandler;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
@@ -62,7 +63,8 @@ public class WASSamplerFactory implements SamplerFactory {
 	@Override
 	public SampleHandler newSampleHandler(MBeanServerConnection mServerConn, String incFilterList,
 			String excFilterList) {
-		return System.getSecurityManager() == null ? new SampleHandlerImpl(mServerConn, incFilterList, excFilterList)
-				: new WASSampleHandlerImpl(mServerConn, incFilterList, excFilterList);
+		return WSSecurityHelper.isGlobalSecurityEnabled() || WSSecurityHelper.isServerSecurityEnabled()
+				? new WASSampleHandlerImpl(mServerConn, incFilterList, excFilterList)
+				: new SampleHandlerImpl(mServerConn, incFilterList, excFilterList);
 	}
 }

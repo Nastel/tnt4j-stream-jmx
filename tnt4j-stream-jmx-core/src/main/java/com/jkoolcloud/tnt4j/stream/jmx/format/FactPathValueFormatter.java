@@ -21,6 +21,8 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.util.*;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.jkoolcloud.tnt4j.core.Operation;
 import com.jkoolcloud.tnt4j.core.Property;
 import com.jkoolcloud.tnt4j.core.Snapshot;
@@ -38,10 +40,12 @@ import com.jkoolcloud.tnt4j.utils.Utils;
  */
 public class FactPathValueFormatter extends FactNameValueFormatter {
 
-	private static final String[][] PATH_KEYS = new String[][] { { "domain" }, { "type" }, { "name", "brokerName" },
-			{ "service", "connector", "destinationType" }, { "instanceName", "connectorName", "destinationName" } };
+	private static final String[][] PATH_LEVEL_ATTR_KEYS = new String[][] { { "domain" }, { "type" },
+			{ "name", "brokerName" }, { "service", "connector", "destinationType" },
+			{ "instanceName", "connectorName", "destinationName" } };
 
 	protected boolean useAllProperties = true;
+	protected String[][] pathLevelAttrKeys = PATH_LEVEL_ATTR_KEYS;
 
 	protected final Properties objNameProps = new Properties();
 
@@ -124,8 +128,8 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 			StringBuilder pathBuilder = new StringBuilder(128);
 			String pv;
 
-			for (String[] levelKeys : PATH_KEYS) {
-				for (String pKey : levelKeys) {
+			for (String[] levelAttrKeys : pathLevelAttrKeys) {
+				for (String pKey : levelAttrKeys) {
 					pv = (String) objNameProps.remove(pKey);
 
 					appendPath(pathBuilder, pv);
@@ -253,6 +257,54 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 				return b.append(']').toString();
 			}
 			b.append(", "); // NON-NLS
+		}
+	}
+
+	@Override
+	public void setConfiguration(Map<String, Object> settings) {
+		super.setConfiguration(settings);
+
+		String pValue = Utils.getString("PathLevelAttributes", settings, "");
+		if (StringUtils.isNotEmpty(pValue)) {
+			initPathLevelAttrKeys(pValue);
+		}
+	}
+
+	private void initPathLevelAttrKeys(String levelsStr) {
+		List<List<String>> levelList = new ArrayList<List<String>>();
+		List<String> attrsList;
+
+		String[] levels = levelsStr.split(";");
+
+		for (String level : levels) {
+			level = level.trim();
+
+			if (!level.isEmpty()) {
+				String[] levelAttrs = level.split(",");
+				attrsList = new ArrayList<String>(levelAttrs.length);
+
+				for (String lAttr : levelAttrs) {
+					lAttr = lAttr.trim();
+
+					if (!lAttr.isEmpty()) {
+						attrsList.add(lAttr);
+					}
+				}
+
+				if (!attrsList.isEmpty()) {
+					levelList.add(attrsList);
+				}
+			}
+		}
+
+		pathLevelAttrKeys = new String[levelList.size()][];
+		String[] levelAttrs;
+		int i = 0;
+		for (List<String> level : levelList) {
+			levelAttrs = new String[level.size()];
+			levelAttrs = level.toArray(levelAttrs);
+
+			pathLevelAttrKeys[i++] = levelAttrs;
 		}
 	}
 }

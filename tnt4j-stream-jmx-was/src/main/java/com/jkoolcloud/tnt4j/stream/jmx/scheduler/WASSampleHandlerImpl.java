@@ -24,8 +24,8 @@ import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeSample;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.WASSecurityHelper;
 
 /**
- * Sample handler extension to be used by WebSphere Application Server and performing attributes sampling by invoking
- * {@link WASSecurityHelper#doPrivilegedAction(PrivilegedExceptionAction)} using
+ * Sample handler extension to be used by WebSphere Application Server having security enabled and performing JMX
+ * attributes sampling by invoking {@link WASSecurityHelper#doPrivilegedAction(PrivilegedExceptionAction)} using
  * {@link com.ibm.websphere.security.auth.WSSubject#getRunAsSubject()} as security subject.
  * 
  * @version $Revision: 1 $

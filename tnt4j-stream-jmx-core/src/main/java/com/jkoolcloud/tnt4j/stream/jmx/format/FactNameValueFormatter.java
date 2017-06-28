@@ -377,12 +377,11 @@ public class FactNameValueFormatter extends DefaultFormatter {
 
 		serializeSimpleTypesOnly = Utils.getBoolean("SerializeSimplesOnly", settings, serializeSimpleTypesOnly);
 
-		String kReplacements = Utils.getString("KeyReplacements", settings, "");
-
-		if (StringUtils.isEmpty(kReplacements)) {
+		String pValue = Utils.getString("KeyReplacements", settings, "");
+		if (StringUtils.isEmpty(pValue)) {
 			initDefaultKeyReplacements();
 		} else {
-			Matcher m = REP_CFG_PATTERN.matcher(kReplacements);
+			Matcher m = REP_CFG_PATTERN.matcher(pValue);
 
 			while (m.find()) {
 				keyReplacements.put(StringEscapeUtils.unescapeJava(m.group(1)),
@@ -390,11 +389,11 @@ public class FactNameValueFormatter extends DefaultFormatter {
 			}
 		}
 
-		String vReplacements = Utils.getString("ValueReplacements", settings, "");
-		if (StringUtils.isEmpty(vReplacements)) {
+		pValue = Utils.getString("ValueReplacements", settings, "");
+		if (StringUtils.isEmpty(pValue)) {
 			initDefaultValueReplacements();
 		} else {
-			Matcher m = REP_CFG_PATTERN.matcher(vReplacements);
+			Matcher m = REP_CFG_PATTERN.matcher(pValue);
 
 			while (m.find()) {
 				valueReplacements.put(StringEscapeUtils.unescapeJava(m.group(1)),

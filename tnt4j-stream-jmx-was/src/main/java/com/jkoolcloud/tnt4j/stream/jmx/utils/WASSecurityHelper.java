@@ -29,6 +29,7 @@ import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
 
 import com.ibm.websphere.security.WSSecurityException;
+import com.ibm.websphere.security.WSSecurityHelper;
 import com.ibm.websphere.security.auth.WSSubject;
 import com.ibm.websphere.security.auth.callback.WSCallbackHandlerImpl;
 import com.ibm.websphere.security.cred.WSCredential;
@@ -90,7 +91,7 @@ public class WASSecurityHelper {
 	 *            privileged action to perform
 	 * @return result the value returned by the {@link PrivilegedAction#run()} method
 	 * @throws WSSecurityException
-	 *             if Java security is enabled and there is no subject provided
+	 *             if WAS security is enabled and there is no subject provided
 	 *
 	 * @see WSSubject#doAs(Subject, PrivilegedAction)
 	 * @see #doPrivilegedAction(PrivilegedExceptionAction)
@@ -109,7 +110,7 @@ public class WASSecurityHelper {
 	 *            privileged exception action to perform
 	 * @return result the value returned by the {@link PrivilegedExceptionAction#run()} method
 	 * @throws WSSecurityException
-	 *             if Java security is enabled and there is no subject provided
+	 *             if WAS security is enabled and there is no subject provided
 	 * @throws PrivilegedActionException
 	 *             if the specified action's {@link PrivilegedExceptionAction#run()} method threw a <i>checked</i>
 	 *             exception
@@ -126,7 +127,8 @@ public class WASSecurityHelper {
 	}
 
 	private static void checkSubject() throws WSSecurityException {
-		if (System.getSecurityManager() != null && subject == null) {
+		if ((WSSecurityHelper.isGlobalSecurityEnabled() || WSSecurityHelper.isServerSecurityEnabled())
+				&& subject == null) {
 			throw new WSSecurityException("No subject is provided!");
 		}
 	}
