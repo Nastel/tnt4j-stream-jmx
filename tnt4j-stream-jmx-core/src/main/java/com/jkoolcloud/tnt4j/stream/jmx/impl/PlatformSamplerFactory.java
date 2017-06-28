@@ -24,6 +24,7 @@ import com.jkoolcloud.tnt4j.stream.jmx.core.DefaultSampleListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
 import com.jkoolcloud.tnt4j.stream.jmx.factory.SamplerFactory;
+import com.jkoolcloud.tnt4j.stream.jmx.scheduler.PrivilegedSampleHandlerImpl;
 import com.jkoolcloud.tnt4j.stream.jmx.scheduler.SampleHandlerImpl;
 
 /**
@@ -62,6 +63,7 @@ public class PlatformSamplerFactory implements SamplerFactory {
 	@Override
 	public SampleHandler newSampleHandler(MBeanServerConnection mServerConn, String incFilterList,
 			String excFilterList) {
-		return new SampleHandlerImpl(mServerConn, incFilterList, excFilterList);
+		return System.getSecurityManager() == null ? new SampleHandlerImpl(mServerConn, incFilterList, excFilterList)
+				: new PrivilegedSampleHandlerImpl(mServerConn, incFilterList, excFilterList);
 	}
 }

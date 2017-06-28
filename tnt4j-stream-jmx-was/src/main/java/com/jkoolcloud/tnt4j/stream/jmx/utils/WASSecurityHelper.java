@@ -18,6 +18,8 @@ package com.jkoolcloud.tnt4j.stream.jmx.utils;
 import java.io.PrintStream;
 import java.security.Principal;
 import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Set;
@@ -54,6 +56,8 @@ public class WASSecurityHelper {
 	 *            user password
 	 * @throws LoginException
 	 *             if the authentication fails
+	 *
+	 * @see #logout()
 	 */
 	public static synchronized void login(String userName, String password) throws LoginException {
 		if (loginContext == null) {
@@ -69,8 +73,10 @@ public class WASSecurityHelper {
 	 * 
 	 * @throws LoginException
 	 *             if logout fails
+	 *
+	 * @see #login(String, String)
 	 */
-	public static void logout() throws LoginException {
+	public static synchronized void logout() throws LoginException {
 		if (loginContext != null) {
 			loginContext.logout();
 			loginContext = null;
@@ -87,14 +93,42 @@ public class WASSecurityHelper {
 	 *             if user is not logged in
 	 *
 	 * @see WSSubject#doAs(Subject, PrivilegedAction)
+	 * @see #doPrivilegedAction(PrivilegedExceptionAction)
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T> T doPrivilegedAction(PrivilegedAction<T> action) throws LoginException {
-		if (subject == null) {
-			throw new LoginException("No user logged in!");
-		}
+		checkSubject();
 
 		return (T) WSSubject.doAs(subject, action);
+	}
+
+	/**
+	 * Run some privileged code with logged in user subject.
+	 *
+	 * @param action
+	 *            privileged exception action to perform
+	 * @return result the value returned by the {@link PrivilegedExceptionAction#run()} method
+	 * @throws LoginException
+	 *             if user is not logged in
+	 * @throws PrivilegedActionException
+	 *             if the specified action's {@link PrivilegedExceptionAction#run()} method threw a <i>checked</i>
+	 *             exception
+	 *
+	 * @see WSSubject#doAs(Subject, PrivilegedExceptionAction)
+	 * @see #doPrivilegedAction(PrivilegedAction)
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T> T doPrivilegedAction(PrivilegedExceptionAction<T> action)
+			throws LoginException, PrivilegedActionException {
+		checkSubject();
+
+		return (T) WSSubject.doAs(subject, action);
+	}
+
+	private static void checkSubject() throws LoginException {
+		if (System.getSecurityManager() != null && subject == null) {
+			throw new LoginException("No user logged in!");
+		}
 	}
 
 	/**

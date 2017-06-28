@@ -107,7 +107,7 @@
                             <directory>config</directory>
                             <targetPath>.</targetPath>
                             <includes>
-                                <include>*.properties</include>
+                                <include>*.prop*</include>
                             </includes>
                         </resource>
                     </webResources>

@@ -16,29 +16,28 @@
 
 package com.jkoolcloud.tnt4j.stream.jmx.scheduler;
 
+import java.security.AccessController;
 import java.security.PrivilegedExceptionAction;
 
 import javax.management.MBeanServerConnection;
 
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeSample;
-import com.jkoolcloud.tnt4j.stream.jmx.utils.WASSecurityHelper;
 
 /**
- * Sample handler extension to be used by WebSphere Application Server and performing attributes sampling by invoking
- * {@link WASSecurityHelper#doPrivilegedAction(PrivilegedExceptionAction)} using
- * {@link com.ibm.websphere.security.auth.WSSubject#getRunAsSubject()} as security subject.
- * 
+ * Sample handler extension to be used by Java security enabled JVM and performing attributes sampling by invoking
+ * {@link AccessController#doPrivileged(PrivilegedExceptionAction)}.
+ *
  * @version $Revision: 1 $
  */
-public class WASSampleHandlerImpl extends SampleHandlerImpl {
+public class PrivilegedSampleHandlerImpl extends SampleHandlerImpl {
 
-	public WASSampleHandlerImpl(MBeanServerConnection mServerConn, String incFilter, String excFilter) {
+	public PrivilegedSampleHandlerImpl(MBeanServerConnection mServerConn, String incFilter, String excFilter) {
 		super(mServerConn, incFilter, excFilter);
 	}
 
 	@Override
 	protected Object sample(final AttributeSample sample) throws Exception {
-		return WASSecurityHelper.doPrivilegedAction(new SamplePrivilegedAction(sample));
+		return AccessController.doPrivileged(new SamplePrivilegedAction(sample));
 	}
 
 	private static class SamplePrivilegedAction implements PrivilegedExceptionAction<Object> {
