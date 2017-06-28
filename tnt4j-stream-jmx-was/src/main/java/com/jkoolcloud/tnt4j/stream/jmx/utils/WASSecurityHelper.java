@@ -89,14 +89,14 @@ public class WASSecurityHelper {
 	 * @param action
 	 *            privileged action to perform
 	 * @return result the value returned by the {@link PrivilegedAction#run()} method
-	 * @throws LoginException
-	 *             if user is not logged in
+	 * @throws WSSecurityException
+	 *             if Java security is enabled and there is no subject provided
 	 *
 	 * @see WSSubject#doAs(Subject, PrivilegedAction)
 	 * @see #doPrivilegedAction(PrivilegedExceptionAction)
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T> T doPrivilegedAction(PrivilegedAction<T> action) throws LoginException {
+	public static <T> T doPrivilegedAction(PrivilegedAction<T> action) throws WSSecurityException {
 		checkSubject();
 
 		return (T) WSSubject.doAs(subject, action);
@@ -108,8 +108,8 @@ public class WASSecurityHelper {
 	 * @param action
 	 *            privileged exception action to perform
 	 * @return result the value returned by the {@link PrivilegedExceptionAction#run()} method
-	 * @throws LoginException
-	 *             if user is not logged in
+	 * @throws WSSecurityException
+	 *             if Java security is enabled and there is no subject provided
 	 * @throws PrivilegedActionException
 	 *             if the specified action's {@link PrivilegedExceptionAction#run()} method threw a <i>checked</i>
 	 *             exception
@@ -119,15 +119,15 @@ public class WASSecurityHelper {
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T> T doPrivilegedAction(PrivilegedExceptionAction<T> action)
-			throws LoginException, PrivilegedActionException {
+			throws WSSecurityException, PrivilegedActionException {
 		checkSubject();
 
 		return (T) WSSubject.doAs(subject, action);
 	}
 
-	private static void checkSubject() throws LoginException {
+	private static void checkSubject() throws WSSecurityException {
 		if (System.getSecurityManager() != null && subject == null) {
-			throw new LoginException("No user logged in!");
+			throw new WSSecurityException("No subject is provided!");
 		}
 	}
 
@@ -175,9 +175,11 @@ public class WASSecurityHelper {
 	 * Login current RunAs user, and keep it.
 	 * 
 	 * @throws WSSecurityException
-	 *             if WS security occurs while getting RunAs subject
+	 *             if WS security occurs while getting RunAs subject, or got {@code null} subject
 	 */
 	public static void loginCurrent() throws WSSecurityException {
 		subject = WSSubject.getRunAsSubject();
+
+		checkSubject();
 	}
 }
