@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+import javax.security.auth.login.LoginException;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -70,16 +71,16 @@ public class StreamJMXServlet extends HttpServlet {
 		VM("com.jkoolcloud.tnt4j.stream.jmx.agent.vm"                        , ""                                                      ,                      Scope.LOCAL),
 		SERVER_NAME("was.server.node.name"                                   , com.ibm.websphere.runtime.ServerName.getFullName()      , Display.EDITABLE   , Scope.SYSTEM,    Scope.LOCAL),
 		TNT4J_CONFIG_CONT("tnt4j.properties"                                 , "TNT4J config"                                          , Display.FILE_EDITOR, Scope.FILE),
-		SAS_CONFIG_CONT("sas.client.props"                                   , "SAS client config"                                     , Display.FILE_EDITOR, Scope.FILE),
-		SSL_CONFIG_CONT("ssl.client.props"                                   , "SSL client config"                                     , Display.FILE_EDITOR, Scope.FILE),
+		// SAS_CONFIG_CONT("sas.client.props" , "SAS client config" , Display.FILE_EDITOR, Scope.FILE),
+		// SSL_CONFIG_CONT("ssl.client.props" , "SSL client config" , Display.FILE_EDITOR, Scope.FILE),
 		PASSWORD("com.jkoolcloud.tnt4j.stream.jmx.agent.pass"                , ""                                                      , Display.EDITABLE_PW, Scope.LOCAL),
 		HOST("com.jkoolcloud.tnt4j.stream.jmx.tnt4j.out.host"                , "localhost"                                             , Display.EDITABLE   , Scope.SYSTEM,    Scope.LOCAL),
 		PORT("com.jkoolcloud.tnt4j.stream.jmx.tnt4j.out.port"                , "6000"                                                  , Display.EDITABLE   , Scope.SYSTEM,    Scope.LOCAL),
-		CORBA_URI("java.naming.provider.url"                                 , "corbaname:iiop:localhost:2809"                         , Display.EDITABLE   , Scope.SYSTEM),		
-		TNT4J_CONFIG("tnt4j.config"                                          , "file:./tnt4j.properties"                               , Display.READ_ONLY  , Scope.SYSTEM,    Scope.LOCAL),
-		CORBA_CONFIG("com.ibm.CORBA.ConfigURL"                               , "file:./sas.client.props"                               , Display.READ_ONLY  , Scope.SYSTEM),
-		SSL_CONFIG("com.ibm.SSL.ConfigURL"                                   , "file:./ssl.client.props"                               , Display.READ_ONLY  , Scope.SYSTEM),
-		USERNAME("com.jkoolcloud.tnt4j.stream.jmx.agent.user"                , ""                                                      , Display.EDITABLE   , Scope.LOCAL);
+		// CORBA_URI("java.naming.provider.url" , "corbaname:iiop:localhost:2809" , Display.EDITABLE , Scope.SYSTEM),
+		TNT4J_CONFIG("tnt4j.config", "file:./tnt4j.properties", Display.READ_ONLY, Scope.SYSTEM, Scope.LOCAL),
+		// CORBA_CONFIG("com.ibm.CORBA.ConfigURL" , "file:./sas.client.props" , Display.READ_ONLY , Scope.SYSTEM),
+		// SSL_CONFIG("com.ibm.SSL.ConfigURL" , "file:./ssl.client.props" , Display.READ_ONLY , Scope.SYSTEM),
+		USERNAME("com.jkoolcloud.tnt4j.stream.jmx.agent.user", "", Display.EDITABLE, Scope.LOCAL);
 
 		String key;
 		String defaultValue;
@@ -129,23 +130,39 @@ public class StreamJMXServlet extends HttpServlet {
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		ConsoleOutputCaptor.getInstance().start();
-		acquireSubject();
 		getPropertiesFromContext(config);
+		initSubject();
 		initStream();
 
 		super.init(config);
 	}
 
-	private static void acquireSubject() {
-		if (WSSecurityHelper.isGlobalSecurityEnabled() || WSSecurityHelper.isServerSecurityEnabled()) {
-			try {
-				WASSecurityHelper.loginCurrent();
-			} catch (WSSecurityException e) {
-				System.err.println("!!!!   Failed to acquire RunAs subject!..   !!!!");
-				e.printStackTrace();
+	private void initSubject() {
+		String user = inAppCfgProperties.getProperty(StreamJMXProperties.USERNAME.key,
+				StreamJMXProperties.USERNAME.defaultValue);
+		String pass = inAppCfgProperties.getProperty(StreamJMXProperties.PASSWORD.key,
+				StreamJMXProperties.PASSWORD.defaultValue);
 
-				// System.out.println("==> trying to login manually as: " + user);
-				// WASSecurityHelper.login(user, pass); //TODO: get user/pass from configuration
+		acquireSubject(user, pass);
+	}
+
+	private static void acquireSubject(String user, String pass) {
+		if (WSSecurityHelper.isGlobalSecurityEnabled() || WSSecurityHelper.isServerSecurityEnabled()) {
+			if (StringUtils.isNotEmpty(user) && StringUtils.isNotEmpty(pass)) {
+				System.out.println("==> trying to login manually as: " + user);
+				try {
+					WASSecurityHelper.login(user, pass);
+				} catch (LoginException e) {
+					System.err.println("!!!!   Failed to login user " + user + " and acquire subject!..   !!!!");
+					e.printStackTrace();
+				}
+			} else {
+				try {
+					WASSecurityHelper.loginCurrent();
+				} catch (WSSecurityException e) {
+					System.err.println("!!!!   Failed to acquire RunAs subject!..   !!!!");
+					e.printStackTrace();
+				}
 			}
 		}
 	}
@@ -372,7 +389,7 @@ public class StreamJMXServlet extends HttpServlet {
 	}
 
 	private static void outputScript(PrintWriter out, String cp) {
-		out.println("<script src=\"" + cp + "/static/js/tntJmx.js\"/>");
+		out.println("<script src=\"" + cp + "/static/js/tntJmx.js\"></script>");
 	}
 
 	private static String getString(InputStream inputStream) throws IOException {
@@ -464,17 +481,13 @@ public class StreamJMXServlet extends HttpServlet {
 					System.out.println("---------------------     Connecting Sampler Agent     ---------------------");
 					String vm = getVM();
 					String ao = getAO();
-					String user = inAppCfgProperties.getProperty(StreamJMXProperties.USERNAME.key,
-							StreamJMXProperties.USERNAME.defaultValue);
-					String pass = inAppCfgProperties.getProperty(StreamJMXProperties.PASSWORD.key,
-							StreamJMXProperties.PASSWORD.defaultValue);
+
 					if (StringUtils.isEmpty(vm)) {
 						System.out.println("==> Sampling from local process runner JVM: options=" + ao);
 						SamplingAgent.sampleLocalVM(ao, true);
 					} else {
-						System.out.println("==> Connecting to remote JVM: vm=" + vm + ", options=" + ao + ", user="
-								+ user + ", pass=" + pass.replaceAll(".", "*"));
-						SamplingAgent.connect(vm, user, pass, ao);
+						System.out.println("==> Connecting to remote JVM: vm=" + vm + ", options=" + ao);
+						SamplingAgent.connect(vm, ao);
 					}
 				} catch (Exception e) {
 					System.err.println("!!!!   Failed to connect Sampler Agent   !!!!");

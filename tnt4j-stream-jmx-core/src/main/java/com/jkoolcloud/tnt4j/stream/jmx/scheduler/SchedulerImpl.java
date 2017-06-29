@@ -201,6 +201,7 @@ public class SchedulerImpl extends ActivityScheduler implements Scheduler {
 	public void close() {
 		super.close();
 
+		//TrackingLogger.shutdown(getLogger());
 		listener.cleanup();
 	}
 }

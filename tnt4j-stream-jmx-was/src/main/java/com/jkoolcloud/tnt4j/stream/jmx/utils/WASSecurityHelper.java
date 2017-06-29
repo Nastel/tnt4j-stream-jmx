@@ -62,7 +62,8 @@ public class WASSecurityHelper {
 	 */
 	public static synchronized void login(String userName, String password) throws LoginException {
 		if (loginContext == null) {
-			loginContext = new LoginContext("WSLogin", new WSCallbackHandlerImpl(userName, REALM_NAME, password));
+			loginContext = new LoginContext("Stream-JMX_WSLoginContext",
+					new WSCallbackHandlerImpl(userName, REALM_NAME, password));
 			loginContext.login();
 		}
 

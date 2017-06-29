@@ -799,14 +799,15 @@ public class SamplingAgent {
 	}
 
 	/**
-	 * Stops platform JMX sampler, cancels and close all outstanding {@link Sampler} instances and stop all
-	 * sampling for all {@code MBeanServer} instances.
+	 * Stops platform JMX sampler, cancels and close all outstanding {@link Sampler} instances and stop all sampling for
+	 * all {@code MBeanServer} instances.
 	 *
 	 * @see #cancel()
 	 */
 	public static void destroy() {
 		stopPlatformJMX();
 		cancel();
+		//TrackingLogger.shutdownAll();
 		platformJmx = null;
 	}
 
