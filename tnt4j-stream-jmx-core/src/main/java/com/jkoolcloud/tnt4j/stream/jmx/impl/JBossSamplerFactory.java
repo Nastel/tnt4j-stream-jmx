@@ -40,6 +40,6 @@ public class JBossSamplerFactory extends PlatformSamplerFactory {
 
 	@Override
 	public Sampler newInstance(MBeanServerConnection mServerConn) {
-		return mServerConn == null ? new JBossJmxSampler(this) : new JBossJmxSampler(mServerConn, this);
+		return mServerConn == null ? newInstance() : new JBossJmxSampler(mServerConn, this);
 	}
 }

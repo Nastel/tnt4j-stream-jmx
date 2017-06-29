@@ -24,6 +24,7 @@ import com.jkoolcloud.tnt4j.stream.jmx.conditions.SampleHandler;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
 import com.jkoolcloud.tnt4j.stream.jmx.factory.SamplerFactory;
+import com.jkoolcloud.tnt4j.stream.jmx.scheduler.PrivilegedSampleHandlerImpl;
 import com.jkoolcloud.tnt4j.stream.jmx.scheduler.SampleHandlerImpl;
 import com.jkoolcloud.tnt4j.stream.jmx.scheduler.WASSampleHandlerImpl;
 
@@ -40,14 +41,17 @@ import com.jkoolcloud.tnt4j.stream.jmx.scheduler.WASSampleHandlerImpl;
  */
 public class WASSamplerFactory implements SamplerFactory {
 
+	private boolean local = false;
+
 	@Override
 	public Sampler newInstance() {
+		local = true;
 		return new WASJmxSampler(this);
 	}
 
 	@Override
 	public Sampler newInstance(MBeanServerConnection mServerConn) {
-		return mServerConn == null ? new WASJmxSampler(this) : new WASJmxSampler(mServerConn, this);
+		return mServerConn == null ? newInstance() : new WASJmxSampler(mServerConn, this);
 	}
 
 	@Override
@@ -63,8 +67,22 @@ public class WASSamplerFactory implements SamplerFactory {
 	@Override
 	public SampleHandler newSampleHandler(MBeanServerConnection mServerConn, String incFilterList,
 			String excFilterList) {
-		return WSSecurityHelper.isGlobalSecurityEnabled() || WSSecurityHelper.isServerSecurityEnabled()
-				? new WASSampleHandlerImpl(mServerConn, incFilterList, excFilterList)
-				: new SampleHandlerImpl(mServerConn, incFilterList, excFilterList);
+		if (local && isServerSecurityEnabled()) {
+			return new WASSampleHandlerImpl(mServerConn, incFilterList, excFilterList);
+		}
+
+		if (isJavaSecurityEnabled()) {
+			return new PrivilegedSampleHandlerImpl(mServerConn, incFilterList, excFilterList);
+		} else {
+			return new SampleHandlerImpl(mServerConn, incFilterList, excFilterList);
+		}
+	}
+
+	private static boolean isServerSecurityEnabled() {
+		return WSSecurityHelper.isGlobalSecurityEnabled() || WSSecurityHelper.isServerSecurityEnabled();
+	}
+
+	private static boolean isJavaSecurityEnabled() {
+		return System.getSecurityManager() != null;
 	}
 }

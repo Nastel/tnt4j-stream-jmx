@@ -47,7 +47,7 @@ public class PlatformSamplerFactory implements SamplerFactory {
 
 	@Override
 	public Sampler newInstance(MBeanServerConnection mServerConn) {
-		return mServerConn == null ? new PlatformJmxSampler(this) : new PlatformJmxSampler(mServerConn, this);
+		return mServerConn == null ? newInstance() : new PlatformJmxSampler(mServerConn, this);
 	}
 
 	@Override

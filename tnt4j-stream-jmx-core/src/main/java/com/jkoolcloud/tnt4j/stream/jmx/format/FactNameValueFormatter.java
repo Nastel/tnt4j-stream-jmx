@@ -209,13 +209,36 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	/**
 	 * Makes decorated string representation of source name.
 	 * <p>
-	 * Replaces "{@value #FIELD_SEP}" to "{@value #FS_REP}".
+	 * Source name representation string gets symbols replaced using ones defined in {@link #keyReplacements} map.
 	 *
 	 * @param sourceName source name
 	 * @return decorated string representation of source name
+	 *
+	 * @see #replace(String, Map)
 	 */
 	protected String getSourceNameStr(String sourceName) {
-		return replace(sourceName, FIELD_SEP, FS_REP);
+		// return replace(sourceName, FIELD_SEP, FS_REP);
+
+		return replace(sourceName, keyReplacements);
+	}
+
+	/**
+	 * Performs provided string contents replacement using symbols defined in {@code replacements} map.
+	 *
+	 * @param str string to apply replacements
+	 * @param replacements replacements map
+	 * @return string having applied replacements
+	 *
+	 * @see #replace(String, String, String)
+	 */
+	protected static String replace(String str, Map<String, String> replacements) {
+		if (StringUtils.isNotEmpty(str)) {
+			for (Map.Entry<String, String> kre : replacements.entrySet()) {
+				str = replace(str, kre.getKey(), kre.getValue());
+			}
+		}
+
+		return str;
 	}
 
 	/**
@@ -308,15 +331,12 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	 * @return decorated string representation of attribute key
 	 *
 	 * @see #initDefaultKeyReplacements()
+	 * @see #replace(String, Map)
 	 */
 	protected String getKeyStr(String sName, String pKey) {
 		String keyStr = sName + PATH_DELIM + pKey;
 
-		for (Map.Entry<String, String> kre : keyReplacements.entrySet()) {
-			keyStr = replace(keyStr, kre.getKey(), kre.getValue());
-		}
-
-		return keyStr;
+		return replace(keyStr, keyReplacements);
 	}
 
 	/**
@@ -335,6 +355,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	 *
 	 * @see #toString(Object)
 	 * @see #initDefaultValueReplacements()
+	 * @see #replace(String, Map)
 	 */
 	protected String getValueStr(Object value) {
 		String valStr;
@@ -347,11 +368,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 			valStr = toString(value);
 		}
 
-		for (Map.Entry<String, String> vre : valueReplacements.entrySet()) {
-			valStr = replace(valStr, vre.getKey(), vre.getValue());
-		}
-
-		return valStr;
+		return replace(valStr, valueReplacements);
 	}
 
 	/**
