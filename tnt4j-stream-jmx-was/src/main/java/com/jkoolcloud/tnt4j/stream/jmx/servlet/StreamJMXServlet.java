@@ -37,7 +37,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.ibm.websphere.security.WSSecurityException;
-import com.jkoolcloud.tnt4j.config.TrackerConfigStore;
+import com.ibm.websphere.security.WSSecurityHelper;
 import com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.ConsoleOutputCaptor;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.WASSecurityHelper;
@@ -65,15 +65,21 @@ public class StreamJMXServlet extends HttpServlet {
 		AO("com.jkoolcloud.tnt4j.stream.jmx.agent.options"                   , "*:*!!60000!0"                                          , Display.READ_ONLY  , Scope.LOCAL),
 		AO_INCLUDE("com.jkoolcloud.tnt4j.stream.jmx.agent.options.include"   , "*:*"                                                   ,                      Scope.SYNTHETIC, Scope.LOCAL),
 		AO_EXCLUDE("com.jkoolcloud.tnt4j.stream.jmx.agent.options.exclude"   , ""                                                      ,                      Scope.SYNTHETIC, Scope.LOCAL),
-		AO_PERIOD("com.jkoolcloud.tnt4j.stream.jmx.agent.options.period"     , String.valueOf(TimeUnit.SECONDS.toMillis(60))  ,                      Scope.SYNTHETIC, Scope.LOCAL),
+		AO_PERIOD("com.jkoolcloud.tnt4j.stream.jmx.agent.options.period"     , String.valueOf(TimeUnit.SECONDS.toMillis(60))           ,                      Scope.SYNTHETIC, Scope.LOCAL),
 		AO_DELAY("com.jkoolcloud.tnt4j.stream.jmx.agent.options.init.delay"  , "0"                                                     ,                      Scope.SYNTHETIC, Scope.LOCAL),
 		VM("com.jkoolcloud.tnt4j.stream.jmx.agent.vm"                        , ""                                                      ,                      Scope.LOCAL),
-		TNT4J_CONFIG("tnt4j.config"                                          , "tnt4j.properties"                                      ,                      Scope.SYSTEM, Scope.LOCAL),
-		TNT4J_CONFIG_CONT("tnt4j.config.contents"                            , ""                                                      , Display.HIDDEN     , Scope.SYNTHETIC),
-		USERNAME("com.jkoolcloud.tnt4j.stream.jmx.agent.user"                , ""                                                      , Display.EDITABLE   , Scope.LOCAL),
+		SERVER_NAME("was.server.node.name"                                   , com.ibm.websphere.runtime.ServerName.getFullName()      , Display.EDITABLE   , Scope.SYSTEM,    Scope.LOCAL),
+		TNT4J_CONFIG_CONT("tnt4j.properties"                                 , "TNT4J config"                                          , Display.FILE_EDITOR, Scope.FILE),
+		SAS_CONFIG_CONT("sas.client.props"                                   , "SAS client config"                                     , Display.FILE_EDITOR, Scope.FILE),
+		SSL_CONFIG_CONT("ssl.client.props"                                   , "SSL client config"                                     , Display.FILE_EDITOR, Scope.FILE),
 		PASSWORD("com.jkoolcloud.tnt4j.stream.jmx.agent.pass"                , ""                                                      , Display.EDITABLE_PW, Scope.LOCAL),
-		HOST("com.jkoolcloud.tnt4j.stream.jmx.tnt4j.out.host"                , "localhost"                                             , Display.EDITABLE   , Scope.SYSTEM, Scope.LOCAL),
-		PORT("com.jkoolcloud.tnt4j.stream.jmx.tnt4j.out.port"                , "6000"                                                  , Display.EDITABLE   , Scope.SYSTEM, Scope.LOCAL);
+		HOST("com.jkoolcloud.tnt4j.stream.jmx.tnt4j.out.host"                , "localhost"                                             , Display.EDITABLE   , Scope.SYSTEM,    Scope.LOCAL),
+		PORT("com.jkoolcloud.tnt4j.stream.jmx.tnt4j.out.port"                , "6000"                                                  , Display.EDITABLE   , Scope.SYSTEM,    Scope.LOCAL),
+		CORBA_URI("java.naming.provider.url"                                 , "corbaname:iiop:localhost:2809"                         , Display.EDITABLE   , Scope.SYSTEM),		
+		TNT4J_CONFIG("tnt4j.config"                                          , "file:./tnt4j.properties"                               , Display.READ_ONLY  , Scope.SYSTEM,    Scope.LOCAL),
+		CORBA_CONFIG("com.ibm.CORBA.ConfigURL"                               , "file:./sas.client.props"                               , Display.READ_ONLY  , Scope.SYSTEM),
+		SSL_CONFIG("com.ibm.SSL.ConfigURL"                                   , "file:./ssl.client.props"                               , Display.READ_ONLY  , Scope.SYSTEM),
+		USERNAME("com.jkoolcloud.tnt4j.stream.jmx.agent.user"                , ""                                                      , Display.EDITABLE   , Scope.LOCAL);
 
 		String key;
 		String defaultValue;
@@ -110,11 +116,11 @@ public class StreamJMXServlet extends HttpServlet {
 	}
 
 	public enum Scope {
-		LOCAL, SYNTHETIC, SYSTEM
+		LOCAL, SYNTHETIC, SYSTEM, FILE
 	}
 
 	public enum Display {
-		EDITABLE, READ_ONLY, HIDDEN, EDITABLE_PW
+		EDITABLE, READ_ONLY, HIDDEN, EDITABLE_PW, FILE_EDITOR
 	}
 
 	private Properties inAppCfgProperties = new Properties();
@@ -123,21 +129,47 @@ public class StreamJMXServlet extends HttpServlet {
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		ConsoleOutputCaptor.getInstance().start();
-		try {
-			WASSecurityHelper.loginCurrent();
-		} catch (WSSecurityException e) {
-			System.err.println("!!!!   Failed to acquire RunAs subject!..   !!!!");
-			e.printStackTrace();
-		}
+		acquireSubject();
 		getPropertiesFromContext(config);
 		initStream();
+
 		super.init(config);
+	}
+
+	private static void acquireSubject() {
+		if (WSSecurityHelper.isGlobalSecurityEnabled() || WSSecurityHelper.isServerSecurityEnabled()) {
+			try {
+				WASSecurityHelper.loginCurrent();
+			} catch (WSSecurityException e) {
+				System.err.println("!!!!   Failed to acquire RunAs subject!..   !!!!");
+				e.printStackTrace();
+
+				// System.out.println("==> trying to login manually as: " + user);
+				// WASSecurityHelper.login(user, pass); //TODO: get user/pass from configuration
+			}
+		}
 	}
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		if (req.getRequestURI().endsWith("/js/tntJmx.js")) {
+			resp.setContentType("application/javascript");
+			resp.getWriter().write(getString(StreamJMXServlet.class.getClassLoader().getResourceAsStream("/js/tntJmx.js")));
+			return;
+		}
+
+		if (req.getRequestURI().endsWith("/css/tntJmx.css")) {
+			resp.setContentType("text/css");
+			resp.getWriter().write(getString(StreamJMXServlet.class.getClassLoader().getResourceAsStream("/css/tntJmx.css")));
+			return;
+		}
+
 		PrintWriter out = resp.getWriter();
 		out.println("<html>");
+		out.println("<head>");
+		outputStyle(out, req.getContextPath());
+		outputScript(out, req.getContextPath());
+		out.println("</head>");
 		out.println("<body>");
 		out.println("<h1>TNT4J-Stream-JMX</h1>");
 
@@ -181,16 +213,12 @@ public class StreamJMXServlet extends HttpServlet {
 		out.println("<input type=\"submit\" value=\"Submit\"><br>");
 		out.println("</form>");
 		out.println("<br>");
-		out.println("<form action=\"" + req.getServletPath() + "\" method=\"post\">");
 
-		outputTNT4JConfig(out);
-		out.println("<br>");
-		out.println("<input type=\"submit\" value=\"Submit tnt4j.config\"><br>");
-		out.println("<br>");
+		outputTabs(out, req.getServletPath());
+
 		outputConsole(out);
 
-		out.println("</form>");
-
+		out.println("<input type=\"button\" value=\"Refresh log\" onClick=\"window.location.reload(true)\">");
 		out.println("</body>");
 		out.println("</html>");
 	}
@@ -205,20 +233,23 @@ public class StreamJMXServlet extends HttpServlet {
 				System.out.println("==> Setting property: name=" + property.key + ", value=" + propertyValue);
 			}
 		}
-		String tnt4jConfigContents = req.getParameter(StreamJMXProperties.TNT4J_CONFIG_CONT.key);
-		if (tnt4jConfigContents != null) {
-			FileOutputStream tnt4jProperties = null;
-			try {
-				tnt4jProperties = new FileOutputStream(getClass().getClassLoader()
-						.getResource(StreamJMXProperties.TNT4J_CONFIG.defaultValue).getFile());
-				tnt4jProperties.write(tnt4jConfigContents.getBytes());
-				System.setProperty(StreamJMXProperties.TNT4J_CONFIG.key, StreamJMXProperties.TNT4J_CONFIG.defaultValue);
-				changed = true;
-			} catch (Exception e) {
-				System.err.println("!!!!   Failed writing " + StreamJMXProperties.TNT4J_CONFIG.defaultValue + "   !!!!");
-				e.printStackTrace();
-			} finally {
-				Utils.close(tnt4jProperties);
+
+		for (StreamJMXProperties property : StreamJMXProperties.values(Display.FILE_EDITOR)) {
+			String tnt4jConfigContents = req.getParameter(property.key);
+			if (tnt4jConfigContents != null) {
+				FileOutputStream tnt4jProperties = null;
+				try {
+					tnt4jProperties = new FileOutputStream(
+							getClass().getClassLoader().getResource(property.key).getFile());
+					tnt4jProperties.write(tnt4jConfigContents.getBytes());
+					changed = true;
+				} catch (Exception e) {
+					System.err.println(
+							"!!!!   Failed writing " + StreamJMXProperties.TNT4J_CONFIG.defaultValue + "   !!!!");
+					e.printStackTrace();
+				} finally {
+					Utils.close(tnt4jProperties);
+				}
 			}
 		}
 
@@ -292,30 +323,39 @@ public class StreamJMXServlet extends HttpServlet {
 		out.println("</tr>");
 	}
 
-	private void outputTNT4JConfig(PrintWriter out) throws IOException {
-		out.println("<H3>TNT4J config</H3>");
-		out.println("<textarea name=\"" + StreamJMXProperties.TNT4J_CONFIG_CONT.key + "\" cols=\"120\" rows=\"55\">");
-
-		String tnt4JConfig = getProperty(StreamJMXProperties.TNT4J_CONFIG.key, null);
-
-		String tnt4jConfigString;
-		if (tnt4JConfig.startsWith(TrackerConfigStore.CFG_LINE_PREFIX)) {
-			tnt4jConfigString = tnt4JConfig;
-		} else {
-			tnt4jConfigString = getString(StreamJMXServlet.class.getClassLoader().getResourceAsStream(tnt4JConfig));
+	private static void outputTabs(PrintWriter out, String servletPath) throws IOException {
+		out.println("<div class=\"tab\">");
+		for (StreamJMXProperties property : StreamJMXProperties.values(Display.FILE_EDITOR)) {
+			out.println("<button class=\"tablinks\" onclick=\"openTab(event, '" + property.key + "')\"> "
+					+ property.defaultValue + "</button>");
 		}
-		try {
-			out.println(tnt4jConfigString);
-		} catch (Exception e) {
-			out.println("No tnt4j.properties found: " + tnt4JConfig);
-			e.printStackTrace();
+		out.println("</div>");
+		for (StreamJMXProperties property : StreamJMXProperties.values(Display.FILE_EDITOR)) {
+			out.println("<div id=\"" + property.key + "\" class=\"tabcontent\">");
+			out.println("<form action=\"" + servletPath + "\" method=\"post\">");
+			out.println("<H3>" + property.defaultValue + "</H3>");
+			out.println("<textarea name=\"" + property.key + "\" cols=\"120\" rows=\"55\">");
+
+			String configString = getString(StreamJMXServlet.class.getClassLoader().getResourceAsStream(property.key));
+			try {
+				out.println(configString);
+			} catch (Exception e) {
+				out.println("No " + property.key + " found.");
+				e.printStackTrace();
+			}
+			out.println("</textarea>");
+
+			out.println("<br>");
+			out.println("<input type=\"submit\" value=\"Submit " + property.key + " file\"><br>");
+			out.println("<br>");
+			out.println("</form>");
+			out.println("</div>");
 		}
-		out.println("</textarea>");
 	}
 
 	private static void outputConsole(PrintWriter out) throws IOException {
 		out.println("<H3>Console Output</H3>");
-		out.println("<textarea name=\"tnt4jConfig\" cols=\"120\" rows=\"55\">");
+		out.println("<textarea id=\"tnt4j_jmx_output\" name=\"tnt4j_jmx_output\" cols=\"120\" rows=\"55\">");
 		try {
 			out.println(ConsoleOutputCaptor.getInstance().getCaptured());
 		} catch (Exception e) {
@@ -323,6 +363,16 @@ public class StreamJMXServlet extends HttpServlet {
 			e.printStackTrace(out);
 		}
 		out.println("</textarea>");
+		out.println("<br>");
+		out.println("<br>");
+	}
+
+	private static void outputStyle(PrintWriter out, String cp) {
+		out.println("<link rel=\"stylesheet\" href=\"" + cp + "/css/tntJmx.css\">");
+	}
+
+	private static void outputScript(PrintWriter out, String cp) {
+		out.println("<script src=\"" + cp + "/js/tntJmx.js\"/>");
 	}
 
 	private static String getString(InputStream inputStream) throws IOException {
