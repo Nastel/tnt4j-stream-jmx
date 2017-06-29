@@ -154,13 +154,13 @@ public class StreamJMXServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		if (req.getRequestURI().endsWith("/js/tntJmx.js")) {
 			resp.setContentType("application/javascript");
-			resp.getWriter().write(getString(StreamJMXServlet.class.getClassLoader().getResourceAsStream("/js/tntJmx.js")));
+			resp.getWriter().write(getString(StreamJMXServlet.class.getClassLoader().getResourceAsStream("/static/js/tntJmx.js")));
 			return;
 		}
 
 		if (req.getRequestURI().endsWith("/css/tntJmx.css")) {
 			resp.setContentType("text/css");
-			resp.getWriter().write(getString(StreamJMXServlet.class.getClassLoader().getResourceAsStream("/css/tntJmx.css")));
+			resp.getWriter().write(getString(StreamJMXServlet.class.getClassLoader().getResourceAsStream("/static/css/tntJmx.css")));
 			return;
 		}
 
@@ -368,11 +368,11 @@ public class StreamJMXServlet extends HttpServlet {
 	}
 
 	private static void outputStyle(PrintWriter out, String cp) {
-		out.println("<link rel=\"stylesheet\" href=\"" + cp + "/css/tntJmx.css\">");
+		out.println("<link rel=\"stylesheet\" href=\"" + cp + "/static/css/tntJmx.css\">");
 	}
 
 	private static void outputScript(PrintWriter out, String cp) {
-		out.println("<script src=\"" + cp + "/js/tntJmx.js\"/>");
+		out.println("<script src=\"" + cp + "/static/js/tntJmx.js\"/>");
 	}
 
 	private static String getString(InputStream inputStream) throws IOException {
