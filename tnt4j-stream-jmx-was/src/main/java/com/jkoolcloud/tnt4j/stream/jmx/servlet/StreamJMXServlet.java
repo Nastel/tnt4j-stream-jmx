@@ -69,7 +69,7 @@ public class StreamJMXServlet extends HttpServlet {
 		AO_PERIOD("com.jkoolcloud.tnt4j.stream.jmx.agent.options.period"     , String.valueOf(TimeUnit.SECONDS.toMillis(60))           ,                      Scope.SYNTHETIC, Scope.LOCAL),
 		AO_DELAY("com.jkoolcloud.tnt4j.stream.jmx.agent.options.init.delay"  , "0"                                                     ,                      Scope.SYNTHETIC, Scope.LOCAL),
 		VM("com.jkoolcloud.tnt4j.stream.jmx.agent.vm"                        , ""                                                      ,                      Scope.LOCAL),
-		SERVER_NAME("was.server.node.name"                                   , com.ibm.websphere.runtime.ServerName.getFullName()      , Display.EDITABLE   , Scope.SYSTEM,    Scope.LOCAL),
+		SERVER_NAME("was.server.node.name"                                   , getServerName()    									   , Display.EDITABLE   , Scope.SYSTEM,    Scope.LOCAL),
 		TNT4J_CONFIG_CONT("tnt4j.properties"                                 , "TNT4J config"                                          , Display.FILE_EDITOR, Scope.FILE),
 		// SAS_CONFIG_CONT("sas.client.props" , "SAS client config" , Display.FILE_EDITOR, Scope.FILE),
 		// SSL_CONFIG_CONT("ssl.client.props" , "SSL client config" , Display.FILE_EDITOR, Scope.FILE),
@@ -112,6 +112,14 @@ public class StreamJMXServlet extends HttpServlet {
 
 		public boolean isInScope(Scope scope) {
 			return ArrayUtils.contains(this.scope, scope);
+		}
+
+		public static String getServerName() {
+			try {
+				return com.ibm.websphere.runtime.ServerName.getFullName();
+			} catch (Exception e) {
+				return "UnresolvedNode/UnresolvedServer";
+			}
 		}
 
 	}

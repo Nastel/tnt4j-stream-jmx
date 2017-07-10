@@ -33,7 +33,7 @@ import com.jkoolcloud.tnt4j.utils.Utils;
  * @version $Revision: 1 $
  */
 public class ConsoleOutputCaptor {
-	private static final int OUT_BUF_SIZE = 8192;
+	private static final int OUT_BUF_SIZE = 65536;
 
 	private CaptorPrintStream outStream;
 	private CaptorPrintStream errStream;
