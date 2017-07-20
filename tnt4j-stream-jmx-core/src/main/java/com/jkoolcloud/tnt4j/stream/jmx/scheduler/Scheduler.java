@@ -25,7 +25,7 @@ import com.jkoolcloud.tnt4j.stream.jmx.conditions.SampleHandler;
 /**
  * <p>
  * This interface provides a way to implement classes that implement scheduled sample/heart-beat for a given JMX
- * {@code MBeanServerConnection}.
+ * {@link javax.management.MBeanServerConnection}.
  * </p>
  * 
  * @version $Revision: 1 $
@@ -88,7 +88,7 @@ public interface Scheduler extends Runnable {
 	String getExcFilter();
 
 	/**
-	 * Obtain {@code TrackingLogger} instance for logging associated with this scheduler instance.
+	 * Obtain {@link TrackingLogger} instance for logging associated with this scheduler instance.
 	 * 
 	 * @return tracking logger instance
 	 */

@@ -62,7 +62,7 @@ public class SimpleCondition implements AttributeCondition {
 	@Override
 	public boolean evaluate(AttributeSample sample) {
 		if (sample.getAttributeInfo().getName().equals(attrName)
-				&& sample.getObjetName().getCanonicalName().equals(objName)) {
+				&& sample.getObjectName().getCanonicalName().equals(objName)) {
 			if (op.endsWith("=")) {
 				return sample.get().equals(value);
 			} else if (op.endsWith("!=")) {

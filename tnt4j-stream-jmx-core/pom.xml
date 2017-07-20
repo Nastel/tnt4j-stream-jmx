@@ -48,6 +48,7 @@
                         <!--<index>true</index>-->
                         <manifest>
                             <addClasspath>true</addClasspath>
+                            <!--<classpathPrefix>lib/</classpathPrefix>-->
                         </manifest>
                         <manifestEntries>
                             <Implementation-Vendor>${product.vendor}</Implementation-Vendor>

@@ -22,15 +22,17 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.management.ObjectName;
+
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.jkoolcloud.tnt4j.core.*;
 import com.jkoolcloud.tnt4j.format.DefaultFormatter;
 import com.jkoolcloud.tnt4j.source.Source;
+import com.jkoolcloud.tnt4j.stream.jmx.utils.Utils;
 import com.jkoolcloud.tnt4j.tracker.TrackingActivity;
 import com.jkoolcloud.tnt4j.tracker.TrackingEvent;
-import com.jkoolcloud.tnt4j.utils.Utils;
 
 /**
  * This class provides key/value formatting for tnt4j activities, events and snapshots. The output format follows the
@@ -56,7 +58,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	private String[] replaceable = new String[] { EQ, FIELD_SEP };
 	private String[] replacement = new String[] { PATH_DELIM, FS_REP };
 
-	private static final String SNAP_NAME_PROP = "JMX_SNAP_NAME";
+	private static final String SNAP_NAME_PROP = Utils.makeInternalPropKey("JMX_SNAP_NAME");
 
 	// NOTE: group 1 - original, group 2 - replacement
 	// protected static final Pattern REP_CFG_PATTERN = Pattern.compile("\"(\\s*[^\"]+\\s*)\"->\"(\\s*[^\"]+\\s*)\"");
@@ -266,7 +268,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		Collection<Property> list = getProperties(snap);
 		String sName = getSnapName(snap);
 		for (Property p : list) {
-			if (p.getKey().equals(SNAP_NAME_PROP)) {
+			if (p.getKey().startsWith(Utils.INTERNAl_PROP_PREFIX)) {
 				continue;
 			}
 
@@ -303,6 +305,19 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	}
 
 	/**
+	 * Makes decorated string representation of snapshot name by referenced object name using
+	 * {@link ObjectName#getCanonicalName()}.
+	 *
+	 * @param objName object name
+	 * @return decorated string representation of snapshot name
+	 *
+	 * @see #getSnapNameStr(String)
+	 */
+	protected String getSnapNameStr(ObjectName objName) {
+		return getSnapNameStr(objName.getCanonicalName());
+	}
+
+	/**
 	 * Makes decorated string representation of {@link Snapshot} name and puts it as snapshot property
 	 * {@code 'JMX_SNAP_NAME'} for a later use.
 	 *
@@ -315,7 +330,13 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	protected String getSnapName(Snapshot snap) {
 		Property pSnapName = snap.get(SNAP_NAME_PROP);
 		if (pSnapName == null) {
-			pSnapName = new Property(SNAP_NAME_PROP, getSnapNameStr(snap.getName()));
+			Property objName = Utils.getSnapPropertyIgnoreCase(snap, Utils.OBJ_NAME_PROP);
+			if (objName != null) {
+				pSnapName = new Property(SNAP_NAME_PROP, getSnapNameStr((ObjectName) objName.getValue()));
+			} else {
+				pSnapName = new Property(SNAP_NAME_PROP, getSnapNameStr(snap.getName()));
+			}
+
 		}
 
 		return (String) pSnapName.getValue();

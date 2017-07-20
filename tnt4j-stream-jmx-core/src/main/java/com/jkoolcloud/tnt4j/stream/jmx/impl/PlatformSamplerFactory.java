@@ -51,8 +51,8 @@ public class PlatformSamplerFactory implements SamplerFactory {
 	}
 
 	@Override
-	public SampleListener newListener(PrintStream pStream, boolean trace) {
-		return new DefaultSampleListener(pStream, trace);
+	public SampleListener newListener(PrintStream pStream, boolean trace, boolean forceObjectName) {
+		return new DefaultSampleListener(pStream, trace, forceObjectName);
 	}
 
 	@Override

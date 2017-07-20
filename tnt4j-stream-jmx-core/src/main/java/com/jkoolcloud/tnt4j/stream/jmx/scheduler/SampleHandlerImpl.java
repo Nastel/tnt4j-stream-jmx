@@ -31,7 +31,7 @@ import com.jkoolcloud.tnt4j.stream.jmx.conditions.*;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleContext;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.UnsupportedAttributeException;
-import com.jkoolcloud.tnt4j.utils.Utils;
+import com.jkoolcloud.tnt4j.stream.jmx.utils.Utils;
 
 /**
  * <p>
@@ -218,6 +218,8 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 				}
 			}
 			if (snapshot.size() > 0) {
+				snapshot.add(Utils.OBJ_NAME_PROP, name);
+
 				pCount += snapshot.size();
 				activity.addSnapshot(snapshot);
 			}

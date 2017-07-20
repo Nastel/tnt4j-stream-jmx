@@ -80,7 +80,7 @@ public interface Sampler extends NestedHandler<Sampler, SampleListener>, Runnabl
 	MBeanServerConnection getMBeanServer();
 
 	/**
-	 * Obtain {@code TrackingLogger} instance for logging
+	 * Obtain {@link TrackingLogger} instance for logging
 	 *
 	 * @return tracking logger instance associated with this sampler
 	 * @throws IllegalStateException if setSchedule is not called first

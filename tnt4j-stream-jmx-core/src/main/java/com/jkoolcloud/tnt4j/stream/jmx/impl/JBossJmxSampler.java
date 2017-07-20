@@ -27,7 +27,7 @@ import com.jkoolcloud.tnt4j.utils.Utils;
 /**
  * <p>
  * This class provides scheduled execution and sampling of JMX metrics for a JBoss Application Server
- * {@code MBeanServer} instance.
+ * {@link MBeanServer} instance.
  * </p>
  * 
  * 
@@ -39,18 +39,32 @@ public class JBossJmxSampler extends PlatformJmxSampler {
 	public static final String JBOSS_JMX_ADMIN_CLASS = "org.jboss.mx.util.MBeanServerLocator";
 
 	/**
-	 * Dynamically identify and load JBoss MBean Server {@code org.jboss.mx.util.MBeanServerLocator.locate()}. Use
-	 * {@code ManagementFactory.getPlatformMBeanServer()} if none found.
+	 * Dynamically identify and load JBoss MBean Server {@code org.jboss.mx.util.MBeanServerLocator.locate()}. Throws
+	 * exception if JBoss specific MBeanServer is not found.
 	 * 
 	 * @return JBoss JMX MBean server instance
+	 *
+	 * @throws Exception
+	 *             if exception occurs resolving admin server class or resolving and invoking method
 	 */
-	protected static MBeanServer getAdminServer() {
+	protected static MBeanServer getAdminServer() throws Exception {
+		Class<?> adminClass = Class.forName(JBOSS_JMX_ADMIN_CLASS);
+		Method mserverMethod = adminClass.getMethod("locate", Utils.NO_PARAMS_C);
+		if (mserverMethod != null) {
+			return (MBeanServer) mserverMethod.invoke(null, Utils.NO_PARAMS_O);
+		}
+		throw new RuntimeException("No admin mbeanFactory found: class=" + JBOSS_JMX_ADMIN_CLASS);
+	}
+
+	/**
+	 * Dynamically identify and load JBoss JMX MBean Server {@code org.jboss.mx.util.MBeanServerLocator}. Use
+	 * {@link ManagementFactory#getPlatformMBeanServer()} if none found.
+	 *
+	 * @return JBoss JMX MBean server instance
+	 */
+	public static MBeanServer defaultMBeanServer() {
 		try {
-			Class<?> adminClass = Class.forName(JBOSS_JMX_ADMIN_CLASS);
-			Method mserverMethod = adminClass.getMethod("locate", Utils.NO_PARAMS_C);
-			if (mserverMethod != null) {
-				return (MBeanServer) mserverMethod.invoke(null, Utils.NO_PARAMS_O);
-			}
+			return getAdminServer();
 		} catch (Throwable ex) {
 			ex.printStackTrace();
 		}
@@ -63,7 +77,7 @@ public class JBossJmxSampler extends PlatformJmxSampler {
 	 * @param sFactory sampler factory instance
 	 */
 	protected JBossJmxSampler(SamplerFactory sFactory) {
-		super(getAdminServer(), sFactory);
+		super(defaultMBeanServer(), sFactory);
 	}
 
 	/**

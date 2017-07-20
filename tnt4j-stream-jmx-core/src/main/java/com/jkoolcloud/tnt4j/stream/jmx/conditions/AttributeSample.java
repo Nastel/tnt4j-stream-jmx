@@ -208,7 +208,7 @@ public class AttributeSample {
 	 * 
 	 * @return MBean object name handle associated with this sample
 	 */
-	public ObjectName getObjetName() {
+	public ObjectName getObjectName() {
 		return name;
 	}
 
@@ -222,20 +222,20 @@ public class AttributeSample {
 	}
 
 	/**
-	 * Obtain {@code Activity} instance associated with this instance. Activity encapsulates all info about current
+	 * Obtain {@link Activity} instance associated with this instance. Activity encapsulates all info about current
 	 * sample attributes, values, timing.
 	 * 
-	 * @return {@code Activity} instance associated with this instance
+	 * @return {@link Activity} instance associated with this instance
 	 */
 	public Activity getActivity() {
 		return activity;
 	}
 
 	/**
-	 * Obtain {@code PropertySnapshot} instance associated with this instance. Snapshot encapsulates all info about
+	 * Obtain {@link PropertySnapshot} instance associated with this instance. Snapshot encapsulates all info about
 	 * current sample key/value pairs.
 	 * 
-	 * @return {@code PropertySnapshot} instance associated with this instance
+	 * @return {@link PropertySnapshot} instance associated with this instance
 	 */
 	public PropertySnapshot getSnapshot() {
 		return snapshot;

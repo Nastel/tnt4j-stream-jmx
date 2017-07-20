@@ -15,6 +15,8 @@
  */
 package com.jkoolcloud.tnt4j.stream.jmx.factory;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.jkoolcloud.tnt4j.stream.jmx.impl.PlatformSamplerFactory;
 
 /**
@@ -27,17 +29,17 @@ import com.jkoolcloud.tnt4j.stream.jmx.impl.PlatformSamplerFactory;
  * @see SamplerFactory
  */
 public class DefaultSamplerFactory {
-	public static final String DEFAULT_PING_FACTORY = "com.jkoolcloud.tnt4j.stream.jmx.impl.PlatformSamplerFactory";
+	public static final String DEFAULT_SAMPLER_FACTORY = "com.jkoolcloud.tnt4j.stream.jmx.impl.PlatformSamplerFactory";
 	private static SamplerFactory defaultFactory;
 
-	static {
-		String factoryClassName = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.sampler.factory", DEFAULT_PING_FACTORY);
+	private static SamplerFactory initFactory(String factoryClassName) {
 		try {
-			Class<?> factoryClass = Class.forName(factoryClassName);
-			defaultFactory = (SamplerFactory) factoryClass.newInstance();
+			Class<?> factoryClass = Class
+					.forName(StringUtils.isEmpty(factoryClassName) ? DEFAULT_SAMPLER_FACTORY : factoryClassName);
+			return (SamplerFactory) factoryClass.newInstance();
 		} catch (Throwable ex) {
-			defaultFactory = new PlatformSamplerFactory();
 			ex.printStackTrace();
+			return new PlatformSamplerFactory();
 		}
 	}
 
@@ -47,9 +49,15 @@ public class DefaultSamplerFactory {
 	/**
 	 * Obtain a default instance of {@link SamplerFactory}
 	 *
+	 * @param factoryClassName sampler factory class name
+	 *
 	 * @return default sample factory instance
 	 */
-	public static SamplerFactory getInstance() {
+	public synchronized static SamplerFactory getInstance(String factoryClassName) {
+		if (defaultFactory == null) {
+			defaultFactory = initFactory(factoryClassName);
+		}
+
 		return defaultFactory;
 	}
 }

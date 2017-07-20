@@ -29,8 +29,10 @@ import javax.management.openmbean.TabularData;
 
 import com.jkoolcloud.tnt4j.core.Activity;
 import com.jkoolcloud.tnt4j.core.OpLevel;
+import com.jkoolcloud.tnt4j.core.Property;
 import com.jkoolcloud.tnt4j.core.PropertySnapshot;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeSample;
+import com.jkoolcloud.tnt4j.stream.jmx.utils.Utils;
 
 /**
  * <p>
@@ -42,25 +44,32 @@ import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeSample;
  * @see SampleListener
  */
 public class DefaultSampleListener implements SampleListener {
-	public static String STAT_TRACE_MODE = "listener.trace.mode";
-	public static String STAT_EXCLUDE_SET_COUNT = "listener.exclude.set.count";
-	public static String STAT_SILENCE_SET_COUNT = "listener.silence.set.count";
+	public static final String STAT_TRACE_MODE = "listener.trace.mode";
+	public static final String STAT_FORCE_OBJECT_NAME_MODE = "listener.forceObjectName.mode";
+	public static final String STAT_EXCLUDE_SET_COUNT = "listener.exclude.set.count";
+	public static final String STAT_SILENCE_SET_COUNT = "listener.silence.set.count";
 
 	boolean trace = false;
+	boolean forceObjectName = false;
 	PrintStream out;
 
 	Collection<MBeanAttributeInfo> excAttrs = new HashSet<MBeanAttributeInfo>(89);
 	Collection<MBeanAttributeInfo> silenceAttrs = new HashSet<MBeanAttributeInfo>(89);
+
+	private PropertyNameBuilder pnb;
+	protected final Object buildLock = new Object();
 
 	/**
 	 * Create an instance of {@code DefaultSampleListener} with a a given print stream and trace mode
 	 *
 	 * @param pStream print stream instance for tracing
 	 * @param trace mode
+	 * @param forceObjectName flag indicating to forcibly add objectName attribute if such is not present for a MBean
 	 */
-	public DefaultSampleListener(PrintStream pStream, boolean trace) {
+	public DefaultSampleListener(PrintStream pStream, boolean trace, boolean forceObjectName) {
 		this.trace = trace;
 		this.out = pStream == null ? System.out : pStream;
+		this.forceObjectName = forceObjectName;
 	}
 
 	/**
@@ -133,7 +142,25 @@ public class DefaultSampleListener implements SampleListener {
 	public void post(SampleContext context, AttributeSample sample) throws UnsupportedAttributeException {
 		MBeanAttributeInfo mbAttrInfo = sample.getAttributeInfo();
 		PropertySnapshot snapshot = sample.getSnapshot();
-		processAttrValue(snapshot, mbAttrInfo, mbAttrInfo.getName(), sample.get());
+		synchronized (buildLock) {
+			processAttrValue(snapshot, mbAttrInfo, initPropName(mbAttrInfo.getName()), sample.get());
+		}
+
+		if (forceObjectName) {
+			forceObjectNameAttribute(sample);
+		}
+	}
+
+	private void forceObjectNameAttribute(AttributeSample sample) {
+		MBeanAttributeInfo mbAttrInfo = sample.getAttributeInfo();
+		PropertySnapshot snapshot = sample.getSnapshot();
+		Property objNameProp = Utils.getSnapPropertyIgnoreCase(snapshot, "objectName");
+
+		if (objNameProp == null) {
+			synchronized (buildLock) {
+				processAttrValue(snapshot, mbAttrInfo, initPropName("objectName"), sample.getObjectName());
+			}
+		}
 	}
 
 	@Override
@@ -172,7 +199,7 @@ public class DefaultSampleListener implements SampleListener {
 		sample.excludeNext(isFatalError(level == null ? OpLevel.ERROR : level));
 		sample.silence(true);
 		if (trace) {
-			out.println("Failed to sample:\n ojbName=" + sample.getObjetName() + ",\n info=" + sample.getAttributeInfo()
+			out.println("Failed to sample:\n ojbName=" + sample.getObjectName() + ",\n info=" + sample.getAttributeInfo()
 					+ ",\n exclude=" + sample.excludeNext() + ",\n ex=" + sample.getError());
 			sample.getError().printStackTrace(out);
 		}
@@ -191,6 +218,7 @@ public class DefaultSampleListener implements SampleListener {
 	@Override
 	public void getStats(SampleContext context, Map<String, Object> stats) {
 		stats.put(STAT_TRACE_MODE, trace);
+		stats.put(STAT_FORCE_OBJECT_NAME_MODE, forceObjectName);
 		stats.put(STAT_EXCLUDE_SET_COUNT, excAttrs.size());
 		stats.put(STAT_SILENCE_SET_COUNT, silenceAttrs.size());
 	}
@@ -225,28 +253,46 @@ public class DefaultSampleListener implements SampleListener {
 	 * @return snapshot instance where all attributes are contained
 	 */
 	protected PropertySnapshot processAttrValue(PropertySnapshot snapshot, MBeanAttributeInfo mbAttrInfo,
-			String propName, Object value) {
+			PropertyNameBuilder propName, Object value) {
 		if (value instanceof CompositeData) {
 			CompositeData cdata = (CompositeData) value;
 			Set<String> keys = cdata.getCompositeType().keySet();
 			for (String key : keys) {
 				Object cVal = cdata.get(key);
-				processAttrValue(snapshot, mbAttrInfo, propName + "\\" + key, cVal);
+				processAttrValue(snapshot, mbAttrInfo, propName.append(key), cVal);
+				propName.popLevel();
 			}
 		} else if (value instanceof TabularData) {
 			TabularData tData = (TabularData) value;
 			Collection<?> values = tData.values();
 			int row = 0;
 			for (Object tVal : values) {
-				processAttrValue(snapshot, mbAttrInfo, propName + "\\" + padNumber(++row), tVal);
+				processAttrValue(snapshot, mbAttrInfo, propName.append(padNumber(++row)), tVal);
+				propName.popLevel();
 			}
 		} else {
-			snapshot.add(propName, value);
+			snapshot.add(propName.propString(), value);
 		}
 		return snapshot;
 	}
 
 	private static String padNumber(int idx) {
 		return idx < 10 ? "0" + idx : String.valueOf(idx);
+	}
+
+	/**
+	 * Initializes property name builder with provided property name string.
+	 *
+	 * @param propName property name string
+	 * @return property name builder instance
+	 */
+	protected PropertyNameBuilder initPropName(String propName) {
+		if (pnb == null) {
+			pnb = new PropertyNameBuilder(propName);
+		} else {
+			pnb.reset(propName);
+		}
+
+		return pnb;
 	}
 }

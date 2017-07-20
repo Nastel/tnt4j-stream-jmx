@@ -56,11 +56,12 @@ public interface SamplerFactory {
 	 * 
 	 * @param pStream print stream instance for tracing
 	 * @param trace mode
+	 * @param forceObjectName flag indicating to forcibly add objectName attribute if such is not present for a MBean
 	 * @return sample listener instance to use
 	 *
 	 * @see SampleListener
 	 */
-	SampleListener newListener(PrintStream pStream, boolean trace);
+	SampleListener newListener(PrintStream pStream, boolean trace, boolean forceObjectName);
 
 	/**
 	 * Returns default class name for a event formatter to be used by sampler logger.

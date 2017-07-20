@@ -18,12 +18,11 @@ package com.jkoolcloud.tnt4j.stream.jmx.impl;
 import javax.management.MBeanServerConnection;
 
 import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
-import com.jkoolcloud.tnt4j.stream.jmx.factory.SamplerFactory;
 
 /**
  * <p>
- * This class provides a {@link SamplerFactory} implementation with {@code JBossJmxSampler} as underlying sampler
- * implementation.
+ * This class provides a {@link com.jkoolcloud.tnt4j.stream.jmx.factory.SamplerFactory} implementation with
+ * {@link JBossJmxSampler} as underlying sampler implementation.
  * </p>
  * 
  * @version $Revision: 1 $
