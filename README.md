@@ -84,7 +84,7 @@ Sample `attach` call:
 try {
   SamplingAgent.attach("activemq", "tnt4j-stream-jmx-0.5.0.jar", "*:*!10000");
 } catch (Exception exc) {
-  exc.printStackTrace();  
+  exc.printStackTrace();
 } 
 ```
 
@@ -136,7 +136,7 @@ Sample `connect` call for local JVM:
 try {
   SamplingAgent.connect("activemq", "*:*!!10000");
 } catch (Exception exc) {
-  exc.printStackTrace();  
+  exc.printStackTrace();
 } 
 ```
 
@@ -145,7 +145,7 @@ Sample `connect` call for remote JVM:
 try {
   SamplingAgent.connect("service:jmx:iiop://172.16.6.40:2809/jndi/JMXConnector", "*:*!!10000");
 } catch (Exception exc) {
-  exc.printStackTrace();  
+  exc.printStackTrace();
 } 
 ```
 
@@ -154,7 +154,7 @@ Sample `connect` call for remote JVM defining user name and password:
 try {
   SamplingAgent.connect("activemq", "admin", "admin", "*:*!!10000");
 } catch (Exception exc) {
-  exc.printStackTrace();  
+  exc.printStackTrace();
 } 
 ```
 or defining map of connection configuration parameters: 
@@ -165,7 +165,7 @@ try {
   connParams.put("javax.net.ssl.trustStorePassword", "truststore_pwd");
   SamplingAgent.connect("activemq", "*:*!!10000", connParams);
 } catch (Exception exc) {
-  exc.printStackTrace();  
+  exc.printStackTrace();
 }
 ```
 
@@ -192,7 +192,7 @@ Sample `sampleLocalVM` call for a local process runner JVM:
 try {
   SamplingAgent.sampleLocalVM("*:*!!10000", true);
 } catch (Exception exc) {
-  exc.printStackTrace();  
+  exc.printStackTrace();
 } 
 ```
 
@@ -249,7 +249,7 @@ There is a simple Liberty `server.xml` configuration required to run Stream-JMX 
                   httpPort="9080"
                   httpsPort="9443"
                   host="*"/>
-                  
+
     <!-- Automatically expand WAR files and EAR files -->
     <applicationManager autoExpand="true"/>
 	
@@ -263,7 +263,7 @@ There is a simple Liberty `server.xml` configuration required to run Stream-JMX 
     </basicRegistry> 
 
     <administrator-role>
-        <user>Admin</user>        
+        <user>Admin</user>
     </administrator-role>
 	
     <application contextRoot="tnt-jmx" location="tnt4j-stream-jmx-liberty-web-0.6-SNAPSHOT.war" type="war" id="tnt-jmx" name="tnt-jmx">
@@ -272,8 +272,8 @@ There is a simple Liberty `server.xml` configuration required to run Stream-JMX 
                 <user name="JMXManager" />
 				<run-as userid="JMXManager" />
             </security-role>
-        </application-bnd>   
-    </application>	       
+        </application-bnd>
+    </application>
 </server>
 ```
 
@@ -812,9 +812,14 @@ How to Build TNT4J-Stream-JMX
 * (U) marked modules are utility modules (e.g., performs compiled assemblies packaging)
 
 Modules list:
-   * `Core` (M)
-   * `WAS` (O)
-   * `Distribution` (OU)
+   * `Core` (M) - implements core JMX sampling, processing and dissemination features.
+   * `J2EE` (O) - J2EE API addition to handle J2EE API defined attributes and implements abstract Stream-JMX servlet API.
+   * `WAS` (O, requires `J2EE`) - IBM WebSphere Application Server (WAS) root module.
+        * `Web` (O) - builds WAS compliant web application package (war).
+        * `Ear` (O) - builds WAS compliant enterprise application package (ear).
+   * `Liberty` (O, requires `J2EE`)  - IBM WebSphere Liberty root module.
+        * `Web` (O) - builds Liberty compliant web application package (war).
+   * `Distribution` (OU) - build distribution packages, see `../build/tnt4j-stream-jmx` directory.
 
 All optional modules (extensions) depends to `core` module and can't be build and run without it.
 
