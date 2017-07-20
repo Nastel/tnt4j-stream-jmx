@@ -198,6 +198,18 @@ try {
 
 ## Running Stream-JMX as servlet
 
+### Generic servlet page features
+
+Top of the page is dedicated to list Stream-JMX used properties. 
+ 
+Change properties as you like in input field and press `Sumbit` button to apply changes. JMX sampler service will restart and changes will 
+apply instantly without restating servlet or web container. 
+
+`tnt4j.properties` file is displayed bellow. You can change that online. Press `Submit TNT4.config` to update configuration. JMX sampler 
+service will restart. 
+
+Bellow you can see Stream-JMX console output. Refresh page or click `Update` button to update console contents.
+
 ### WebSphere Application Server (WAS)
 
 Build Stream-JMX and find tnt4j-stream-jmx-was-*.ear in distribution build directory or archives produced.
@@ -207,15 +219,68 @@ Login to WebSphere Integrated Solutions Console and install TNT4J-Stream-JMX ear
 application you usually do, or fallowing IBM's instruction. Keep in mind context path.
 * Start the application. 
 
-Navigate to `http://localhost:9080/YOUR_CHOOSEN_CONTEXT_PATH/`. TNT4J-Stream-JMX configuration/monitoring page should be displayed. By 
-default Stream-JMX connects to local WebSphere `service:jmx:iiop://localhost:2809/jndi/JMXConnector`.
+By default Stream-JMX connects to local WAS runner JVM using `com.ibm.websphere.management.AdminServiceFactory.getMBeanFactory()`.
 
-Change properties as you like in input field and press `Sumbit` button to apply changes. JMX sampler service will restart. 
+Navigate to `http://localhost:9080/YOUR_CHOOSEN_CONTEXT_PATH/`. TNT4J-Stream-JMX configuration/monitoring page should be displayed. 
+See [Generic servlet page features](#generic-servlet-page-features) on what is available there.
 
-`tnt4j.properties` file is displayed bellow. You can change that online. Press `Submit TNT4.config` to update configuration. JMX sampler 
-service will restart. 
+See [Generic servlet page features](#generic-servlet-page-features).
 
-Bellow you can see Stream-JMX console output. You need refresh page to update console.
+### WebSphere Liberty Server
+
+Build Stream-JMX and find tnt4j-stream-jmx-liberty-web-*.war in distribution build directory or archives produced.
+
+There is a simple Liberty `server.xml` configuration required to run Stream-JMX servlet:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<server description="new server">
+
+    <!-- Enable features -->
+    <featureManager>
+        <feature>webProfile-7.0</feature>
+        <feature>restConnector-1.0</feature>		
+        <feature>localConnector-1.0</feature>
+        <feature>monitor-1.0</feature>
+        <feature>javaee-7.0</feature>		
+    </featureManager>
+
+    <!-- To access this server from a remote client add a host attribute to the following element, e.g. host="*" -->
+    <httpEndpoint id="defaultHttpEndpoint"
+                  httpPort="9080"
+                  httpsPort="9443"
+                  host="*"/>
+                  
+    <!-- Automatically expand WAR files and EAR files -->
+    <applicationManager autoExpand="true"/>
+	
+	<webContainer deferServletLoad="false"/>
+
+    <auth-method>BASIC</auth-method>
+
+    <basicRegistry id="basic" realm="default">		
+        <user name="Admin" password="admin" />
+        <user name="JMXManager" password="jmxAdmin" />
+    </basicRegistry> 
+
+    <administrator-role>
+        <user>Admin</user>        
+    </administrator-role>
+	
+    <application contextRoot="tnt-jmx" location="tnt4j-stream-jmx-liberty-web-0.6-SNAPSHOT.war" type="war" id="tnt-jmx" name="tnt-jmx">
+        <application-bnd>
+            <security-role name="StreamJmxManager">
+                <user name="JMXManager" />
+				<run-as userid="JMXManager" />
+            </security-role>
+        </application-bnd>   
+    </application>	       
+</server>
+```
+
+By default Stream-JMX connects to local Liberty runner JVM using `java.lang.management.ManagementFactory.getPlatformMBeanServer()`.
+
+Navigate to `http://localhost:9080/YOUR_CHOOSEN_CONTEXT_PATH/`. TNT4J-Stream-JMX configuration/monitoring page should be displayed. 
+See [Generic servlet page features](#generic-servlet-page-features) on what is available there.
 
 ## Embed Stream-JMX code into your application
 
@@ -616,8 +681,8 @@ By default Stream-JMX will generate dumps with the following info:
 You may create your own [dump providers and handlers](https://github.com/Nastel/TNT4J/wiki/Getting-Started#application-state-dumps)
 ## Overriding default `SamplerFactory`
 `SamplerFactory` instances are used to generate `Sampler` implementation for a specific runtime environment. Stream-JMX supplies sampler 
-and ping factories for standard JVMs, JBoss, WebSphere Application Server. You may want to override default `SamplerFactory` with your own 
-or an alternative by specifying:
+and sampler factories for standard JVMs, J2EE, JBoss, IBM WebSphere Application Server, IBM WebSphere Liberty server. You may want to 
+override default `SamplerFactory` with your own or an alternative by specifying:
 ```cmd
 java -Dcom.jkoolcloud.tnt4j.stream.jmx.sampler.factory=com.jkoolcloud.tnt4j.stream.jmx.impl.PlatformSamplerFactory ...
 ```
@@ -810,7 +875,6 @@ Download the above libraries and place into the `tnt4j-stream-jmx/tnt4j-stream-j
          |- com.ibm.ws.admin.client_8.5.0.jar
          |- com.ibm.ws.ejb.thinclient_8.5.0.jar
          |- com.ibm.ws.orb_8.5.0.jar
-     j2ee.jar
 ```
 (O) marked libraries are optional
 
