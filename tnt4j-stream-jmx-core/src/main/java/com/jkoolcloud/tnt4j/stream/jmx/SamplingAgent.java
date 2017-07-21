@@ -515,12 +515,14 @@ public class SamplingAgent {
 				.getInstance(Utils.getConfProperty(DEFAULTS, "com.jkoolcloud.tnt4j.stream.jmx.sampler.factory"));
 
 		if (platformJmx == null) {
-			// create new sampler with default MBeanServer instance
-			platformJmx = mbSrvConn == null ? sFactory.newInstance() : sFactory.newInstance(mbSrvConn);
-			// schedule sample with a given filter and sampling period
-			platformJmx.setSchedule(incFilter, excFilter, initDelay, period, tUnit, sFactory)
-					.addListener(sFactory.newListener(System.out, TRACE, FORCE_OBJECT_NAME)).run();
-			STREAM_AGENTS.put(platformJmx.getMBeanServer(), platformJmx);
+			synchronized (STREAM_AGENTS) {
+				// create new sampler with default MBeanServer instance
+				platformJmx = mbSrvConn == null ? sFactory.newInstance() : sFactory.newInstance(mbSrvConn);
+				// schedule sample with a given filter and sampling period
+				platformJmx.setSchedule(incFilter, excFilter, initDelay, period, tUnit, sFactory)
+						.addListener(sFactory.newListener(System.out, TRACE, FORCE_OBJECT_NAME)).run();
+				STREAM_AGENTS.put(platformJmx.getMBeanServer(), platformJmx);
+			}
 		}
 
 		return sFactory;
@@ -733,8 +735,10 @@ public class SamplingAgent {
 		});
 		Runtime.getRuntime().addShutdownHook(shutdownHook);
 
-		synchronized (platformJmx) {
-			platformJmx.wait();
+		if (platformJmx != null) {
+			synchronized (platformJmx) {
+				platformJmx.wait();
+			}
 		}
 
 		System.out.println("SamplingAgent.startSamplerAndWait: Stopping Stream-JMX...");
@@ -827,10 +831,12 @@ public class SamplingAgent {
 	 * @see #cancel()
 	 */
 	public static void destroy() {
-		stopPlatformJMX();
-		cancel();
-		// TrackingLogger.shutdownAll();
-		platformJmx = null;
+		synchronized (STREAM_AGENTS) {
+			stopPlatformJMX();
+			cancel();
+			// TrackingLogger.shutdownAll();
+			platformJmx = null;
+		}
 	}
 
 	private static void initDefaults(Properties defProps) {
