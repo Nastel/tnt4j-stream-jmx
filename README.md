@@ -541,8 +541,8 @@ To stream Stream-JMX to [jkool cloud](https://www.jkoolcloud.com): (Requires [JE
 	source.factory: com.jkoolcloud.tnt4j.source.SourceFactoryImpl
 	source.factory.GEOADDR: New York
 	source.factory.DATACENTER: YourDC
-	source.factory.RootFQN: SERVER=?#DATACENTER=?#GEOADDR=?	
-	source.factory.RootSSN: tnt4j-stream-jmx	
+	source.factory.RootFQN: SERVER=?#DATACENTER=?#GEOADDR=?
+	source.factory.RootSSN: tnt4j-stream-jmx
 	
 	tracker.factory: com.com.jkoolcloud.jkool.tnt4j.tracker.DefaultTrackerFactory
 	dump.sink.factory: com.jkoolcloud.tnt4j.dump.DefaultDumpSinkFactory
@@ -557,7 +557,7 @@ To stream Stream-JMX to [jkool cloud](https://www.jkoolcloud.com): (Requires [JE
 	event.sink.factory.EventSinkFactory.Token: ACCESS-TOKEN
 	event.formatter: com.jkoolcloud.tnt4j.format.JSONFormatter
 
-	; Configure default sink filter 
+	; Configure default sink filter
 	event.sink.factory.Filter: com.jkoolcloud.tnt4j.filters.EventLevelTimeFilter
 	event.sink.factory.Filter.Level: TRACE
 	

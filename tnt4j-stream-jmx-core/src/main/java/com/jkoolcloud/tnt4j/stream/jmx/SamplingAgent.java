@@ -37,6 +37,7 @@ import javax.management.remote.JMXServiceURL;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.jkoolcloud.tnt4j.config.TrackerConfigStore;
 import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
 import com.jkoolcloud.tnt4j.stream.jmx.factory.DefaultSamplerFactory;
 import com.jkoolcloud.tnt4j.stream.jmx.factory.SamplerFactory;
@@ -131,7 +132,7 @@ public class SamplingAgent {
 				+ ", initDelay.ms=" + initDelay
 				+ ", trace=" + TRACE
 				+ ", forceObjectName=" + FORCE_OBJECT_NAME
-				+ ", tnt4j.config=" + System.getProperty("tnt4j.config")
+				+ ", tnt4j.config=" + System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY)
 				+ ", jmx.sample.list=" + STREAM_AGENTS);
 	}
 
@@ -150,7 +151,7 @@ public class SamplingAgent {
 	 */
 	public static void agentmain(String agentArgs, Instrumentation inst) throws Exception {
 		String agentParams = "";
-		String tnt4jProp = System.getProperty("tnt4j.config");
+		String tnt4jProp = System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY);
 		String agentLibPath = "";
 		if (!Utils.isEmpty(agentArgs)) {
 			String[] args = agentArgs.split("!");
@@ -165,7 +166,7 @@ public class SamplingAgent {
 						String[] prop = arg.split("=");
 						tnt4jProp = prop.length > 1 ? prop[1] : null;
 
-						System.setProperty("tnt4j.config", tnt4jProp);
+						System.setProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY, tnt4jProp);
 					}
 				} else if (arg.startsWith("-DSamplingAgent.path")) {
 					String[] prop = arg.split("=");
@@ -184,7 +185,7 @@ public class SamplingAgent {
 				+ ", agent.lib.path=" + agentLibPath
 				+ ", trace=" + TRACE
 				+ ", forceObjectName=" + FORCE_OBJECT_NAME
-				+ ", tnt4j.config=" + System.getProperty("tnt4j.config"));
+				+ ", tnt4j.config=" + System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY));
 
 		File agentPath = new File(agentLibPath);
 		final String[] classPathEntries = agentPath.list(new JarFilter());
@@ -269,7 +270,7 @@ public class SamplingAgent {
 							+ ", wait.ms=" + wait_time
 							+ ", trace=" + TRACE
 							+ ", forceObjectName=" + FORCE_OBJECT_NAME
-							+ ", tnt4j.config=" + System.getProperty("tnt4j.config")
+							+ ", tnt4j.config=" + System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY)
 							+ ", jmx.sample.list=" + STREAM_AGENTS);
 					synchronized (platformJmx) {
 						platformJmx.wait(wait_time);
@@ -561,7 +562,7 @@ public class SamplingAgent {
 
 		agentOptions += "!-DSamplingAgent.path=" + agentPath;
 
-		String tnt4jConf = System.getProperty("tnt4j.config");
+		String tnt4jConf = System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY);
 
 		if (!Utils.isEmpty(tnt4jConf)) {
 			String tnt4jPropPath = new File(tnt4jConf).getAbsolutePath();
@@ -786,7 +787,7 @@ public class SamplingAgent {
 				+ ", initDelay.ms=" + initDelay 
 				+ ", trace=" + TRACE 
 				+ ", forceObjectName=" + FORCE_OBJECT_NAME
-				+ ", tnt4j.config=" + System.getProperty("tnt4j.config") 
+				+ ", tnt4j.config=" + System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY)
 				+ ", jmx.sample.list=" + STREAM_AGENTS);
 	}
 

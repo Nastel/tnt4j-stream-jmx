@@ -27,6 +27,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.ArrayUtils;
 
+import com.jkoolcloud.tnt4j.config.TrackerConfigStore;
+
 /**
  * Common Stream-JMX servlet used properties enumeration.
  * 
@@ -48,7 +50,7 @@ public enum StreamJMXProperties implements StreamJMXProperty {
 	
 	JMX_SAMPLER_FACTORY("com.jkoolcloud.tnt4j.stream.jmx.sampler.factory" , "com.jkoolcloud.tnt4j.stream.jmx.impl.J2EESamplerFactory"    , READ_ONLY  , SYSTEM),
 	AO("com.jkoolcloud.tnt4j.stream.jmx.agent.options"                    , "*:*!!60000!0"                                               , READ_ONLY  , LOCAL),
-	TNT4J_CONFIG("tnt4j.config"                                           , "file:./tnt4j.properties"                                    , READ_ONLY  , SYSTEM   , LOCAL);
+	TNT4J_CONFIG(TrackerConfigStore.TNT4J_PROPERTIES_KEY                  , "file:./tnt4j.properties"                                    , READ_ONLY  , SYSTEM   , LOCAL);
 
 	private String key;
 	private String defaultValue;

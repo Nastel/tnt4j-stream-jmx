@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.management.MBeanAttributeInfo;
 import javax.management.ObjectName;
@@ -57,7 +58,7 @@ public class DefaultSampleListener implements SampleListener {
 	Collection<MBeanAttributeInfo> silenceAttrs = new HashSet<MBeanAttributeInfo>(89);
 
 	private PropertyNameBuilder pnb;
-	protected final Object buildLock = new Object();
+	protected final ReentrantLock buildLock = new ReentrantLock();
 
 	/**
 	 * Create an instance of {@code DefaultSampleListener} with a a given print stream and trace mode
@@ -142,8 +143,11 @@ public class DefaultSampleListener implements SampleListener {
 	public void post(SampleContext context, AttributeSample sample) throws UnsupportedAttributeException {
 		MBeanAttributeInfo mbAttrInfo = sample.getAttributeInfo();
 		PropertySnapshot snapshot = sample.getSnapshot();
-		synchronized (buildLock) {
+		buildLock.lock();
+		try {
 			processAttrValue(snapshot, mbAttrInfo, initPropName(mbAttrInfo.getName()), sample.get());
+		} finally {
+			buildLock.unlock();
 		}
 
 		if (forceObjectName) {
@@ -157,8 +161,11 @@ public class DefaultSampleListener implements SampleListener {
 		Property objNameProp = Utils.getSnapPropertyIgnoreCase(snapshot, "objectName");
 
 		if (objNameProp == null) {
-			synchronized (buildLock) {
+			buildLock.lock();
+			try {
 				processAttrValue(snapshot, mbAttrInfo, initPropName("objectName"), sample.getObjectName());
+			} finally {
+				buildLock.unlock();
 			}
 		}
 	}
