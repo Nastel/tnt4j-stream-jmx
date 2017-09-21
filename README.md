@@ -128,6 +128,16 @@ initial sampler delay as 1 second. Default sampler delay value is equal to sampl
 parameters definitions in properties format `key=value`. JMX connector parameters are optional and can be defined multiple times - as many 
 as there are required JMX connector parameters.
 
+**NOTE**:
+* URI of remote RMI service (e.g., to connect remote Kafka service) may require additional `/` chars:
+```cmd
+-vm:service:jmx:rmi:///jndi/rmi:///172.16.6.35:2181/jmxrmi
+```
+* Remote end may require to enable JMX listening port in service configuration (e.g., to connect remote Kafka service):
+```bash
+export JMX_PORT=${JMX_PORT:-9999}
+``` 
+
 ### Coding into API
 You can connect `SamplingAgent` to JVM from your custom API by calling [SamplingAgent.connect(String,String)](./tnt4j-stream-jmx-core/src/main/java/com/jkoolcloud/tnt4j/stream/jmx/SamplingAgent.java#L574) method. 
 
