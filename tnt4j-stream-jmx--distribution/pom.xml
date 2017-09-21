@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.jkoolcloud.tnt4j.stream</groupId>
         <artifactId>tnt4j-stream-jmx</artifactId>
-        <version>0.6-SNAPSHOT</version>
+        <version>0.6</version>
     </parent>
     <packaging>pom</packaging>
 
@@ -21,7 +21,7 @@
         <release.deploy.name>${project.parent.artifactId}</release.deploy.name>
         <release.deploy.dir>../../build/${release.deploy.name}</release.deploy.dir>
         <release.deploy.finalName>${release.deploy.name}-${project.version}</release.deploy.finalName>
-        <release.deploy.assembly>src/assembly/deployAssembly_dev.xml</release.deploy.assembly>
+        <release.deploy.assembly>src/assembly/deployAssembly.xml</release.deploy.assembly>
         <build.assemblies.attach>false</build.assemblies.attach>
     </properties>
 

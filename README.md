@@ -266,7 +266,7 @@ There is a simple Liberty `server.xml` configuration required to run Stream-JMX 
         <user>Admin</user>
     </administrator-role>
 	
-    <application contextRoot="tnt-jmx" location="tnt4j-stream-jmx-liberty-web-0.6-SNAPSHOT.war" type="war" id="tnt-jmx" name="tnt-jmx">
+    <application contextRoot="tnt-jmx" location="tnt4j-stream-jmx-liberty-web-0.6.war" type="war" id="tnt-jmx" name="tnt-jmx">
         <application-bnd>
             <security-role name="StreamJmxManager">
                 <user name="JMXManager" />
