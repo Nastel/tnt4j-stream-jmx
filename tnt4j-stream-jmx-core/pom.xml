@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.jkoolcloud.tnt4j.stream</groupId>
         <artifactId>tnt4j-stream-jmx</artifactId>
-        <version>0.6</version>
+        <version>0.7-SNAPSHOT</version>
     </parent>
     <packaging>jar</packaging>
 
@@ -18,8 +18,8 @@
     <artifactId>tnt4j-stream-jmx-core</artifactId>
 
     <properties>
-        <tnt4j.version>2.5</tnt4j.version>
-        <jesl.version>0.3</jesl.version>
+        <tnt4j.version>2.6-SNAPSHOT</tnt4j.version>
+        <jesl.version>0.4-SNAPSHOT</jesl.version>
     </properties>
 
     <build>
