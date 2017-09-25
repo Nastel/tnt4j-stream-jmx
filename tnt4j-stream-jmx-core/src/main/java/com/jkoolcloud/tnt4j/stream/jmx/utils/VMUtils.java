@@ -16,6 +16,7 @@
 
 package com.jkoolcloud.tnt4j.stream.jmx.utils;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -73,28 +74,33 @@ public class VMUtils {
 	 * @param vmDescr
 	 *            JVM descriptor: display name fragment or pid
 	 * @return resolved JVM connection address string
-	 * @throws Exception
+	 * @throws IOException
 	 *             if any exception occurs while retrieving JVM connection address
 	 *
 	 * @see #findVMs(String)
 	 */
-	public static String getVMConnAddress(String vmDescr) throws Exception {
-		VirtualMachineDescriptor descriptor = findVMs(vmDescr).get(0);
-
-		final VirtualMachine virtualMachine = VirtualMachine.attach(descriptor.id());
-		String connectorAddress;
-
+	public static String getVMConnAddress(String vmDescr) throws IOException {
 		try {
-			Properties props = virtualMachine.getAgentProperties();
-			connectorAddress = props.getProperty("com.sun.management.jmxremote.localConnectorAddress");
-			if (connectorAddress == null) {
-				throw new RuntimeException("JVM does not support JMX connection...");
-			}
-		} finally {
-			virtualMachine.detach();
-		}
+			VirtualMachineDescriptor descriptor = findVMs(vmDescr).get(0);
+			VirtualMachine virtualMachine = VirtualMachine.attach(descriptor.id());
+			String connectorAddress;
 
-		return connectorAddress;
+			try {
+				Properties props = virtualMachine.getAgentProperties();
+				connectorAddress = props.getProperty("com.sun.management.jmxremote.localConnectorAddress");
+				if (connectorAddress == null) {
+					throw new IOException("JVM does not support JMX connection...");
+				}
+			} finally {
+				virtualMachine.detach();
+			}
+
+			return connectorAddress;
+		} catch (IOException exc) {
+			throw exc;
+		} catch (Exception exc) {
+			throw new IOException(exc);
+		}
 	}
 
 	/**
@@ -119,11 +125,11 @@ public class VMUtils {
 		}
 
 		if (descriptors.isEmpty()) {
-			System.err.println("SamplingAgent: ----------- Available JVMs -----------");
+			System.out.println("SamplingAgent: ----------- Available JVMs -----------");
 			for (VirtualMachineDescriptor vmD : runningVMsList) {
-				System.err.println("SamplingAgent: JVM.id=" + vmD.id() + ", name=" + vmD.displayName());
+				System.out.println("SamplingAgent: JVM.id=" + vmD.id() + ", name=" + vmD.displayName());
 			}
-			System.err.println("SamplingAgent: ---------------- END ----------------");
+			System.out.println("SamplingAgent: ---------------- END ----------------");
 			throw new RuntimeException("Java VM not found using provided descriptor: [" + vmDescr + "]");
 		}
 

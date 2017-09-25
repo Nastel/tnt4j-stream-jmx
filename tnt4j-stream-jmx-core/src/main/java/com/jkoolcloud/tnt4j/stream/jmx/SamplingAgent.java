@@ -58,6 +58,7 @@ import com.jkoolcloud.tnt4j.stream.jmx.utils.VMUtils;
 public class SamplingAgent {
 	protected static Sampler platformJmx;
 	protected static ConcurrentHashMap<MBeanServerConnection, Sampler> STREAM_AGENTS = new ConcurrentHashMap<MBeanServerConnection, Sampler>(89);
+	protected static final long CONN_RETRY_INTERVAL = 10;
 	protected static boolean TRACE;
 	protected static boolean FORCE_OBJECT_NAME;
 
@@ -67,6 +68,7 @@ public class SamplingAgent {
 	private static final String PARAM_AGENT_USER_LOGIN = "-ul:";
 	private static final String PARAM_AGENT_USER_PASS = "-up:";
 	private static final String PARAM_AGENT_CONN_PARAM = "-cp:";
+	private static final String PARAM_AGENT_CONN_RETRY_INTERVAL = "-cri:";
 
 	private static final String AGENT_MODE_AGENT = "-agent";
 	private static final String AGENT_MODE_ATTACH = "-attach";
@@ -77,6 +79,7 @@ public class SamplingAgent {
 	private static final String AGENT_ARG_VM = "vm.descriptor";
 	private static final String AGENT_ARG_USER = "user.login";
 	private static final String AGENT_ARG_PASS = "user.password";
+	private static final String AGENT_ARG_CONN_RETRY_INTERVAL = "conn.retry.interval";
 	private static final String AGENT_ARG_LIB_PATH = "agent.lib.path";
 	private static final String AGENT_ARG_OPTIONS = "agent.options";
 	private static final String AGENT_ARG_I_FILTER = "beans.include.filter";
@@ -97,6 +100,8 @@ public class SamplingAgent {
 		TRACE = getConfFlag("com.jkoolcloud.tnt4j.stream.jmx.agent.trace", false);
 		FORCE_OBJECT_NAME = getConfFlag("com.jkoolcloud.tnt4j.stream.jmx.agent.forceObjectName", false);
 	}
+
+	private static boolean stopSampling = false;
 
 	/**
 	 * Entry point to be loaded as {@code -javaagent:jarpath="mbean-filter!sample.ms!initDelay.ms"} command line where
@@ -215,9 +220,8 @@ public class SamplingAgent {
 			try {
 				method.invoke(classLoader, classPathEntryURL);
 			} catch (Exception e) {
-				System.err.println("SamplingAgent.extendClasspath: Could not load lib " + classPathEntryURL);
-				System.err.println("                    Exception: " + e.getLocalizedMessage());
-				// e.printStackTrace ();
+				System.out.println("SamplingAgent.extendClasspath: Could not load lib " + classPathEntryURL);
+				System.out.println("                    Exception: " + Utils.toString(e));
 			}
 		}
 	}
@@ -241,8 +245,9 @@ public class SamplingAgent {
 				String agentOptions = props.getProperty(AGENT_ARG_OPTIONS, DEFAULT_AGENT_OPTIONS);
 				@SuppressWarnings("unchecked")
 				Map<String, ?> connParams = (Map<String, ?>) props.get(AGENT_CONN_PARAMS);
+				long cri = Long.parseLong(props.getProperty(AGENT_ARG_CONN_RETRY_INTERVAL, String.valueOf(CONN_RETRY_INTERVAL)));
 
-				connect(vmDescr, user, pass, agentOptions, connParams);
+				connect(vmDescr, user, pass, agentOptions, connParams, cri);
 			} else if (AGENT_MODE_ATTACH.equalsIgnoreCase(am)) {
 				String vmDescr = props.getProperty(AGENT_ARG_VM);
 				String jarPath = props.getProperty(AGENT_ARG_LIB_PATH);
@@ -276,13 +281,15 @@ public class SamplingAgent {
 						platformJmx.wait(wait_time);
 					}
 				} catch (Throwable ex) {
-					ex.printStackTrace();
+					System.out.println("SamplingAgent.main: failed to configure and run JMX sampling...");
+					System.out.println("         Exception: " + Utils.toString(ex));
 				}
 			}
 		} else {
 			System.out.println("Usage: mbean-filter exclude-filter sample-ms [wait-ms] (e.g \"*:*\" \"\" 10000 60000)");
 			System.out.println("   or: -attach -vm:vmName/vmId -ap:agentJarPath -ao:agentOptions (e.g -attach -vm:activemq -ap:[ENV_PATH]/tnt-stream-jmx.jar -ao:*:*!!10000)");
 			System.out.println("   or: -connect -vm:vmName/vmId/JMX_URL -ao:agentOptions (e.g -connect -vm:activemq -ao:*:*!!10000");
+			System.out.println("   or: -connect -vm:vmName/vmId/JMX_URL -cri:connRetryIntervalSec -ao:agentOptions (e.g -connect -vm:activemq -cri:30 -ao:*:*!!10000");
 			System.out.println("   or: -connect -vm:vmName/vmId/JMX_URL -ul:userLogin -up:userPassword -ao:agentOptions (e.g -connect -vm:activemq -ul:admin -up:admin -ao:*:*!!10000");
 			System.out.println("   or: -connect -vm:vmName/vmId/JMX_URL -ul:userLogin -up:userPassword -ao:agentOptions -cp:jmcConnParam1 -cp:jmcConnParam2 -cp:... (e.g -connect -vm:activemq -ul:admin -up:admin -ao:*:*!!10000 -cp:javax.net.ssl.trustStorePassword=trustPass");
 			System.out.println("   or: -local -ao:agentOptions (e.g -local -ao:*:*!!10000");
@@ -375,13 +382,22 @@ public class SamplingAgent {
 						}
 
 						connParams.put(cp[0], cp[1]);
+					} else if (arg.startsWith(PARAM_AGENT_CONN_RETRY_INTERVAL)) {
+						if (StringUtils.isNotEmpty(props.getProperty(AGENT_ARG_CONN_RETRY_INTERVAL))) {
+							System.out.println("Connection retry interval already defined. Can not use argument ["
+									+ PARAM_AGENT_CONN_RETRY_INTERVAL + "] multiple times.");
+							return false;
+						}
+
+						setProperty(props, arg, PARAM_AGENT_CONN_RETRY_INTERVAL, AGENT_ARG_CONN_RETRY_INTERVAL);
 					} else {
 						System.out.println("Invalid argument: " + arg);
 						return false;
 					}
 				}
 			} catch (IllegalArgumentException exc) {
-				System.out.println(exc.getLocalizedMessage());
+				System.out.println("SamplingAgent.parseArgs: arguments parsing failed...");
+				System.out.println("              Exception: " + Utils.toString(exc));
 				return false;
 			}
 
@@ -538,6 +554,8 @@ public class SamplingAgent {
 	 * @throws Exception if any exception occurs while attaching to JVM
 	 */
 	public static void attach(String vmDescr, String agentJarPath, String agentOptions) throws Exception {
+		System.out.println("SamplingAgent.attach(): vmDescr=" + vmDescr + ", agentJarPath=" + agentJarPath
+				+ ", agentOptions=" + agentOptions);
 		if (Utils.isEmpty(vmDescr)) {
 			throw new RuntimeException("Java VM descriptor must be not empty!..");
 		}
@@ -591,9 +609,26 @@ public class SamplingAgent {
 	 * @param vmDescr JVM descriptor: JMX service URI, local JVM name fragment or pid
 	 * @param options '!' separated list of options mbean-filter!sample.ms!initDelay.ms, where mbean-filter is semicolon separated list of mbean filters and {@code initDelay} is optional
 	 * @throws Exception if any exception occurs while connecting to JVM
+	 *
+	 * @see #connect(String,String,long)
 	 */
 	public static void connect(String vmDescr, String options) throws Exception {
-		connect(vmDescr, null, null, options, null);
+		connect(vmDescr, options, CONN_RETRY_INTERVAL);
+	}
+
+	/**
+	 * Connects to {@code vmDescr} defined JVM over {@link JMXConnector} an uses {@link MBeanServerConnection} to
+	 * collect samples.
+	 *
+	 * @param vmDescr JVM descriptor: JMX service URI, local JVM name fragment or pid
+	 * @param options '!' separated list of options mbean-filter!sample.ms!initDelay.ms, where mbean-filter is semicolon separated list of mbean filters and {@code initDelay} is optional
+	 * @param connRetryInterval connect reattempt interval value in seconds, {@code -1} - do not retry
+	 * @throws Exception if any exception occurs while connecting to JVM
+	 *
+	 * @see #connect(String,String,Map,long)
+	 */
+	public static void connect(String vmDescr, String options, long connRetryInterval) throws Exception {
+		connect(vmDescr, options, null, connRetryInterval);
 	}
 
 	/**
@@ -604,9 +639,27 @@ public class SamplingAgent {
 	 * @param options '!' separated list of options mbean-filter!sample.ms!initDelay.ms, where mbean-filter is semicolon separated list of mbean filters and {@code initDelay} is optional
 	 * @param connParams map of JMX connection parameters
 	 * @throws Exception if any exception occurs while connecting to JVM
+	 *
+	 * @see #connect(String, String, java.util.Map, long)
 	 */
 	public static void connect(String vmDescr, String options, Map<String, ?> connParams) throws Exception {
-		connect(vmDescr, null, null, options, connParams);
+		connect(vmDescr, options, connParams, CONN_RETRY_INTERVAL);
+	}
+
+	/**
+	 * Connects to {@code vmDescr} defined JVM over {@link JMXConnector} an uses {@link MBeanServerConnection} to
+	 * collect samples.
+	 *
+	 * @param vmDescr JVM descriptor: JMX service URI, local JVM name fragment or pid
+	 * @param options '!' separated list of options mbean-filter!sample.ms!initDelay.ms, where mbean-filter is semicolon separated list of mbean filters and {@code initDelay} is optional
+	 * @param connParams map of JMX connection parameters
+	 * @param connRetryInterval connect reattempt interval value in seconds, {@code -1} - do not retry
+	 * @throws Exception if any exception occurs while connecting to JVM
+	 *
+	 * @see #connect(String, String, String, String, java.util.Map, long)
+	 */
+	public static void connect(String vmDescr, String options, Map<String, ?> connParams, long connRetryInterval) throws Exception {
+		connect(vmDescr, null, null, options, connParams, connRetryInterval);
 	}
 
 	/**
@@ -618,9 +671,29 @@ public class SamplingAgent {
 	 * @param pass user password used by JMX service connection
 	 * @param options '!' separated list of options mbean-filter!sample.ms!initDelay.ms, where mbean-filter is semicolon separated list of mbean filters and {@code initDelay} is optional
 	 * @throws Exception if any exception occurs while connecting to JVM
+	 *
+	 * @see #connect(String, String, String, String, long)
 	 */
 	public static void connect(String vmDescr, String user, String pass, String options) throws Exception {
-		connect(vmDescr, user, pass, options, null);
+		connect(vmDescr, user, pass, options, CONN_RETRY_INTERVAL);
+	}
+
+	/**
+	 * Connects to {@code vmDescr} defined JVM over {@link JMXConnector} an uses {@link MBeanServerConnection} to
+	 * collect samples.
+	 *
+	 * @param vmDescr JVM descriptor: JMX service URI, local JVM name fragment or pid
+	 * @param user user login used by JMX service connection
+	 * @param pass user password used by JMX service connection
+	 * @param options '!' separated list of options mbean-filter!sample.ms!initDelay.ms, where mbean-filter is semicolon separated list of mbean filters and {@code initDelay} is optional
+	 * @param connRetryInterval connect reattempt interval value in seconds, {@code -1} - do not retry
+	 * @throws Exception if any exception occurs while connecting to JVM
+	 *
+	 * @see #connect(String, String, String, String, java.util.Map, long)
+	 */
+	public static void connect(String vmDescr, String user, String pass, String options, long connRetryInterval)
+			throws Exception {
+		connect(vmDescr, user, pass, options, null, connRetryInterval);
 	}
 
 	/**
@@ -632,23 +705,16 @@ public class SamplingAgent {
 	 * @param pass user password used by JMX service connection
 	 * @param options '!' separated list of options mbean-filter!sample.ms!initDelay.ms, where mbean-filter is semicolon separated list of mbean filters and {@code initDelay} is optional
 	 * @param connParams map of JMX connection parameters
+	 * @param connRetryInterval connect reattempt interval value in seconds, {@code -1} - do not retry
 	 * @throws Exception if any exception occurs while connecting to JVM
 	 */
-	public static void connect(String vmDescr, String user, String pass, String options, Map<String, ?> connParams)
-			throws Exception {
+	public static void connect(String vmDescr, String user, String pass, String options, Map<String, ?> connParams,
+			long connRetryInterval) throws Exception {
+		System.out.println("SamplingAgent.connect(): vmDescr=" + vmDescr + ", user=" + user + ", pass=" + pass
+				+ ", options=" + options + ", connParams=" + connParams + ", connRetryInterval=" + connRetryInterval);
 		if (Utils.isEmpty(vmDescr)) {
 			throw new RuntimeException("Java VM descriptor must be not empty!..");
 		}
-
-		String connectorAddress;
-		if (vmDescr.startsWith("service:jmx:")) {
-			connectorAddress = vmDescr;
-		} else {
-			connectorAddress = VMUtils.getVMConnAddress(vmDescr);
-		}
-
-		System.out.println("SamplingAgent.connect: making JMX service URL from address=" + connectorAddress);
-		JMXServiceURL url = new JMXServiceURL(connectorAddress);
 
 		Map<String, Object> params = new HashMap<String, Object>(connParams == null ? 1 : connParams.size() + 1);
 
@@ -662,33 +728,61 @@ public class SamplingAgent {
 			params.putAll(connParams);
 		}
 
-		System.out.println("SamplingAgent.connect: connecting JMX service using URL=" + url);
-		JMXConnector connector = JMXConnectorFactory.connect(url, params);
-
-		try {
-			NotificationListener cnl = new NotificationListener() {
-				@Override
-				public void handleNotification(Notification notification, Object key) {
-					if (notification.getType().contains("closed") || notification.getType().contains("failed")
-							|| notification.getType().contains("lost")) {
-						System.out.println(
-								"SamplingAgent.connect: JMX connection status change: " + notification.getType());
-						stopPlatformJMX();
-					}
+		do {
+			try {
+				String connectorAddress;
+				if (vmDescr.startsWith("service:jmx:")) {
+					connectorAddress = vmDescr;
+				} else {
+					connectorAddress = VMUtils.getVMConnAddress(vmDescr);
 				}
-			};
-			connector.addConnectionNotificationListener(cnl, null, null);
 
-			startSamplerAndWait(options, connector);
+				System.out.println("SamplingAgent.connect: making JMX service URL from address=" + connectorAddress);
+				JMXServiceURL url = new JMXServiceURL(connectorAddress);
 
-			connector.removeConnectionNotificationListener(cnl);
-		} finally {
-			Utils.close(connector);
-		}
+				System.out.println("SamplingAgent.connect: connecting JMX service using URL=" + url);
+				final JMXConnector connector = JMXConnectorFactory.connect(url, params);
+
+				try {
+					NotificationListener cnl = new NotificationListener() {
+						@Override
+						public void handleNotification(Notification notification, Object key) {
+							if (notification.getType().contains("closed") || notification.getType().contains("failed")
+									|| notification.getType().contains("lost")) {
+								System.out.println("SamplingAgent.connect: JMX connection status change: "
+										+ notification.getType());
+								stopSampler();
+							}
+						}
+					};
+					connector.addConnectionNotificationListener(cnl, null, null);
+
+					startSamplerAndWait(options, connector);
+
+					shutdownSampler();
+					connector.removeConnectionNotificationListener(cnl);
+				} finally {
+					Utils.close(connector);
+				}
+			} catch (IOException exc) {
+				System.out.println("SamplingAgent.connect: failed to connect to remote JMX service");
+				System.out.println("            Exception: " + Utils.toString(exc));
+
+				if (connRetryInterval < 0) {
+					stopSampling = true;
+				}
+
+				if (!stopSampling && connRetryInterval > 0) {
+					System.out.println("SamplingAgent.connect: will retry connect attempt in " + connRetryInterval
+							+ " seconds...");
+					Thread.sleep(TimeUnit.SECONDS.toMillis(connRetryInterval));
+				}
+			}
+		} while (!stopSampling);
 	}
 
-	private static void stopPlatformJMX() {
-		System.out.println("SamplingAgent.stopPlatformJMX: releasing sampler lock...");
+	private static void stopSampler() {
+		System.out.println("SamplingAgent.stopSampler: releasing sampler lock...");
 
 		if (platformJmx != null) {
 			synchronized (platformJmx) {
@@ -705,6 +799,7 @@ public class SamplingAgent {
 	 * @throws Exception if any exception occurs while initializing local JVM sampler or stopping sampling process
 	 */
 	public static void sampleLocalVM(String options, boolean wait) throws Exception {
+		System.out.println("SamplingAgent.sampleLocalVM(): options=" + options + ", wait=" + wait);
 		if (wait) {
 			startSamplerAndWait(options);
 		} else {
@@ -723,7 +818,8 @@ public class SamplingAgent {
 		Thread shutdownHook = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				stopPlatformJMX();
+				stopSampling = true;
+				stopSampler();
 
 				long startTime = System.currentTimeMillis();
 				try {
@@ -736,6 +832,7 @@ public class SamplingAgent {
 		});
 		Runtime.getRuntime().addShutdownHook(shutdownHook);
 
+		System.out.println("SamplingAgent.startSamplerAndWait: locking on sampler...");
 		if (platformJmx != null) {
 			synchronized (platformJmx) {
 				platformJmx.wait();
@@ -833,11 +930,15 @@ public class SamplingAgent {
 	 */
 	public static void destroy() {
 		synchronized (STREAM_AGENTS) {
-			stopPlatformJMX();
-			cancel();
-			// TrackingLogger.shutdownAll();
-			platformJmx = null;
+			stopSampler();
+			shutdownSampler();
 		}
+	}
+
+	private static void shutdownSampler() {
+		cancel();
+		// TrackingLogger.shutdownAll();
+		platformJmx = null;
 	}
 
 	private static void initDefaults(Properties defProps) {

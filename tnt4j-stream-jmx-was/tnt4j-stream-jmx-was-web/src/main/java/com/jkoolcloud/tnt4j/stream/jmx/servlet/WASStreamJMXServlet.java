@@ -25,6 +25,7 @@ import java.lang.reflect.Method;
 
 import org.apache.commons.lang3.ArrayUtils;
 
+import com.jkoolcloud.tnt4j.stream.jmx.utils.Utils;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.WASSecurityHelper;
 
 /**
@@ -115,7 +116,7 @@ public class WASStreamJMXServlet extends StreamJMXServlet {
 
 				method.invoke(getServletConfig(), prop.key(), propertyValue);
 			} catch (Exception e) {
-				System.err.println("!!!!   Save failed " + e.getClass().getName() + " " + e.getMessage() + "   !!!!");
+				System.err.println("!!!!   Save failed " + e.getClass().getName() + " " + Utils.toString(e) + "   !!!!");
 				last = e;
 			}
 		}

@@ -169,4 +169,15 @@ public class Utils extends com.jkoolcloud.tnt4j.utils.Utils {
 		return INTERNAl_PROP_PREFIX + propName + INTERNAl_PROP_SUFFIX;
 	}
 
+	/**
+	 * Represents provided <tt>t</tt> throwable as string.
+	 *
+	 * @param t
+	 *            throwable to represent as string
+	 * @return string representation of throwable
+	 */
+	public static String toString(Throwable t) {
+		return t.toString();
+	}
+
 }

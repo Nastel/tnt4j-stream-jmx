@@ -111,11 +111,11 @@ seconds. Sampler options are optional - default value is `*:*!30000`. Initial sa
 #### To connect to JMX service over URL
  
 ```cmd
-java -Dtnt4j.config=.\config\tnt4j.properties -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -vm:service:jmx:<JMX_URL> -ul:admin -up:admin -ao:*:*!!10000 -cp:javax.net.ssl.trustStore=/your/path/to/truststore.jks -cp:javax.net.ssl.trustStorePassword=truststore_pwd
+java -Dtnt4j.config=.\config\tnt4j.properties -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -vm:service:jmx:<JMX_URL> -ul:admin -up:admin -ao:*:*!!10000 -cri:30 -cp:javax.net.ssl.trustStore=/your/path/to/truststore.jks -cp:javax.net.ssl.trustStorePassword=truststore_pwd
 ```
 System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [Stream-JMX configuration ](#stream-jmx-configuration).
  
-`SamplingAgent` arguments `-connect -vm:service:jmx:<JMX_URL> -ul:admin -up:admin -ao:*:*!!10000 -cp:javax.net.ssl.trustStore=/your/path/to/truststore.jks -cp:javax.net.ssl.trustStorePassword=truststore_pwd` states:
+`SamplingAgent` arguments `-connect -vm:service:jmx:<JMX_URL> -ul:admin -up:admin -ao:*:*!!10000 -cri:30 -cp:javax.net.ssl.trustStore=/your/path/to/truststore.jks -cp:javax.net.ssl.trustStorePassword=truststore_pwd` states:
 * `-connect` - defines that `SamplingAgent` shall connect to running JMX service over JMXConnector (RMI) connection.
 * `-vm:service:jmx:<JMX_URL>` - is JMX service URL to use for connection. Mandatory argument. Full URL may be like 
 `service:jmx:rmi://127.0.0.1/stub/rO0ABXN9AAAAAQAlamF2YXgubWFuYWdlbWVudC5yZW1vdGUucm1pLlJNSVNlcnZlcnhyABdqYXZhLmxhbmcucmVmbGVjdC5Qcm94eeEn2iDMEEPLAgABTAABaHQAJUxqYXZhL2xhbmcvcmVmbGVjdC9JbnZvY2F0aW9uSGFuZGxlcjt4cHNyAC1qYXZhLnJtaS5zZXJ2ZXIuUmVtb3RlT2JqZWN0SW52b2NhdGlvbkhhbmRsZXIAAAAAAAAAAgIAAHhyABxqYXZhLnJtaS5zZXJ2ZXIuUmVtb3RlT2JqZWN002G0kQxhMx4DAAB4cHc2AAtVbmljYXN0UmVmMgAACzE3Mi4xNi42Ljg2AADPWKO5DJD/bZIhG9aBuwAAAVo8DdAkgAEAeA==`.
@@ -127,13 +127,17 @@ initial sampler delay as 1 second. Default sampler delay value is equal to sampl
 * `-cp:javax.net.ssl.trustStore=/your/path/to/truststore.jks -cp:javax.net.ssl.trustStorePassword=truststore_pwd` - is JMX connector 
 parameters definitions in properties format `key=value`. JMX connector parameters are optional and can be defined multiple times - as many 
 as there are required JMX connector parameters.
+* `-cri:30` - is connection retry interval in seconds. In this case it is `30sec` between connect retry attempts. Connection retry interval 
+is optional - default value is `10sec`. Special values are:
+    * `0` indicates no delay between repeating connect attempts. 
+    * `-1` indicates no repeating connect attempts shall be made at all and application has to stop on first failed attempt to connect.
 
 **NOTE**:
 * URI of remote RMI service (e.g., to connect remote Kafka service) may require additional `/` chars:
 ```cmd
 -vm:service:jmx:rmi:///jndi/rmi:///172.16.6.35:2181/jmxrmi
 ```
-* Remote end may require to enable JMX listening port in service configuration (e.g., to connect remote Kafka service):
+* Remote end may require to enable JMX listening port in service configuration to accept connections (e.g., to connect remote Kafka service):
 ```bash
 export JMX_PORT=${JMX_PORT:-9999}
 ``` 
