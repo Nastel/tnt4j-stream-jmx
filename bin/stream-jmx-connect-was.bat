@@ -11,7 +11,6 @@ set MYCLIENTSAS="-Dcom.ibm.CORBA.ConfigURL=file:%RUNDIR%..\config\sas.client.pro
 set MYCLIENTSSL="-Dcom.ibm.SSL.ConfigURL=file:%RUNDIR%..\config\ssl.client.props"
 rem ----------------
 
-
 set TOOLS_PATH=%JAVA_HOME%\lib\tools.jar
 
 rem --- changed ---
