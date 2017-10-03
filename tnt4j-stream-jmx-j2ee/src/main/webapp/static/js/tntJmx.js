@@ -11,7 +11,7 @@ function scrollDownTA (tAreaId)
 }
 
 /* Scripts tab  function*/
-function openTab (evt, cityName)
+function openTab (evt, tAreaId)
 {
     var i, tabContent, tabLinks;
     tabContent = document.getElementsByClassName ("tabcontent");
@@ -24,6 +24,6 @@ function openTab (evt, cityName)
     {
         tabLinks[i].className = tabLinks[i].className.replace ("active", "");
     }
-    document.getElementById (cityName).style.display = "block";
+    document.getElementById (tAreaId).style.display = "block";
     evt.currentTarget.className += " active";
 }

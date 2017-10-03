@@ -50,6 +50,14 @@
                             <exclude>*-classes.jar</exclude>
                         </excludes>
                     </fileSet>
+                    <!-- configuration -->
+                    <fileSet>
+                        <outputDirectory>config</outputDirectory>
+                        <directory>/config</directory>
+                        <includes>
+                            <include>*.*</include>
+                        </includes>
+                    </fileSet>
                 </fileSets>
             </sources>
         </moduleSet>

@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.jkoolcloud.tnt4j.config.TrackerConfigStore;
 import com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.ConsoleOutputCaptor;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.Utils;
@@ -177,7 +178,7 @@ public abstract class StreamJMXServlet extends HttpServlet {
 					changed = true;
 				} catch (Exception e) {
 					System.err.println(
-							"!!!!   Failed writing " + StreamJMXProperties.TNT4J_CONFIG.defaultValue() + "   !!!!");
+							"!!!!   Failed writing " + StreamJMXProperties.value(servletProperties, TrackerConfigStore.TNT4J_PROPERTIES_KEY).defaultValue() + "   !!!!");
 					e.printStackTrace();
 				} finally {
 					Utils.close(tnt4jProperties);

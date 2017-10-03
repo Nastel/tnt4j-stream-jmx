@@ -109,4 +109,25 @@ public enum StreamJMXProperties implements StreamJMXProperty {
 		}
 		return result.values().toArray(new StreamJMXProperty[result.size()]);
 	}
+
+	public static StreamJMXProperty value(StreamJMXProperty[] pValues, String propName) {
+		for (StreamJMXProperty property : pValues) {
+			if (property.key().equals(propName)) {
+				return property;
+			}
+		}
+
+		return null;
+	}
+
+	public static StreamJMXProperty[] remove(StreamJMXProperty[] pValues, String propName) {
+		List<StreamJMXProperty> values = new ArrayList<StreamJMXProperty>(pValues.length);
+		for (StreamJMXProperty property : pValues) {
+			if (!property.key().equals(propName)) {
+				values.add(property);
+			}
+		}
+
+		return values.toArray(new StreamJMXProperty[values.size()]);
+	}
 }
