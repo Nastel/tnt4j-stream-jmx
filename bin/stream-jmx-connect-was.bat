@@ -19,9 +19,9 @@ rem -------------------------------------------
 
 set TNT4JOPTS="-Dorg.slf4j.simpleLogger.defaultLogLevel=debug" "-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true" "-Dtnt4j.dump.on.vm.shutdown=true" "-Dtnt4j.dump.on.exception=true" "-Dtnt4j.dump.provider.default=true"
 set TNT4JOPTS=%TNT4JOPTS% "-Dtnt4j.config=%RUNDIR%..\config\tnt4j.properties"
-rem ---- adding specific JMX sampler options ----
+rem ---- adding WAS specific JMX sampler options ----
 set TNT4JOPTS=%TNT4JOPTS% "-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.forceObjectName=true" "-Dcom.jkoolcloud.tnt4j.stream.jmx.sampler.factory=com.jkoolcloud.tnt4j.stream.jmx.impl.WASSamplerFactory"
-rem ---------------------------------------------
+rem -------------------------------------------------
 
 set AGENT_OPTIONS=%2
 if "%AGENT_OPTIONS%"=="" set AGENT_OPTIONS=*:*!!10000

@@ -20,9 +20,9 @@ LIBPATH="$SCRIPTPATH/../*:$SCRIPTPATH/../lib/*:$TOOLS_PATH:$WAS_PATH"
 
 TNT4JOPTS="-Dorg.slf4j.simpleLogger.defaultLogLevel=debug -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -Dtnt4j.dump.on.vm.shutdown=true -Dtnt4j.dump.on.exception=true -Dtnt4j.dump.provider.default=true"
 TNT4JOPTS="$TNT4JOPTS -Dtnt4j.config=$SCRIPTPATH/../config/tnt4j.properties"
-### ---- adding specific JMX sampler options ----
+### ---- adding WAS specific JMX sampler options ----
 TNT4JOPTS="$TNT4JOPTS -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.forceObjectName=true -Dcom.jkoolcloud.tnt4j.stream.jmx.sampler.factory=com.jkoolcloud.tnt4j.stream.jmx.impl.WASSamplerFactory"
-### ---------------------------------------------
+### -------------------------------------------------
 
 # NOTE! Double exclamation mark in bash has a special meaning (previous command)
 # to pass arguments correctly you need escape both. I.E. "stream-jmx-connect.sh tomcat *:*\!\!13000"

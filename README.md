@@ -142,6 +142,16 @@ is optional - default value is `10sec`. Special values are:
 export JMX_PORT=${JMX_PORT:-9999}
 ``` 
 
+#### Connecting remote WebSphere Application Server (WAS)
+
+Additions needed to run `SamplingAgent` connected to remote WAS machine can be found in executable OS shell run script files 
+`bin/stream-jmx-conenct-was.bat` or `bin/stream-jmx-conenct-was.sh`. It contains those major configuration additions:
+* WAS environment setup configuration
+* appending `LIBPATH` variable with WAS libs
+* adding WAS specific JMX sampler options
+* defining WAS `JMXConnector` parameters
+* adding those additional `java` command parameters 
+
 ### Coding into API
 You can connect `SamplingAgent` to JVM from your custom API by calling [SamplingAgent.connect(String,String)](./tnt4j-stream-jmx-core/src/main/java/com/jkoolcloud/tnt4j/stream/jmx/SamplingAgent.java#L574) method. 
 
@@ -361,7 +371,7 @@ For more information on TNT4J and `tnt4j.properties` [see TNT4J Wiki](https://gi
 Example below runs `SamplingAgent` helper class as a standalone java application with a given MBean filter `"*:*"`, sampling period in 
 milliseconds (`10000`), and time to run in milliseconds (`60000`):
 ```cmd
-java -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -classpath "tnt4j-stream-jmx*.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent "*:*" "" 10000 60000
+java -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -classpath "*;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent "*:*" "" 10000 60000
 ```
 
 ## Stream-JMX configuration 
@@ -901,12 +911,12 @@ Additionally alter system executables `bin/stream-jmx*.bat` or `bin/stream-jmx*.
 ```cmd
 set WAS_HOME="c:\IBM\WebSphere\AppServer"
 set WAS_PATH="%WAS_HOME%\runtimes\*"
-set LIBPATH="%RUNDIR%\..\tnt4j-stream-jmx*.jar;%RUNDIR%\..\lib\*;%TOOLS_PATH%;%WAS_PATH%"
+set LIBPATH="%RUNDIR%..\*;%RUNDIR%..\lib\*;%TOOLS_PATH%;%WAS_PATH%"
 ```
 ```bash
 WAS_HOME=/opt/IBM/WebSphere/AppServer
 WAS_PATH="$WAS_HOME/runtimes/*"
-LIBPATH="$RUNDIR/../tnt4j-stream-jmx*.jar:$RUNDIR/../lib/*:$TOOLS_PATH:$WAS_PATH"
+LIBPATH="$SCRIPTPATH/../*:$SCRIPTPATH/../lib/*:$TOOLS_PATH:$WAS_PATH"
 ```
 
 If you don't have actual `WAS` installation, `WAS_PATH` may also refer to jars located in `tnt4j-stream-jmx/tnt4j-stream-jmx-was/lib/*` 
