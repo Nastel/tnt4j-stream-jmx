@@ -23,7 +23,12 @@ set TNT4JOPTS=%TNT4JOPTS% "-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.forceObjectNa
 set AGENT_OPTIONS=%2
 if "%AGENT_OPTIONS%"=="" set AGENT_OPTIONS=*:*!!10000
 
+set CONN_OPTIONS=-connect -vm:service:jmx:iiop://localhost:2809/jndi/JMXConnector
+rem --- IF WAS and IBM JVM requires connection authentication or getting naming related exceptions ---
+rem set CONN_OPTIONS=%CONN_OPTIONS% -ul:Admin -up:admin -cp:java.naming.factory.initial=com.ibm.websphere.naming.WsnInitialContextFactory -cp:java.naming.factory.url.pkgs=com.ibm.ws.naming
+rem ---------------
+
 @echo on
 rem --- changed ---
-"%JAVA_HOME%\bin\java" %TNT4JOPTS% %MYCLIENTSAS% %MYCLIENTSSL% -classpath "%LIBPATH%" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -vm:service:jmx:iiop://localhost:2809/jndi/JMXConnector -ao:%AGENT_OPTIONS%
+"%JAVA_HOME%\bin\java" %TNT4JOPTS% %MYCLIENTSAS% %MYCLIENTSSL% -classpath "%LIBPATH%" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent %CONN_OPTIONS% -ao:%AGENT_OPTIONS%
 rem ---------------
