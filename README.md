@@ -557,122 +557,142 @@ Stream-JMX streams all collected metrics based on a scheduled interval via TNT4J
 All streams are written into TNT4J event sinks defined in `tnt4j.properties` file which is defined by `-Dtnt4j.config=tnt4j.properties` 
 property. 
 
-To stream Stream-JMX to [jkool cloud](https://www.jkoolcloud.com): (Requires [JESL libraries](https://nastel.github.io/JESL))
+### To [jKoolCloud](https://www.jkoolcloud.com): (Requires [JESL libraries](https://nastel.github.io/JESL))
+Below is an example of TNT4J stream configuration writing collected JMX samples to JKoolCloud server, formatted as JSON: 
+```properties
+;Stanza used for Stream-JMX sources
+{
+    source: com.jkoolcloud.tnt4j.stream.jmx
+    source.factory: com.jkoolcloud.tnt4j.source.SourceFactoryImpl
+    source.factory.GEOADDR: New York
+    source.factory.DATACENTER: YourDC
+    source.factory.RootFQN: SERVER=?#DATACENTER=?#GEOADDR=?
+    source.factory.RootSSN: tnt4j-stream-jmx
+
+    tracker.factory: com.jkoolcloud.tnt4j.tracker.DefaultTrackerFactory
+    dump.sink.factory: com.jkoolcloud.tnt4j.dump.DefaultDumpSinkFactory
+    event.sink.factory: com.jkoolcloud.tnt4j.sink.impl.BufferedEventSinkFactory
+    event.sink.factory.PooledLoggerFactory: com.jkoolcloud.tnt4j.sink.impl.PooledLoggerFactoryImpl
+
+    ; Event Sink configuration for streaming to jKoolCloud
+    ; NOTE: Requires JESL libraries (http://nastel.github.io/JESL/)
+    event.sink.factory.EventSinkFactory: com.jkoolcloud.jesl.tnt4j.sink.JKCloudEventSinkFactory
+    event.sink.factory.EventSinkFactory.Filename: logs/stream-jmx_activities.json
+    event.sink.factory.EventSinkFactory.Url: https://data.jkoolcloud.com
+    event.sink.factory.EventSinkFactory.Token: YOUR-ACCESS-TOKEN
+    event.formatter: com.jkoolcloud.tnt4j.format.JSONFormatter
+
+    ; Configure default sink filter based on level and time (elapsed/wait)
+    event.sink.factory.Filter: com.jkoolcloud.tnt4j.filters.EventLevelTimeFilter
+    event.sink.factory.Filter.Level: TRACE
+
+    tracking.selector: com.jkoolcloud.tnt4j.selector.DefaultTrackingSelector
+    tracking.selector.Repository: com.jkoolcloud.tnt4j.repository.FileTokenRepository
+}
+```
+
+### To socket
+Below is an example of TNT4J stream configuration writing collected JMX samples to a socket event sink
+`com.jkoolcloud.tnt4j.sink.impl.SocketEventSinkFactory`, formatted by `com.jkoolcloud.tnt4j.stream.jmx.format.FactNameValueFormatter`:
 ```properties
 ;Stanza used for Stream-JMX sources
 {
 	source: com.jkoolcloud.tnt4j.stream.jmx
-	source.factory: com.jkoolcloud.tnt4j.source.SourceFactoryImpl
-	source.factory.GEOADDR: New York
-	source.factory.DATACENTER: YourDC
-	source.factory.RootFQN: SERVER=?#DATACENTER=?#GEOADDR=?
-	source.factory.RootSSN: tnt4j-stream-jmx
-	
-	tracker.factory: com.com.jkoolcloud.jkool.tnt4j.tracker.DefaultTrackerFactory
-	dump.sink.factory: com.jkoolcloud.tnt4j.dump.DefaultDumpSinkFactory
+    source.factory: com.jkoolcloud.tnt4j.source.SourceFactoryImpl
+    source.factory.GEOADDR: New York
+    source.factory.DATACENTER: YourDC
+    source.factory.RootFQN: SERVER=?#DATACENTER=?#GEOADDR=?
+    source.factory.RootSSN: tnt4j-stream-jmx
 
-	; Event sink definition where all streams are recorded
-	event.sink.factory: com.jkoolcloud.tnt4j.sink.impl.BufferedEventSinkFactory
-	event.sink.factory.PooledLoggerFactory: com.jkoolcloud.tnt4j.sink.impl.PooledLoggerFactoryImpl
+    tracker.factory: com.jkoolcloud.tnt4j.tracker.DefaultTrackerFactory
+    dump.sink.factory: com.jkoolcloud.tnt4j.dump.DefaultDumpSinkFactory
+    event.sink.factory: com.jkoolcloud.tnt4j.sink.impl.BufferedEventSinkFactory
+    event.sink.factory.PooledLoggerFactory: com.jkoolcloud.tnt4j.sink.impl.PooledLoggerFactoryImpl
 
-	; Event Sink configuration for streaming to jKool Cloud
-	; event.sink.factory.EventSinkFactory.Filename: jkoolcloud.json
-	event.sink.factory.EventSinkFactory.Url: https://data.jkoolcloud.com
-	event.sink.factory.EventSinkFactory.Token: ACCESS-TOKEN
-	event.formatter: com.jkoolcloud.tnt4j.format.JSONFormatter
+    event.sink.factory.EventSinkFactory: com.jkoolcloud.tnt4j.sink.impl.SocketEventSinkFactory
+    ; If socket sent data should no be logged enywhere else
+    event.sink.factory.EventSinkFactory.eventSinkFactory: com.jkoolcloud.tnt4j.sink.impl.NullEventSinkFactory
+    ; If socket sent data should be logged to file
+    #event.sink.factory.EventSinkFactory.eventSinkFactory: com.jkoolcloud.tnt4j.sink.impl.FileEventSinkFactory
+    #event.sink.factory.EventSinkFactory.eventSinkFactory.FileName: logs/tnt4j-stream-jmx_samples_socket.log
+    event.sink.factory.EventSinkFactory.Host: localhost
+    event.sink.factory.EventSinkFactory.Port: 6060
+    ; NOTE: DO NOT define "event.formatter" property value if have no need for custom formatter.
+    ;       SamplerFactory will take care to set appropriate one for a context.
+    #event.formatter: com.jkoolcloud.tnt4j.format.JSONFormatter
+    ; If JMX attributes should be formatted as JMX object names
+    event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.FactNameValueFormatter
+    ; If JMX attributes should be formatted as JMX object paths
+    #event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.FactPathValueFormatter
+    ; If JMX attributes should be formatted as JMX object paths for IBM WAS and Liberty
+    #event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.SLIFactPathValueFormatter
+    ; If formatter should serialize only simple types JMX attribute values. Rest are replaced by dummy value.
+    event.formatter.SerializeSimplesOnly: false
+    ; Mapping of attribute key string symbol replacements
+    #event.formatter.KeyReplacements: " "->"_" "\""->"'"
+    ; Mapping of attribute value string symbol replacements
+    #event.formatter.ValueReplacements: "\r"->"\\r" "\n"->"\\n" ";"->"|" ","->"|" "["->"{(" "]"->")}" "\""->"'"
+    ; Definitions ObjectName attributes sets used when building path: ';' is level set delimiter and ',' is set attribute names delimiter
+    #event.formatter.PathLevelAttributes:  domain; type; name, brokerName; service, connector, destinationType; instanceName, connectorName, destinationName
 
-	; Configure default sink filter
-	event.sink.factory.Filter: com.jkoolcloud.tnt4j.filters.EventLevelTimeFilter
-	event.sink.factory.Filter.Level: TRACE
-	
-	tracking.selector: com.jkoolcloud.tnt4j.selector.DefaultTrackingSelector
-	tracking.selector.Repository: com.jkoolcloud.tnt4j.repository.FileTokenRepository
+    ; Configure default sink filter based on level and time (elapsed/wait)
+    event.sink.factory.Filter: com.jkoolcloud.tnt4j.filters.EventLevelTimeFilter
+    event.sink.factory.Filter.Level: TRACE
+
+    tracking.selector: com.jkoolcloud.tnt4j.selector.DefaultTrackingSelector
+    tracking.selector.Repository: com.jkoolcloud.tnt4j.repository.FileTokenRepository
 }
 ```
-Below is an example of TNT4J stream definition where all Stream-JMX streams are written into a socket event sink
-`com.jkoolcloud.tnt4j.sink.impl.SocketEventSinkFactory`, formatted by `com.jkoolcloud.tnt4j.stream.jmx.format.FactNameValueFormatter` :
+
+### To file
+Below is an example of TNT4J stream configuration writing collected JMX samples to a log file `MyStream.log`, formatted by 
+`com.jkoolcloud.tnt4j.stream.jmx.format.FactNameValueFormatter`:
 ```properties
 ;Stanza used for Stream-JMX sources
 {
-	source: com.jkoolcloud.tnt4j.stream.jmx
-	source.factory: com.jkoolcloud.tnt4j.source.SourceFactoryImpl
-	source.factory.GEOADDR: New York
-	source.factory.DATACENTER: YourDC
-	source.factory.RootFQN: SERVER=?#DATACENTER=?#GEOADDR=?
-	source.factory.RootSSN: tnt4j-stream-jmx
+    source: com.jkoolcloud.tnt4j.stream.jmx
+    source.factory: com.jkoolcloud.tnt4j.source.SourceFactoryImpl
+    source.factory.GEOADDR: New York
+    source.factory.DATACENTER: YourDC
+    source.factory.RootFQN: SERVER=?#DATACENTER=?#GEOADDR=?
+    source.factory.RootSSN: tnt4j-stream-jmx
 
-	tracker.factory: com.jkoolcloud.tnt4j.tracker.DefaultTrackerFactory
-	dump.sink.factory: com.jkoolcloud.tnt4j.dump.DefaultDumpSinkFactory
+    tracker.factory: com.jkoolcloud.tnt4j.tracker.DefaultTrackerFactory
+    dump.sink.factory: com.jkoolcloud.tnt4j.dump.DefaultDumpSinkFactory
+    event.sink.factory: com.jkoolcloud.tnt4j.sink.impl.BufferedEventSinkFactory
+    event.sink.factory.PooledLoggerFactory: com.jkoolcloud.tnt4j.sink.impl.PooledLoggerFactoryImpl
 
-	; Event sink definition where all streams are recorded
+    event.sink.factory.EventSinkFactory: com.jkoolcloud.tnt4j.sink.impl.FileEventSinkFactory
+    event.sink.factory.EventSinkFactory.FileName: MyStream.log
+    ; NOTE: DO NOT define "event.formatter" property value if have no need for custom formatter.
+    ;       SamplerFactory will take care to set appropriate one for a context.
+    #event.formatter: com.jkoolcloud.tnt4j.format.JSONFormatter
+    ; If JMX attributes should be formatted as JMX object names
+    event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.FactNameValueFormatter
+    ; If JMX attributes should be formatted as JMX object paths
+    #event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.FactPathValueFormatter
+    ; If JMX attributes should be formatted as JMX object paths for IBM WAS and Liberty
+    #event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.SLIFactPathValueFormatter
+    ; If formatter should serialize only simple types JMX attribute values. Rest are replaced by dummy value.
+    event.formatter.SerializeSimplesOnly: false
+    ; Mapping of attribute key string symbol replacements
+    #event.formatter.KeyReplacements: " "->"_" "\""->"'"
+    ; Mapping of attribute value string symbol replacements
+    #event.formatter.ValueReplacements: "\r"->"\\r" "\n"->"\\n" ";"->"|" ","->"|" "["->"{(" "]"->")}" "\""->"'"
+    ; Definitions ObjectName attributes sets used when building path: ';' is level set delimiter and ',' is set attribute names delimiter
+    #event.formatter.PathLevelAttributes:  domain; type; name, brokerName; service, connector, destinationType; instanceName, connectorName, destinationName
 
-	event.sink.factory: com.jkoolcloud.tnt4j.sink.impl.BufferedEventSinkFactory
-	event.sink.factory.PooledLoggerFactory: com.jkoolcloud.tnt4j.sink.impl.PooledLoggerFactoryImpl
+    ; Configure default sink filter based on level and time (elapsed/wait)
+    event.sink.factory.Filter: com.jkoolcloud.tnt4j.filters.EventLevelTimeFilter
+    event.sink.factory.Filter.Level: TRACE
 
-	event.sink.factory.EventSinkFactory: com.jkoolcloud.tnt4j.sink.impl.SocketEventSinkFactory
-	event.sink.factory.EventSinkFactory.eventSinkFactory: com.jkoolcloud.tnt4j.sink.impl.NullEventSinkFactory
-	event.sink.factory.EventSinkFactory.Host: localhost
-	event.sink.factory.EventSinkFactory.Port: 6060
-
-	; Configure default sink filter
-	event.sink.factory.Filter: com.jkoolcloud.tnt4j.filters.EventLevelTimeFilter
-	event.sink.factory.Filter.Level: TRACE
-
-	; If JMX attributes should be formatted as JMX object names
-	event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.FactNameValueFormatter
-	; If JMX attributes should be formatted as JMX object paths
-	;event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.FactPathValueFormatter
-	; If formatter should serialize only simple types JMX attribute values. Rest are replaced by dummy value.
-	event.formatter.SerializeSimplesOnly: true
-	; Mapping of attribute key string symbol replacements
-	event.formatter.KeyReplacements: " "->"_"
-	; Mapping of attribute value string symbol replacements
-	event.formatter.ValueReplacements: ";"->"|" ","->"|" "["->"{(" "]"->")}"
-
-	tracking.selector: com.jkoolcloud.tnt4j.selector.DefaultTrackingSelector
-	tracking.selector.Repository: com.jkoolcloud.tnt4j.repository.FileTokenRepository
+    tracking.selector: com.jkoolcloud.tnt4j.selector.DefaultTrackingSelector
+    tracking.selector.Repository: com.jkoolcloud.tnt4j.repository.FileTokenRepository
 }
 ```
-To stream Stream-JMX into a log file `MyStream.log`:
-```properties
-;Stanza used for Stream-JMX sources
-{
-	source: com.jkoolcloud.tnt4j.stream.jmx
-	source.factory: com.jkoolcloud.tnt4j.source.SourceFactoryImpl
-	source.factory.GEOADDR: New York
-	source.factory.DATACENTER: YourDC
-	source.factory.RootFQN: SERVER=?#DATACENTER=?#GEOADDR=?
-	source.factory.RootSSN: tnt4j-stream-jmx
 
-	tracker.factory: com.jkoolcloud.tnt4j.tracker.DefaultTrackerFactory
-	dump.sink.factory: com.jkoolcloud.tnt4j.dump.DefaultDumpSinkFactory
-
-	; Event sink definition where all streams are recorded
-	event.sink.factory: com.jkoolcloud.tnt4j.sink.impl.BufferedEventSinkFactory
-	event.sink.factory.PooledLoggerFactory: com.jkoolcloud.tnt4j.sink.impl.PooledLoggerFactoryImpl
-	event.sink.factory.EventSinkFactory: com.jkoolcloud.tnt4j.sink.impl.FileEventSinkFactory
-	event.sink.factory.EventSinkFactory.FileName: MyStream.log
-
-	; Configure default sink filter
-	event.sink.factory.Filter: com.jkoolcloud.tnt4j.filters.EventLevelTimeFilter
-	event.sink.factory.Filter.Level: TRACE
-
-	; If JMX attributes should be formatted as JMX object names
-	event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.FactNameValueFormatter
-	; If JMX attributes should be formatted as JMX object paths
-	;event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.FactPathValueFormatter
-	; If formatter should serialize only simple types JMX attribute values. Rest are replaced by dummy value.
-	event.formatter.SerializeSimplesOnly: true
-	; Mapping of attribute key string symbol replacements
-	event.formatter.KeyReplacements: " "->"_"
-	; Mapping of attribute value string symbol replacements
-	event.formatter.ValueReplacements: ";"->"|" ","->"|" "["->"{(" "]"->")}"
-
-	tracking.selector: com.jkoolcloud.tnt4j.selector.DefaultTrackingSelector
-	tracking.selector.Repository: com.jkoolcloud.tnt4j.repository.FileTokenRepository
-}
-```
-You can write your own custom event sinks (HTTPS, HTTP, etc) and your own stream formatters without having to change Stream-JMX code or 
+### And even more
+You can also write your own custom event sinks (HTTPS, HTTP, etc) and your own stream formatters without having to change Stream-JMX code or 
 your application. TNT4J comes with a set of built-in event sink implementations such as: 
 
 * `com.jkoolcloud.tnt4j.logger.Log4JEventSinkFactory` -- log4j
