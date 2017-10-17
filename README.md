@@ -157,6 +157,17 @@ Additions needed to run `SamplingAgent` connected to remote WAS machine can be f
 * defining WAS `JMXConnector` parameters
 * adding those additional `java` command parameters
 
+**NOTE:** When you have IBM JVM running on client side and getting authentication or naming related exceptions, you have to:
+* Alter `sas.client.props` by setting `com.ibm.CORBA.validateBasicAuth=false`
+* Add additional `SamplingAgent` arguments:
+```properties
+    -ul:[your WAS user]
+    -up:[your WAS user pass]
+    -cp:java.naming.factory.initial=com.ibm.websphere.naming.WsnInitialContextFactory
+    -cp:java.naming.factory.url.pkgs=com.ibm.ws.naming
+    -cp:java.naming.provider.url=corbaloc:iiop:localhost:2809/WsnAdminNameService
+```
+
 ### Coding into API
 You can connect `SamplingAgent` to JVM from your custom API by calling [SamplingAgent.connect(String,String)](./tnt4j-stream-jmx-core/src/main/java/com/jkoolcloud/tnt4j/stream/jmx/SamplingAgent.java#L574) method. 
 
