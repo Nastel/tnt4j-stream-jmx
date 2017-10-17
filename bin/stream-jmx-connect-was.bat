@@ -28,7 +28,7 @@ if "%AGENT_OPTIONS%"=="" set AGENT_OPTIONS=*:*!!10000
 
 set CONN_OPTIONS=-connect -vm:service:jmx:iiop://localhost:2809/jndi/JMXConnector -cp:java.naming.provider.url=corbaname:iiop:localhost:2809
 rem --- Uncomment of WAS and IBM JVM requires connection authentication or getting naming related exceptions ---
-rem set CONN_OPTIONS=%CONN_OPTIONS% -ul:Admin -up:admin -cp:java.naming.factory.initial=com.ibm.websphere.naming.WsnInitialContextFactory -cp:java.naming.factory.url.pkgs=com.ibm.ws.naming
+rem set CONN_OPTIONS=-connect -vm:service:jmx:iiop://localhost:2809/jndi/JMXConnector -ul:Admin -up:admin -cp:java.naming.factory.initial=com.ibm.websphere.naming.WsnInitialContextFactory -cp:java.naming.factory.url.pkgs=com.ibm.ws.naming -cp:java.naming.provider.url=corbaloc:iiop:localhost:2809/WsnAdminNameService
 rem ------------------------------------------------------------------------------------------------------------
 
 @echo on

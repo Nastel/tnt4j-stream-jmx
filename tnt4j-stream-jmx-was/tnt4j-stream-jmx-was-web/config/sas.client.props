@@ -4,6 +4,9 @@ com.ibm.CORBA.authenticationTarget=BasicAuth
 com.ibm.CORBA.authenticationRetryEnabled=true
 com.ibm.CORBA.authenticationRetryCount=3
 com.ibm.CORBA.validateBasicAuth=true
+##### In case of using IBM JVM on client side #####
+#com.ibm.CORBA.validateBasicAuth=false
+###################################################
 com.ibm.CORBA.securityServerHost=
 com.ibm.CORBA.securityServerPort=
 com.ibm.CORBA.loginTimeout=300
