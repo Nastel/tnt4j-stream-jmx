@@ -16,8 +16,10 @@
 
 package com.jkoolcloud.tnt4j.stream.jmx.servlet;
 
-import static com.jkoolcloud.tnt4j.stream.jmx.servlet.StreamJMXProperty.Display.*;
-import static com.jkoolcloud.tnt4j.stream.jmx.servlet.StreamJMXProperty.Scope.*;
+import static com.jkoolcloud.tnt4j.stream.jmx.servlet.StreamJMXProperty.Display.EDITABLE;
+import static com.jkoolcloud.tnt4j.stream.jmx.servlet.StreamJMXProperty.Display.READ_ONLY;
+import static com.jkoolcloud.tnt4j.stream.jmx.servlet.StreamJMXProperty.Scope.LOCAL;
+import static com.jkoolcloud.tnt4j.stream.jmx.servlet.StreamJMXProperty.Scope.SYSTEM;
 
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -33,12 +35,23 @@ import com.jkoolcloud.tnt4j.config.TrackerConfigStore;
 public class LibertyStreamJMXServlet extends StreamJMXServlet {
 	private static final long serialVersionUID = -5801839005330837514L;
 
+	/**
+	 * Liberty specific properties values enumeration.
+	 */
 	enum LibertyStreamJMXProperties implements StreamJMXProperty {
-		TNT4J_CONFIG_CONT("tnt4j_liberty.properties"                          , "TNT4J config"                                               , FILE_EDITOR, FILE),
-		SERVER_NAME("wlp.server.name"                                         , "UnknownLibertyServer"                                       , EDITABLE   , SYSTEM, LOCAL),
+		/**
+		 * Liberty server name.
+		 */
+		SERVER_NAME("wlp.server.name", "UnknownLibertyServer", EDITABLE, SYSTEM, LOCAL),
 
-		JMX_SAMPLER_FACTORY("com.jkoolcloud.tnt4j.stream.jmx.sampler.factory" , "com.jkoolcloud.tnt4j.stream.jmx.impl.LibertySamplerFactory" , READ_ONLY  , SYSTEM),
-		TNT4J_CONFIG(TrackerConfigStore.TNT4J_PROPERTIES_KEY                  , "file:./tnt4j_liberty.properties"                            , READ_ONLY  , SYSTEM, LOCAL);
+		/**
+		 * JMX sampler factory used to collect Liberty JMX samples.
+		 */
+		JMX_SAMPLER_FACTORY("com.jkoolcloud.tnt4j.stream.jmx.sampler.factory", "com.jkoolcloud.tnt4j.stream.jmx.impl.LibertySamplerFactory", READ_ONLY, SYSTEM),
+		/**
+		 * TNT4J configuration file used to stream Liberty JMX samples.
+		 */
+		TNT4J_CONFIG(TrackerConfigStore.TNT4J_PROPERTIES_KEY, "file:./tnt4j_liberty.properties", READ_ONLY, SYSTEM, LOCAL);
 
 		private String key;
 		private String defaultValue;
@@ -80,8 +93,8 @@ public class LibertyStreamJMXServlet extends StreamJMXServlet {
 	@Override
 	@SuppressWarnings("unchecked")
 	protected StreamJMXProperty[] initProperties() {
-		StreamJMXProperty[] allProps = StreamJMXProperties.allValues(StreamJMXProperties.class, LibertyStreamJMXProperties.class);
-		allProps = StreamJMXProperties.remove(allProps, StreamJMXProperties.TNT4J_CONFIG_CONT.key());
+		StreamJMXProperty[] allProps = StreamJMXProperties.allValues(StreamJMXProperties.class,
+				LibertyStreamJMXProperties.class);
 
 		return allProps;
 	}

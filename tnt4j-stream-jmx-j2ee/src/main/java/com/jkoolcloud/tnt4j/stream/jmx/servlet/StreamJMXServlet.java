@@ -171,14 +171,13 @@ public abstract class StreamJMXServlet extends HttpServlet {
 			String tnt4jConfigContents = req.getParameter(property.key());
 			if (tnt4jConfigContents != null) {
 				FileOutputStream tnt4jProperties = null;
+				String fileName = new File(System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY)).getName();
 				try {
-					tnt4jProperties = new FileOutputStream(
-							getClass().getClassLoader().getResource(property.key()).getFile());
+					tnt4jProperties = new FileOutputStream(getClass().getClassLoader().getResource(fileName).getFile());
 					tnt4jProperties.write(tnt4jConfigContents.getBytes());
 					changed = true;
 				} catch (Exception e) {
-					System.err.println(
-							"!!!!   Failed writing " + StreamJMXProperties.value(servletProperties, TrackerConfigStore.TNT4J_PROPERTIES_KEY).defaultValue() + "   !!!!");
+					System.err.println("!!!!   Failed writing to file: " + fileName + "   !!!!");
 					e.printStackTrace();
 				} finally {
 					Utils.close(tnt4jProperties);
@@ -259,8 +258,8 @@ public abstract class StreamJMXServlet extends HttpServlet {
 			out.println("<H3>" + property.defaultValue() + "</H3>");
 			out.println("<textarea name=\"" + property.key() + "\" cols=\"140\" rows=\"55\">");
 
-			String configString = getString(
-					StreamJMXServlet.class.getClassLoader().getResourceAsStream(property.key()));
+			String configString = getString(StreamJMXServlet.class.getClassLoader().getResourceAsStream(
+					new File(System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY)).getName()));
 			try {
 				out.println(configString);
 			} catch (Exception e) {

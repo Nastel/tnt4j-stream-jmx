@@ -31,26 +31,71 @@ import com.jkoolcloud.tnt4j.config.TrackerConfigStore;
 
 /**
  * Common Stream-JMX servlet used properties enumeration.
- * 
+ *
  * @version $Revision: 1 $
  */
 public enum StreamJMXProperties implements StreamJMXProperty {
-	AO_INCLUDE("com.jkoolcloud.tnt4j.stream.jmx.agent.options.include"    , "*:*"                                                        , EDITABLE   , SYNTHETIC, LOCAL),
-	AO_EXCLUDE("com.jkoolcloud.tnt4j.stream.jmx.agent.options.exclude"    , ""                                                           , EDITABLE   , SYNTHETIC, LOCAL),
-	AO_PERIOD("com.jkoolcloud.tnt4j.stream.jmx.agent.options.period"      , TimeUnit.SECONDS.toMillis(60)                                , EDITABLE   , SYNTHETIC, LOCAL),
-	AO_DELAY("com.jkoolcloud.tnt4j.stream.jmx.agent.options.init.delay"   , "0"                                                          , EDITABLE   , SYNTHETIC, LOCAL),
-	VM("com.jkoolcloud.tnt4j.stream.jmx.agent.vm"                         , ""                                                           , HIDDEN     , LOCAL),
-	TNT4J_CONFIG_CONT("tnt4j.properties"                                  , "TNT4J config"                                               , FILE_EDITOR, FILE),
-	HOST("com.jkoolcloud.tnt4j.stream.jmx.tnt4j.out.host"                 , "localhost"                                                  , EDITABLE   , SYSTEM   , LOCAL),
-	PORT("com.jkoolcloud.tnt4j.stream.jmx.tnt4j.out.port"                 , "6000"                                                       , EDITABLE   , SYSTEM   , LOCAL),
-	TRACE("com.jkoolcloud.tnt4j.stream.jmx.agent.trace"                   , "true"                                                       , EDITABLE   , SYSTEM),
-	FORCE_OBJ_NAME("com.jkoolcloud.tnt4j.stream.jmx.agent.forceObjectName", "true"                                                       , EDITABLE   , SYSTEM),
-	USERNAME("com.jkoolcloud.tnt4j.stream.jmx.agent.user"                 , ""                                                           , HIDDEN     , LOCAL),
-	PASSWORD("com.jkoolcloud.tnt4j.stream.jmx.agent.pass"                 , ""                                                           , HIDDEN     , LOCAL),
-	
-	JMX_SAMPLER_FACTORY("com.jkoolcloud.tnt4j.stream.jmx.sampler.factory" , "com.jkoolcloud.tnt4j.stream.jmx.impl.J2EESamplerFactory"    , READ_ONLY  , SYSTEM),
-	AO("com.jkoolcloud.tnt4j.stream.jmx.agent.options"                    , "*:*!!60000!0"                                               , READ_ONLY  , LOCAL),
-	TNT4J_CONFIG(TrackerConfigStore.TNT4J_PROPERTIES_KEY                  , "file:./tnt4j.properties"                                    , READ_ONLY  , SYSTEM   , LOCAL);
+	/**
+	 * Agent options sampling {@link javax.management.ObjectName}s include filter.
+	 */
+	AO_INCLUDE("com.jkoolcloud.tnt4j.stream.jmx.agent.options.include", "*:*", EDITABLE, SYNTHETIC, LOCAL),
+	/**
+	 * Agent options sampling {@link javax.management.ObjectName}s exclude filter.
+	 */
+	AO_EXCLUDE("com.jkoolcloud.tnt4j.stream.jmx.agent.options.exclude", "", EDITABLE, SYNTHETIC, LOCAL),
+	/**
+	 * Agent options sampling period value.
+	 */
+	AO_PERIOD("com.jkoolcloud.tnt4j.stream.jmx.agent.options.period", TimeUnit.SECONDS.toMillis(60), EDITABLE, SYNTHETIC, LOCAL),
+	/**
+	 * Agent options initial delay value.
+	 */
+	AO_DELAY("com.jkoolcloud.tnt4j.stream.jmx.agent.options.init.delay", "0", EDITABLE, SYNTHETIC, LOCAL),
+	/**
+	 * JVM descriptor to collect JMX samples.
+	 */
+	VM("com.jkoolcloud.tnt4j.stream.jmx.agent.vm", "", HIDDEN, LOCAL),
+	/**
+	 * TNT4J properties editor title.
+	 */
+	TNT4J_CONFIG_CONT("tnt4j.properties", "TNT4J config", FILE_EDITOR, FILE),
+	/**
+	 * Host name to send sampled data.
+	 */
+	HOST("com.jkoolcloud.tnt4j.stream.jmx.tnt4j.out.host", "localhost", EDITABLE, SYSTEM, LOCAL),
+	/**
+	 * .
+	 */
+	PORT("com.jkoolcloud.tnt4j.stream.jmx.tnt4j.out.port", "6000", EDITABLE, SYSTEM, LOCAL),
+	/**
+	 * Agent trace flag.
+	 */
+	TRACE("com.jkoolcloud.tnt4j.stream.jmx.agent.trace", "true", EDITABLE, SYSTEM),
+	/**
+	 * Agent force object name flag.
+	 */
+	FORCE_OBJ_NAME("com.jkoolcloud.tnt4j.stream.jmx.agent.forceObjectName", "true", EDITABLE, SYSTEM),
+	/**
+	 * User login mame.
+	 */
+	USERNAME("com.jkoolcloud.tnt4j.stream.jmx.agent.user", "", HIDDEN, LOCAL),
+	/**
+	 * User password.
+	 */
+	PASSWORD("com.jkoolcloud.tnt4j.stream.jmx.agent.pass", "", HIDDEN, LOCAL),
+
+	/**
+	 * JMX sampler factory.
+	 */
+	JMX_SAMPLER_FACTORY("com.jkoolcloud.tnt4j.stream.jmx.sampler.factory", "com.jkoolcloud.tnt4j.stream.jmx.impl.J2EESamplerFactory", READ_ONLY, SYSTEM),
+	/**
+	 * Agent options.
+	 */
+	AO("com.jkoolcloud.tnt4j.stream.jmx.agent.options", "*:*!!60000!0", READ_ONLY, LOCAL),
+	/**
+	 * TNT4J configuration file.
+	 */
+	TNT4J_CONFIG(TrackerConfigStore.TNT4J_PROPERTIES_KEY, "file:./tnt4j.properties", READ_ONLY, SYSTEM, LOCAL);
 
 	private String key;
 	private String defaultValue;
@@ -88,6 +133,16 @@ public enum StreamJMXProperties implements StreamJMXProperty {
 		return ArrayUtils.contains(this.scope, scope);
 	}
 
+	/**
+	 * Finds properties values having display value defined in <tt>filters</tt>.
+	 *
+	 * @param pValues
+	 *            properties values array
+	 * @param filters
+	 *            display values
+	 *
+	 * @return array of properties having <tt>filters</tt> defined display values
+	 */
 	public static StreamJMXProperty[] values(StreamJMXProperty[] pValues, Display... filters) {
 		List<StreamJMXProperty> result = new ArrayList<StreamJMXProperty>(pValues.length);
 		for (Display filter : filters) {
@@ -100,6 +155,14 @@ public enum StreamJMXProperties implements StreamJMXProperty {
 		return result.toArray(new StreamJMXProperty[result.size()]);
 	}
 
+	/**
+	 * Concatenates all properties values into single array from provided enumeration classes.
+	 *
+	 * @param enumClasses
+	 *            properties values enumeration classes
+	 *
+	 * @return concatenated properties values array
+	 */
 	public static StreamJMXProperty[] allValues(Class<? extends StreamJMXProperty>... enumClasses) {
 		Map<String, StreamJMXProperty> result = new LinkedHashMap<String, StreamJMXProperty>();
 		for (Class<? extends StreamJMXProperty> enumClass : enumClasses) {
@@ -110,6 +173,17 @@ public enum StreamJMXProperties implements StreamJMXProperty {
 		return result.values().toArray(new StreamJMXProperty[result.size()]);
 	}
 
+	/**
+	 * Finds name <tt>propName</tt> identified property within <tt>pValues</tt> array content.
+	 *
+	 * @param pValues
+	 *            properties values array
+	 * @param propName
+	 *            property name to find
+	 *
+	 * @return name <tt>propName</tt> identified property found within <tt>pValues</tt> array, or {@code null} if there
+	 *         is no property with that name within array content
+	 */
 	public static StreamJMXProperty value(StreamJMXProperty[] pValues, String propName) {
 		for (StreamJMXProperty property : pValues) {
 			if (property.key().equals(propName)) {
@@ -120,6 +194,16 @@ public enum StreamJMXProperties implements StreamJMXProperty {
 		return null;
 	}
 
+	/**
+	 * Removes name <tt>propName</tt> identified property from <tt>pValues</tt> array.
+	 *
+	 * @param pValues
+	 *            properties values array
+	 * @param propName
+	 *            property name to remove
+	 *
+	 * @return properties values array without name <tt>propName</tt> identified property
+	 */
 	public static StreamJMXProperty[] remove(StreamJMXProperty[] pValues, String propName) {
 		List<StreamJMXProperty> values = new ArrayList<StreamJMXProperty>(pValues.length);
 		for (StreamJMXProperty property : pValues) {

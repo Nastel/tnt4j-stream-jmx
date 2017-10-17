@@ -16,8 +16,10 @@
 
 package com.jkoolcloud.tnt4j.stream.jmx.servlet;
 
-import static com.jkoolcloud.tnt4j.stream.jmx.servlet.StreamJMXProperty.Display.*;
-import static com.jkoolcloud.tnt4j.stream.jmx.servlet.StreamJMXProperty.Scope.*;
+import static com.jkoolcloud.tnt4j.stream.jmx.servlet.StreamJMXProperty.Display.EDITABLE;
+import static com.jkoolcloud.tnt4j.stream.jmx.servlet.StreamJMXProperty.Display.READ_ONLY;
+import static com.jkoolcloud.tnt4j.stream.jmx.servlet.StreamJMXProperty.Scope.LOCAL;
+import static com.jkoolcloud.tnt4j.stream.jmx.servlet.StreamJMXProperty.Scope.SYSTEM;
 
 import java.lang.reflect.Method;
 
@@ -37,14 +39,31 @@ import com.jkoolcloud.tnt4j.stream.jmx.utils.WASSecurityHelper;
 public class WASStreamJMXServlet extends StreamJMXServlet {
 	private static final long serialVersionUID = -8291650473147748942L;
 
+	/**
+	 * WAS specific properties values enumeration.
+	 */
 	public enum WASStreamJMXProperties implements StreamJMXProperty {
-		TNT4J_CONFIG_CONT("tnt4j_was.properties"                              , "TNT4J config"                                          , FILE_EDITOR, FILE),
-                USERNAME("com.jkoolcloud.tnt4j.stream.jmx.agent.user"                 , ""                                                      , EDITABLE   , LOCAL),
-		PASSWORD("com.jkoolcloud.tnt4j.stream.jmx.agent.pass"                 , ""                                                      , EDITABLE   , LOCAL),
-		SERVER_NAME("was.server.node.name"                                    , getServerName()                                         , EDITABLE   , SYSTEM   , LOCAL),
+		/**
+		 * WAS subject user mame.
+		 */
+		USERNAME("com.jkoolcloud.tnt4j.stream.jmx.agent.user", "", EDITABLE, LOCAL),
+		/**
+		 * WAS subject password.
+		 */
+		PASSWORD("com.jkoolcloud.tnt4j.stream.jmx.agent.pass", "", EDITABLE, LOCAL),
+		/**
+		 * WAS server name.
+		 */
+		SERVER_NAME("was.server.node.name", getServerName(), EDITABLE, SYSTEM, LOCAL),
 
-		JMX_SAMPLER_FACTORY("com.jkoolcloud.tnt4j.stream.jmx.sampler.factory" , "com.jkoolcloud.tnt4j.stream.jmx.impl.WASSamplerFactory", READ_ONLY  , SYSTEM),
-		TNT4J_CONFIG(TrackerConfigStore.TNT4J_PROPERTIES_KEY                  , "file:./tnt4j_was.properties"                           , READ_ONLY  , SYSTEM, LOCAL);
+		/**
+		 * JMX sampler factory used to collect WAS JMX samples.
+		 */
+		JMX_SAMPLER_FACTORY("com.jkoolcloud.tnt4j.stream.jmx.sampler.factory", "com.jkoolcloud.tnt4j.stream.jmx.impl.WASSamplerFactory", READ_ONLY, SYSTEM),
+		/**
+		 * TNT4J configuration file used to stream WAS JMX samples.
+		 */
+		TNT4J_CONFIG(TrackerConfigStore.TNT4J_PROPERTIES_KEY, "file:./tnt4j_was.properties", READ_ONLY, SYSTEM, LOCAL);
 
 		private String key;
 		private String defaultValue;
@@ -82,6 +101,11 @@ public class WASStreamJMXServlet extends StreamJMXServlet {
 			return ArrayUtils.contains(this.scope, scope);
 		}
 
+		/**
+		 * Resolves WAS server name.
+		 *
+		 * @return resolved WAS server name
+		 */
 		public static String getServerName() {
 			try {
 				return com.ibm.websphere.runtime.ServerName.getFullName();
@@ -94,8 +118,8 @@ public class WASStreamJMXServlet extends StreamJMXServlet {
 	@Override
 	@SuppressWarnings("unchecked")
 	protected StreamJMXProperty[] initProperties() {
-		StreamJMXProperty[] allProps = StreamJMXProperties.allValues(StreamJMXProperties.class, WASStreamJMXProperties.class);
-		allProps = StreamJMXProperties.remove(allProps, StreamJMXProperties.TNT4J_CONFIG_CONT.key());
+		StreamJMXProperty[] allProps = StreamJMXProperties.allValues(StreamJMXProperties.class,
+				WASStreamJMXProperties.class);
 
 		return allProps;
 	}
