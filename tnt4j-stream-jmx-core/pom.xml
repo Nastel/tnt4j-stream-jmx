@@ -18,8 +18,8 @@
     <artifactId>tnt4j-stream-jmx-core</artifactId>
 
     <properties>
-        <tnt4j.version>2.6-SNAPSHOT</tnt4j.version>
-        <jesl.version>0.4-SNAPSHOT</jesl.version>
+        <tnt4j.version>2.7-SNAPSHOT</tnt4j.version>
+        <jesl.version>0.5-SNAPSHOT</jesl.version>
     </properties>
 
     <build>
