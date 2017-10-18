@@ -626,7 +626,7 @@ Below is an example of TNT4J stream configuration writing collected JMX samples 
     event.sink.factory.PooledLoggerFactory: com.jkoolcloud.tnt4j.sink.impl.PooledLoggerFactoryImpl
 
     event.sink.factory.EventSinkFactory: com.jkoolcloud.tnt4j.sink.impl.SocketEventSinkFactory
-    ; If socket sent data should no be logged enywhere else
+    ; If socket sent data should no be logged anywhere else
     event.sink.factory.EventSinkFactory.eventSinkFactory: com.jkoolcloud.tnt4j.sink.impl.NullEventSinkFactory
     ; If socket sent data should be logged to file
     #event.sink.factory.EventSinkFactory.eventSinkFactory: com.jkoolcloud.tnt4j.sink.impl.FileEventSinkFactory
