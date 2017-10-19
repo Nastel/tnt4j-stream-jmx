@@ -40,7 +40,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.6</version>
+                <version>3.0.2</version>
                 <configuration>
                     <archive>
                         <!--<index>true</index>-->
@@ -57,18 +57,7 @@
                             <Agent-Class>com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent</Agent-Class>
                         </manifestEntries>
                     </archive>
-                    <!--<excludes>-->
-                    <!--<exclude>**/MyTests*.*</exclude>-->
-                    <!--</excludes>-->
                 </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>jar</goal>
-                            <!--<goal>test-jar</goal>-->
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
