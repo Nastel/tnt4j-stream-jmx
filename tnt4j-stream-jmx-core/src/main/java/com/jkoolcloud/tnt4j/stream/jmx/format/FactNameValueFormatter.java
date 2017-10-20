@@ -54,6 +54,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	public static final String PATH_DELIM = "\\";
 	public static final String EQ = "=";
 	public static final String FS_REP = "!";
+	public static final String UNIQUE_SUFFIX = "_";
 
 	private String[] replaceable = new String[] { EQ, FIELD_SEP };
 	private String[] replacement = new String[] { PATH_DELIM, FS_REP };
@@ -67,6 +68,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 			.compile("\"(\\s*([^\"\\\\]|\\\\.)+\\s*)\"->\"(\\s*([^\"\\\\]|\\\\.)+\\s*)\"");
 
 	protected boolean serializeSimpleTypesOnly = false;
+	protected String uniqueSuffix = UNIQUE_SUFFIX;
 
 	protected Map<String, String> keyReplacements = new HashMap<String, String>();
 	protected Map<String, String> valueReplacements = new HashMap<String, String>();
@@ -84,7 +86,8 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		StringBuilder nvString = new StringBuilder(1024);
 
 		nvString.append("OBJ:Streams");
-		toString(nvString, event.getSource()).append(event.getOperation().getName()).append("\\Events").append(FIELD_SEP);
+		toString(nvString, event.getSource()).append(event.getOperation().getName()).append("\\Events")
+				.append(FIELD_SEP);
 
 		Snapshot selfSnapshot = new PropertySnapshot("Self");
 
@@ -124,7 +127,8 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	/**
 	 * Returns operation contained snapshots collection.
 	 * 
-	 * @param op operation instance
+	 * @param op
+	 *            operation instance
 	 * @return collection of operation snapshots
 	 */
 	protected Collection<Snapshot> getSnapshots(Operation op) {
@@ -195,8 +199,10 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	/**
 	 * Makes string representation of source and appends it to provided string builder.
 	 * 
-	 * @param nvString string builder instance to append
-	 * @param source source instance to represent as string
+	 * @param nvString
+	 *            string builder instance to append
+	 * @param source
+	 *            source instance to represent as string
 	 * @return appended string builder reference
 	 */
 	protected StringBuilder toString(StringBuilder nvString, Source source) {
@@ -213,7 +219,8 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	 * <p>
 	 * Source name representation string gets symbols replaced using ones defined in {@link #keyReplacements} map.
 	 *
-	 * @param sourceName source name
+	 * @param sourceName
+	 *            source name
 	 * @return decorated string representation of source name
 	 *
 	 * @see #replace(String, Map)
@@ -227,8 +234,10 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	/**
 	 * Performs provided string contents replacement using symbols defined in {@code replacements} map.
 	 *
-	 * @param str string to apply replacements
-	 * @param replacements replacements map
+	 * @param str
+	 *            string to apply replacements
+	 * @param replacements
+	 *            replacements map
 	 * @return string having applied replacements
 	 *
 	 * @see #replace(String, String, String)
@@ -246,7 +255,8 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	/**
 	 * Returns snapshot contained properties collection.
 	 * 
-	 * @param snap snapshot instance
+	 * @param snap
+	 *            snapshot instance
 	 * @return collection of snapshot properties
 	 */
 	protected Collection<Property> getProperties(Snapshot snap) {
@@ -257,33 +267,71 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	 * Makes string representation of snapshot and appends it to provided string builder.
 	 * <p>
 	 * Note: Custom internal use snapshot property named {@code 'JMX_SNAP_NAME'} is ignored.
+	 * <p>
+	 * In case snapshot properties have same key for "branch" and "leaf" nodes at same path level, than "leaf" node
+	 * property key value is appended by configuration defined (cfg. key {@code "DuplicateKeySuffix"}, default value
+	 * "{@value #UNIQUE_SUFFIX}") suffix.
 	 * 
 	 * @param nvString
 	 *            string builder instance to append
 	 * @param snap
 	 *            snapshot instance to represent as string
 	 * @return appended string builder reference
+	 *
+	 * @see #getUniquePropertyKey(String, com.jkoolcloud.tnt4j.core.Property[], int)
 	 */
 	protected StringBuilder toString(StringBuilder nvString, Snapshot snap) {
 		Collection<Property> list = getProperties(snap);
+		Property[] pArray = new Property[list.size()];
+		pArray = list.toArray(pArray);
 		String sName = getSnapName(snap);
-		for (Property p : list) {
+		for (int i = 0; i < pArray.length; i++) {
+			Property p = pArray[i];
 			if (p.getKey().startsWith(Utils.INTERNAl_PROP_PREFIX)) {
 				continue;
 			}
 
+			String pKey = getUniquePropertyKey(p.getKey(), pArray, i);
 			Object value = p.getValue();
 
-			nvString.append(getKeyStr(sName, p.getKey()));
+			nvString.append(getKeyStr(sName, pKey));
 			nvString.append(EQ).append(getValueStr(value)).append(FIELD_SEP);
 		}
 		return nvString;
 	}
 
 	/**
+	 * Gets property key value and makes it to be unique on same path level among all array properties.
+	 * <p>
+	 * In case of duplicate keys uniqueness is made by adding configuration defined (cfg. key
+	 * {@code "DuplicateKeySuffix"}, default value "{@value #UNIQUE_SUFFIX}") suffix to property key value.
+	 *
+	 * @param pKey
+	 *            property key value
+	 * @param pArray
+	 *            properties array
+	 * @param pIdx
+	 *            property index in array
+	 * @return unique property key value
+	 */
+	protected String getUniquePropertyKey(String pKey, Property[] pArray, int pIdx) {
+		String ppKey;
+		for (int i = pIdx + 1; i < pArray.length; i++) {
+			ppKey = pArray[i].getKey();
+
+			if (ppKey.startsWith(pKey + PATH_DELIM)) {
+				pKey += uniqueSuffix;
+			}
+		}
+
+		return pKey;
+	}
+
+	/**
 	 * Determine if a given value can be meaningfully serialized to string.
 	 *
-	 * @param value value to test for serialization
+	 * @param value
+	 *            value to test for serialization
 	 * @return {@code true} if a given value can be serialized to string meaningfully, {@code false} - otherwise
 	 */
 	protected static boolean isSerializable(Object value) {
@@ -297,7 +345,8 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	 * <p>
 	 * Replaces "{@value #EQ}" to "{@value #PATH_DELIM}" and "{@value #FIELD_SEP}" to "{@value #FS_REP}".
 	 * 
-	 * @param snapName snapshot name
+	 * @param snapName
+	 *            snapshot name
 	 * @return decorated string representation of snapshot name
 	 */
 	protected String getSnapNameStr(String snapName) {
@@ -308,7 +357,8 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	 * Makes decorated string representation of snapshot name by referenced object name using
 	 * {@link ObjectName#getCanonicalName()}.
 	 *
-	 * @param objName object name
+	 * @param objName
+	 *            object name
 	 * @return decorated string representation of snapshot name
 	 *
 	 * @see #getSnapNameStr(String)
@@ -347,8 +397,10 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	 * <p>
 	 * Key representation string gets symbols replaced using ones defined in {@link #keyReplacements} map.
 	 * 
-	 * @param sName snapshot name
-	 * @param pKey property key
+	 * @param sName
+	 *            snapshot name
+	 * @param pKey
+	 *            property key
 	 * @return decorated string representation of attribute key
 	 *
 	 * @see #initDefaultKeyReplacements()
@@ -371,7 +423,8 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	 * <p>
 	 * Value representation string gets symbols replaced using ones defined in {@link #valueReplacements} map.
 	 *
-	 * @param value attribute value
+	 * @param value
+	 *            attribute value
 	 * @return decorated string representation of attribute value
 	 *
 	 * @see #toString(Object)
@@ -395,7 +448,8 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	/**
 	 * Makes string representation of argument attribute value.
 	 * 
-	 * @param value attribute value
+	 * @param value
+	 *            attribute value
 	 * @return string representation of attribute value
 	 */
 	protected String toString(Object value) {
@@ -438,6 +492,8 @@ public class FactNameValueFormatter extends DefaultFormatter {
 						StringEscapeUtils.unescapeJava(m.group(3)));
 			}
 		}
+
+		uniqueSuffix = Utils.getString("DuplicateKeySuffix", settings, uniqueSuffix);
 	}
 
 	/**
@@ -478,9 +534,12 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	/**
 	 * Performs source string contents replacement with provided new fragment.
 	 *
-	 * @param source source string
-	 * @param os fragment to be replaced
-	 * @param ns replacement fragment
+	 * @param source
+	 *            source string
+	 * @param os
+	 *            fragment to be replaced
+	 * @param ns
+	 *            replacement fragment
 	 * @return string having replaced content
 	 */
 	public static String replace(String source, String os, String ns) {

@@ -650,6 +650,9 @@ Below is an example of TNT4J stream configuration writing collected JMX samples 
     #event.formatter.ValueReplacements: "\r"->"\\r" "\n"->"\\n" ";"->"|" ","->"|" "["->"{(" "]"->")}" "\""->"'"
     ; Definitions ObjectName attributes sets used when building path: ';' is level set delimiter and ',' is set attribute names delimiter
     #event.formatter.PathLevelAttributes:  domain; type; name, brokerName; service, connector, destinationType; instanceName, connectorName, destinationName
+    ; Defines JMX sample attribute key suffix to be added when duplicate keys for "branch" and "leaf" nodes are found.
+    ; NOTE: AP does not allow to have same name for "branch" and "leaf" nodes at same tree level
+    #event.formatter.DuplicateKeySuffix: ___ 
 
     ; Configure default sink filter based on level and time (elapsed/wait)
     event.sink.factory.Filter: com.jkoolcloud.tnt4j.filters.EventLevelTimeFilter
@@ -697,6 +700,9 @@ Below is an example of TNT4J stream configuration writing collected JMX samples 
     #event.formatter.ValueReplacements: "\r"->"\\r" "\n"->"\\n" ";"->"|" ","->"|" "["->"{(" "]"->")}" "\""->"'"
     ; Definitions ObjectName attributes sets used when building path: ';' is level set delimiter and ',' is set attribute names delimiter
     #event.formatter.PathLevelAttributes:  domain; type; name, brokerName; service, connector, destinationType; instanceName, connectorName, destinationName
+    ; Defines JMX sample attribute key suffix to be added when duplicate keys for "branch" and "leaf" nodes are found.
+    ; NOTE: AP does not allow to have same name for "branch" and "leaf" nodes at same tree level
+    #event.formatter.DuplicateKeySuffix: ___
 
     ; Configure default sink filter based on level and time (elapsed/wait)
     event.sink.factory.Filter: com.jkoolcloud.tnt4j.filters.EventLevelTimeFilter
