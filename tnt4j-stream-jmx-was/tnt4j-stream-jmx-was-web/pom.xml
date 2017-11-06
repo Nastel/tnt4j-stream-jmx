@@ -9,7 +9,7 @@
         <artifactId>tnt4j-stream-jmx-was</artifactId>
         <version>0.7-SNAPSHOT</version>
     </parent>
-    <packaging>war</packaging>
+    <packaging>jar</packaging>
 
     <prerequisites>
         <maven>3.0.0</maven>
