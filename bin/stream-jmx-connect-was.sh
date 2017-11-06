@@ -6,9 +6,9 @@ else
 fi
 
 ### ---- WAS environment configuration ----
-WAS_HOME=/opt/IBM/WebSphere/AppServer
-JAVA_HOME=$WAS_HOME/java
-WAS_PATH=$WAS_HOME/runtimes/*;$WAS_HOME/lib/webadmin/management.jar
+WAS_HOME="/opt/IBM/WebSphere/AppServer"
+JAVA_HOME="$WAS_HOME/java"
+WAS_PATH="$WAS_HOME/runtimes/*:$WAS_HOME/lib/webadmin/management.jar:$WAS_HOME/plugins/com.ibm.ws.runtime.jar"
 MYCLIENTSAS="-Dcom.ibm.CORBA.ConfigURL=file:$SCRIPTPATH/../config/sas.client.props"
 MYCLIENTSSL="-Dcom.ibm.SSL.ConfigURL=file:$SCRIPTPATH/../config/ssl.client.props"
 ### ----------------------------------------

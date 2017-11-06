@@ -5,9 +5,9 @@ set RUNDIR=%~dp0
 
 rem ---- WAS environment configuration ----
 set WAS_HOME=C:\IBM\WebSphere\AppServer
-#set WAS_HOME=C:\Program Files (x86)\IBM\WebSphere\AppServer
+rem set WAS_HOME=C:\Program Files (x86)\IBM\WebSphere\AppServer
 set JAVA_HOME=%WAS_HOME%\java
-set WAS_PATH=%WAS_HOME%\runtimes\*;%WAS_HOME%\lib\webadmin\management.jar
+set WAS_PATH=%WAS_HOME%\runtimes\*;%WAS_HOME%\lib\webadmin\management.jar;%WAS_HOME%\plugins\com.ibm.ws.runtime.jar
 set MYCLIENTSAS="-Dcom.ibm.CORBA.ConfigURL=file:%RUNDIR%..\config\sas.client.props"
 set MYCLIENTSSL="-Dcom.ibm.SSL.ConfigURL=file:%RUNDIR%..\config\ssl.client.props"
 rem ----------------------------------------
