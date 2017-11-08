@@ -26,7 +26,7 @@ Stream-JMX provides and easy, lightweight and secure way to stream and monitor J
 java runtime containers.
 
 * Stream JMX metrics out of the JVM container (vs. polling from outside/remote)
-* Makes it easy to monitor farms of JMVs, application servers
+* Makes it easy to monitor farms of JVMs, application servers
 * Reduce cyber security risk: No need to enable remote JMX, SSL, security, ports, firewalls
 * Integration with monitoring tools for alerting, pro-active monitoring (AutoPilot M6)
 * Integration with cloud analytics tools (https://www.jkoolcloud.com via JESL)
