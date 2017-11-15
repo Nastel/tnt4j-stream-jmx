@@ -881,10 +881,12 @@ Modules list:
    * `Core` (M) - implements core JMX sampling, processing and dissemination features.
    * `J2EE` (O) - J2EE API addition to handle J2EE API defined attributes and implements abstract Stream-JMX servlet API.
    * `WAS` (O, requires `J2EE`) - IBM WebSphere Application Server (WAS) root module.
-        * `Web` (O) - builds WAS compliant web application package (war).
+        * `Api` (O) - builds specific API used to sample WAS JMX (jar).
+        * `War` (O) - builds WAS compliant web application package (war).
         * `Ear` (O) - builds WAS compliant enterprise application package (ear).
    * `Liberty` (O, requires `J2EE`)  - IBM WebSphere Liberty root module.
-        * `Web` (O) - builds Liberty compliant web application package (war).
+        * `Api` (O) - builds specific API used to sample Liberty JMX (jar).
+        * `War` (O) - builds Liberty compliant web application package (war).
    * `Distribution` (OU) - build distribution packages, see `../build/tnt4j-stream-jmx` directory.
 
 All optional modules (extensions) depends to `core` module and can't be build and run without it.
