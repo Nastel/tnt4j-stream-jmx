@@ -12,32 +12,46 @@ com.ibm.CORBA.securityServerPort=
 com.ibm.CORBA.loginTimeout=300
 com.ibm.CORBA.loginSource=properties
 
+# RMI/IIOP user identity
 com.ibm.CORBA.loginUserid=JMXManager
 com.ibm.CORBA.loginPassword=jmxAdmin
 
 com.ibm.CORBA.krb5ConfigFile=
 com.ibm.CORBA.krb5CcacheFile=
 
+#com.ibm.CORBA.loginRealm=
+
+# Does this client support stateful sessions?
 com.ibm.CSI.performStateful=true
 
+# Does this client support/require BasicAuth (userid/password) client authentication?
 com.ibm.CSI.performClientAuthenticationRequired=false
 com.ibm.CSI.performClientAuthenticationSupported=true
 
 # SET ALL THE FOLLOWING VALUES TO FALSE
 
+# Does this client support/require SSL client authentication?
 com.ibm.CSI.performTLClientAuthenticationRequired=false
 com.ibm.CSI.performTLClientAuthenticationSupported=false
 
+# Does this client support/require SSL connections?
 com.ibm.CSI.performTransportAssocSSLTLSRequired=false
 com.ibm.CSI.performTransportAssocSSLTLSSupported=false
 
+# Does this client support/require 40-bit cipher suites when using SSL?
 com.ibm.CSI.performMessageIntegrityRequired=false
 com.ibm.CSI.performMessageIntegritySupported=false
+# Note: This property is only valid when SSL connections are supported or required.
 
+# Does this client support/require 128-bit cipher suites when using SSL?
 com.ibm.CSI.performMessageConfidentialityRequired=false
 com.ibm.CSI.performMessageConfidentialitySupported=false
+# Note: This property is only valid when SSL connections are supported or required.
 
 # COMMENT THIS OUT
+#------------------------------------------------------------------------------
+# SSL configuration alias referenced in ssl.client.props
+#------------------------------------------------------------------------------
 #com.ibm.ssl.alias=DefaultSSLSettings
 
 

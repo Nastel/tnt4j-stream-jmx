@@ -21,7 +21,8 @@
     </properties>
 
     <modules>
-        <module>tnt4j-stream-jmx-was-web</module>
+        <module>tnt4j-stream-jmx-was-api</module>
+        <module>tnt4j-stream-jmx-was-war</module>
         <module>tnt4j-stream-jmx-was-ear</module>
     </modules>
 

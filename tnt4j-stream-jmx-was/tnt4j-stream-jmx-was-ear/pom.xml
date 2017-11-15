@@ -16,7 +16,7 @@
     </prerequisites>
 
     <artifactId>tnt4j-stream-jmx-was-ear</artifactId>
-    <description>IBM WAS JMX collection and streaming</description>
+    <description>IBM WAS JMX collection and streaming EAR package</description>
 
     <properties>
     </properties>
@@ -73,7 +73,7 @@
                     <modules>
                         <webModule>
                             <groupId>com.jkoolcloud.tnt4j.stream</groupId>
-                            <artifactId>tnt4j-stream-jmx-was-web</artifactId>
+                            <artifactId>tnt4j-stream-jmx-was-war</artifactId>
                             <contextRoot>/tnt-jmx</contextRoot>
                         </webModule>
                     </modules>
@@ -93,7 +93,7 @@
     <dependencies>
         <dependency>
             <groupId>com.jkoolcloud.tnt4j.stream</groupId>
-            <artifactId>tnt4j-stream-jmx-was-web</artifactId>
+            <artifactId>tnt4j-stream-jmx-was-war</artifactId>
             <version>${project.version}</version>
             <type>war</type>
         </dependency>

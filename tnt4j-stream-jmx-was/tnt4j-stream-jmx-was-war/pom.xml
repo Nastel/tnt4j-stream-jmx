@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.jkoolcloud.tnt4j.stream</groupId>
+        <artifactId>tnt4j-stream-jmx-was</artifactId>
+        <version>0.7-SNAPSHOT</version>
+    </parent>
+    <packaging>war</packaging>
+
+    <prerequisites>
+        <maven>3.0.0</maven>
+    </prerequisites>
+
+    <artifactId>tnt4j-stream-jmx-was-war</artifactId>
+    <description>IBM WAS JMX collection and streaming WAR package</description>
+
+    <properties>
+    </properties>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*.*</include>
+                </includes>
+            </resource>
+            <!--<resource>-->
+            <!--<directory>../../</directory>-->
+            <!--<targetPath>META-INF</targetPath>-->
+            <!--<includes>-->
+            <!--<include>LICENSE</include>-->
+            <!--</includes>-->
+            <!--</resource>-->
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <!--<archiveClasses>true</archiveClasses>-->
+                    <webResources>
+                        <!-- WAS CLIENT LIBS -->
+                        <!--<resource>-->
+                        <!--<directory>../tnt4j-stream-jmx-was-api/lib/was</directory>-->
+                        <!--<targetPath>WEB-INF/lib</targetPath>-->
+                        <!--<includes>-->
+                        <!--<include>*.jar</include>-->
+                        <!--</includes>-->
+                        <!--</resource>-->
+                        <!-- WAS module config resource -->
+                        <resource>
+                            <directory>../tnt4j-stream-jmx-was-api/config</directory>
+                            <targetPath>.</targetPath>
+                            <includes>
+                                <include>*.properties</include>
+                            </includes>
+                        </resource>
+                        <resource>
+                            <directory>../../</directory>
+                            <targetPath>META-INF</targetPath>
+                            <includes>
+                                <include>LICENSE</include>
+                            </includes>
+                        </resource>
+                        <resource>
+                            <directory>../../tnt4j-stream-jmx-j2ee/src/main/webapp/static</directory>
+                            <targetPath>static</targetPath>
+                            <includes>
+                                <include>**/*.*</include>
+                            </includes>
+                        </resource>
+                    </webResources>
+                    <archive>
+                        <!--<manifest>-->
+                        <!--<addClasspath>true</addClasspath>-->
+                        <!--&lt;!&ndash;<classpathPrefix>lib/</classpathPrefix>&ndash;&gt;-->
+                        <!--</manifest>-->
+                        <manifestEntries>
+                            <Implementation-Vendor>${product.vendor}</Implementation-Vendor>
+                            <Implementation-Title>${project.name}</Implementation-Title>
+                            <Implementation-Version>${project.version}</Implementation-Version>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>war</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.jkoolcloud.tnt4j.stream</groupId>
+            <artifactId>tnt4j-stream-jmx-was-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+
+</project>

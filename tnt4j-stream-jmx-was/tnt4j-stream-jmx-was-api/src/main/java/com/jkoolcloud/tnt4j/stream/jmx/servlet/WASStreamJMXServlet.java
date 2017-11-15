@@ -23,11 +23,11 @@ import static com.jkoolcloud.tnt4j.stream.jmx.servlet.StreamJMXProperty.Scope.SY
 
 import java.lang.reflect.Method;
 
+import com.jkoolcloud.tnt4j.stream.jmx.utils.WASSecurityHelper;
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.jkoolcloud.tnt4j.config.TrackerConfigStore;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.Utils;
-import com.jkoolcloud.tnt4j.stream.jmx.utils.WASSecurityHelper;
 
 /**
  * Stream-JMX servlet implementation for IBM WebSphere Application Server.
@@ -119,7 +119,7 @@ public class WASStreamJMXServlet extends StreamJMXServlet {
 	@SuppressWarnings("unchecked")
 	protected StreamJMXProperty[] initProperties() {
 		StreamJMXProperty[] allProps = StreamJMXProperties.allValues(StreamJMXProperties.class,
-				WASStreamJMXProperties.class);
+                                                                     WASStreamJMXProperties.class);
 
 		return allProps;
 	}

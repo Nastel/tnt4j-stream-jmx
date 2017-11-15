@@ -1,0 +1,54 @@
+com.ibm.CORBA.securityEnabled=true
+
+com.ibm.CORBA.authenticationTarget=BasicAuth
+com.ibm.CORBA.authenticationRetryEnabled=true
+com.ibm.CORBA.authenticationRetryCount=3
+com.ibm.CORBA.validateBasicAuth=true
+##### In case of using IBM JVM on client side #####
+#com.ibm.CORBA.validateBasicAuth=false
+###################################################
+com.ibm.CORBA.securityServerHost=
+com.ibm.CORBA.securityServerPort=
+com.ibm.CORBA.loginTimeout=300
+com.ibm.CORBA.loginSource=properties
+
+# RMI/IIOP user identity
+com.ibm.CORBA.loginUserid=JMXManager
+com.ibm.CORBA.loginPassword=jmxAdmin
+
+com.ibm.CORBA.krb5ConfigFile=
+com.ibm.CORBA.krb5CcacheFile=
+
+#com.ibm.CORBA.loginRealm=
+
+# Does this client support stateful sessions?
+com.ibm.CSI.performStateful=true
+
+# Does this client support/require BasicAuth (userid/password) client authentication?
+com.ibm.CSI.performClientAuthenticationRequired=false
+com.ibm.CSI.performClientAuthenticationSupported=true
+
+# Does this client support/require SSL client authentication?
+com.ibm.CSI.performTLClientAuthenticationRequired=false
+com.ibm.CSI.performTLClientAuthenticationSupported=false
+
+# Does this client support/require SSL connections?
+com.ibm.CSI.performTransportAssocSSLTLSRequired=true
+com.ibm.CSI.performTransportAssocSSLTLSSupported=false
+
+# Does this client support/require 40-bit cipher suites when using SSL?
+com.ibm.CSI.performMessageIntegrityRequired=true
+com.ibm.CSI.performMessageIntegritySupported=true
+# Note: This property is only valid when SSL connections are supported or required.
+
+# Does this client support/require 128-bit cipher suites when using SSL?
+com.ibm.CSI.performMessageConfidentialityRequired=false
+com.ibm.CSI.performMessageConfidentialitySupported=true
+# Note: This property is only valid when SSL connections are supported or required.
+
+#------------------------------------------------------------------------------
+# SSL configuration alias referenced in ssl.client.props
+#------------------------------------------------------------------------------
+com.ibm.ssl.alias=DefaultSSLSettings
+
+com.ibm.CORBA.requestTimeout=180

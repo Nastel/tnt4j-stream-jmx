@@ -1,0 +1,82 @@
+#-------------------------------------------------------------------------
+# Global SSL Properties (applies to entire process)
+#-------------------------------------------------------------------------
+com.ibm.ssl.defaultAlias=DefaultSSLSettings
+com.ibm.ssl.performURLHostNameVerification=false
+com.ibm.ssl.validationEnabled=false
+com.ibm.security.useFIPS=false
+user.root=C:/Users/slabs/IBM/WebSphere/AppServer/profiles/AppSrv01
+
+#-------------------------------------------------------------------------
+# Default Self-Signed Certificate Properties
+# These properties are used to create a keystore when it does not exist with
+# a self-signed certificate.  The properties com.ibm.ssl.keyStoreFileBased=true
+# and com.ibm.ssl.trustStoreFileBased=true must be set to indicate a file-based
+# keystore and truststore before they are created.
+#-------------------------------------------------------------------------
+com.ibm.ssl.defaultCertReqAlias=default
+com.ibm.ssl.defaultCertReqSubjectDN=cn=${hostname},o=IBM,c=US
+com.ibm.ssl.defaultCertReqDays=365
+com.ibm.ssl.defaultCertReqKeySize=2048
+
+#-------------------------------------------------------------------------
+# Default Revocation Checking Properties
+# These properties are used for certificate revocation checking with the IBM
+# PKIX TrustManager. 
+# 
+# To enable CRL Distribution Points extension checking, use the system property
+# com.ibm.security.enableCRLDP.
+#
+# OCSP checking is not enabled by default. It is enabled by setting the 
+# ocsp.enable property to "true".  Use of the other ocsp properties is optional. 
+# 
+# Note: Both OCSP and CRLDP checking is only effective if revocation checking 
+# has also been enabled by setting com.ibm.jsse2.checkRevocation to "true".
+#
+#-------------------------------------------------------------------------
+com.ibm.jsse2.checkRevocation=false
+com.ibm.security.enableCRLDP=false
+#ocsp.enable=true
+#ocsp.responderURL=http://ocsp.example.net:80
+#ocsp.responderCertSubjectName=CN=OCSP Responder, O=XYZ Corp
+#ocsp.responderCertIssuerName=CN=Enterprise CA, O=XYZ Corp
+#ocsp.responderCertSerialNumber=2A:FF:00
+
+#-------------------------------------------------------------------------
+# The following are sets of SSL configurations that can be specified for
+# use by various protocols, components, and applications.
+# Each new SSL configuration should begin with the com.ibm.ssl.alias property.
+#-------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------
+# This SSL configuration is used for all client SSL connections, by default
+#-------------------------------------------------------------------------
+com.ibm.ssl.alias=DefaultSSLSettings
+com.ibm.ssl.protocol=SSL
+com.ibm.ssl.securityLevel=HIGH
+com.ibm.ssl.trustManager=SunX509
+com.ibm.ssl.keyManager=SunX509
+com.ibm.ssl.contextProvider=SunJSSE
+com.ibm.ssl.enableSignerExchangePrompt=gui
+#com.ibm.ssl.keyStoreClientAlias=default
+#com.ibm.ssl.customTrustManagers=
+#com.ibm.ssl.customKeyManager=
+#com.ibm.ssl.dynamicSelectionInfo=
+#com.ibm.ssl.enabledCipherSuites=
+
+# KeyStore information
+com.ibm.ssl.keyStoreName=ClientDefaultKeyStore
+com.ibm.ssl.keyStore=${user.root}/etc/keystore.jks
+com.ibm.ssl.keyStorePassword=keystore_password
+com.ibm.ssl.keyStoreType=JKS
+com.ibm.ssl.keyStoreProvider=SUN
+com.ibm.ssl.keyStoreFileBased=true
+
+# TrustStore information
+com.ibm.ssl.trustStoreName=ClientDefaultTrustStore
+com.ibm.ssl.trustStore=${user.root}/etc/truststore.jks
+com.ibm.ssl.trustStorePassword=truststore_password
+com.ibm.ssl.trustStoreType=JKS
+com.ibm.ssl.trustStoreProvider=SUN
+com.ibm.ssl.trustStoreFileBased=true
+

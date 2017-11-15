@@ -268,7 +268,7 @@ See [Generic servlet page features](#generic-servlet-page-features).
 
 ### WebSphere Liberty Server
 
-Build Stream-JMX and find tnt4j-stream-jmx-liberty-web-*.war in distribution build directory or archives produced.
+Build Stream-JMX and find tnt4j-stream-jmx-liberty-war-*.war in distribution build directory or archives produced.
 
 There is a simple Liberty `server.xml` configuration required to run Stream-JMX servlet:
 ```xml
@@ -306,7 +306,7 @@ There is a simple Liberty `server.xml` configuration required to run Stream-JMX 
         <user>Admin</user>
     </administrator-role>
 	
-    <application contextRoot="tnt-jmx" location="tnt4j-stream-jmx-liberty-web-0.6.war" type="war" id="tnt-jmx" name="tnt-jmx">
+    <application contextRoot="tnt-jmx" location="tnt4j-stream-jmx-liberty-war-0.6.war" type="war" id="tnt-jmx" name="tnt-jmx">
         <application-bnd>
             <security-role name="StreamJmxManager">
                 <user name="JMXManager" />

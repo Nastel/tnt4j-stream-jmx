@@ -21,7 +21,8 @@
     </properties>
 
     <modules>
-        <module>tnt4j-stream-jmx-liberty-web</module>
+        <module>tnt4j-stream-jmx-liberty-api</module>
+        <module>tnt4j-stream-jmx-liberty-war</module>
         <!--<module>tnt4j-stream-jmx-liberty-osgi</module>-->
     </modules>
 
