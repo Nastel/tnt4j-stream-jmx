@@ -86,8 +86,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		StringBuilder nvString = new StringBuilder(1024);
 
 		nvString.append("OBJ:Streams");
-		toString(nvString, event.getSource()).append(event.getOperation().getName()).append("\\Events")
-				.append(FIELD_SEP);
+		toString(nvString, event.getSource()).append(event.getName()).append("\\Events").append(FIELD_SEP);
 
 		Snapshot selfSnapshot = new PropertySnapshot("Self");
 
