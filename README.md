@@ -941,7 +941,7 @@ What to download manually or copy from your existing IBM MQ installation:
 * IBM WAS (e.g., version 8.5) client libs
 * j2ee API library
 
-Download the above libraries and place into the `tnt4j-stream-jmx/tnt4j-stream-jmx-was/lib` directory like this:
+Download the above libraries and place into the `tnt4j-stream-jmx/tnt4j-stream-jmx-was/tnt4j-stream-jmx-was-api/lib` directory like this:
 ```
     lib
      + was
