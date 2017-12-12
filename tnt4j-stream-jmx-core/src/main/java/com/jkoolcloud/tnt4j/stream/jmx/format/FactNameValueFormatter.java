@@ -269,7 +269,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	 * <p>
 	 * In case snapshot properties have same key for "branch" and "leaf" nodes at same path level, than "leaf" node
 	 * property key value is appended by configuration defined (cfg. key {@code "DuplicateKeySuffix"}, default value
-	 * "{@value #UNIQUE_SUFFIX}") suffix.
+	 * {@value #UNIQUE_SUFFIX}) suffix.
 	 * 
 	 * @param nvString
 	 *            string builder instance to append
@@ -303,7 +303,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	 * Gets property key value and makes it to be unique on same path level among all array properties.
 	 * <p>
 	 * In case of duplicate keys uniqueness is made by adding configuration defined (cfg. key
-	 * {@code "DuplicateKeySuffix"}, default value "{@value #UNIQUE_SUFFIX}") suffix to property key value.
+	 * {@code "DuplicateKeySuffix"}, default value {@value #UNIQUE_SUFFIX}) suffix to property key value.
 	 *
 	 * @param pKey
 	 *            property key value
@@ -342,7 +342,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	/**
 	 * Makes decorated string representation of snapshot name.
 	 * <p>
-	 * Replaces "{@value #EQ}" to "{@value #PATH_DELIM}" and "{@value #FIELD_SEP}" to "{@value #FS_REP}".
+	 * Replaces {@value #EQ} to {@value #PATH_DELIM} and {@value #FIELD_SEP} to {@value #FS_REP}.
 	 * 
 	 * @param snapName
 	 *            snapshot name

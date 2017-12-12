@@ -38,19 +38,19 @@ public enum StreamJMXProperties implements StreamJMXProperty {
 	/**
 	 * Agent options sampling {@link javax.management.ObjectName}s include filter.
 	 */
-	AO_INCLUDE("com.jkoolcloud.tnt4j.stream.jmx.agent.options.include", "*:*", EDITABLE, SYNTHETIC, LOCAL),
+	AO_INCLUDE("com.jkoolcloud.tnt4j.stream.jmx.agent.options.include", "*:*", EDITABLE, INTERIM, LOCAL),
 	/**
 	 * Agent options sampling {@link javax.management.ObjectName}s exclude filter.
 	 */
-	AO_EXCLUDE("com.jkoolcloud.tnt4j.stream.jmx.agent.options.exclude", "", EDITABLE, SYNTHETIC, LOCAL),
+	AO_EXCLUDE("com.jkoolcloud.tnt4j.stream.jmx.agent.options.exclude", "", EDITABLE, INTERIM, LOCAL),
 	/**
 	 * Agent options sampling period value.
 	 */
-	AO_PERIOD("com.jkoolcloud.tnt4j.stream.jmx.agent.options.period", TimeUnit.SECONDS.toMillis(60), EDITABLE, SYNTHETIC, LOCAL),
+	AO_PERIOD("com.jkoolcloud.tnt4j.stream.jmx.agent.options.period", TimeUnit.SECONDS.toMillis(60), EDITABLE, INTERIM, LOCAL),
 	/**
 	 * Agent options initial delay value.
 	 */
-	AO_DELAY("com.jkoolcloud.tnt4j.stream.jmx.agent.options.init.delay", "0", EDITABLE, SYNTHETIC, LOCAL),
+	AO_DELAY("com.jkoolcloud.tnt4j.stream.jmx.agent.options.init.delay", "0", EDITABLE, INTERIM, LOCAL),
 	/**
 	 * JVM descriptor to collect JMX samples.
 	 */

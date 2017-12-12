@@ -412,7 +412,7 @@ public abstract class StreamJMXServlet extends HttpServlet {
 
 	private void configure() {
 		for (StreamJMXProperty property : servletProperties) {
-			if (!property.isInScope(SYNTHETIC)) {
+			if (!property.isInScope(INTERIM)) {
 				setProperty(property, getProperty(property));
 			}
 		}
@@ -501,7 +501,7 @@ public abstract class StreamJMXServlet extends HttpServlet {
 		if (property.isInScope(SYSTEM)) {
 			last = System.setProperty(property.key(), value);
 		}
-		if (property.isInScope(SYNTHETIC)) {
+		if (property.isInScope(INTERIM)) {
 			last = setProperty(StreamJMXProperties.AO, compileAO(inAppCfgProperties));
 		}
 		if (last != null) {

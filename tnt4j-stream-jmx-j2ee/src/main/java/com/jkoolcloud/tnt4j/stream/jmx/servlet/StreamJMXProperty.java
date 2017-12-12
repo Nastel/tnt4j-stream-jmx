@@ -18,14 +18,14 @@ package com.jkoolcloud.tnt4j.stream.jmx.servlet;
 
 /**
  * Interface defining common servlets used properties features.
- * 
+ *
  * @version $Revision: 1 $
  */
 public interface StreamJMXProperty {
 
 	/**
 	 * Returns property key.
-	 * 
+	 *
 	 * @return property key
 	 */
 	String key();
@@ -46,7 +46,7 @@ public interface StreamJMXProperty {
 
 	/**
 	 * Check if property has provided scope.
-	 * 
+	 *
 	 * @param scope
 	 *            scope value to check
 	 * @return {@code true} if property has provided scope, {@code false} - otherwise
@@ -57,7 +57,7 @@ public interface StreamJMXProperty {
 	 * All possible property scopes.
 	 */
 	public enum Scope {
-		LOCAL, SYNTHETIC, SYSTEM, FILE
+		LOCAL, INTERIM, SYSTEM, FILE
 	}
 
 	/**
