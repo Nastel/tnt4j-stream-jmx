@@ -218,7 +218,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 				}
 			}
 			if (snapshot.size() > 0) {
-				snapshot.add(Utils.OBJ_NAME_PROP, name);
+				snapshot.add(Utils.OBJ_NAME_PROP, name, true);
 
 				pCount += snapshot.size();
 				activity.addSnapshot(snapshot);

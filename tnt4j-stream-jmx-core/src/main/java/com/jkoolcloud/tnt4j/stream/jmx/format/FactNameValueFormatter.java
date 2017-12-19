@@ -286,7 +286,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		String sName = getSnapName(snap);
 		for (int i = 0; i < pArray.length; i++) {
 			Property p = pArray[i];
-			if (p.getKey().startsWith(Utils.INTERNAl_PROP_PREFIX)) {
+			if (p.isTransient()) {
 				continue;
 			}
 
@@ -381,11 +381,11 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		if (pSnapName == null) {
 			Property objName = Utils.getSnapPropertyIgnoreCase(snap, Utils.OBJ_NAME_PROP);
 			if (objName != null) {
-				pSnapName = new Property(SNAP_NAME_PROP, getSnapNameStr((ObjectName) objName.getValue()));
+				pSnapName = new Property(SNAP_NAME_PROP, getSnapNameStr((ObjectName) objName.getValue()), true);
 			} else {
-				pSnapName = new Property(SNAP_NAME_PROP, getSnapNameStr(snap.getName()));
+				pSnapName = new Property(SNAP_NAME_PROP, getSnapNameStr(snap.getName()), true);
 			}
-
+			snap.add(pSnapName);
 		}
 
 		return (String) pSnapName.getValue();
