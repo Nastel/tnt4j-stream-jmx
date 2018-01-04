@@ -3,9 +3,6 @@
 # Exclude jars not necessary for running commands.
 regex="(-(test|sources|javadoc)\.jar|jar.asc)$"
 should_include_file() {
-  if [ "$INCLUDE_TEST_JARS" = true ]; then
-    return 0
-  fi
   file=$1
   if [ -z "$(echo "$file" | egrep "$regex")" ] ; then
     return 0
