@@ -168,6 +168,13 @@ Additions needed to run `SamplingAgent` connected to remote WAS machine can be f
     -cp:java.naming.provider.url=corbaloc:iiop:localhost:2809/WsnAdminNameService
 ```
 
+#### Connecting remote Tomcat Server
+
+**NOTE:** Tomcat does not provide J2EE implementation, thus you need only stream-jmx `core` jar when sampling Tomcat metrics over JMX.
+Executable OS shell run script files `bin/stream-jmx-conenct-tomcat.bat` or `bin/stream-jmx-conenct-tomcat.sh` are dedicated to do the job.
+
+See [To connect to JMX service over URL](#to-connect-to-jmx-service-over-url) how to connect remote Tomcat over URL.
+
 ### Coding into API
 You can connect `SamplingAgent` to JVM from your custom API by calling [SamplingAgent.connect(String,String)](./tnt4j-stream-jmx-core/src/main/java/com/jkoolcloud/tnt4j/stream/jmx/SamplingAgent.java#L574) method. 
 
