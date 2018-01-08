@@ -173,9 +173,10 @@ Additions needed to run `SamplingAgent` connected to remote WAS machine can be f
 **NOTE:** Tomcat does not provide J2EE implementation, thus you need only stream-jmx `core` jar when sampling Tomcat metrics over JMX.
 Executable OS shell run script files `bin/stream-jmx-conenct-tomcat.bat` or `bin/stream-jmx-conenct-tomcat.sh` are dedicated to do the job.
 
-See [Enabling Tomcat JMX Remote](https://tomcat.apache.org/tomcat-7.0-doc/monitoring.html) to enable remote JMX access of Tomcat instance. 
+See [Enabling Tomcat JMX Remote](https://tomcat.apache.org/tomcat-7.0-doc/monitoring.html) to enable remote JMX access of Tomcat server 
+instance. 
 
-**NOTE:** use this URI template to connect remote Tomcat JMX service over RMI:   
+**NOTE:** use this URI template to connect remote Tomcat server JMX over RMI:   
 ```cmd
 -vm:service:jmx:rmi:///jndi/rmi://[HOST]:[PORT]/jmxrmi
 ```
