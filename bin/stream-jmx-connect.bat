@@ -4,6 +4,7 @@ setlocal
 set RUNDIR=%~dp0
 set TOOLS_PATH=%JAVA_HOME%\lib\tools.jar
 
+rem --- When connecting application instance having basic JMX implementation, e.g. ordinary Java app, Tomcat, Kafka
 set MODULE_SET=core
 rem --- Uncomment when connecting some J2EE implementing application instance JMX
 rem set MODULE_SET=core j2ee

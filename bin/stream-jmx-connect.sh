@@ -19,6 +19,7 @@ fi
 
 TOOLS_PATH="$JAVA_HOME/lib/tools.jar"
 
+### --- When connecting application instance having basic JMX implementation, e.g. ordinary Java app, Tomcat, Kafka
 MODULE_SET=("core")
 ### --- Uncomment when connecting some J2EE implementing application instance JMX
 # MODULE_SET=("core" "j2ee")
