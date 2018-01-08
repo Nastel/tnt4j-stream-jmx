@@ -55,6 +55,10 @@ defining `JMXConnector` (over `RMI`) URL.
 ## Running Stream-JMX as `-javaagent`
 
 ### Command line to run
+
+Executable OS shell run script files `bin/stream-jmx.bat` or `bin/stream-jmx.sh` are dedicated to do the job.
+
+Command line to run `stream-jmx` as JVM agent looks like this:
 ```cmd
 java -javaagent:tnt4j-stream-jmx.jar="*:*!30000" -Dtnt4j.config=tnt4j.properties -classpath "tnt4j-stream-jmx.jar;lib/*" your.class.name your-args
 ```
@@ -64,6 +68,10 @@ as locations of log4j and tnt4j configuration files.
 ## Attaching Stream-JMX to running JVM
 
 ### Command line to run
+
+Executable OS shell run script files `bin/stream-jmx-attach.bat` or `bin/stream-jmx-attach.sh` are dedicated to do the job.
+
+Command line to attach local JVM process JMX looks like this:
 ```cmd
 java -Dtnt4j.config=.\config\tnt4j.properties -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -attach -vm:activemq -ap:tnt4j-stream-jmx-0.5.0.jar -ao:*:*!10000
 ```
@@ -97,8 +105,11 @@ try {
 
 ### Command line to run
 
+Executable OS shell run script files `bin/stream-jmx-conenct.bat` or `bin/stream-jmx-conenct.sh` are dedicated to do the job.
+
 #### To connect to local JVM process
 
+Command line to connect local JVM process JMX looks like this:
 ```cmd
 java -Dtnt4j.config=.\config\tnt4j.properties -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -vm:activemq -ao:*:*!*:dummy!10000
 ```
@@ -115,6 +126,7 @@ seconds. Sampler options are optional - default value is `*:*!30000`. Initial sa
 
 #### To connect to JMX service over URL
 
+Command line to connect remote JMX service looks like this:
 ```cmd
 java -Dtnt4j.config=.\config\tnt4j.properties -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -vm:service:jmx:<JMX_URL> -ul:admin -up:admin -ao:*:*!!10000 -cri:30 -cp:javax.net.ssl.trustStore=/your/path/to/truststore.jks -cp:javax.net.ssl.trustStorePassword=truststore_pwd
 ```
@@ -138,7 +150,11 @@ is optional - default value is `10sec`. Special values are:
     * `-1` indicates no repeating connect attempts shall be made at all and application has to stop on first failed attempt to connect.
 
 **NOTE**:
-* URI of remote RMI service (e.g., to connect remote Kafka service) may require additional `/` chars, e.g.:
+* URI of remote RMI service (e.g., to connect remote Kafka service) may require additional `/` chars:
+```cmd
+-vm:service:jmx:rmi:///jndi/rmi:///[HOST]:[PORT]/jmxrmi
+```
+e.g.:
 ```cmd
 -vm:service:jmx:rmi:///jndi/rmi:///172.16.6.35:2181/jmxrmi
 ```
@@ -146,6 +162,18 @@ is optional - default value is `10sec`. Special values are:
 ```bash
 export JMX_PORT=${JMX_PORT:-9999}
 ```
+* Tomcat and Kafka does not provide J2EE implementation, thus you need only stream-jmx `core` jar in `classpath` when sampling Tomcat/Kafka 
+metrics over JMX. Executable OS shell run script files uses only `core` as `MODULE_SET` variable value:
+    * `bin/stream-jmx-conenct.bat`
+    ```cmd
+    set MODULE_SET=core
+    ```
+    * `bin/stream-jmx-conenct.sh`
+    ```bash
+    MODULE_SET=("core")
+    ```
+* See [Enabling Tomcat JMX Remote](https://tomcat.apache.org/tomcat-7.0-doc/monitoring.html) to enable remote JMX access of Tomcat server 
+ instance.  
 
 #### Connecting remote WebSphere Application Server (WAS)
 
@@ -167,21 +195,6 @@ Additions needed to run `SamplingAgent` connected to remote WAS machine can be f
     -cp:java.naming.factory.url.pkgs=com.ibm.ws.naming
     -cp:java.naming.provider.url=corbaloc:iiop:localhost:2809/WsnAdminNameService
 ```
-
-#### Connecting remote Tomcat Server
-
-**NOTE:** Tomcat does not provide J2EE implementation, thus you need only stream-jmx `core` jar when sampling Tomcat metrics over JMX.
-Executable OS shell run script files `bin/stream-jmx-conenct-tomcat.bat` or `bin/stream-jmx-conenct-tomcat.sh` are dedicated to do the job.
-
-See [Enabling Tomcat JMX Remote](https://tomcat.apache.org/tomcat-7.0-doc/monitoring.html) to enable remote JMX access of Tomcat server 
-instance. 
-
-**NOTE:** use this URI template to connect remote Tomcat server JMX over RMI:   
-```cmd
--vm:service:jmx:rmi:///jndi/rmi://[HOST]:[PORT]/jmxrmi
-```
-
-See [To connect to JMX service over URL](#to-connect-to-jmx-service-over-url) how to connect remote Tomcat over URL.
 
 ### Coding into API
 You can connect `SamplingAgent` to JVM from your custom API by calling [SamplingAgent.connect(String,String)](./tnt4j-stream-jmx-core/src/main/java/com/jkoolcloud/tnt4j/stream/jmx/SamplingAgent.java#L574) method. 
