@@ -1,4 +1,16 @@
 #! /bin/bash
+
+# Exclude jars not necessary for running commands.
+regex="(-(test|sources|javadoc)\.jar|jar.asc)$"
+should_include_file() {
+  file=$1
+  if [ -z "$(echo "$file" | egrep "$regex")" ] ; then
+    return 0
+  else
+    return 1
+  fi
+}
+
 if command -v realpath >/dev/null 2>&1; then
     SCRIPTPATH=`dirname $(realpath $0)`
 else
@@ -6,11 +18,36 @@ else
 fi
 
 TOOLS_PATH="$JAVA_HOME/lib/tools.jar"
-LIBPATH="$SCRIPTPATH/../*:$SCRIPTPATH/../lib/*:$TOOLS_PATH"
+
+MODULE_SET=("core")
+### --- Uncomment when connecting some J2EE implementing application instance JMX
+# MODULE_SET=("core" "j2ee")
+### --- Uncomment when connecting IBM Websphere Application Server (WAS) instance JMX
+# MODULE_SET=("core" "j2ee" "was")
+### --- Uncomment when connecting IBM Websphere Liberty Server instance JMX
+# MODULE_SET=("core" "j2ee" "liberty")
+
+for module in "${MODULE_SET[@]}"
+do
+  for file in "$SCRIPTPATH"/../tnt4j-stream-jmx-"$module"*.jar;
+  do
+    if should_include_file "$file"; then
+      if [ -z "$LIBPATH" ] ; then
+          LIBPATH="$file"
+      else
+          LIBPATH="$LIBPATH":"$file"
+      fi
+    fi
+  done
+done
+echo "$LIBPATH"
+
+
+LIBPATH="$LIBPATH:$SCRIPTPATH/../lib/*:$TOOLS_PATH"
 TNT4JOPTS="-Dorg.slf4j.simpleLogger.defaultLogLevel=debug -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -Dtnt4j.dump.on.vm.shutdown=true -Dtnt4j.dump.on.exception=true -Dtnt4j.dump.provider.default=true"
 TNT4JOPTS="$TNT4JOPTS -Dtnt4j.config=$SCRIPTPATH/../config/tnt4j.properties"
 
-# NOTE! Double exclamation mark in bash has a special meaning (previous command)
+# NOTE: Double exclamation mark in bash has a special meaning (previous command)
 # to pass arguments correctly you need escape both. I.E. "stream-jmx-connect.sh tomcat *:*\!\!13000"
 AGENT_OPTIONS=$2
 

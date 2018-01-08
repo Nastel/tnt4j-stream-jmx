@@ -24,7 +24,7 @@ TNT4JOPTS="$TNT4JOPTS -Dtnt4j.config=$SCRIPTPATH/../config/tnt4j.properties"
 TNT4JOPTS="$TNT4JOPTS -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.forceObjectName=true -Dcom.jkoolcloud.tnt4j.stream.jmx.sampler.factory=com.jkoolcloud.tnt4j.stream.jmx.impl.WASSamplerFactory"
 ### -------------------------------------------------
 
-# NOTE! Double exclamation mark in bash has a special meaning (previous command)
+# NOTE: Double exclamation mark in bash has a special meaning (previous command)
 # to pass arguments correctly you need escape both. I.E. "stream-jmx-connect.sh tomcat *:*\!\!13000"
 AGENT_OPTIONS=$2
 
