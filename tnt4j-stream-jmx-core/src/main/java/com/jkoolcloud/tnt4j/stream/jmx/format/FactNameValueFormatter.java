@@ -503,11 +503,13 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	 * <ul>
 	 * <li>{@code " "} to {@code "_"}</li>
 	 * <li>{@code "\""} to {@code "'"}</li>
+	 * <li>{@code "/"} to {@code "%"}</li>
 	 * </ul>
 	 */
 	protected void initDefaultKeyReplacements() {
 		keyReplacements.put(" ", "_");
 		keyReplacements.put("\"", "'");
+		keyReplacements.put("/", "%");
 	}
 
 	/**

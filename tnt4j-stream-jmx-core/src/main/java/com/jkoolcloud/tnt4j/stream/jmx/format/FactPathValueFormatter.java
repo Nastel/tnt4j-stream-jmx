@@ -42,11 +42,7 @@ import com.jkoolcloud.tnt4j.utils.Utils;
  */
 public class FactPathValueFormatter extends FactNameValueFormatter {
 
-	private static final String[][] PATH_LEVEL_ATTR_KEYS = new String[][] { { "domain" }, { "type" },
-			{ "name", "brokerName" }, { "service", "connector", "destinationType" },
-			{ "instanceName", "connectorName", "destinationName" } };
-
-	protected String[][] pathLevelAttrKeys = PATH_LEVEL_ATTR_KEYS;
+	protected String[][] pathLevelAttrKeys = null;
 
 	protected final Properties objNameProps = new Properties();
 
@@ -137,29 +133,43 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 			return "null";
 		}
 
-		Hashtable<String, String> objNameProps = objName.getKeyPropertyList();
-		objNameProps.put("domain", objName.getDomain());
+		Map<String, String> objNameProps = getKeyPropertyList(objName);
 
 		return getObjNameStr(objNameProps);
 	}
 
-	protected String getObjNameStr(Hashtable<?, ?> objNameProps) {
+	protected Map<String, String> getKeyPropertyList(ObjectName objName) {
+		Map<String, String> objNameProps = new LinkedHashMap<String, String>(5);
+		objNameProps.put("domain", objName.getDomain());
+
+		String objNamePropsStr = objName.getKeyPropertyListString();
+		String[] objNamePropsStrs = objNamePropsStr.split(FIELD_SEP);
+
+		for (String prop : objNamePropsStrs) {
+			String[] kv = prop.split(EQ);
+			objNameProps.put(kv[0].trim(), kv[1]);
+		}
+
+		return objNameProps;
+	}
+
+	protected String getObjNameStr(Map<?, ?> objNameProps) {
 		StringBuilder pathBuilder = new StringBuilder(128);
 		String pv;
 
-		for (String[] levelAttrKeys : pathLevelAttrKeys) {
-			for (String pKey : levelAttrKeys) {
-				pv = (String) objNameProps.remove(pKey);
-
-				appendPath(pathBuilder, pv);
+		if (pathLevelAttrKeys != null) {
+			for (String[] levelAttrKeys : pathLevelAttrKeys) {
+				for (String pKey : levelAttrKeys) {
+					pv = (String) objNameProps.remove(pKey);
+					appendPath(pathBuilder, pv);
+				}
 			}
 		}
 
 		if (!objNameProps.isEmpty()) {
 			for (Map.Entry<?, ?> pe : objNameProps.entrySet()) {
-				String pk = String.valueOf(pe.getKey());
 				pv = String.valueOf(pe.getValue());
-				appendPath(pathBuilder, pk).append(":").append(pv);
+				appendPath(pathBuilder, pv);
 			}
 		}
 

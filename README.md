@@ -674,7 +674,7 @@ Below is an example of TNT4J stream configuration writing collected JMX samples 
     ; If formatter should serialize only simple types JMX attribute values. Rest are replaced by dummy value.
     event.formatter.SerializeSimplesOnly: false
     ; Mapping of attribute key string symbol replacements
-    #event.formatter.KeyReplacements: " "->"_" "\""->"'"
+    #event.formatter.KeyReplacements: " "->"_" "\""->"'" "/"->"%"
     ; Mapping of attribute value string symbol replacements
     #event.formatter.ValueReplacements: "\r"->"\\r" "\n"->"\\n" ";"->"|" ","->"|" "["->"{(" "]"->")}" "\""->"'"
     ; Definitions ObjectName attributes sets used when building path: ';' is level set delimiter and ',' is set attribute names delimiter
@@ -724,7 +724,7 @@ Below is an example of TNT4J stream configuration writing collected JMX samples 
     ; If formatter should serialize only simple types JMX attribute values. Rest are replaced by dummy value.
     event.formatter.SerializeSimplesOnly: false
     ; Mapping of attribute key string symbol replacements
-    #event.formatter.KeyReplacements: " "->"_" "\""->"'"
+    #event.formatter.KeyReplacements: " "->"_" "\""->"'" "/"->"%"
     ; Mapping of attribute value string symbol replacements
     #event.formatter.ValueReplacements: "\r"->"\\r" "\n"->"\\n" ";"->"|" ","->"|" "["->"{(" "]"->")}" "\""->"'"
     ; Definitions ObjectName attributes sets used when building path: ';' is level set delimiter and ',' is set attribute names delimiter

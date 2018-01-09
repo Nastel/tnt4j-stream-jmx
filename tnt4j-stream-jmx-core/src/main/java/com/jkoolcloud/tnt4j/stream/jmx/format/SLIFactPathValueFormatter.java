@@ -16,7 +16,7 @@
 
 package com.jkoolcloud.tnt4j.stream.jmx.format;
 
-import java.util.Hashtable;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -41,7 +41,7 @@ public class SLIFactPathValueFormatter extends FactPathValueFormatter {
 	}
 
 	@Override
-	protected String getObjNameStr(Hashtable<?, ?> objNameProps) {
+	protected String getObjNameStr(Map<?, ?> objNameProps) {
 		StringBuilder pathBuilder = new StringBuilder(256);
 		String pv;
 
