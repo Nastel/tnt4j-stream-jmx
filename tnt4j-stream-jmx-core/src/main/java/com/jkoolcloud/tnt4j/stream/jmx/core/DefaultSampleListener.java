@@ -28,6 +28,8 @@ import javax.management.ObjectName;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.jkoolcloud.tnt4j.core.Activity;
 import com.jkoolcloud.tnt4j.core.OpLevel;
 import com.jkoolcloud.tnt4j.core.Property;
@@ -45,14 +47,18 @@ import com.jkoolcloud.tnt4j.stream.jmx.utils.Utils;
  * @see SampleListener
  */
 public class DefaultSampleListener implements SampleListener {
+	private static final String AGENT_PROP_PREFIX = "com.jkoolcloud.tnt4j.stream.jmx.agent.";
+
 	public static final String STAT_TRACE_MODE = "listener.trace.mode";
 	public static final String STAT_FORCE_OBJECT_NAME_MODE = "listener.forceObjectName.mode";
+	public static final String STAT_COMPOSITE_DELIMITER = "listener.compositeProperty.delimiter";
 	public static final String STAT_EXCLUDE_SET_COUNT = "listener.exclude.set.count";
 	public static final String STAT_SILENCE_SET_COUNT = "listener.silence.set.count";
 
 	boolean trace = false;
 	boolean forceObjectName = false;
 	PrintStream out;
+	String compositeDelimiter = null;
 
 	Collection<MBeanAttributeInfo> excAttrs = new HashSet<MBeanAttributeInfo>(89);
 	Collection<MBeanAttributeInfo> silenceAttrs = new HashSet<MBeanAttributeInfo>(89);
@@ -61,16 +67,18 @@ public class DefaultSampleListener implements SampleListener {
 	protected final ReentrantLock buildLock = new ReentrantLock();
 
 	/**
-	 * Create an instance of {@code DefaultSampleListener} with a a given print stream and trace mode
+	 * Create an instance of {@code DefaultSampleListener} with a a given print stream and configuration properties.
 	 *
 	 * @param pStream print stream instance for tracing
-	 * @param trace mode
-	 * @param forceObjectName flag indicating to forcibly add objectName attribute if such is not present for a MBean
+	 * @param properties listener configuration properties map
+	 *
+	 * @see com.jkoolcloud.tnt4j.stream.jmx.core.DefaultSampleListener.ListenerProperties
 	 */
-	public DefaultSampleListener(PrintStream pStream, boolean trace, boolean forceObjectName) {
-		this.trace = trace;
+	public DefaultSampleListener(PrintStream pStream, Map<String, ?> properties) {
+		this.trace = Utils.getBoolean(ListenerProperties.TRACE.pName(), properties, trace);
 		this.out = pStream == null ? System.out : pStream;
-		this.forceObjectName = forceObjectName;
+		this.forceObjectName = Utils.getBoolean(ListenerProperties.FORCE_OBJECT_NAME.pName(), properties, forceObjectName);
+		this.compositeDelimiter = Utils.getString(ListenerProperties.COMPOSITE_DELIMITER.pName(), properties, compositeDelimiter);
 	}
 
 	/**
@@ -226,6 +234,7 @@ public class DefaultSampleListener implements SampleListener {
 	public void getStats(SampleContext context, Map<String, Object> stats) {
 		stats.put(STAT_TRACE_MODE, trace);
 		stats.put(STAT_FORCE_OBJECT_NAME_MODE, forceObjectName);
+		stats.put(STAT_COMPOSITE_DELIMITER, compositeDelimiter);
 		stats.put(STAT_EXCLUDE_SET_COUNT, excAttrs.size());
 		stats.put(STAT_SILENCE_SET_COUNT, silenceAttrs.size());
 	}
@@ -295,11 +304,57 @@ public class DefaultSampleListener implements SampleListener {
 	 */
 	protected PropertyNameBuilder initPropName(String propName) {
 		if (pnb == null) {
-			pnb = new PropertyNameBuilder(propName);
+			pnb = StringUtils.isNotEmpty(compositeDelimiter) ? new PropertyNameBuilder(propName, compositeDelimiter)
+					: new PropertyNameBuilder(propName);
 		} else {
 			pnb.reset(propName);
 		}
 
 		return pnb;
+	}
+
+	/**
+	 * Sample listener configuration properties enumeration.
+	 */
+	public enum ListenerProperties {
+		/**
+		 * Flag indicating whether the sample listener should print trace entries to print stream.
+		 */
+		TRACE("trace"),
+		/**
+		 * Flag indicating to forcibly add {@code "objectName"} attribute if such is not present for a MBean.
+		 */
+		FORCE_OBJECT_NAME("forceObjectName"),
+		/**
+		 * Delimiter used to tokenize composite/tabular type MBean properties keys.
+		 */
+		COMPOSITE_DELIMITER("compositeDelimiter");
+
+		private String pName;
+		private String apName;
+
+		private ListenerProperties(String pName) {
+			this.pName = pName;
+			this.apName = AGENT_PROP_PREFIX + pName;
+		}
+
+		/**
+		 * Returns property name used by the sample listener.
+		 * 
+		 * @return listener property name
+		 */
+		public String pName() {
+			return pName;
+		}
+
+		/**
+		 * Returns {@link com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent} configuration property name used to configure
+		 * the sample listener.
+		 *
+		 * @return sampling agent configuration property name
+		 */
+		public String apName() {
+			return apName;
+		}
 	}
 }

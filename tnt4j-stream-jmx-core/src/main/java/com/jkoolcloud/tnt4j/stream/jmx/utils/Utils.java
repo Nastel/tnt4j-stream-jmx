@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
@@ -178,6 +179,46 @@ public class Utils extends com.jkoolcloud.tnt4j.utils.Utils {
 	 */
 	public static String toString(Throwable t) {
 		return t.toString();
+	}
+
+	/**
+	 * Copies property <tt>sKey</tt> value from <tt>sProperties</tt> to <tt>tProperties</tt> using key <tt>tKey</tt>.
+	 * 
+	 * @param sKey
+	 *            source property key
+	 * @param sProperties
+	 *            source properties map
+	 * @param tKey
+	 *            target property key
+	 * @param tProperties
+	 *            source properties map
+	 */
+	public static void copyProperty(String sKey, Map<?, ?> sProperties, String tKey, Map<String, Object> tProperties) {
+		Object sPropValue = sProperties.get(sKey);
+		if (sPropValue != null) {
+			tProperties.put(tKey, sPropValue);
+		}
+	}
+
+	/**
+	 * Copies property <tt>sKey</tt> value from <tt>sProperties</tt> to <tt>tProperties</tt> using key <tt>tKey</tt>. If
+	 * source property does not exist, default value <tt>defValue</tt> is set.
+	 *
+	 * @param sKey
+	 *            source property key
+	 * @param sProperties
+	 *            source properties map
+	 * @param tKey
+	 *            target property key
+	 * @param tProperties
+	 *            source properties map
+	 * @param defValue
+	 *            default property value to set when source property is not defined
+	 */
+	public static void copyProperty(String sKey, Map<?, ?> sProperties, String tKey, Map<String, Object> tProperties,
+			Object defValue) {
+		Object sPropValue = sProperties.get(sKey);
+		tProperties.put(tKey, sPropValue == null ? defValue : sPropValue);
 	}
 
 }

@@ -15,6 +15,8 @@
  */
 package com.jkoolcloud.tnt4j.stream.jmx;
 
+import static com.jkoolcloud.tnt4j.stream.jmx.core.DefaultSampleListener.ListenerProperties.*;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -38,6 +40,7 @@ import javax.management.remote.JMXServiceURL;
 import org.apache.commons.lang3.StringUtils;
 
 import com.jkoolcloud.tnt4j.config.TrackerConfigStore;
+import com.jkoolcloud.tnt4j.stream.jmx.core.DefaultSampleListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
 import com.jkoolcloud.tnt4j.stream.jmx.factory.DefaultSamplerFactory;
 import com.jkoolcloud.tnt4j.stream.jmx.factory.SamplerFactory;
@@ -59,8 +62,6 @@ public class SamplingAgent {
 	protected static Sampler platformJmx;
 	protected static ConcurrentHashMap<MBeanServerConnection, Sampler> STREAM_AGENTS = new ConcurrentHashMap<MBeanServerConnection, Sampler>(89);
 	protected static final long CONN_RETRY_INTERVAL = 10;
-	protected static boolean TRACE;
-	protected static boolean FORCE_OBJECT_NAME;
 
 	private static final String PARAM_VM_DESCRIPTOR = "-vm:";
 	private static final String PARAM_AGENT_LIB_PATH = "-ap:";
@@ -94,11 +95,13 @@ public class SamplingAgent {
 			+ Sampler.JMX_SAMPLE_PERIOD;
 
 	public static final Properties DEFAULTS = new Properties();
+	public static final Map<String, Object> LISTENER_PROPERTIES = new HashMap<String, Object>(5);
 	static {
 		initDefaults(DEFAULTS);
 
-		TRACE = getConfFlag("com.jkoolcloud.tnt4j.stream.jmx.agent.trace", false);
-		FORCE_OBJECT_NAME = getConfFlag("com.jkoolcloud.tnt4j.stream.jmx.agent.forceObjectName", false);
+		copyProperty(TRACE, DEFAULTS, LISTENER_PROPERTIES, false);
+		copyProperty(FORCE_OBJECT_NAME, DEFAULTS, LISTENER_PROPERTIES, false);
+		copyProperty(COMPOSITE_DELIMITER, DEFAULTS, LISTENER_PROPERTIES, "\\");
 	}
 
 	private static boolean stopSampling = false;
@@ -135,8 +138,7 @@ public class SamplingAgent {
 				+ ", exclude.filter=" + excFilter
 				+ ", sample.ms=" + period
 				+ ", initDelay.ms=" + initDelay
-				+ ", trace=" + TRACE
-				+ ", forceObjectName=" + FORCE_OBJECT_NAME
+				+ ", listener.properties=" + LISTENER_PROPERTIES
 				+ ", tnt4j.config=" + System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY)
 				+ ", jmx.sample.list=" + STREAM_AGENTS);
 	}
@@ -176,24 +178,32 @@ public class SamplingAgent {
 				} else if (arg.startsWith("-DSamplingAgent.path")) {
 					String[] prop = arg.split("=");
 					agentLibPath = prop.length > 1 ? prop[1] : null;
-				} else if (arg.startsWith("trace=")) {
+				} else if (arg.startsWith(TRACE.pName() + "=")) {
 					String[] prop = arg.split("=");
-					TRACE = prop.length > 1 ? Boolean.parseBoolean(prop[1]) : TRACE;
-				} else if (arg.startsWith("forceObjectName=")) {
+					if (prop.length > 1) {
+						LISTENER_PROPERTIES.put(TRACE.pName(), Boolean.parseBoolean(prop[1]));
+					}
+				} else if (arg.startsWith(FORCE_OBJECT_NAME.pName() + "=")) {
 					String[] prop = arg.split("=");
-					FORCE_OBJECT_NAME = prop.length > 1 ? Boolean.parseBoolean(prop[1]) : FORCE_OBJECT_NAME;
+					if (prop.length > 1) {
+						LISTENER_PROPERTIES.put(FORCE_OBJECT_NAME.pName(), Boolean.parseBoolean(prop[1]));
+					}
+				} else if (arg.startsWith(COMPOSITE_DELIMITER.pName() + "=")) {
+					String[] prop = arg.split("=");
+					if (prop.length > 1) {
+						LISTENER_PROPERTIES.put(COMPOSITE_DELIMITER.pName(), prop[1]);
+					}
 				}
 			}
 		}
 
 		System.out.println("SamplingAgent.agentmain: agent.params=" + agentParams
 				+ ", agent.lib.path=" + agentLibPath
-				+ ", trace=" + TRACE
-				+ ", forceObjectName=" + FORCE_OBJECT_NAME
+				+ ", listener.properties=" + LISTENER_PROPERTIES
 				+ ", tnt4j.config=" + System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY));
 
 		File agentPath = new File(agentLibPath);
-		final String[] classPathEntries = agentPath.list(new JarFilter());
+		String[] classPathEntries = agentPath.list(new JarFilter());
 		if (classPathEntries != null) {
 			File pathFile;
 			for (String classPathEntry : classPathEntries) {
@@ -273,8 +283,7 @@ public class SamplingAgent {
 							+ ", sample.ms=" + sample_time
 							+ ", delay.ms=" + delay_time
 							+ ", wait.ms=" + wait_time
-							+ ", trace=" + TRACE
-							+ ", forceObjectName=" + FORCE_OBJECT_NAME
+							+ ", listener.properties=" + LISTENER_PROPERTIES
 							+ ", tnt4j.config=" + System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY)
 							+ ", jmx.sample.list=" + STREAM_AGENTS);
 					synchronized (platformJmx) {
@@ -501,9 +510,7 @@ public class SamplingAgent {
 			Sampler jmxSampler = STREAM_AGENTS.get(server);
 			if (jmxSampler == null) {
 				jmxSampler = sFactory.newInstance(server);
-				jmxSampler.setSchedule(incFilter, excFilter, initDelay, period, tUnit, sFactory)
-						.addListener(sFactory.newListener(System.out, TRACE, FORCE_OBJECT_NAME)).run();
-				STREAM_AGENTS.put(jmxSampler.getMBeanServer(), jmxSampler);
+				scheduleSampler(incFilter, excFilter, initDelay, period, tUnit, sFactory, jmxSampler, STREAM_AGENTS);
 			}
 		}
 	}
@@ -536,13 +543,18 @@ public class SamplingAgent {
 				// create new sampler with default MBeanServer instance
 				platformJmx = mbSrvConn == null ? sFactory.newInstance() : sFactory.newInstance(mbSrvConn);
 				// schedule sample with a given filter and sampling period
-				platformJmx.setSchedule(incFilter, excFilter, initDelay, period, tUnit, sFactory)
-						.addListener(sFactory.newListener(System.out, TRACE, FORCE_OBJECT_NAME)).run();
-				STREAM_AGENTS.put(platformJmx.getMBeanServer(), platformJmx);
+				scheduleSampler(incFilter, excFilter, initDelay, period, tUnit, sFactory, platformJmx, STREAM_AGENTS);
 			}
 		}
 
 		return sFactory;
+	}
+
+	private static void scheduleSampler(String incFilter, String excFilter, long initDelay, long period, TimeUnit tUnit,
+			SamplerFactory sFactory, Sampler sampler, Map<MBeanServerConnection, Sampler> agents) throws IOException {
+		sampler.setSchedule(incFilter, excFilter, initDelay, period, tUnit, sFactory)
+				.addListener(sFactory.newListener(System.out, LISTENER_PROPERTIES)).run();
+		agents.put(sampler.getMBeanServer(), sampler);
 	}
 
 	/**
@@ -575,8 +587,9 @@ public class SamplingAgent {
 
 		String agentPath = pathFile.getAbsolutePath();
 
-		agentOptions += "!trace=" + TRACE;
-		agentOptions += "!forceObjectName=" + FORCE_OBJECT_NAME;
+		for (Map.Entry<String, Object> lpe : LISTENER_PROPERTIES.entrySet()) {
+			agentOptions += "!" + lpe.getKey() + "=" + String.valueOf(lpe.getValue());
+		}
 
 		agentOptions += "!-DSamplingAgent.path=" + agentPath;
 
@@ -741,7 +754,7 @@ public class SamplingAgent {
 				JMXServiceURL url = new JMXServiceURL(connectorAddress);
 
 				System.out.println("SamplingAgent.connect: connecting JMX service using URL=" + url);
-				final JMXConnector connector = JMXConnectorFactory.connect(url, params);
+				JMXConnector connector = JMXConnectorFactory.connect(url, params);
 
 				try {
 					NotificationListener cnl = new NotificationListener() {
@@ -869,8 +882,9 @@ public class SamplingAgent {
 			}
 		}
 
-		TRACE = getConfFlag("com.jkoolcloud.tnt4j.stream.jmx.agent.trace", TRACE);
-		FORCE_OBJECT_NAME = getConfFlag("com.jkoolcloud.tnt4j.stream.jmx.agent.forceObjectName", FORCE_OBJECT_NAME);
+		copyProperty(TRACE, DEFAULTS, LISTENER_PROPERTIES);
+		copyProperty(FORCE_OBJECT_NAME, DEFAULTS, LISTENER_PROPERTIES);
+		copyProperty(COMPOSITE_DELIMITER, DEFAULTS, LISTENER_PROPERTIES);
 
 		if (connector == null) {
 			sample(incFilter, excFilter, initDelay, period, TimeUnit.MILLISECONDS);
@@ -878,12 +892,11 @@ public class SamplingAgent {
 			sample(incFilter, excFilter, initDelay, period, TimeUnit.MILLISECONDS, connector);
 		}
 
-		System.out.println("SamplingAgent.startSampler: include.filter=" + incFilter 
+		System.out.println("SamplingAgent.startSampler: include.filter=" + incFilter
 				+ ", exclude.filter=" + excFilter
-				+ ", sample.ms=" + period 
-				+ ", initDelay.ms=" + initDelay 
-				+ ", trace=" + TRACE 
-				+ ", forceObjectName=" + FORCE_OBJECT_NAME
+				+ ", sample.ms=" + period
+				+ ", initDelay.ms=" + initDelay
+				+ ", listener.properties=" + LISTENER_PROPERTIES
 				+ ", tnt4j.config=" + System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY)
 				+ ", jmx.sample.list=" + STREAM_AGENTS);
 	}
@@ -993,9 +1006,14 @@ public class SamplingAgent {
 		}
 	}
 
-	private static boolean getConfFlag(String pName, boolean defValue) {
-		String flagValue = Utils.getConfProperty(DEFAULTS, pName, String.valueOf(defValue));
-		return Boolean.parseBoolean(flagValue);
+	private static void copyProperty(DefaultSampleListener.ListenerProperties lProp, Map<?, ?> sProperties,
+			Map<String, Object> tProperties) {
+		Utils.copyProperty(lProp.apName(), sProperties, lProp.pName(), tProperties);
+	}
+
+	private static void copyProperty(DefaultSampleListener.ListenerProperties lProp, Map<?, ?> sProperties,
+			Map<String, Object> tProperties, Object defValue) {
+		Utils.copyProperty(lProp.apName(), sProperties, lProp.pName(), tProperties, defValue);
 	}
 
 	private static class JarFilter implements FilenameFilter {

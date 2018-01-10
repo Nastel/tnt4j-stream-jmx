@@ -76,6 +76,10 @@ public enum StreamJMXProperties implements StreamJMXProperty {
 	 */
 	FORCE_OBJ_NAME("com.jkoolcloud.tnt4j.stream.jmx.agent.forceObjectName", "true", EDITABLE, SYSTEM),
 	/**
+	 * Agent MBean attribute composite/tabular data tokens delimiter.
+	 */
+	COMPOSITE_DELIMITER("com.jkoolcloud.tnt4j.stream.jmx.agent.compositeDelimiter", "\\", EDITABLE, SYSTEM),
+	/**
 	 * User login mame.
 	 */
 	USERNAME("com.jkoolcloud.tnt4j.stream.jmx.agent.user", "", HIDDEN, LOCAL),

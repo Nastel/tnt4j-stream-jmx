@@ -19,7 +19,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 /**
- * Utility class for building JMX attribute property names as paths tokenized by {@code "\"} symbol.
+ * Utility class for building JMX attribute property names as paths tokenized by defined {@code delimiter} string.
  * <p>
  * It uses {@link StringBuilder} to store property name string and {@link Deque} to mark string builder positions
  * allowing to rewind to particular path position by popping tokens out from built path.
@@ -29,16 +29,30 @@ import java.util.Deque;
 public class PropertyNameBuilder {
 	private StringBuilder sb;
 	private Deque<Integer> marks;
+	private String delimiter = "\\";
 
 	/**
-	 * Constructs a new PropertyNameBuilder.
+	 * Constructs a new PropertyNameBuilder. Default delimiter is {@code "\"}.
 	 * 
 	 * @param initName
 	 *            initial property name string
 	 */
 	public PropertyNameBuilder(String initName) {
-		sb = new StringBuilder(checkNull(initName));
-		marks = new ArrayDeque<Integer>(5);
+		this(initName, "\\");
+	}
+
+	/**
+	 * Constructs a new PropertyNameBuilder.
+	 *
+	 * @param initName
+	 *            initial property name string
+	 * @param delimiter
+	 *            property tokens delimiter
+	 */
+	public PropertyNameBuilder(String initName, String delimiter) {
+		this.sb = new StringBuilder(checkNull(initName));
+		this.marks = new ArrayDeque<Integer>(5);
+		this.delimiter = delimiter;
 	}
 
 	/**
@@ -60,8 +74,8 @@ public class PropertyNameBuilder {
 	}
 
 	/**
-	 * Appends provided string to current property name in internal {@link StringBuilder}. {@code "\"} symbol is added
-	 * before string to tokenize property name.
+	 * Appends provided string to current property name in internal {@link StringBuilder}. Constructor defined
+	 * {@code delimiter} is added before string to tokenize property name.
 	 * <p>
 	 * Before appending internal {@link StringBuilder}, current builder length is pushed to marks stack for later use.
 	 *
@@ -71,7 +85,7 @@ public class PropertyNameBuilder {
 	 */
 	public PropertyNameBuilder append(String str) {
 		marks.push(sb.length());
-		sb.append("\\").append(checkNull(str));
+		sb.append(delimiter).append(checkNull(str));
 		return this;
 	}
 

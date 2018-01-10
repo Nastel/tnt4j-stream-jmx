@@ -423,8 +423,14 @@ java -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -classpath "*;lib/*" com
 
 ### System properties used
 * `tnt4j.config` - defines TNT4J properties file path. Example: `-Dtnt4j.config=".\config\tnt4j.properties"`
-* `com.jkoolcloud.tnt4j.stream.jmx.agent.trace` - defines whether to dump trace data to application console output.
+* `com.jkoolcloud.tnt4j.stream.jmx.agent.trace` - defines whether to dump trace data to application console output. Default value - `false`.
 Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true`
+* `com.jkoolcloud.tnt4j.stream.jmx.agent.forceObjectName` - defines whether to forcibly add `objectName` attribute if such is not present 
+for a MBean. Default value - `false`. 
+Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.forceObjectName=true`
+* `com.jkoolcloud.tnt4j.stream.jmx.agent.compositeDelimiter` - defines delimiter used to tokenize composite/tabular type MBean properties 
+keys. Default value - `\`.
+Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.compositeDelimiter=.`
 
 ## Stream-JMX event data formatters
 
