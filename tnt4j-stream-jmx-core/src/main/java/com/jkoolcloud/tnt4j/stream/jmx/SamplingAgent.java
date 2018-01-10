@@ -70,6 +70,7 @@ public class SamplingAgent {
 	private static final String PARAM_AGENT_USER_PASS = "-up:";
 	private static final String PARAM_AGENT_CONN_PARAM = "-cp:";
 	private static final String PARAM_AGENT_CONN_RETRY_INTERVAL = "-cri:";
+	private static final String PARAM_AGENT_LISTENER_PARAM = "-slp:";
 
 	private static final String AGENT_MODE_AGENT = "-agent";
 	private static final String AGENT_MODE_ATTACH = "-attach";
@@ -102,6 +103,10 @@ public class SamplingAgent {
 		copyProperty(TRACE, DEFAULTS, LISTENER_PROPERTIES, false);
 		copyProperty(FORCE_OBJECT_NAME, DEFAULTS, LISTENER_PROPERTIES, false);
 		copyProperty(COMPOSITE_DELIMITER, DEFAULTS, LISTENER_PROPERTIES, "\\");
+
+		copyProperty(TRACE, System.getProperties(), LISTENER_PROPERTIES);
+		copyProperty(FORCE_OBJECT_NAME, System.getProperties(), LISTENER_PROPERTIES);
+		copyProperty(COMPOSITE_DELIMITER, System.getProperties(), LISTENER_PROPERTIES);
 	}
 
 	private static boolean stopSampling = false;
@@ -181,12 +186,12 @@ public class SamplingAgent {
 				} else if (arg.startsWith(TRACE.pName() + "=")) {
 					String[] prop = arg.split("=");
 					if (prop.length > 1) {
-						LISTENER_PROPERTIES.put(TRACE.pName(), Boolean.parseBoolean(prop[1]));
+						LISTENER_PROPERTIES.put(TRACE.pName(), prop[1]);
 					}
 				} else if (arg.startsWith(FORCE_OBJECT_NAME.pName() + "=")) {
 					String[] prop = arg.split("=");
 					if (prop.length > 1) {
-						LISTENER_PROPERTIES.put(FORCE_OBJECT_NAME.pName(), Boolean.parseBoolean(prop[1]));
+						LISTENER_PROPERTIES.put(FORCE_OBJECT_NAME.pName(), prop[1]);
 					}
 				} else if (arg.startsWith(COMPOSITE_DELIMITER.pName() + "=")) {
 					String[] prop = arg.split("=");
@@ -303,12 +308,18 @@ public class SamplingAgent {
 			System.out.println("   or: -connect -vm:vmName/vmId/JMX_URL -ul:userLogin -up:userPassword -ao:agentOptions -cp:jmcConnParam1 -cp:jmcConnParam2 -cp:... (e.g -connect -vm:activemq -ul:admin -up:admin -ao:*:*!!10000 -cp:javax.net.ssl.trustStorePassword=trustPass");
 			System.out.println("   or: -local -ao:agentOptions (e.g -local -ao:*:*!!10000");
 			System.out.println();
-			System.out.println("Parameters definition:");
+			System.out.println("Arguments definition:");
 			System.out.println("   -ao: - agent options string using '!' symbol as delimiter. Options format: mbean-filter!exclude-filter!sample-ms!init-delay-ms");
 			System.out.println("       mbean-filter - MBean include name filter defined using object name pattern: domainName:keysSet");
 			System.out.println("       exclude-filter - MBean exclude name filter defined using object name pattern: domainName:keysSet");
 			System.out.println("       sample-ms - MBeans sampling rate in milliseconds");
 			System.out.println("       init-delay-ms - MBeans sampling initial delay in milliseconds. Optional, by default it is equal to 'sample-ms' value.");
+			System.out.println("   -cp: - JMX connection parameter string using '=' symbol as delimiter. Defines only one parameter, to define more than one use this argument multiple times. Argument format: -cp:key=value");
+			System.out.println("       see https://docs.oracle.com/javase/7/docs/technotes/guides/management/agent.html for more details");
+			System.out.println("  -slp: - sampler parameter string using '=' symbol as delimiter. Defines only one parameter, to define more than one use this argument multiple times. Argument format: -slp:key=value");
+			System.out.println("       trace - flag indicating whether the sample listener should print trace entries to print stream. Default value - 'false'");
+			System.out.println("       forceObjectName - flag indicating to forcibly add 'objectName' attribute if such is not present for a MBean. Default value - 'false'");
+			System.out.println("       compositeDelimiter - delimiter used to tokenize composite/tabular type MBean properties keys. Default value - '\\'");			
 
 			System.exit(1);
 		}
@@ -369,17 +380,8 @@ public class SamplingAgent {
 
 						setProperty(props, arg, PARAM_AGENT_USER_PASS, AGENT_ARG_PASS);
 					} else if (arg.startsWith(PARAM_AGENT_CONN_PARAM)) {
-						String pValue = arg.substring(PARAM_AGENT_CONN_PARAM.length());
-						if (StringUtils.isEmpty(pValue)) {
-							System.out.println("Missing argument '" + PARAM_AGENT_CONN_PARAM + "' value");
-							return false;
-						}
-
-						String[] cp = pValue.split("=");
-
-						if (cp.length < 2) {
-							System.out.println(
-									"Malformed argument '" + PARAM_AGENT_CONN_PARAM + "' value '" + pValue + "'");
+						String[] cp = parseCompositeArg(arg, PARAM_AGENT_CONN_PARAM);
+						if (cp == null) {
 							return false;
 						}
 
@@ -399,6 +401,13 @@ public class SamplingAgent {
 						}
 
 						setProperty(props, arg, PARAM_AGENT_CONN_RETRY_INTERVAL, AGENT_ARG_CONN_RETRY_INTERVAL);
+					} else if (arg.startsWith(PARAM_AGENT_LISTENER_PARAM)) {
+						String[] slp = parseCompositeArg(arg, PARAM_AGENT_LISTENER_PARAM);
+						if (slp == null) {
+							return false;
+						}
+
+						LISTENER_PROPERTIES.put(slp[0], slp[1]);
 					} else {
 						System.out.println("Invalid argument: " + arg);
 						return false;
@@ -436,6 +445,23 @@ public class SamplingAgent {
 		}
 
 		return true;
+	}
+
+	private static String[] parseCompositeArg(String arg, String argName) {
+		String argValue = arg.substring(argName.length());
+		if (StringUtils.isEmpty(argValue)) {
+			System.out.println("Missing argument '" + argName + "' value");
+			return null;
+		}
+
+		String[] slp = argValue.split("=");
+
+		if (slp.length < 2) {
+			System.out.println("Malformed argument '" + argName + "' value '" + argValue + "'");
+			return null;
+		}
+
+		return slp;
 	}
 
 	private static void setProperty(Properties props, String arg, String argName, String agentArgName)
@@ -881,10 +907,6 @@ public class SamplingAgent {
 				initDelay = Integer.parseInt(args.length > 3 ? args[3] : args[2]);
 			}
 		}
-
-		copyProperty(TRACE, DEFAULTS, LISTENER_PROPERTIES);
-		copyProperty(FORCE_OBJECT_NAME, DEFAULTS, LISTENER_PROPERTIES);
-		copyProperty(COMPOSITE_DELIMITER, DEFAULTS, LISTENER_PROPERTIES);
 
 		if (connector == null) {
 			sample(incFilter, excFilter, initDelay, period, TimeUnit.MILLISECONDS);

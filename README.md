@@ -86,6 +86,7 @@ define full or relative path, e.g., `..\build\tnt4j-stream-jmx\tnt4j-stream-jmx-
 * `-ao:*:*!10000` - is JMX sampler options stating to include all MBeans and schedule sampling every 10 seconds. Sampler options are 
 optional - default value is `*:*!30000`. Initial sampler delay can be configured by adding numeric parameter `*:*!30000!1000` defining 
 initial sampler delay as 1 second. Default sampler delay value is equal to sampling period value.
+* `-slp:` - any JMX sampler configuration property. See [Program arguments used](#program-arguments-used) for details.
 
 **NOTE:** arguments and properties defined running `SamplingAgent.main` is forwarded to `SamplingAgent` agent attached to JVM process.
 
@@ -123,6 +124,7 @@ PID. Mandatory argument.
 * `-ao:*:*!*:dummy!10000` - is JMX sampler options stating to include all MBeans, exclude all `dummy` MBeans and schedule sampling every 10 
 seconds. Sampler options are optional - default value is `*:*!30000`. Initial sampler delay can be configured by adding numeric parameter 
 `*:*!30000!1000` defining initial sampler delay as 1 second. Default sampler delay value is equal to sampling period value.
+* `-slp:` - any JMX sampler configuration property. See [Program arguments used](#program-arguments-used) for details.
 
 #### To connect to JMX service over URL
 
@@ -143,11 +145,13 @@ optional - default value is `*:*!30000`. Initial sampler delay can be configured
 initial sampler delay as 1 second. Default sampler delay value is equal to sampling period value.
 * `-cp:javax.net.ssl.trustStore=/your/path/to/truststore.jks -cp:javax.net.ssl.trustStorePassword=truststore_pwd` - is JMX connector 
 parameters definitions in properties format `key=value`. JMX connector parameters are optional and can be defined multiple times - as many 
-as there are required JMX connector parameters.
+as there are required JMX connector parameters. See [Monitoring and Management Using JMX Technology](https://docs.oracle.com/javase/7/docs/technotes/guides/management/agent.html) 
+for more details.
 * `-cri:30` - is connection retry interval in seconds. In this case it is `30sec` between connect retry attempts. Connection retry interval 
 is optional - default value is `10sec`. Special values are:
     * `0` indicates no delay between repeating connect attempts.
     * `-1` indicates no repeating connect attempts shall be made at all and application has to stop on first failed attempt to connect.
+* `-slp:` - any JMX sampler configuration property. See [Program arguments used](#program-arguments-used) for details.    
 
 **NOTE**:
 * URI of remote RMI service (e.g., to connect remote Kafka service) may require additional `/` chars:
@@ -252,6 +256,7 @@ System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [S
 * `-ao:*:*!*:dummy!10000` - is JMX sampler options stating to include all MBeans, exclude all `dummy` MBeans and schedule sampling every 10 
 seconds. Sampler options are optional - default value is `*:*!30000`. Initial sampler delay can be configured by adding numeric parameter 
 `*:*!30000!1000` defining initial sampler delay as 1 second. Default sampler delay value is equal to sampling period value.
+* `-slp:` - any JMX sampler configuration property. See [Program arguments used](#program-arguments-used) for details.
 
 ### Coding into API
 You can run `SamplingAgent` for local process runner JVM from your custom API by calling [SamplingAgent.sampleLocalVM(String,boolean)](./tnt4j-stream-jmx-core/src/main/java/com/jkoolcloud/tnt4j/stream/jmx/SamplingAgent.java#L686) method. 
@@ -421,8 +426,23 @@ java -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -classpath "*;lib/*" com
 
 ## Stream-JMX configuration
 
+Stream-JMX has configuration properties allowing to configure JMX sampler. It is possible to configure same stream JMX sampler parameter 
+using `System property` or `program argument`. Depending on sampling environment used, in some cases it is easier to configure it using one 
+approach or another. When both definitions available **first** `System property` defined value is assigned and then `program argument` 
+value **after**.
+ 
+JMS sampler configuration properties are:
+* `trace` - flag indicating whether the sample listener should print trace entries to print stream. Default value - `false`.
+* `forceObjectName` - flag indicating to forcibly add `objectName` attribute if such is not present for a MBean. Default value - `false`.
+* `compositeDelimiter` - delimiter used to tokenize composite/tabular type MBean properties keys. Default value - `\`;	  
+
+See [System properties used](#system-properties-used) how to configure Stream-JMX using system properties.
+See [Program arguments used](#program-arguments-used) how to configure Stream-JMX using program arguments.
+
 ### System properties used
-* `tnt4j.config` - defines TNT4J properties file path. Example: `-Dtnt4j.config=".\config\tnt4j.properties"`
+
+* `tnt4j.config` - defines TNT4J properties file path. 
+Example: `-Dtnt4j.config=".\config\tnt4j.properties"`
 * `com.jkoolcloud.tnt4j.stream.jmx.agent.trace` - defines whether to dump trace data to application console output. Default value - `false`.
 Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true`
 * `com.jkoolcloud.tnt4j.stream.jmx.agent.forceObjectName` - defines whether to forcibly add `objectName` attribute if such is not present 
@@ -431,6 +451,16 @@ Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.forceObjectName=true`
 * `com.jkoolcloud.tnt4j.stream.jmx.agent.compositeDelimiter` - defines delimiter used to tokenize composite/tabular type MBean properties 
 keys. Default value - `\`.
 Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.compositeDelimiter=.`
+
+### Program arguments used
+
+To define stream JMX sampler configuration property use program argument`-slp:`. One argument defines one property. To define multiple 
+properties use as many argument definitions as there are required properties. For example:
+```cmd
+-slp:trace=true
+-slp:forceObjectName=true
+-slp:compositeDelimiter=.
+``` 
 
 ## Stream-JMX event data formatters
 
