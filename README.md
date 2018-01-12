@@ -202,6 +202,24 @@ Additions needed to run `SamplingAgent` connected to remote WAS machine can be f
     -cp:java.naming.provider.url=corbaloc:iiop:localhost:2809/WsnAdminNameService
 ```
 
+#### Connecting remote WebLogic server instance
+
+Additions needed to run `SamplingAgent` connected to remote WebLogic machine can be found in executable OS shell run script files 
+`bin/stream-jmx-conenct.bat` or `bin/stream-jmx-conenct.sh`. It contains those major configuration additions:
+* WebLogic environment setup configuration
+* appending `LIBPATH` variable with WebLogic client libs
+* Add additional `SamplingAgent` arguments:
+```properties
+    -cp:java.naming.factory.initial=weblogic.jndi.WLInitialContextFactory
+    -cp:java.naming.provider.url=t3://localhost:7001
+    # Add user credentials if needed
+    -cp:java.naming.security.principal=user
+    -cp:java.naming.security.credentials=password
+``` 
+
+For more see [Programming WebLogic JNDI](https://docs.oracle.com/cd/E13222_01/wls/docs81/jndi/jndi.html) and 
+[WebLogic API Environment class documentation](https://docs.oracle.com/cd/E68505_01/wls/WLAPI/weblogic/jndi/Environment.html).
+
 ### Coding into API
 You can connect `SamplingAgent` to JVM from your custom API by calling [SamplingAgent.connect(String,String)](./tnt4j-stream-jmx-core/src/main/java/com/jkoolcloud/tnt4j/stream/jmx/SamplingAgent.java#L574) method. 
 
