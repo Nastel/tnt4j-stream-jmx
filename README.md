@@ -130,11 +130,11 @@ seconds. Sampler options are optional - default value is `*:*!30000`. Initial sa
 
 Command line to connect remote JMX service looks like this:
 ```cmd
-java -Dtnt4j.config=.\config\tnt4j.properties -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -vm:service:jmx:<JMX_URL> -ul:admin -up:admin -ao:*:*!!10000 -cri:30 -cp:javax.net.ssl.trustStore=/your/path/to/truststore.jks -cp:javax.net.ssl.trustStorePassword=truststore_pwd
+java -Dtnt4j.config=.\config\tnt4j.properties -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -vm:service:jmx:<JMX_URL> -ul:admin -up:admin -ao:*:*!!10000 -cri:30 -cp:java.naming.security.authentication=simple -cp:java.naming.factory.initial=com.sun.jndi.ldap.LdapCtxFactory
 ```
 System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [Stream-JMX configuration ](#stream-jmx-configuration).
 
-`SamplingAgent` arguments `-connect -vm:service:jmx:<JMX_URL> -ul:admin -up:admin -ao:*:*!!10000 -cri:30 -cp:javax.net.ssl.trustStore=/your/path/to/truststore.jks -cp:javax.net.ssl.trustStorePassword=truststore_pwd` states:
+`SamplingAgent` arguments `-connect -vm:service:jmx:<JMX_URL> -ul:admin -up:admin -ao:*:*!!10000 -cri:30 -cp:java.naming.security.authentication=simple -cp:java.naming.factory.initial=com.sun.jndi.ldap.LdapCtxFactory` states:
 * `-connect` - defines that `SamplingAgent` shall connect to running JMX service over JMXConnector (RMI) connection.
 * `-vm:service:jmx:<JMX_URL>` - is JMX service URL to use for connection. Mandatory argument. Full URL may be like 
 `service:jmx:rmi://127.0.0.1/stub/rO0ABXN9AAAAAQAlamF2YXgubWFuYWdlbWVudC5yZW1vdGUucm1pLlJNSVNlcnZlcnhyABdqYXZhLmxhbmcucmVmbGVjdC5Qcm94eeEn2iDMEEPLAgABTAABaHQAJUxqYXZhL2xhbmcvcmVmbGVjdC9JbnZvY2F0aW9uSGFuZGxlcjt4cHNyAC1qYXZhLnJtaS5zZXJ2ZXIuUmVtb3RlT2JqZWN0SW52b2NhdGlvbkhhbmRsZXIAAAAAAAAAAgIAAHhyABxqYXZhLnJtaS5zZXJ2ZXIuUmVtb3RlT2JqZWN002G0kQxhMx4DAAB4cHc2AAtVbmljYXN0UmVmMgAACzE3Mi4xNi42Ljg2AADPWKO5DJD/bZIhG9aBuwAAAVo8DdAkgAEAeA==`.
@@ -143,10 +143,11 @@ System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [S
 * `-ao:*:*!!10000` - is JMX sampler options stating to include all MBeans and schedule sampling every 10 seconds. Sampler options are 
 optional - default value is `*:*!30000`. Initial sampler delay can be configured by adding numeric parameter `*:*!30000!1000` defining 
 initial sampler delay as 1 second. Default sampler delay value is equal to sampling period value.
-* `-cp:javax.net.ssl.trustStore=/your/path/to/truststore.jks -cp:javax.net.ssl.trustStorePassword=truststore_pwd` - is JMX connector 
+* `-cp:java.naming.security.authentication=simple -cp:java.naming.factory.initial=com.sun.jndi.ldap.LdapCtxFactory` - is JMX connector 
 parameters definitions in properties format `key=value`. JMX connector parameters are optional and can be defined multiple times - as many 
-as there are required JMX connector parameters. See [Monitoring and Management Using JMX Technology](https://docs.oracle.com/javase/7/docs/technotes/guides/management/agent.html) 
-for more details.
+as there are required JMX connector parameters. See [Java API Context class documentation](https://docs.oracle.com/javase/7/docs/api/javax/naming/Context.html) 
+for available properties naming. **NOTE:** If you are using some API extending JNDI, check documentation if it provides some additional 
+connection configuration properties. 
 * `-cri:30` - is connection retry interval in seconds. In this case it is `30sec` between connect retry attempts. Connection retry interval 
 is optional - default value is `10sec`. Special values are:
     * `0` indicates no delay between repeating connect attempts.

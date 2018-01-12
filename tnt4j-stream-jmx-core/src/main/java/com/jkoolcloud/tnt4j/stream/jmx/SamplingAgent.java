@@ -175,26 +175,26 @@ public class SamplingAgent {
 			for (String arg : args) {
 				if (arg.startsWith("-Dtnt4j.config")) {
 					if (Utils.isEmpty(tnt4jProp)) {
-						String[] prop = arg.split("=");
+						String[] prop = arg.split("=", 2);
 						tnt4jProp = prop.length > 1 ? prop[1] : null;
 
 						System.setProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY, tnt4jProp);
 					}
 				} else if (arg.startsWith("-DSamplingAgent.path")) {
-					String[] prop = arg.split("=");
+					String[] prop = arg.split("=", 2);
 					agentLibPath = prop.length > 1 ? prop[1] : null;
 				} else if (arg.startsWith(TRACE.pName() + "=")) {
-					String[] prop = arg.split("=");
+					String[] prop = arg.split("=", 2);
 					if (prop.length > 1) {
 						LISTENER_PROPERTIES.put(TRACE.pName(), prop[1]);
 					}
 				} else if (arg.startsWith(FORCE_OBJECT_NAME.pName() + "=")) {
-					String[] prop = arg.split("=");
+					String[] prop = arg.split("=", 2);
 					if (prop.length > 1) {
 						LISTENER_PROPERTIES.put(FORCE_OBJECT_NAME.pName(), prop[1]);
 					}
 				} else if (arg.startsWith(COMPOSITE_DELIMITER.pName() + "=")) {
-					String[] prop = arg.split("=");
+					String[] prop = arg.split("=", 2);
 					if (prop.length > 1) {
 						LISTENER_PROPERTIES.put(COMPOSITE_DELIMITER.pName(), prop[1]);
 					}
@@ -454,7 +454,7 @@ public class SamplingAgent {
 			return null;
 		}
 
-		String[] slp = argValue.split("=");
+		String[] slp = argValue.split("=", 2);
 
 		if (slp.length < 2) {
 			System.out.println("Malformed argument '" + argName + "' value '" + argValue + "'");
@@ -676,7 +676,7 @@ public class SamplingAgent {
 	 *
 	 * @param vmDescr JVM descriptor: JMX service URI, local JVM name fragment or pid
 	 * @param options '!' separated list of options mbean-filter!sample.ms!initDelay.ms, where mbean-filter is semicolon separated list of mbean filters and {@code initDelay} is optional
-	 * @param connParams map of JMX connection parameters
+	 * @param connParams map of JMX connection parameters, defined by {@link javax.naming.Context}
 	 * @throws Exception if any exception occurs while connecting to JVM
 	 *
 	 * @see #connect(String, String, java.util.Map, long)
@@ -691,7 +691,7 @@ public class SamplingAgent {
 	 *
 	 * @param vmDescr JVM descriptor: JMX service URI, local JVM name fragment or pid
 	 * @param options '!' separated list of options mbean-filter!sample.ms!initDelay.ms, where mbean-filter is semicolon separated list of mbean filters and {@code initDelay} is optional
-	 * @param connParams map of JMX connection parameters
+	 * @param connParams map of JMX connection parameters, defined by {@link javax.naming.Context}
 	 * @param connRetryInterval connect reattempt interval value in seconds, {@code -1} - do not retry
 	 * @throws Exception if any exception occurs while connecting to JVM
 	 *
@@ -743,9 +743,12 @@ public class SamplingAgent {
 	 * @param user user login used by JMX service connection
 	 * @param pass user password used by JMX service connection
 	 * @param options '!' separated list of options mbean-filter!sample.ms!initDelay.ms, where mbean-filter is semicolon separated list of mbean filters and {@code initDelay} is optional
-	 * @param connParams map of JMX connection parameters
+	 * @param connParams map of JMX connection parameters, defined by {@link javax.naming.Context}
 	 * @param connRetryInterval connect reattempt interval value in seconds, {@code -1} - do not retry
 	 * @throws Exception if any exception occurs while connecting to JVM
+	 *
+	 * @see JMXConnectorFactory#connect(javax.management.remote.JMXServiceURL, java.util.Map)
+	 * @see javax.naming.Context
 	 */
 	public static void connect(String vmDescr, String user, String pass, String options, Map<String, ?> connParams,
 			long connRetryInterval) throws Exception {
