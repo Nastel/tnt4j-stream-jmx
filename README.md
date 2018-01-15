@@ -208,6 +208,15 @@ Additions needed to run `SamplingAgent` connected to remote WebLogic machine can
 `bin/stream-jmx-conenct.bat` or `bin/stream-jmx-conenct.sh`. It contains those major configuration additions:
 * WebLogic environment setup configuration
 * appending `LIBPATH` variable with WebLogic client libs
+* enable `j2ee` module use:
+    * .bat 
+    ```cmd
+    set MODULE_SET=core j2ee
+    ```
+    * .sh
+    ```bash
+    MODULE_SET=("core" "j2ee")
+    ```
 * Add additional `SamplingAgent` arguments:
 ```properties
     -cp:java.naming.factory.initial=weblogic.jndi.WLInitialContextFactory
