@@ -180,6 +180,7 @@ metrics over JMX. Executable OS shell run script files uses only `core` as `MODU
 * See [Enabling Tomcat JMX Remote](https://tomcat.apache.org/tomcat-7.0-doc/monitoring.html) to enable remote JMX access of Tomcat server 
  instance. **If your Tomcat server is behind firewall - also refer to [JMX Remote Lifecycle Listener](https://tomcat.apache.org/tomcat-7.0-doc/config/listeners.html#JMX_Remote_Lifecycle_Listener_-_org.apache.catalina.mbeans.JmxRemoteLifecycleListener)
  on how to setup such Tomcat server instance to be accessible from outside.** 
+* See [ActiveMQ JMX](http://activemq.apache.org/jmx.html) how to enable remote ActiveMQ JMX access.
 
 #### Connecting remote WebSphere Application Server (WAS)
 
