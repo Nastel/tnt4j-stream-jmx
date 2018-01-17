@@ -125,11 +125,11 @@ rem using pid
 # using URL  
 ./bin/stream-jmx-connect.sh service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi
 # using URL with connection parameters  
-/bin/stream-jmx-connect.sh service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi -ul:admin -up:admin -cp:java.naming.security.authentication=simple -cp:java.naming.factory.initial=com.sun.jndi.ldap.LdapCtxFactory
+./bin/stream-jmx-connect.sh service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi -ul:admin -up:admin -cp:java.naming.security.authentication=simple -cp:java.naming.factory.initial=com.sun.jndi.ldap.LdapCtxFactory
 # using process name part        
-/bin/stream-jmx-connect.sh activemq
+./bin/stream-jmx-connect.sh activemq
 # using pid
-/bin/stream-jmx-connect.sh 1553
+./bin/stream-jmx-connect.sh 1553
 ```
 
 #### To connect to local JVM process
