@@ -106,7 +106,31 @@ try {
 
 ### Command line to run
 
-Executable OS shell run script files `bin/stream-jmx-conenct.bat` or `bin/stream-jmx-conenct.sh` are dedicated to do the job.
+Executable OS shell run script files `bin/stream-jmx-conenct.bat` or `bin/stream-jmx-conenct.sh` are dedicated to do the job:
+
+* Windows
+```cmd
+rem using URL  
+/bin/stream-jmx-connect.bat service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi
+rem using URL with connection parameters  
+/bin/stream-jmx-connect.bat service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi -ul:admin -up:admin -cp:java.naming.security.authentication=simple -cp:java.naming.factory.initial=com.sun.jndi.ldap.LdapCtxFactory
+rem using process name part        
+/bin/stream-jmx-connect.bat activemq
+rem using pid
+/bin/stream-jmx-connect.bat 1553 
+```
+
+* *nix
+```bash
+# using URL  
+./bin/stream-jmx-connect.sh service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi
+# using URL with connection parameters  
+/bin/stream-jmx-connect.bat service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi -ul:admin -up:admin -cp:java.naming.security.authentication=simple -cp:java.naming.factory.initial=com.sun.jndi.ldap.LdapCtxFactory
+# using process name part        
+/bin/stream-jmx-connect.bat activemq
+# using pid
+/bin/stream-jmx-connect.bat 1553
+```
 
 #### To connect to local JVM process
 
