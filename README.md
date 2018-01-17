@@ -1028,7 +1028,7 @@ TOOLS_PATH="$JAVA_HOME/lib/tools.jar"
 #### `WAS` module
 
 **NOTE:** Because this module requires manually downloaded libraries, it is commented out in main project pom file `tnt4j-stream-jmx/pom.xml` 
-by default. If You want to use it uncomment this line of `pom.xml` file. But `WAS` module will be ready to build only when manually 
+by default. If you want to use it uncomment this line of `pom.xml` file. But `WAS` module will be ready to build only when manually 
 downloaded libraries will be installed to local maven repository.
 
 What to download manually or copy from your existing IBM MQ installation:
@@ -1066,7 +1066,7 @@ directory.
 
 By default maven will build all modules defined in `tnt4j-stream-jmx/pom.xml` file.
 
-If You do not want to build some of optional modules, comment those out like `WAS` module is. Or You can define maven to build your 
+If you do not want to build some of optional modules, comment those out like `WAS` module is. Or you can define maven to build your 
 preferred set of modules using `-pl, --projects` argument (comma separated modules list) together with `-am, --also-make` argument, e.g.:
 
 ```cmd
