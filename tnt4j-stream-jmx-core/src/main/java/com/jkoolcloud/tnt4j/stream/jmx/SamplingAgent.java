@@ -25,10 +25,7 @@ import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -235,7 +232,7 @@ public class SamplingAgent {
 			try {
 				method.invoke(classLoader, classPathEntryURL);
 			} catch (Exception e) {
-				System.out.println("SamplingAgent.extendClasspath: Could not load lib " + classPathEntryURL);
+				System.out.println("SamplingAgent.extendClasspath: could not load lib " + classPathEntryURL);
 				System.out.println("                    Exception: " + Utils.toString(e));
 			}
 		}
@@ -326,6 +323,7 @@ public class SamplingAgent {
 	}
 
 	private static boolean parseArgs(Properties props, String... args) {
+		System.out.println("SamplingAgent.parseArgs(): args=" + Arrays.toString(args));
 		boolean ac = StringUtils.equalsAnyIgnoreCase(args[0], AGENT_MODE_ATTACH, AGENT_MODE_CONNECT);
 		boolean local = AGENT_MODE_LOCAL.equalsIgnoreCase(args[0]);
 
@@ -341,40 +339,45 @@ public class SamplingAgent {
 
 					if (arg.startsWith(PARAM_VM_DESCRIPTOR)) {
 						if (StringUtils.isNotEmpty(props.getProperty(AGENT_ARG_VM))) {
-							System.out.println("JVM descriptor already defined. Can not use argument ["
-									+ PARAM_VM_DESCRIPTOR + "] multiple times.");
+							System.out.println(
+									"SamplingAgent.parseArgs: JVM descriptor already defined. Can not use argument ["
+											+ PARAM_VM_DESCRIPTOR + "] multiple times.");
 							return false;
 						}
 
 						setProperty(props, arg, PARAM_VM_DESCRIPTOR, AGENT_ARG_VM);
 					} else if (arg.startsWith(PARAM_AGENT_LIB_PATH)) {
 						if (StringUtils.isNotEmpty(props.getProperty(AGENT_ARG_LIB_PATH))) {
-							System.out.println("Agent library path already defined. Can not use argument ["
-									+ PARAM_AGENT_LIB_PATH + "] multiple times.");
+							System.out.println(
+									"SamplingAgent.parseArgs: agent library path already defined. Can not use argument ["
+											+ PARAM_AGENT_LIB_PATH + "] multiple times.");
 							return false;
 						}
 
 						setProperty(props, arg, PARAM_AGENT_LIB_PATH, AGENT_ARG_LIB_PATH);
 					} else if (arg.startsWith(PARAM_AGENT_OPTIONS)) {
 						if (StringUtils.isNotEmpty(props.getProperty(AGENT_ARG_OPTIONS))) {
-							System.out.println("Agent options already defined. Can not use argument ["
-									+ PARAM_AGENT_OPTIONS + "] multiple times.");
+							System.out.println(
+									"SamplingAgent.parseArgs: agent options already defined. Can not use argument ["
+											+ PARAM_AGENT_OPTIONS + "] multiple times.");
 							return false;
 						}
 
 						setProperty(props, arg, PARAM_AGENT_OPTIONS, AGENT_ARG_OPTIONS);
 					} else if (arg.startsWith(PARAM_AGENT_USER_LOGIN)) {
 						if (StringUtils.isNotEmpty(props.getProperty(AGENT_ARG_USER))) {
-							System.out.println("User login already defined. Can not use argument ["
-									+ PARAM_AGENT_USER_LOGIN + "] multiple times.");
+							System.out.println(
+									"SamplingAgent.parseArgs: user login already defined. Can not use argument ["
+											+ PARAM_AGENT_USER_LOGIN + "] multiple times.");
 							return false;
 						}
 
 						setProperty(props, arg, PARAM_AGENT_USER_LOGIN, AGENT_ARG_USER);
 					} else if (arg.startsWith(PARAM_AGENT_USER_PASS)) {
 						if (StringUtils.isNotEmpty(props.getProperty(AGENT_ARG_PASS))) {
-							System.out.println("User password already defined. Can not use argument ["
-									+ PARAM_AGENT_USER_PASS + "] multiple times.");
+							System.out.println(
+									"SamplingAgent.parseArgs: user password already defined. Can not use argument ["
+											+ PARAM_AGENT_USER_PASS + "] multiple times.");
 							return false;
 						}
 
@@ -395,8 +398,9 @@ public class SamplingAgent {
 						connParams.put(cp[0], cp[1]);
 					} else if (arg.startsWith(PARAM_AGENT_CONN_RETRY_INTERVAL)) {
 						if (StringUtils.isNotEmpty(props.getProperty(AGENT_ARG_CONN_RETRY_INTERVAL))) {
-							System.out.println("Connection retry interval already defined. Can not use argument ["
-									+ PARAM_AGENT_CONN_RETRY_INTERVAL + "] multiple times.");
+							System.out.println(
+									"SamplingAgent.parseArgs: connection retry interval already defined. Can not use argument ["
+											+ PARAM_AGENT_CONN_RETRY_INTERVAL + "] multiple times.");
 							return false;
 						}
 
@@ -409,7 +413,7 @@ public class SamplingAgent {
 
 						LISTENER_PROPERTIES.put(slp[0], slp[1]);
 					} else {
-						System.out.println("Invalid argument: " + arg);
+						System.out.println("SamplingAgent.parseArgs: invalid argument [" + arg + "]");
 						return false;
 					}
 				}
@@ -420,14 +424,16 @@ public class SamplingAgent {
 			}
 
 			if (StringUtils.isEmpty(props.getProperty(AGENT_ARG_VM)) && ac) {
-				System.out.println("Missing mandatory argument '" + PARAM_VM_DESCRIPTOR + "' defining JVM descriptor.");
+				System.out.println("SamplingAgent.parseArgs: missing mandatory argument [" + PARAM_VM_DESCRIPTOR
+						+ "] defining JVM descriptor.");
 				return false;
 			}
 
 			// if (AGENT_MODE_ATTACH.equalsIgnoreCase(props.getProperty(AGENT_ARG_MODE))
 			// && StringUtils.isEmpty(props.getProperty(AGENT_ARG_LIB_PATH))) {
 			// System.out.println(
-			// "Missing mandatory argument '" + PARAM_AGENT_LIB_PATH + "' defining agent library path.");
+			// "SamplingAgent.parseArgs: missing mandatory argument [" + PARAM_AGENT_LIB_PATH + "] defining agent
+			// library path.");
 			// return false;
 			// }
 		} else {
@@ -450,14 +456,14 @@ public class SamplingAgent {
 	private static String[] parseCompositeArg(String arg, String argName) {
 		String argValue = arg.substring(argName.length());
 		if (StringUtils.isEmpty(argValue)) {
-			System.out.println("Missing argument '" + argName + "' value");
+			System.out.println("SamplingAgent.parseArgs: missing argument [" + argName + "] value");
 			return null;
 		}
 
 		String[] slp = argValue.split("=", 2);
 
 		if (slp.length < 2) {
-			System.out.println("Malformed argument '" + argName + "' value '" + argValue + "'");
+			System.out.println("SamplingAgent.parseArgs: malformed argument [" + argName + "] value [" + argValue + "]");
 			return null;
 		}
 
@@ -468,7 +474,7 @@ public class SamplingAgent {
 			throws IllegalArgumentException {
 		String pValue = arg.substring(argName.length());
 		if (StringUtils.isEmpty(pValue)) {
-			throw new IllegalArgumentException("Missing argument '" + argName + "' value");
+			throw new IllegalArgumentException("Missing argument [" + argName + "] value");
 		}
 
 		props.setProperty(agentArgName, pValue);
@@ -881,7 +887,7 @@ public class SamplingAgent {
 			}
 		}
 
-		System.out.println("SamplingAgent.startSamplerAndWait: Stopping Stream-JMX...");
+		System.out.println("SamplingAgent.startSamplerAndWait: stopping Stream-JMX...");
 		try {
 			Runtime.getRuntime().removeShutdownHook(shutdownHook);
 		} catch (IllegalStateException exc) {
