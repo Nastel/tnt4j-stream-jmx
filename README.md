@@ -232,7 +232,7 @@ Additions needed to run `SamplingAgent` connected to remote WAS machine can be f
 Additions needed to run `SamplingAgent` connected to remote WebLogic machine can be found in executable OS shell run script files 
 `bin/stream-jmx-conenct.bat` or `bin/stream-jmx-conenct.sh`. It contains those major configuration additions:
 * WebLogic environment setup configuration
-* appending `LIBPATH` variable with WebLogic client libs
+* appending `LIBPATH` variable with WebLogic client lib from `${WL_INSTALL_DIR}/inventory/wlserver/server/lib/wlclient.jar`
 * enable `j2ee` module use:
     * .bat 
     ```cmd
