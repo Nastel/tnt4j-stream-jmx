@@ -49,8 +49,9 @@ remote JMX service over RMI connection can be invoked without changing your appl
 
 **NOTE:** When you want to sample JMX inter-process communication way (providing `-connect` or `-attach` mode `-vm` parameter value as 
 PID/process name), then `Stream-JMX` and sampled process **MUST be** running JVM built by same provider (e.g. `IBM`, `Oracle`, `OpenJDK`) 
-and same architecture (`x86`, `x64`). If JVM provider or architecture differs, then only way to collect JMX samples is using `-connect` mode 
-defining `JMXConnector` (over `RMI`) URL.
+and same architecture (`x86`, `x64`). Also check which JDK `tools.jar` you have referring over `LIBPATH` variable, it also must match 
+runner JVM. If JVM provider or architecture differs, then only way to collect JMX samples is using `-connect` mode defining `JMXConnector` 
+(over `RMI`) URL.
 
 **NOTE:** when running `stream-jmx` sometimes it may appear some `Unsupported` type exceptions in console/log, e.g.:  
 ```text
