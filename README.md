@@ -52,6 +52,23 @@ PID/process name), then `Stream-JMX` and sampled process **MUST be** running JVM
 and same architecture (`x86`, `x64`). If JVM provider or architecture differs, then only way to collect JMX samples is using `-connect` mode 
 defining `JMXConnector` (over `RMI`) URL.
 
+**NOTE:** when running `stream-jmx` sometimes it may appear some `Unsupported` type exceptions in console/log, e.g.:  
+```text
+Failed to sample:
+ ojbName=java.lang:type=MemoryPool,name=PS Eden Space,
+ info=javax.management.MBeanAttributeInfo[description=UsageThresholdExceeded, name=UsageThresholdExceeded, type=boolean, read-only, isIs, descriptor={openType=javax.management.openmbean.SimpleType(name=java.lang.Boolean), originalType=boolean}],
+ exclude=false,
+ ex=javax.management.RuntimeMBeanException: java.lang.UnsupportedOperationException: Usage threshold is not supported
+javax.management.RuntimeMBeanException: java.lang.UnsupportedOperationException: Usage threshold is not supported
+	... 25 more
+Caused by: java.lang.UnsupportedOperationException: Usage threshold is not supported	
+	... 27 more
+```
+It is OK, since some MBeans do not provide some attributes depending on Operating System or other run environment setup. If you would run 
+`JConsole` you'll get values `Unavailable` for such attributes painted in red (e.g. see `java.lang -> MemoryPool -> PS Eden Space` 
+attribute `UsageThresholdExceeded`). These `Unsupported` exceptions are shown on first iteration of sampling for user to know that all 
+MBean attributes where accessed.
+
 ## Running Stream-JMX as `-javaagent`
 
 ### Command line to run
