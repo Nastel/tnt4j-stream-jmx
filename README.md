@@ -91,22 +91,28 @@ Executable OS shell run script files `bin/stream-jmx-attach.bat` or `bin/stream-
 
 Command line to attach local JVM process JMX looks like this:
 ```cmd
-java -Dtnt4j.config=.\config\tnt4j.properties -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -attach -vm:activemq -ap:tnt4j-stream-jmx-0.5.0.jar -ao:*:*!10000
+java -Dtnt4j.config=.\config\tnt4j.properties -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -attach -vm:activemq -ap:tnt4j-stream-jmx-core-0.7-all.jar -ao:*:*!10000
 ```
 System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [Stream-JMX configuration ](#stream-jmx-configuration).
 
-`SamplingAgent` arguments `-attach -vm:activemq -ap:tnt4j-stream-jmx-0.5.0.jar -ao:*:*!10000` states:
+`SamplingAgent` arguments `-attach -vm:activemq -ap:tnt4j-stream-jmx-core-0.7-all.jar -ao:*:*!10000` states:
 * `-attach` - defines that `SamplingAgent` shall be attached to running JVM process
 * `-vm:activemq` - is JVM descriptor. In this case it is running JVM name fragment `activemq`. But it also may be JVM process identifier - 
 PID. Mandatory argument.
-* `-ap:tnt4j-stream-jmx-0.5.0.jar` - is agent library name. If it is class path - then only name should be sufficient. In any other case 
-define full or relative path, e.g., `..\build\tnt4j-stream-jmx\tnt4j-stream-jmx-0.5.0\lib\tnt4j-stream-jmx-0.5.0.jar`. Mandatory argument.
+* `-ap:tnt4j-stream-jmx-core-0.7-all.jar` - is agent library name. If it is class path - then only name should be sufficient. In any other case 
+define full or relative path, e.g., `..\build\tnt4j-stream-jmx\tnt4j-stream-jmx-0.7\lib\tnt4j-stream-jmx-core-0.7-all.jar`. Mandatory 
+argument.
 * `-ao:*:*!10000` - is JMX sampler options stating to include all MBeans and schedule sampling every 10 seconds. Sampler options are 
 optional - default value is `*:*!30000`. Initial sampler delay can be configured by adding numeric parameter `*:*!30000!1000` defining 
 initial sampler delay as 1 second. Default sampler delay value is equal to sampling period value.
 * `-slp:` - any JMX sampler configuration property. See [Program arguments used](#program-arguments-used) for details.
 
 **NOTE:** arguments and properties defined running `SamplingAgent.main` is forwarded to `SamplingAgent` agent attached to JVM process.
+**NOTE:** if you get exception `com.sun.tools.attach.AgentInitializationException: Agent JAR loaded but agent failed to initialize` while 
+running `stream-jmx` in `-attach` mode it is most likely that some `stream-jmx` used classes are not resolved in attach JVM class path. Pay 
+attention to use `tnt4j-stream-jmx-core-[VERSION]-all.jar` as agent lib to have all dependent classes available within one jar. If you 
+are trying to attach application implementing J2EE API, use `tnt4j-stream-jmx-j2ee-[VERSION]-all.jar`. Same approach should be followed 
+when attaching WAS and Liberty instances - use `-all.jar` for matching product API.
 
 ### Coding into API
 You can attach `SamplingAgent` to JVM from your custom API by calling [SamplingAgent.attach(String,String,String)](./tnt4j-stream-jmx-core/src/main/java/com/jkoolcloud/tnt4j/stream/jmx/SamplingAgent.java#L520) method. 
@@ -114,7 +120,7 @@ You can attach `SamplingAgent` to JVM from your custom API by calling [SamplingA
 Sample `attach` call:
 ```java
 try {
-  SamplingAgent.attach("activemq", "tnt4j-stream-jmx-0.5.0.jar", "*:*!10000");
+  SamplingAgent.attach("activemq", "tnt4j-stream-jmx-core-0.7-all.jar", "*:*!10000");
 } catch (Exception exc) {
   exc.printStackTrace();
 }
