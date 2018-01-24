@@ -60,6 +60,9 @@ public class SamplingAgent {
 	protected static ConcurrentHashMap<MBeanServerConnection, Sampler> STREAM_AGENTS = new ConcurrentHashMap<MBeanServerConnection, Sampler>(89);
 	protected static final long CONN_RETRY_INTERVAL = 10;
 
+	private static final String SYS_PROP_TNT4J_CFG = "-Dtnt4j.config";
+	private static final String SYS_PROP_AGENT_PATH = "-DSamplingAgent.path";
+
 	private static final String PARAM_VM_DESCRIPTOR = "-vm:";
 	private static final String PARAM_AGENT_LIB_PATH = "-ap:";
 	private static final String PARAM_AGENT_OPTIONS = "-ao:";
@@ -126,14 +129,16 @@ public class SamplingAgent {
 		int initDelay = Integer.getInteger("com.jkoolcloud.tnt4j.stream.jmx.init.delay", period);
 		if (options != null) {
 			String[] args = options.split("!");
-			if (args.length >= 2) {
+			if (args.length > 0) {
 				incFilter = args[0];
-				period = Integer.parseInt(args[1]);
 			}
-			if (args.length >= 3) {
-				initDelay = Integer.parseInt(args[2]);
+			if (args.length > 1) {
+				excFilter = args.length > 2 ? args[1] : excFilter;
+				period = Integer.parseInt(args.length > 2 ? args[2] : args[1]);
 			}
-
+			if (args.length > 2) {
+				initDelay = Integer.parseInt(args.length > 3 ? args[3] : args[2]);
+			}
 		}
 		sample(incFilter, excFilter, initDelay, period, TimeUnit.MILLISECONDS);
 		System.out.println("SamplingAgent.premain: include.filter=" + incFilter
@@ -159,25 +164,22 @@ public class SamplingAgent {
 	 * @see #premain(String, Instrumentation)
 	 */
 	public static void agentmain(String agentArgs, Instrumentation inst) throws Exception {
+		System.out.println("SamplingAgent.agentmain(): agentArgs=" + agentArgs);
 		String agentParams = "";
 		String tnt4jProp = System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY);
 		String agentLibPath = "";
 		if (!Utils.isEmpty(agentArgs)) {
 			String[] args = agentArgs.split("!");
 
-			if (args.length >= 2) {
-				agentParams = args[0] + "!" + args[1];
-			}
-
 			for (String arg : args) {
-				if (arg.startsWith("-Dtnt4j.config")) {
+				if (arg.startsWith(SYS_PROP_TNT4J_CFG)) {
 					if (Utils.isEmpty(tnt4jProp)) {
 						String[] prop = arg.split("=", 2);
 						tnt4jProp = prop.length > 1 ? prop[1] : null;
 
 						System.setProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY, tnt4jProp);
 					}
-				} else if (arg.startsWith("-DSamplingAgent.path")) {
+				} else if (arg.startsWith(SYS_PROP_AGENT_PATH)) {
 					String[] prop = arg.split("=", 2);
 					agentLibPath = prop.length > 1 ? prop[1] : null;
 				} else if (arg.startsWith(TRACE.pName() + "=")) {
@@ -195,6 +197,8 @@ public class SamplingAgent {
 					if (prop.length > 1) {
 						LISTENER_PROPERTIES.put(COMPOSITE_DELIMITER.pName(), prop[1]);
 					}
+				} else {
+					agentParams += agentParams.isEmpty() ? arg : "!" + arg;
 				}
 			}
 		}
@@ -623,15 +627,17 @@ public class SamplingAgent {
 			agentOptions += "!" + lpe.getKey() + "=" + String.valueOf(lpe.getValue());
 		}
 
-		agentOptions += "!-DSamplingAgent.path=" + agentPath;
+		agentOptions += "!" + SYS_PROP_AGENT_PATH + "=" + agentPath;
 
 		String tnt4jConf = System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY);
 
 		if (!Utils.isEmpty(tnt4jConf)) {
 			String tnt4jPropPath = new File(tnt4jConf).getAbsolutePath();
-			agentOptions += "!-Dtnt4j.config=" + tnt4jPropPath;
+			agentOptions += "!" + SYS_PROP_TNT4J_CFG + "=" + tnt4jPropPath;
 		}
 
+		System.out.println("SamplingAgent.attach: attaching JVM using vmDescr=" + vmDescr + ", agentJarPath="
+				+ agentJarPath + ", agentOptions=" + agentOptions);
 		VMUtils.attachVM(vmDescr, agentPath, agentOptions);
 	}
 
