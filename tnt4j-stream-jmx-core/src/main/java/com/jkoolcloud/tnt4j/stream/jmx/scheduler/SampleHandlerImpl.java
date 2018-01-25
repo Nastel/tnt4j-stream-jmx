@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 JKOOL, LLC.
+ * Copyright 2015-2018 JKOOL, LLC.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,9 +80,12 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	/**
 	 * Create new instance of {@link SampleHandlerImpl} with a given MBean server and a set of filters.
 	 *
-	 * @param mServerConn MBean server connection instance
-	 * @param incFilter MBean include filters semicolon separated
-	 * @param excFilter MBean exclude filters semicolon separated
+	 * @param mServerConn
+	 *            MBean server connection instance
+	 * @param incFilter
+	 *            MBean include filters semicolon separated
+	 * @param excFilter
+	 *            MBean exclude filters semicolon separated
 	 */
 	public SampleHandlerImpl(MBeanServerConnection mServerConn, String incFilter, String excFilter) {
 		mbeanServer = mServerConn;
@@ -94,14 +97,27 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	/**
 	 * Tokenize a given set of filters into JMX object names
 	 * 
-	 * @param filter semicolon set of JMX filters
-	 * @param filters list of object names
+	 * @param filter
+	 *            semicolon set of JMX filters
+	 * @param filters
+	 *            list of object names
 	 * @throws MalformedObjectNameException
 	 */
 	private static void tokenizeFilters(String filter, List<ObjectName> filters) throws MalformedObjectNameException {
 		StringTokenizer itk = new StringTokenizer(filter, ";");
 		while (itk.hasMoreTokens()) {
-			filters.add(new ObjectName(itk.nextToken().trim()));
+			String objName = itk.nextToken().trim();
+			try {
+				filters.add(new ObjectName(objName));
+			} catch (MalformedObjectNameException exc) {
+				if (!exc.getMessage().contains(objName)) {
+					MalformedObjectNameException mexc = new MalformedObjectNameException(
+							exc.getMessage() + " for '" + objName + "'");
+					mexc.setStackTrace(exc.getStackTrace());
+					throw mexc;
+				}
+				throw exc;
+			}
 		}
 	}
 
@@ -122,7 +138,8 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	/**
 	 * Determine if a given object name matches include/exclusion filters
 	 * 
-	 * @param oName object name
+	 * @param oName
+	 *            object name
 	 * @return {@code true} if included, {@code false} otherwise
 	 */
 	public boolean isFilterIncluded(ObjectName oName) {
@@ -170,8 +187,10 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	/**
 	 * Exclude MBeans based on a list of exclude object name patterns
 	 * 
-	 * @param objSet JMX object name set
-	 * @param eFilters list of MBean exclusions
+	 * @param objSet
+	 *            JMX object name set
+	 * @param eFilters
+	 *            list of MBean exclusions
 	 */
 	private static void excludeFromSet(Set<ObjectName> objSet, List<ObjectName> eFilters) {
 		for (ObjectName eName : eFilters) {
@@ -188,7 +207,8 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	/**
 	 * Sample MBeans based on a configured MBean filter list and store within given activity as snapshots.
 	 * 
-	 * @param activity instance where sampled MBean attributes are stored
+	 * @param activity
+	 *            instance where sampled MBean attributes are stored
 	 * @return number of metrics loaded from all MBeans
 	 */
 	private int sampleMBeans(Activity activity) {
@@ -199,7 +219,8 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 
 			PropertySnapshot snapshot = new PropertySnapshot(name.getDomain(), name.getCanonicalName());
 			for (MBeanAttributeInfo attr : info.getAttributes()) {
-				AttributeSample sample = AttributeSample.newAttributeSample(activity, snapshot, mbeanServer, name, attr);
+				AttributeSample sample = AttributeSample.newAttributeSample(activity, snapshot, mbeanServer, name,
+						attr);
 				try {
 					if (doPre(sample)) {
 						sample(sample); // obtain a sample
@@ -230,9 +251,11 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	/**
 	 * Sample and retrieve the value associated with the MBean attribute.
 	 *
-	 * @param sample MBean sample instance
+	 * @param sample
+	 *            MBean sample instance
 	 * @return the value associated with the current attribute
-	 * @throws Exception if exception occurs while sampling attribute value
+	 * @throws Exception
+	 *             if exception occurs while sampling attribute value
 	 *
 	 * @see AttributeSample#sample()
 	 */
@@ -243,7 +266,8 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	/**
 	 * Run and evaluate all registered conditions and invoke associated {@link AttributeAction} instances.
 	 * 
-	 * @param sample MBean sample instance
+	 * @param sample
+	 *            MBean sample instance
 	 * @see AttributeSample
 	 */
 	protected void evalAttrConditions(AttributeSample sample) {
@@ -258,7 +282,8 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	/**
 	 * Finish processing of the activity sampling
 	 * 
-	 * @param activity instance
+	 * @param activity
+	 *            instance
 	 * @return snapshot instance containing metrics at the end of each sample
 	 */
 	private PropertySnapshot finish(Activity activity) {
@@ -353,7 +378,8 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	 * Run {@link com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener#register(SampleContext, ObjectName)} for all
 	 * registered listeners.
 	 * 
-	 * @param name MBean object name
+	 * @param name
+	 *            MBean object name
 	 */
 	private void runRegister(ObjectName name) {
 		synchronized (this.listeners) {
@@ -367,7 +393,8 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	 * Run {@link com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener#unregister(SampleContext, ObjectName)} for all
 	 * registered listeners.
 	 * 
-	 * @param name MBean object name
+	 * @param name
+	 *            MBean object name
 	 */
 	private void runUnRegister(ObjectName name) {
 		synchronized (this.listeners) {
@@ -381,7 +408,8 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	 * Run {@link com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener#post(SampleContext, Activity)} for all registered
 	 * listeners.
 	 * 
-	 * @param activity sampling activity instance
+	 * @param activity
+	 *            sampling activity instance
 	 */
 	private void runPost(Activity activity) {
 		synchronized (this.listeners) {
@@ -395,7 +423,8 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	 * Run {@link com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener#pre(SampleContext, Activity)} for all registered
 	 * listeners.
 	 * 
-	 * @param activity sampling activity instance
+	 * @param activity
+	 *            sampling activity instance
 	 */
 	private void runPre(Activity activity) {
 		synchronized (this.listeners) {
@@ -410,7 +439,8 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	 * {@link com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener#pre(com.jkoolcloud.tnt4j.stream.jmx.core.SampleContext, com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeSample)}
 	 * for all registered listeners.
 	 * 
-	 * @param sample current attribute sample instance
+	 * @param sample
+	 *            current attribute sample instance
 	 */
 	private boolean doPre(AttributeSample sample) {
 		synchronized (this.listeners) {
@@ -426,7 +456,8 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	 * {@link com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener#post(com.jkoolcloud.tnt4j.stream.jmx.core.SampleContext, com.jkoolcloud.tnt4j.core.Activity)}
 	 * for all registered listeners.
 	 * 
-	 * @param sample current attribute sample instance
+	 * @param sample
+	 *            current attribute sample instance
 	 * @throws UnsupportedAttributeException
 	 */
 	private void doPost(AttributeSample sample) throws UnsupportedAttributeException {
@@ -441,9 +472,12 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	 * Run {@link com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener#error(SampleContext, AttributeSample, OpLevel)}
 	 * for all registered listeners.
 	 * 
-	 * @param sample current attribute sample instance
-	 * @param ex exception associated with the error
-	 * @param level error severity level
+	 * @param sample
+	 *            current attribute sample instance
+	 * @param ex
+	 *            exception associated with the error
+	 * @param level
+	 *            error severity level
 	 *
 	 * @see #doError(AttributeSample, OpLevel)
 	 */
@@ -456,8 +490,10 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	 * Run {@link com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener#error(SampleContext, AttributeSample, OpLevel)}
 	 * for all registered listeners.
 	 *
-	 * @param sample current attribute sample instance
-	 * @param level error severity level
+	 * @param sample
+	 *            current attribute sample instance
+	 * @param level
+	 *            error severity level
 	 */
 	private void doError(AttributeSample sample, OpLevel level) {
 		errorCount++;
@@ -473,7 +509,8 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	 * Run {@link com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener#error(SampleContext, Throwable)} for all
 	 * registered listeners.
 	 * 
-	 * @param ex exception associated with the error
+	 * @param ex
+	 *            exception associated with the error
 	 */
 	private void doError(Throwable ex) {
 		errorCount++;
@@ -489,7 +526,8 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	 * Run {@link com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener#getStats(SampleContext, Map)} for all registered
 	 * listeners.
 	 * 
-	 * @param stats map of key/value statistics
+	 * @param stats
+	 *            map of key/value statistics
 	 */
 	private void doStats(Map<String, Object> stats) {
 		synchronized (this.listeners) {
