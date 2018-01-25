@@ -819,7 +819,7 @@ public class SamplingAgent {
 					Utils.close(connector);
 				}
 			} catch (IOException exc) {
-				System.out.println("SamplingAgent.connect: failed to connect to remote JMX service");
+				System.out.println("SamplingAgent.connect: failed to connect JMX service");
 				System.out.println("            Exception: " + Utils.toString(exc));
 
 				if (connRetryInterval < 0) {

@@ -16,11 +16,11 @@
 
 package com.jkoolcloud.tnt4j.stream.jmx.utils;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Properties;
 
 import com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent;
 import com.sun.tools.attach.VirtualMachine;
@@ -32,6 +32,8 @@ import com.sun.tools.attach.VirtualMachineDescriptor;
  * @version $Revision: 1 $
  */
 public class VMUtils {
+
+	private static final String CONNECTOR_ADDRESS = "com.sun.management.jmxremote.localConnectorAddress";
 
 	/**
 	 * Attaches to running JVMs process.
@@ -51,16 +53,17 @@ public class VMUtils {
 		Collection<VirtualMachineDescriptor> descriptors = findVMs(vmDescr);
 
 		for (VirtualMachineDescriptor descriptor : descriptors) {
-			System.out.println("SamplingAgent.attach: attaching agent " + agentPath + " to " + descriptor + "");
+			System.out.println(
+					"SamplingAgent.attachVM: attaching agent " + agentPath + " to " + vmString(descriptor) + "");
 			VirtualMachine virtualMachine = VirtualMachine.attach(descriptor.id());
 
 			try {
-				System.out.println("SamplingAgent.attach: VM loading agent agent.path=" + agentPath + ", agent.options="
-						+ agentOptions);
+				System.out.println("SamplingAgent.attachVM: VM loading agent agent.path=" + agentPath
+						+ ", agent.options=" + agentOptions);
 
 				virtualMachine.loadAgent(agentPath, agentOptions);
 
-				System.out.println("SamplingAgent.attach: attached and loaded...");
+				System.out.println("SamplingAgent.attachVM: attached and loaded...");
 			} finally {
 				virtualMachine.detach();
 			}
@@ -86,10 +89,18 @@ public class VMUtils {
 			String connectorAddress;
 
 			try {
-				Properties props = virtualMachine.getAgentProperties();
-				connectorAddress = props.getProperty("com.sun.management.jmxremote.localConnectorAddress");
+				connectorAddress = virtualMachine.getAgentProperties().getProperty(CONNECTOR_ADDRESS);
 				if (connectorAddress == null) {
-					throw new IOException("JVM does not support JMX connection...");
+					System.out.println("SamplingAgent.getVMConnAddress: initializing JVM [" + vmString(descriptor)
+							+ "] management agent...");
+					String agent = virtualMachine.getSystemProperties().getProperty("java.home") + File.separator
+							+ "lib" + File.separator + "management-agent.jar";
+					virtualMachine.loadAgent(agent);
+
+					connectorAddress = virtualMachine.getAgentProperties().getProperty(CONNECTOR_ADDRESS);
+					if (connectorAddress == null) {
+						throw new IOException("JVM [" + vmString(descriptor) + "] does not support JMX connection...");
+					}
 				}
 			} finally {
 				virtualMachine.detach();
@@ -101,6 +112,14 @@ public class VMUtils {
 		} catch (Exception exc) {
 			throw new IOException(exc);
 		}
+	}
+
+	private static String vmString(VirtualMachineDescriptor descriptor) {
+		String vmStr = descriptor.id();
+		if (descriptor.displayName() != descriptor.id()) {
+			vmStr += ":" + descriptor.displayName();
+		}
+		return vmStr;
 	}
 
 	/**
@@ -125,11 +144,11 @@ public class VMUtils {
 		}
 
 		if (descriptors.isEmpty()) {
-			System.out.println("SamplingAgent: ----------- Available JVMs -----------");
+			System.out.println("SamplingAgent.findVMs: ----------- Available JVMs -----------");
 			for (VirtualMachineDescriptor vmD : runningVMsList) {
-				System.out.println("SamplingAgent: JVM.id=" + vmD.id() + ", name=" + vmD.displayName());
+				System.out.println("SamplingAgent.findVMs: JVM.id=" + vmD.id() + ", name=" + vmD.displayName());
 			}
-			System.out.println("SamplingAgent: ---------------- END ----------------");
+			System.out.println("SamplingAgent.findVMs: ---------------- END ----------------");
 			throw new RuntimeException("Java VM not found using provided descriptor: [" + vmDescr + "]");
 		}
 
