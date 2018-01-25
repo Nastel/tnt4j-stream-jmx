@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 JKOOL, LLC.
+ * Copyright 2015-2018 JKOOL, LLC.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,8 @@ public interface SamplerFactory {
 	/**
 	 * Create a default instance with a given MBean server instance.
 	 * 
-	 * @param mServerConn MBean server connection instance
+	 * @param mServerConn
+	 *            MBean server connection instance
 	 * @see Sampler
 	 */
 	Sampler newInstance(MBeanServerConnection mServerConn);
@@ -55,8 +56,10 @@ public interface SamplerFactory {
 	/**
 	 * Creates instance of {@link SampleListener} to be used by {@link Sampler}.
 	 * 
-	 * @param pStream print stream instance for tracing
-	 * @param properties listener configuration properties map
+	 * @param pStream
+	 *            print stream instance for tracing
+	 * @param properties
+	 *            listener configuration properties map
 	 * @return sample listener instance to use
 	 *
 	 * @see SampleListener
@@ -73,9 +76,12 @@ public interface SamplerFactory {
 	/**
 	 * Creates instance of {@link SampleHandler} to be used by {@link Sampler}.
 	 * 
-	 * @param mServerConn  MBean server connection instance
-	 * @param incFilterList MBean include filters semicolon separated
-	 * @param excFilterList MBean exclude filters semicolon separated
+	 * @param mServerConn
+	 *            MBean server connection instance
+	 * @param incFilterList
+	 *            MBean include filters semicolon separated
+	 * @param excFilterList
+	 *            MBean exclude filters semicolon separated
 	 * @return sample handler instance to use
 	 */
 	SampleHandler newSampleHandler(MBeanServerConnection mServerConn, String incFilterList, String excFilterList);

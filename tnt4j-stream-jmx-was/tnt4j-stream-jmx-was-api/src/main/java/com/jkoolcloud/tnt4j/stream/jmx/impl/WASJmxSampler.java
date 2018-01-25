@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 JKOOL, LLC.
+ * Copyright 2015-2018 JKOOL, LLC.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,7 +77,8 @@ public class WASJmxSampler extends PlatformJmxSampler {
 	/**
 	 * Create an instance with WebSphere MBean Server instance.
 	 *
-	 * @param sFactory sampler factory instance
+	 * @param sFactory
+	 *            sampler factory instance
 	 */
 	protected WASJmxSampler(SamplerFactory sFactory) {
 		super(defaultMBeanServer(), sFactory);
@@ -86,8 +87,10 @@ public class WASJmxSampler extends PlatformJmxSampler {
 	/**
 	 * Create a default instance with a given MBean server instance.
 	 *
-	 * @param mServerConn MBean server connection instance
-	 * @param sFactory sampler factory instance
+	 * @param mServerConn
+	 *            MBean server connection instance
+	 * @param sFactory
+	 *            sampler factory instance
 	 */
 	protected WASJmxSampler(MBeanServerConnection mServerConn, SamplerFactory sFactory) {
 		super(mServerConn, sFactory);

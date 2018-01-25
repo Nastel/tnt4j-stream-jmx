@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 JKOOL, LLC.
+ * Copyright 2015-2018 JKOOL, LLC.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ public class PrivilegedSampleHandlerImpl extends SampleHandlerImpl {
 	}
 
 	@Override
-	protected Object sample(final AttributeSample sample) throws Exception {
+	protected Object sample(AttributeSample sample) throws Exception {
 		return AccessController.doPrivileged(new SamplePrivilegedAction(sample));
 	}
 

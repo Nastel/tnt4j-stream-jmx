@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 JKOOL, LLC.
+ * Copyright 2015-2018 JKOOL, LLC.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,22 +69,27 @@ public class DefaultSampleListener implements SampleListener {
 	/**
 	 * Create an instance of {@code DefaultSampleListener} with a a given print stream and configuration properties.
 	 *
-	 * @param pStream print stream instance for tracing
-	 * @param properties listener configuration properties map
+	 * @param pStream
+	 *            print stream instance for tracing
+	 * @param properties
+	 *            listener configuration properties map
 	 *
 	 * @see com.jkoolcloud.tnt4j.stream.jmx.core.DefaultSampleListener.ListenerProperties
 	 */
 	public DefaultSampleListener(PrintStream pStream, Map<String, ?> properties) {
 		this.trace = Utils.getBoolean(ListenerProperties.TRACE.pName(), properties, trace);
 		this.out = pStream == null ? System.out : pStream;
-		this.forceObjectName = Utils.getBoolean(ListenerProperties.FORCE_OBJECT_NAME.pName(), properties, forceObjectName);
-		this.compositeDelimiter = Utils.getString(ListenerProperties.COMPOSITE_DELIMITER.pName(), properties, compositeDelimiter);
+		this.forceObjectName = Utils.getBoolean(ListenerProperties.FORCE_OBJECT_NAME.pName(), properties,
+				forceObjectName);
+		this.compositeDelimiter = Utils.getString(ListenerProperties.COMPOSITE_DELIMITER.pName(), properties,
+				compositeDelimiter);
 	}
 
 	/**
 	 * Determine if a given attribute to be excluded from sampling.
 	 *
-	 * @param attr MBean attribute info
+	 * @param attr
+	 *            MBean attribute info
 	 * @return true when attribute should be excluded, false otherwise
 	 */
 	protected boolean isExcluded(MBeanAttributeInfo attr) {
@@ -94,7 +99,8 @@ public class DefaultSampleListener implements SampleListener {
 	/**
 	 * Mark a given attribute to be excluded from sampling.
 	 *
-	 * @param attr MBean attribute info
+	 * @param attr
+	 *            MBean attribute info
 	 */
 	protected void exclude(MBeanAttributeInfo attr) {
 		addToCollection(excAttrs, attr);
@@ -214,8 +220,9 @@ public class DefaultSampleListener implements SampleListener {
 		sample.excludeNext(isFatalError(level == null ? OpLevel.ERROR : level));
 		sample.silence(true);
 		if (trace) {
-			out.println("Failed to sample:\n ojbName=" + sample.getObjectName() + ",\n info=" + sample.getAttributeInfo()
-					+ ",\n exclude=" + sample.excludeNext() + ",\n ex=" + sample.getError());
+			out.println(
+					"Failed to sample:\n ojbName=" + sample.getObjectName() + ",\n info=" + sample.getAttributeInfo()
+							+ ",\n exclude=" + sample.excludeNext() + ",\n ex=" + sample.getError());
 			sample.getError().printStackTrace(out);
 		}
 		if (sample.excludeNext()) {
@@ -262,10 +269,14 @@ public class DefaultSampleListener implements SampleListener {
 	/**
 	 * Process/extract value from a given MBean attribute
 	 *
-	 * @param snapshot instance where extracted attribute is stored
-	 * @param mbAttrInfo MBean attribute info
-	 * @param propName name to be assigned to given attribute value
-	 * @param value associated with attribute
+	 * @param snapshot
+	 *            instance where extracted attribute is stored
+	 * @param mbAttrInfo
+	 *            MBean attribute info
+	 * @param propName
+	 *            name to be assigned to given attribute value
+	 * @param value
+	 *            associated with attribute
 	 * @return snapshot instance where all attributes are contained
 	 */
 	protected PropertySnapshot processAttrValue(PropertySnapshot snapshot, MBeanAttributeInfo mbAttrInfo,
@@ -299,7 +310,8 @@ public class DefaultSampleListener implements SampleListener {
 	/**
 	 * Initializes property name builder with provided property name string.
 	 *
-	 * @param propName property name string
+	 * @param propName
+	 *            property name string
 	 * @return property name builder instance
 	 */
 	protected PropertyNameBuilder initPropName(String propName) {

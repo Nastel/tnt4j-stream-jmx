@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 JKOOL, LLC.
+ * Copyright 2015-2018 JKOOL, LLC.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,10 +44,14 @@ public class AttributeSample {
 	/**
 	 * Create an attribute sample
 	 * 
-	 * @param activity associated with current sample
-	 * @param serverConn MBean server connection instance
-	 * @param name MBean object name reference
-	 * @param ainfo MBean attribute info
+	 * @param activity
+	 *            associated with current sample
+	 * @param serverConn
+	 *            MBean server connection instance
+	 * @param name
+	 *            MBean object name reference
+	 * @param ainfo
+	 *            MBean attribute info
 	 */
 	protected AttributeSample(Activity activity, PropertySnapshot snapshot, MBeanServerConnection serverConn,
 			ObjectName name, MBeanAttributeInfo ainfo) {
@@ -61,10 +65,14 @@ public class AttributeSample {
 	/**
 	 * Create an attribute sample
 	 * 
-	 * @param activity associated with current sample
-	 * @param serverConn MBean server connection instance
-	 * @param name MBean object name reference
-	 * @param ainfo MBean attribute info
+	 * @param activity
+	 *            associated with current sample
+	 * @param serverConn
+	 *            MBean server connection instance
+	 * @param name
+	 *            MBean object name reference
+	 * @param ainfo
+	 *            MBean attribute info
 	 */
 	public static AttributeSample newAttributeSample(Activity activity, PropertySnapshot snapshot,
 			MBeanServerConnection serverConn, ObjectName name, MBeanAttributeInfo ainfo) {
@@ -151,7 +159,8 @@ public class AttributeSample {
 	/**
 	 * Mark attribute to be excluded from sampling
 	 * 
-	 * @param exclude {@code true} to exclude, {@code false} to include
+	 * @param exclude
+	 *            {@code true} to exclude, {@code false} to include
 	 * @return {@code true} if attribute to be marked for exclusion, {@code false} otherwise
 	 */
 	public boolean excludeNext(boolean exclude) {
@@ -170,7 +179,8 @@ public class AttributeSample {
 	/**
 	 * Marks attribute to suppress exceptions printing to console output.
 	 *
-	 * @param silence {@code true} to suppress exceptions printing to console output, {@code false} otherwise
+	 * @param silence
+	 *            {@code true} to suppress exceptions printing to console output, {@code false} otherwise
 	 */
 	public boolean silence(boolean silence) {
 		return this.silence = silence;
@@ -179,7 +189,8 @@ public class AttributeSample {
 	/**
 	 * Set error associated with this sample
 	 * 
-	 * @param error associated with this sample
+	 * @param error
+	 *            associated with this sample
 	 */
 	public void setError(Throwable error) {
 		ex = error;

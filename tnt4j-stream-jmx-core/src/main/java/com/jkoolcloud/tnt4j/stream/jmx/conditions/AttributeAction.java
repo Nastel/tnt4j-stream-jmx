@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 JKOOL, LLC.
+ * Copyright 2015-2018 JKOOL, LLC.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,8 @@ package com.jkoolcloud.tnt4j.stream.jmx.conditions;
 
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleContext;
 
-
 /**
- * <p> 
+ * <p>
  * This interface defines a way to run actions on specific MBean attributes during a sample.
  * </p>
  * 
@@ -31,9 +30,12 @@ public interface AttributeAction {
 	/**
 	 * Run action instance
 	 * 
-	 * @param context current sample context
-	 * @param cond condition that triggered this action
-	 * @param sample current sample that was evaluated
+	 * @param context
+	 *            current sample context
+	 * @param cond
+	 *            condition that triggered this action
+	 * @param sample
+	 *            current sample that was evaluated
 	 * @return a user defined return value
 	 */
 	Object action(SampleContext context, AttributeCondition cond, AttributeSample sample);

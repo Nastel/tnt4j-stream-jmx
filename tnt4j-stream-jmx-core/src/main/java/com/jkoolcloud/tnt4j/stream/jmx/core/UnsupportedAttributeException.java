@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 JKOOL, LLC.
+ * Copyright 2015-2018 JKOOL, LLC.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,9 +34,12 @@ public class UnsupportedAttributeException extends Exception {
 	/**
 	 * Create exception with a given message, attribute info and its value
 	 * 
-	 * @param msg exception message
-	 * @param mbAttrInfo MBean attribute info
-	 * @param value MBean attribute value
+	 * @param msg
+	 *            exception message
+	 * @param mbAttrInfo
+	 *            MBean attribute info
+	 * @param value
+	 *            MBean attribute value
 	 */
 	public UnsupportedAttributeException(String msg, MBeanAttributeInfo mbAttrInfo, Object value) {
 		super(msg);

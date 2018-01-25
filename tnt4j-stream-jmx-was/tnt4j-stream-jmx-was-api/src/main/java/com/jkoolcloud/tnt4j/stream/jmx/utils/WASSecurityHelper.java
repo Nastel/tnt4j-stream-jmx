@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 JKOOL, LLC.
+ * Copyright 2015-2018 JKOOL, LLC.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -145,7 +145,7 @@ public class WASSecurityHelper {
 		try {
 			Subject runAsSubject = WSSubject.getRunAsSubject();
 			if (runAsSubject != null) {
-				final Iterator<Principal> iterator = runAsSubject.getPrincipals().iterator();
+				Iterator<Principal> iterator = runAsSubject.getPrincipals().iterator();
 				out.print("Running as: ");
 				while (iterator.hasNext()) {
 					out.print(iterator.next().getName() + ", ");
@@ -155,7 +155,7 @@ public class WASSecurityHelper {
 				return;
 			}
 
-			final Set<WSCredential> credentials = runAsSubject.getPublicCredentials(WSCredential.class);
+			Set<WSCredential> credentials = runAsSubject.getPublicCredentials(WSCredential.class);
 
 			for (WSCredential cred : credentials) {
 				out.println("getSecurityName: " + cred.getSecurityName());

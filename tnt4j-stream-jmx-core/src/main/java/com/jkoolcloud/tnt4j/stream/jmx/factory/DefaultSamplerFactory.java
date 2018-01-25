@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 JKOOL, LLC.
+ * Copyright 2015-2018 JKOOL, LLC.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,8 @@ public class DefaultSamplerFactory {
 	/**
 	 * Obtain a default instance of {@link SamplerFactory}
 	 *
-	 * @param factoryClassName sampler factory class name
+	 * @param factoryClassName
+	 *            sampler factory class name
 	 *
 	 * @return default sample factory instance
 	 */

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 JKOOL, LLC.
+ * Copyright 2015-2018 JKOOL, LLC.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,9 @@
  */
 package com.jkoolcloud.tnt4j.stream.jmx.conditions;
 
-
 /**
- * <p> 
- * This interface defines a nested handler of listeners with registration
- * methods returning some user defined type.
+ * <p>
+ * This interface defines a nested handler of listeners with registration methods returning some user defined type.
  * </p>
  * 
  * @version $Revision: 1 $
@@ -28,17 +26,17 @@ package com.jkoolcloud.tnt4j.stream.jmx.conditions;
 public interface NestedHandler<V, K> {
 	/**
 	 * Add a listener to this handler
-	 *  
-	 * @param listener instance
-	 * return instance of another object
+	 * 
+	 * @param listener
+	 *            instance return instance of another object
 	 */
 	V addListener(K listener);
 
 	/**
 	 * Remove a listener.
-	 *  
-	 * @param listener instance
-	 * return instance of another object
+	 * 
+	 * @param listener
+	 *            instance return instance of another object
 	 */
 	V removeListener(K listener);
 }

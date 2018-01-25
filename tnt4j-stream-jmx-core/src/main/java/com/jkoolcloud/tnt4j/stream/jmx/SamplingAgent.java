@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 JKOOL, LLC.
+ * Copyright 2015-2018 JKOOL, LLC.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,8 @@ import com.jkoolcloud.tnt4j.stream.jmx.utils.VMUtils;
  */
 public class SamplingAgent {
 	protected static Sampler platformJmx;
-	protected static ConcurrentHashMap<MBeanServerConnection, Sampler> STREAM_AGENTS = new ConcurrentHashMap<MBeanServerConnection, Sampler>(89);
+	protected static ConcurrentHashMap<MBeanServerConnection, Sampler> STREAM_AGENTS = new ConcurrentHashMap<MBeanServerConnection, Sampler>(
+			89);
 	protected static final long CONN_RETRY_INTERVAL = 10;
 
 	private static final String SYS_PROP_TNT4J_CFG = "-Dtnt4j.config";
@@ -225,8 +226,10 @@ public class SamplingAgent {
 	/**
 	 * Loads required classpath entries to running JVM.
 	 *
-	 * @param classPathEntriesURL classpath entries URLs to attach to JVM
-	 * @throws Exception if exception occurs while extending system class loader's classpath
+	 * @param classPathEntriesURL
+	 *            classpath entries URLs to attach to JVM
+	 * @throws Exception
+	 *             if exception occurs while extending system class loader's classpath
 	 */
 	private static void extendClasspath(URL... classPathEntriesURL) throws Exception {
 		URLClassLoader classLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
@@ -261,7 +264,8 @@ public class SamplingAgent {
 				String agentOptions = props.getProperty(AGENT_ARG_OPTIONS, DEFAULT_AGENT_OPTIONS);
 				@SuppressWarnings("unchecked")
 				Map<String, ?> connParams = (Map<String, ?>) props.get(AGENT_CONN_PARAMS);
-				long cri = Long.parseLong(props.getProperty(AGENT_ARG_CONN_RETRY_INTERVAL, String.valueOf(CONN_RETRY_INTERVAL)));
+				long cri = Long.parseLong(
+						props.getProperty(AGENT_ARG_CONN_RETRY_INTERVAL, String.valueOf(CONN_RETRY_INTERVAL)));
 
 				connect(vmDescr, user, pass, agentOptions, connParams, cri);
 			} else if (AGENT_MODE_ATTACH.equalsIgnoreCase(am)) {
@@ -467,7 +471,8 @@ public class SamplingAgent {
 		String[] slp = argValue.split("=", 2);
 
 		if (slp.length < 2) {
-			System.out.println("SamplingAgent.parseArgs: malformed argument [" + argName + "] value [" + argValue + "]");
+			System.out
+					.println("SamplingAgent.parseArgs: malformed argument [" + argName + "] value [" + argValue + "]");
 			return null;
 		}
 
@@ -489,7 +494,8 @@ public class SamplingAgent {
 	 */
 	public static void sample() throws IOException {
 		String incFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.include.filter", Sampler.JMX_FILTER_ALL);
-		String excFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.exclude.filter", Sampler.JMX_FILTER_NONE);
+		String excFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.exclude.filter",
+				Sampler.JMX_FILTER_NONE);
 		int period = Integer.getInteger("com.jkoolcloud.tnt4j.stream.jmx.period", Sampler.JMX_SAMPLE_PERIOD);
 		int initDelay = Integer.getInteger("com.jkoolcloud.tnt4j.stream.jmx.init.delay", period);
 		sample(incFilter, excFilter, initDelay, period);
@@ -498,8 +504,10 @@ public class SamplingAgent {
 	/**
 	 * Schedule sample with default MBean server instance as well as all registered MBean servers within the JVM.
 	 *
-	 * @param incFilter semicolon separated include filter list
-	 * @param period sampling in milliseconds.
+	 * @param incFilter
+	 *            semicolon separated include filter list
+	 * @param period
+	 *            sampling in milliseconds.
 	 */
 	public static void sample(String incFilter, long period) throws IOException {
 		sample(incFilter, null, period);
@@ -508,9 +516,12 @@ public class SamplingAgent {
 	/**
 	 * Schedule sample with default MBean server instance as well as all registered MBean servers within the JVM.
 	 *
-	 * @param incFilter semicolon separated include filter list
-	 * @param excFilter semicolon separated exclude filter list (null if empty)
-	 * @param period sampling in milliseconds.
+	 * @param incFilter
+	 *            semicolon separated include filter list
+	 * @param excFilter
+	 *            semicolon separated exclude filter list (null if empty)
+	 * @param period
+	 *            sampling in milliseconds.
 	 */
 	public static void sample(String incFilter, String excFilter, long period) throws IOException {
 		sample(incFilter, excFilter, period, period);
@@ -519,10 +530,14 @@ public class SamplingAgent {
 	/**
 	 * Schedule sample with default MBean server instance as well as all registered MBean servers within the JVM.
 	 *
-	 * @param incFilter semicolon separated include filter list
-	 * @param excFilter semicolon separated exclude filter list (null if empty)
-	 * @param initDelay initial delay before first sampling
-	 * @param period sampling in milliseconds.
+	 * @param incFilter
+	 *            semicolon separated include filter list
+	 * @param excFilter
+	 *            semicolon separated exclude filter list (null if empty)
+	 * @param initDelay
+	 *            initial delay before first sampling
+	 * @param period
+	 *            sampling in milliseconds.
 	 */
 	public static void sample(String incFilter, String excFilter, long initDelay, long period) throws IOException {
 		sample(incFilter, excFilter, initDelay, period, TimeUnit.MILLISECONDS);
@@ -531,13 +546,19 @@ public class SamplingAgent {
 	/**
 	 * Schedule sample with default MBean server instance as well as all registered MBean servers within the JVM.
 	 *
-	 * @param incFilter semicolon separated include filter list
-	 * @param excFilter semicolon separated exclude filter list (null if empty)
-	 * @param initDelay initial delay before first sampling
-	 * @param period sampling time
-	 * @param tUnit time units for sampling period
+	 * @param incFilter
+	 *            semicolon separated include filter list
+	 * @param excFilter
+	 *            semicolon separated exclude filter list (null if empty)
+	 * @param initDelay
+	 *            initial delay before first sampling
+	 * @param period
+	 *            sampling time
+	 * @param tUnit
+	 *            time units for sampling period
 	 */
-	public static void sample(String incFilter, String excFilter, long initDelay, long period, TimeUnit tUnit) throws IOException {
+	public static void sample(String incFilter, String excFilter, long initDelay, long period, TimeUnit tUnit)
+			throws IOException {
 		SamplerFactory sFactory = initPlatformJMX(incFilter, excFilter, initDelay, period, tUnit, null);
 
 		// find other registered MBean servers and initiate sampling for all
@@ -554,12 +575,18 @@ public class SamplingAgent {
 	/**
 	 * Schedule sample using defined JMX connector to get MBean server connection instance to monitored JVM.
 	 *
-	 * @param incFilter semicolon separated include filter list
-	 * @param excFilter semicolon separated exclude filter list (null if empty)
-	 * @param initDelay initial delay before first sampling
-	 * @param period sampling time
-	 * @param tUnit time units for sampling period
-	 * @param conn JMX connector to get MBean server connection instance
+	 * @param incFilter
+	 *            semicolon separated include filter list
+	 * @param excFilter
+	 *            semicolon separated exclude filter list (null if empty)
+	 * @param initDelay
+	 *            initial delay before first sampling
+	 * @param period
+	 *            sampling time
+	 * @param tUnit
+	 *            time units for sampling period
+	 * @param conn
+	 *            JMX connector to get MBean server connection instance
 	 */
 	public static void sample(String incFilter, String excFilter, long initDelay, long period, TimeUnit tUnit,
 			JMXConnector conn) throws IOException {
@@ -596,10 +623,14 @@ public class SamplingAgent {
 	/**
 	 * Attaches to {@code vmDescr} defined JVM as agent.
 	 *
-	 * @param vmDescr JVM descriptor: name fragment or pid
-	 * @param agentJarPath agent JAR path
-	 * @param agentOptions agent options
-	 * @throws Exception if any exception occurs while attaching to JVM
+	 * @param vmDescr
+	 *            JVM descriptor: name fragment or pid
+	 * @param agentJarPath
+	 *            agent JAR path
+	 * @param agentOptions
+	 *            agent options
+	 * @throws Exception
+	 *             if any exception occurs while attaching to JVM
 	 */
 	public static void attach(String vmDescr, String agentJarPath, String agentOptions) throws Exception {
 		System.out.println("SamplingAgent.attach(): vmDescr=" + vmDescr + ", agentJarPath=" + agentJarPath
@@ -657,9 +688,13 @@ public class SamplingAgent {
 	 * Connects to {@code vmDescr} defined JVM over {@link JMXConnector} an uses {@link MBeanServerConnection} to
 	 * collect samples.
 	 *
-	 * @param vmDescr JVM descriptor: JMX service URI, local JVM name fragment or pid
-	 * @param options '!' separated list of options mbean-filter!sample.ms!initDelay.ms, where mbean-filter is semicolon separated list of mbean filters and {@code initDelay} is optional
-	 * @throws Exception if any exception occurs while connecting to JVM
+	 * @param vmDescr
+	 *            JVM descriptor: JMX service URI, local JVM name fragment or pid
+	 * @param options
+	 *            '!' separated list of options mbean-filter!sample.ms!initDelay.ms, where mbean-filter is semicolon
+	 *            separated list of mbean filters and {@code initDelay} is optional
+	 * @throws Exception
+	 *             if any exception occurs while connecting to JVM
 	 *
 	 * @see #connect(String,String,long)
 	 */
@@ -671,10 +706,15 @@ public class SamplingAgent {
 	 * Connects to {@code vmDescr} defined JVM over {@link JMXConnector} an uses {@link MBeanServerConnection} to
 	 * collect samples.
 	 *
-	 * @param vmDescr JVM descriptor: JMX service URI, local JVM name fragment or pid
-	 * @param options '!' separated list of options mbean-filter!sample.ms!initDelay.ms, where mbean-filter is semicolon separated list of mbean filters and {@code initDelay} is optional
-	 * @param connRetryInterval connect reattempt interval value in seconds, {@code -1} - do not retry
-	 * @throws Exception if any exception occurs while connecting to JVM
+	 * @param vmDescr
+	 *            JVM descriptor: JMX service URI, local JVM name fragment or pid
+	 * @param options
+	 *            '!' separated list of options mbean-filter!sample.ms!initDelay.ms, where mbean-filter is semicolon
+	 *            separated list of mbean filters and {@code initDelay} is optional
+	 * @param connRetryInterval
+	 *            connect reattempt interval value in seconds, {@code -1} - do not retry
+	 * @throws Exception
+	 *             if any exception occurs while connecting to JVM
 	 *
 	 * @see #connect(String,String,Map,long)
 	 */
@@ -686,10 +726,15 @@ public class SamplingAgent {
 	 * Connects to {@code vmDescr} defined JVM over {@link JMXConnector} an uses {@link MBeanServerConnection} to
 	 * collect samples.
 	 *
-	 * @param vmDescr JVM descriptor: JMX service URI, local JVM name fragment or pid
-	 * @param options '!' separated list of options mbean-filter!sample.ms!initDelay.ms, where mbean-filter is semicolon separated list of mbean filters and {@code initDelay} is optional
-	 * @param connParams map of JMX connection parameters, defined by {@link javax.naming.Context}
-	 * @throws Exception if any exception occurs while connecting to JVM
+	 * @param vmDescr
+	 *            JVM descriptor: JMX service URI, local JVM name fragment or pid
+	 * @param options
+	 *            '!' separated list of options mbean-filter!sample.ms!initDelay.ms, where mbean-filter is semicolon
+	 *            separated list of mbean filters and {@code initDelay} is optional
+	 * @param connParams
+	 *            map of JMX connection parameters, defined by {@link javax.naming.Context}
+	 * @throws Exception
+	 *             if any exception occurs while connecting to JVM
 	 *
 	 * @see #connect(String, String, java.util.Map, long)
 	 */
@@ -701,15 +746,22 @@ public class SamplingAgent {
 	 * Connects to {@code vmDescr} defined JVM over {@link JMXConnector} an uses {@link MBeanServerConnection} to
 	 * collect samples.
 	 *
-	 * @param vmDescr JVM descriptor: JMX service URI, local JVM name fragment or pid
-	 * @param options '!' separated list of options mbean-filter!sample.ms!initDelay.ms, where mbean-filter is semicolon separated list of mbean filters and {@code initDelay} is optional
-	 * @param connParams map of JMX connection parameters, defined by {@link javax.naming.Context}
-	 * @param connRetryInterval connect reattempt interval value in seconds, {@code -1} - do not retry
-	 * @throws Exception if any exception occurs while connecting to JVM
+	 * @param vmDescr
+	 *            JVM descriptor: JMX service URI, local JVM name fragment or pid
+	 * @param options
+	 *            '!' separated list of options mbean-filter!sample.ms!initDelay.ms, where mbean-filter is semicolon
+	 *            separated list of mbean filters and {@code initDelay} is optional
+	 * @param connParams
+	 *            map of JMX connection parameters, defined by {@link javax.naming.Context}
+	 * @param connRetryInterval
+	 *            connect reattempt interval value in seconds, {@code -1} - do not retry
+	 * @throws Exception
+	 *             if any exception occurs while connecting to JVM
 	 *
 	 * @see #connect(String, String, String, String, java.util.Map, long)
 	 */
-	public static void connect(String vmDescr, String options, Map<String, ?> connParams, long connRetryInterval) throws Exception {
+	public static void connect(String vmDescr, String options, Map<String, ?> connParams, long connRetryInterval)
+			throws Exception {
 		connect(vmDescr, null, null, options, connParams, connRetryInterval);
 	}
 
@@ -717,11 +769,17 @@ public class SamplingAgent {
 	 * Connects to {@code vmDescr} defined JVM over {@link JMXConnector} an uses {@link MBeanServerConnection} to
 	 * collect samples.
 	 *
-	 * @param vmDescr JVM descriptor: JMX service URI, local JVM name fragment or pid
-	 * @param user user login used by JMX service connection
-	 * @param pass user password used by JMX service connection
-	 * @param options '!' separated list of options mbean-filter!sample.ms!initDelay.ms, where mbean-filter is semicolon separated list of mbean filters and {@code initDelay} is optional
-	 * @throws Exception if any exception occurs while connecting to JVM
+	 * @param vmDescr
+	 *            JVM descriptor: JMX service URI, local JVM name fragment or pid
+	 * @param user
+	 *            user login used by JMX service connection
+	 * @param pass
+	 *            user password used by JMX service connection
+	 * @param options
+	 *            '!' separated list of options mbean-filter!sample.ms!initDelay.ms, where mbean-filter is semicolon
+	 *            separated list of mbean filters and {@code initDelay} is optional
+	 * @throws Exception
+	 *             if any exception occurs while connecting to JVM
 	 *
 	 * @see #connect(String, String, String, String, long)
 	 */
@@ -733,12 +791,19 @@ public class SamplingAgent {
 	 * Connects to {@code vmDescr} defined JVM over {@link JMXConnector} an uses {@link MBeanServerConnection} to
 	 * collect samples.
 	 *
-	 * @param vmDescr JVM descriptor: JMX service URI, local JVM name fragment or pid
-	 * @param user user login used by JMX service connection
-	 * @param pass user password used by JMX service connection
-	 * @param options '!' separated list of options mbean-filter!sample.ms!initDelay.ms, where mbean-filter is semicolon separated list of mbean filters and {@code initDelay} is optional
-	 * @param connRetryInterval connect reattempt interval value in seconds, {@code -1} - do not retry
-	 * @throws Exception if any exception occurs while connecting to JVM
+	 * @param vmDescr
+	 *            JVM descriptor: JMX service URI, local JVM name fragment or pid
+	 * @param user
+	 *            user login used by JMX service connection
+	 * @param pass
+	 *            user password used by JMX service connection
+	 * @param options
+	 *            '!' separated list of options mbean-filter!sample.ms!initDelay.ms, where mbean-filter is semicolon
+	 *            separated list of mbean filters and {@code initDelay} is optional
+	 * @param connRetryInterval
+	 *            connect reattempt interval value in seconds, {@code -1} - do not retry
+	 * @throws Exception
+	 *             if any exception occurs while connecting to JVM
 	 *
 	 * @see #connect(String, String, String, String, java.util.Map, long)
 	 */
@@ -751,13 +816,21 @@ public class SamplingAgent {
 	 * Connects to {@code vmDescr} defined JVM over {@link JMXConnector} an uses {@link MBeanServerConnection} to
 	 * collect samples.
 	 *
-	 * @param vmDescr JVM descriptor: JMX service URI, local JVM name fragment or pid
-	 * @param user user login used by JMX service connection
-	 * @param pass user password used by JMX service connection
-	 * @param options '!' separated list of options mbean-filter!sample.ms!initDelay.ms, where mbean-filter is semicolon separated list of mbean filters and {@code initDelay} is optional
-	 * @param connParams map of JMX connection parameters, defined by {@link javax.naming.Context}
-	 * @param connRetryInterval connect reattempt interval value in seconds, {@code -1} - do not retry
-	 * @throws Exception if any exception occurs while connecting to JVM
+	 * @param vmDescr
+	 *            JVM descriptor: JMX service URI, local JVM name fragment or pid
+	 * @param user
+	 *            user login used by JMX service connection
+	 * @param pass
+	 *            user password used by JMX service connection
+	 * @param options
+	 *            '!' separated list of options mbean-filter!sample.ms!initDelay.ms, where mbean-filter is semicolon
+	 *            separated list of mbean filters and {@code initDelay} is optional
+	 * @param connParams
+	 *            map of JMX connection parameters, defined by {@link javax.naming.Context}
+	 * @param connRetryInterval
+	 *            connect reattempt interval value in seconds, {@code -1} - do not retry
+	 * @throws Exception
+	 *             if any exception occurs while connecting to JVM
 	 *
 	 * @see JMXConnectorFactory#connect(javax.management.remote.JMXServiceURL, java.util.Map)
 	 * @see javax.naming.Context
@@ -848,9 +921,13 @@ public class SamplingAgent {
 	/**
 	 * Initiates MBeans attributes sampling on local process runner JVM.
 	 * 
-	 * @param options '!' separated list of options mbean-filter!sample.ms!initDelay.ms, where mbean-filter is semicolon separated list of mbean filters and {@code initDelay} is optional
-	 * @param wait flag indicating whether to wait for a runner process to complete
-	 * @throws Exception if any exception occurs while initializing local JVM sampler or stopping sampling process
+	 * @param options
+	 *            '!' separated list of options mbean-filter!sample.ms!initDelay.ms, where mbean-filter is semicolon
+	 *            separated list of mbean filters and {@code initDelay} is optional
+	 * @param wait
+	 *            flag indicating whether to wait for a runner process to complete
+	 * @throws Exception
+	 *             if any exception occurs while initializing local JVM sampler or stopping sampling process
 	 */
 	public static void sampleLocalVM(String options, boolean wait) throws Exception {
 		System.out.println("SamplingAgent.sampleLocalVM(): options=" + options + ", wait=" + wait);
@@ -906,7 +983,8 @@ public class SamplingAgent {
 
 	private static void startSampler(String options, JMXConnector connector) throws Exception {
 		String incFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.include.filter", Sampler.JMX_FILTER_ALL);
-		String excFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.exclude.filter", Sampler.JMX_FILTER_NONE);
+		String excFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.exclude.filter",
+				Sampler.JMX_FILTER_NONE);
 		int period = Integer.getInteger("com.jkoolcloud.tnt4j.stream.jmx.period", Sampler.JMX_SAMPLE_PERIOD);
 		int initDelay = Integer.getInteger("com.jkoolcloud.tnt4j.stream.jmx.init.delay", period);
 		if (options != null) {
@@ -963,7 +1041,8 @@ public class SamplingAgent {
 	/**
 	 * Cancel and close all sampling for a given {@link MBeanServer} instance.
 	 *
-	 * @param mServerConn MBeanServerConnection instance
+	 * @param mServerConn
+	 *            MBeanServerConnection instance
 	 */
 	public static void cancel(MBeanServerConnection mServerConn) {
 		Sampler sampler = STREAM_AGENTS.remove(mServerConn);

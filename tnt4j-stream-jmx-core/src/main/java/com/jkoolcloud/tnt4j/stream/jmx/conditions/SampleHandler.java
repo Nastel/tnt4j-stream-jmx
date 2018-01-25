@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 JKOOL, LLC.
+ * Copyright 2015-2018 JKOOL, LLC.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,15 +33,18 @@ public interface SampleHandler extends ActivityListener, NestedHandler<SampleHan
 	/**
 	 * Register and associate condition with an action
 	 * 
-	 * @param cond user defined condition with {@link NoopAction}
+	 * @param cond
+	 *            user defined condition with {@link NoopAction}
 	 */
 	SampleHandler register(AttributeCondition cond);
 
 	/**
 	 * Register and associate condition with an action
 	 * 
-	 * @param cond user defined condition
-	 * @param action action to be triggered when condition evaluates to true
+	 * @param cond
+	 *            user defined condition
+	 * @param action
+	 *            action to be triggered when condition evaluates to true
 	 */
 	SampleHandler register(AttributeCondition cond, AttributeAction action);
 

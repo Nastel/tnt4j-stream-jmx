@@ -53,7 +53,7 @@
         <product.name>${project.name}</product.name>
         <product.name.hr>TNT4J Stream JMX</product.name.hr>
         <product.copyright.html>
-            <![CDATA[<font size="-1">Copyright &#169; 2015-2017 ${project.organization.name}. All Rights Reserved.</font>]]></product.copyright.html>
+            <![CDATA[<font size="-1">Copyright &#169; 2015-2018 ${project.organization.name}. All Rights Reserved.</font>]]></product.copyright.html>
 
         <project.java.version>1.6</project.java.version>
         <java.source.version>${project.java.version}</java.source.version>

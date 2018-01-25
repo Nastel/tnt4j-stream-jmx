@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 JKOOL, LLC.
+ * Copyright 2015-2018 JKOOL, LLC.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,8 @@
  */
 package com.jkoolcloud.tnt4j.stream.jmx.conditions;
 
-
-
 /**
- * <p> 
+ * <p>
  * This interface defines a way to evaluate user defined conditions for a given attribute sample.
  * </p>
  * 
@@ -33,11 +31,12 @@ public interface AttributeCondition {
 	 * @return condition name
 	 */
 	String getName();
-	
+
 	/**
 	 * Evaluate current condition
 	 * 
-	 * @param sample current sample that was evaluated
+	 * @param sample
+	 *            current sample that was evaluated
 	 * @return true if condition evaluated, false otherwise
 	 */
 	boolean evaluate(AttributeSample sample);

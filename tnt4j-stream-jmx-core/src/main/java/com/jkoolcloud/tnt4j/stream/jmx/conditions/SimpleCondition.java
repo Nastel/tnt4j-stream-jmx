@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 JKOOL, LLC.
+ * Copyright 2015-2018 JKOOL, LLC.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,10 +36,14 @@ public class SimpleCondition implements AttributeCondition {
 	/**
 	 * Create a condition on a numeric object/attribute and a given numeric value by applying an operator.
 	 * 
-	 * @param objName canonical MBean object name
-	 * @param attrName attribute name
-	 * @param value numeric value to apply operator
-	 * @param op operator to apply ( =, !=, >, >=, <, <=)
+	 * @param objName
+	 *            canonical MBean object name
+	 * @param attrName
+	 *            attribute name
+	 * @param value
+	 *            numeric value to apply operator
+	 * @param op
+	 *            operator to apply ( =, !=, >, >=, <, <=)
 	 */
 	public SimpleCondition(String objName, String attrName, Number value, String op) {
 		this.objName = objName;

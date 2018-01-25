@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 JKOOL, LLC.
+ * Copyright 2015-2018 JKOOL, LLC.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,8 +60,10 @@ public interface Scheduler extends Runnable {
 	/**
 	 * Register a condition/action pair which will be evaluated every sampling interval.
 	 *
-	 * @param cond user defined condition
-	 * @param action user defined action
+	 * @param cond
+	 *            user defined condition
+	 * @param action
+	 *            user defined action
 	 */
 	void register(AttributeCondition cond, AttributeAction action);
 

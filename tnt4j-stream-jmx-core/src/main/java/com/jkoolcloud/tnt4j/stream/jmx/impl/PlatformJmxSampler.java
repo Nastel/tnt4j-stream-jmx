@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 JKOOL, LLC.
+ * Copyright 2015-2018 JKOOL, LLC.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,8 @@ public class PlatformJmxSampler implements Sampler {
 	/**
 	 * Create a default instance with default MBean server instance {@link ManagementFactory#getPlatformMBeanServer()}
 	 *
-	 * @param sFactory sampler factory instance
+	 * @param sFactory
+	 *            sampler factory instance
 	 */
 	protected PlatformJmxSampler(SamplerFactory sFactory) {
 		this(ManagementFactory.getPlatformMBeanServer(), sFactory);
@@ -61,8 +62,10 @@ public class PlatformJmxSampler implements Sampler {
 	/**
 	 * Create a default instance with a given MBean server connection instance
 	 * 
-	 * @param mServerConn MBean server connection instance
-	 * @param sFactory sampler factory instance
+	 * @param mServerConn
+	 *            MBean server connection instance
+	 * @param sFactory
+	 *            sampler factory instance
 	 */
 	protected PlatformJmxSampler(MBeanServerConnection mServerConn, SamplerFactory sFactory) {
 		targetServer = mServerConn;
@@ -133,11 +136,16 @@ public class PlatformJmxSampler implements Sampler {
 	/**
 	 * Create new instance of {@link Scheduler}. Override this call to return your instance of {@link Scheduler}.
 	 *
-	 * @param mServerConn MBean server connection instance
-	 * @param incFilter MBean include filters semicolon separated
-	 * @param excFilter MBean exclude filters semicolon separated
-	 * @param period time period for sampling
-	 * @param tUnit time units for period
+	 * @param mServerConn
+	 *            MBean server connection instance
+	 * @param incFilter
+	 *            MBean include filters semicolon separated
+	 * @param excFilter
+	 *            MBean exclude filters semicolon separated
+	 * @param period
+	 *            time period for sampling
+	 * @param tUnit
+	 *            time units for period
 	 * 
 	 * @return new {@link Scheduler} instance
 	 */
@@ -149,12 +157,18 @@ public class PlatformJmxSampler implements Sampler {
 	/**
 	 * Create new instance of {@link Scheduler}. Override this call to return your instance of {@link Scheduler}.
 	 *
-	 * @param mServerConn MBean server connection instance
-	 * @param incFilter MBean include filters semicolon separated
-	 * @param excFilter MBean exclude filters semicolon separated
-	 * @param initDelay initial delay before first sampling
-	 * @param period time period for sampling
-	 * @param tUnit time units for period
+	 * @param mServerConn
+	 *            MBean server connection instance
+	 * @param incFilter
+	 *            MBean include filters semicolon separated
+	 * @param excFilter
+	 *            MBean exclude filters semicolon separated
+	 * @param initDelay
+	 *            initial delay before first sampling
+	 * @param period
+	 *            time period for sampling
+	 * @param tUnit
+	 *            time units for period
 	 *
 	 * @return new {@link Scheduler} instance
 	 */
@@ -168,13 +182,20 @@ public class PlatformJmxSampler implements Sampler {
 	/**
 	 * Create new instance of {@link Scheduler}. Override this call to return your instance of {@link Scheduler}.
 	 *
-	 * @param mServerConn MBean server connection instance
-	 * @param incFilter MBean include filters semicolon separated
-	 * @param excFilter MBean exclude filters semicolon separated
-	 * @param initDelay initial delay before first sampling
-	 * @param period time period for sampling
-	 * @param tUnit time units for period
-	 * @param sFactory sampler factory instance
+	 * @param mServerConn
+	 *            MBean server connection instance
+	 * @param incFilter
+	 *            MBean include filters semicolon separated
+	 * @param excFilter
+	 *            MBean exclude filters semicolon separated
+	 * @param initDelay
+	 *            initial delay before first sampling
+	 * @param period
+	 *            time period for sampling
+	 * @param tUnit
+	 *            time units for period
+	 * @param sFactory
+	 *            sampler factory instance
 	 *
 	 * @return new {@link Scheduler} instance
 	 */

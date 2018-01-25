@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 JKOOL, LLC.
+ * Copyright 2015-2018 JKOOL, LLC.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -180,9 +180,12 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 	 * Resolves properties map from provided canonical object name string and puts into provided {@link Properties}
 	 * instance.
 	 *
-	 * @param props properties to load into
-	 * @param objCanonName object canonical name string
-	 * @param ddIdx domain separator index
+	 * @param props
+	 *            properties to load into
+	 * @param objCanonName
+	 *            object canonical name string
+	 * @param ddIdx
+	 *            domain separator index
 	 */
 	protected static void loadProps(Properties props, String objCanonName, int ddIdx) {
 		String domainStr = objCanonName.substring(0, ddIdx);
@@ -207,8 +210,10 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 	/**
 	 * Appends provided path string builder with path token string.
 	 *
-	 * @param pathBuilder path string builder to append
-	 * @param pathToken path token string
+	 * @param pathBuilder
+	 *            path string builder to append
+	 * @param pathToken
+	 *            path token string
 	 * @return appended path string builder instance
 	 */
 	protected StringBuilder appendPath(StringBuilder pathBuilder, String pathToken) {
@@ -263,7 +268,8 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 	/**
 	 * Returns the appropriate string representation for the specified array.
 	 *
-	 * @param a array to convert to string representation
+	 * @param a
+	 *            array to convert to string representation
 	 *
 	 * @return string representation of array
 	 */

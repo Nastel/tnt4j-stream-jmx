@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 JKOOL, LLC.
+ * Copyright 2015-2018 JKOOL, LLC.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,9 +51,12 @@ public class SchedulerImpl extends ActivityScheduler implements Scheduler {
 	 * Create new instance of {@code SchedulerImpl} with a given name, MBean server, sampling period. Filter is set to
 	 * all MBeans.
 	 *
-	 * @param name name of assigned to the sampler
-	 * @param handler sample handler instance
-	 * @param period sampling period in milliseconds
+	 * @param name
+	 *            name of assigned to the sampler
+	 * @param handler
+	 *            sample handler instance
+	 * @param period
+	 *            sampling period in milliseconds
 	 */
 	public SchedulerImpl(String name, SampleHandler handler, long period) {
 		this(name, handler, Sampler.JMX_FILTER_ALL, period);
@@ -62,10 +65,14 @@ public class SchedulerImpl extends ActivityScheduler implements Scheduler {
 	/**
 	 * Create new instance of {@code SchedulerImpl} with a given name, MBean server, filter list and sampling period.
 	 *
-	 * @param name name of assigned to the sampler
-	 * @param handler sample handler instance
-	 * @param incFilterList MBean filters semicolon separated
-	 * @param period sampling period in milliseconds
+	 * @param name
+	 *            name of assigned to the sampler
+	 * @param handler
+	 *            sample handler instance
+	 * @param incFilterList
+	 *            MBean filters semicolon separated
+	 * @param period
+	 *            sampling period in milliseconds
 	 */
 	public SchedulerImpl(String name, SampleHandler handler, String incFilterList, long period) {
 		this(name, handler, incFilterList, null, period, TimeUnit.MILLISECONDS);
@@ -74,11 +81,16 @@ public class SchedulerImpl extends ActivityScheduler implements Scheduler {
 	/**
 	 * Create new instance of {@code SchedulerImpl} with a given name, MBean server, filter list and sampling period.
 	 *
-	 * @param name name of assigned to the sampler
-	 * @param handler sample handler instance
-	 * @param incFilterList MBean filters semicolon separated
-	 * @param period sampling period
-	 * @param tUnit time unit for the sampling period
+	 * @param name
+	 *            name of assigned to the sampler
+	 * @param handler
+	 *            sample handler instance
+	 * @param incFilterList
+	 *            MBean filters semicolon separated
+	 * @param period
+	 *            sampling period
+	 * @param tUnit
+	 *            time unit for the sampling period
 	 */
 	public SchedulerImpl(String name, SampleHandler handler, String incFilterList, long period, TimeUnit tUnit) {
 		this(name, handler, incFilterList, null, period, tUnit);
@@ -87,12 +99,18 @@ public class SchedulerImpl extends ActivityScheduler implements Scheduler {
 	/**
 	 * Create new instance of {@code SchedulerImpl} with a given name, MBean server, filter list and sampling period.
 	 *
-	 * @param name name of assigned to the sampler
-	 * @param handler sample handler instance
-	 * @param incFilterList MBean include filters semicolon separated
-	 * @param excFilterList MBean exclude filters semicolon separated
-	 * @param period sampling period
-	 * @param tUnit time unit for the sampling period
+	 * @param name
+	 *            name of assigned to the sampler
+	 * @param handler
+	 *            sample handler instance
+	 * @param incFilterList
+	 *            MBean include filters semicolon separated
+	 * @param excFilterList
+	 *            MBean exclude filters semicolon separated
+	 * @param period
+	 *            sampling period
+	 * @param tUnit
+	 *            time unit for the sampling period
 	 */
 	public SchedulerImpl(String name, SampleHandler handler, String incFilterList, String excFilterList, long period,
 			TimeUnit tUnit) {
@@ -102,13 +120,20 @@ public class SchedulerImpl extends ActivityScheduler implements Scheduler {
 	/**
 	 * Create new instance of {@code SchedulerImpl} with a given name, MBean server, filter list and sampling period.
 	 *
-	 * @param name name of assigned to the sampler
-	 * @param handler sample handler instance
-	 * @param incFilterList MBean include filters semicolon separated
-	 * @param excFilterList MBean exclude filters semicolon separated
-	 * @param initDelay initial delay before first sampling
-	 * @param period sampling period
-	 * @param tUnit time unit for the sampling period
+	 * @param name
+	 *            name of assigned to the sampler
+	 * @param handler
+	 *            sample handler instance
+	 * @param incFilterList
+	 *            MBean include filters semicolon separated
+	 * @param excFilterList
+	 *            MBean exclude filters semicolon separated
+	 * @param initDelay
+	 *            initial delay before first sampling
+	 * @param period
+	 *            sampling period
+	 * @param tUnit
+	 *            time unit for the sampling period
 	 */
 	public SchedulerImpl(String name, SampleHandler handler, String incFilterList, String excFilterList, long initDelay,
 			long period, TimeUnit tUnit) {
@@ -124,14 +149,22 @@ public class SchedulerImpl extends ActivityScheduler implements Scheduler {
 	/**
 	 * Create new instance of {@code SchedulerImpl} with a given name, MBean server, filter list and sampling period.
 	 *
-	 * @param name name of assigned to the sampler
-	 * @param handler sample handler instance
-	 * @param incFilterList MBean include filters semicolon separated
-	 * @param excFilterList MBean exclude filters semicolon separated
-	 * @param initDelay initial delay before first sampling
-	 * @param period sampling period
-	 * @param tUnit time unit for the sampling period
-	 * @param sFactory sampler factory instance
+	 * @param name
+	 *            name of assigned to the sampler
+	 * @param handler
+	 *            sample handler instance
+	 * @param incFilterList
+	 *            MBean include filters semicolon separated
+	 * @param excFilterList
+	 *            MBean exclude filters semicolon separated
+	 * @param initDelay
+	 *            initial delay before first sampling
+	 * @param period
+	 *            sampling period
+	 * @param tUnit
+	 *            time unit for the sampling period
+	 * @param sFactory
+	 *            sampler factory instance
 	 */
 	public SchedulerImpl(String name, SampleHandler handler, String incFilterList, String excFilterList, long initDelay,
 			long period, TimeUnit tUnit, SamplerFactory sFactory) {
@@ -147,9 +180,12 @@ public class SchedulerImpl extends ActivityScheduler implements Scheduler {
 	/**
 	 * Loads and sets up instance of {@link TrackerConfig} to be used to create scheduler logger.
 	 *
-	 * @param name name of assigned to the sampler
-	 * @param sFactory sampler factory instance
-	 * @param listener activity listener invoked when scheduled activity starts and stops
+	 * @param name
+	 *            name of assigned to the sampler
+	 * @param sFactory
+	 *            sampler factory instance
+	 * @param listener
+	 *            activity listener invoked when scheduled activity starts and stops
 	 * @return tracker configuration used to create scheduler logger
 	 */
 	protected static TrackerConfig loadLoggerConfig(String name, SamplerFactory sFactory, ActivityListener listener) {
@@ -201,7 +237,7 @@ public class SchedulerImpl extends ActivityScheduler implements Scheduler {
 	public void close() {
 		super.close();
 
-		//TrackingLogger.shutdown(getLogger());
+		// TrackingLogger.shutdown(getLogger());
 		listener.cleanup();
 	}
 }

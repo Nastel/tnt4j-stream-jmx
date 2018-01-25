@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 JKOOL, LLC.
+ * Copyright 2015-2018 JKOOL, LLC.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -455,7 +455,8 @@ public abstract class StreamJMXServlet extends HttpServlet {
 					try {
 						return System.getProperty(property.key(), defValue);
 					} catch (SecurityException e) {
-						System.err.println("!!!!   Failed to get property " + key + ": " + Utils.toString(e) + "  !!!!");
+						System.err
+								.println("!!!!   Failed to get property " + key + ": " + Utils.toString(e) + "  !!!!");
 
 						return defValue;
 					}
@@ -473,7 +474,8 @@ public abstract class StreamJMXServlet extends HttpServlet {
 			try {
 				return System.getProperty(property.key(), property.defaultValue());
 			} catch (SecurityException e) {
-				System.err.println("!!!!   Failed to get property " + property.key() + ": " + Utils.toString(e) + "  !!!!");
+				System.err.println(
+						"!!!!   Failed to get property " + property.key() + ": " + Utils.toString(e) + "  !!!!");
 				return property.defaultValue();
 			}
 		}
