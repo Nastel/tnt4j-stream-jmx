@@ -27,6 +27,7 @@ import javax.management.relation.MBeanServerNotificationFilter;
 import com.jkoolcloud.tnt4j.core.Activity;
 import com.jkoolcloud.tnt4j.core.OpLevel;
 import com.jkoolcloud.tnt4j.core.PropertySnapshot;
+import com.jkoolcloud.tnt4j.core.Snapshot;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.*;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleContext;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
@@ -78,7 +79,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	final List<SampleListener> listeners = new ArrayList<SampleListener>(5);
 
 	/**
-	 * Create new instance of {@link SampleHandlerImpl} with a given MBean server and a set of filters.
+	 * Create new instance of {@code SampleHandlerImpl} with a given MBean server and a set of filters.
 	 *
 	 * @param mServerConn
 	 *            MBean server connection instance
@@ -102,6 +103,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	 * @param filters
 	 *            list of object names
 	 * @throws MalformedObjectNameException
+	 *             if filter defined object name is malformed
 	 */
 	private static void tokenizeFilters(String filter, List<ObjectName> filters) throws MalformedObjectNameException {
 		StringTokenizer itk = new StringTokenizer(filter, ";");
@@ -125,7 +127,9 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	 * Install MBean add/delete listener
 	 * 
 	 * @throws IOException
+	 *             if communication problem occurred when talking to the MBean server
 	 * @throws InstanceNotFoundException
+	 *             if MBean name provided does not match any of the registered MBeans
 	 */
 	private void listenForChanges() throws IOException, InstanceNotFoundException {
 		if (MBeanFilter == null) {
@@ -239,7 +243,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 				}
 			}
 			if (snapshot.size() > 0) {
-				snapshot.add(Utils.OBJ_NAME_PROP, name, true);
+				doComplete(activity, name, info, snapshot);
 
 				pCount += snapshot.size();
 				activity.addSnapshot(snapshot);
@@ -459,11 +463,34 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	 * @param sample
 	 *            current attribute sample instance
 	 * @throws UnsupportedAttributeException
+	 *             if attribute value can not be resolved
 	 */
 	private void doPost(AttributeSample sample) throws UnsupportedAttributeException {
 		synchronized (this.listeners) {
 			for (SampleListener lst : listeners) {
 				lst.post(context, sample);
+			}
+		}
+	}
+
+	/**
+	 * Run
+	 * {@link com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener#complete(com.jkoolcloud.tnt4j.stream.jmx.core.SampleContext, com.jkoolcloud.tnt4j.core.Activity, javax.management.ObjectName, javax.management.MBeanInfo, com.jkoolcloud.tnt4j.core.Snapshot)}
+	 * for all registered listeners.
+	 *
+	 * @param activity
+	 *            sampling activity instance
+	 * @param name
+	 *            MBean object name
+	 * @param info
+	 *            MBean info
+	 * @param snapshot
+	 *            MBean attribute values snapshot
+	 */
+	private void doComplete(Activity activity, ObjectName name, MBeanInfo info, Snapshot snapshot) {
+		synchronized (this.listeners) {
+			for (SampleListener lst : listeners) {
+				lst.complete(context, activity, name, info, snapshot);
 			}
 		}
 	}

@@ -17,10 +17,12 @@ package com.jkoolcloud.tnt4j.stream.jmx.core;
 
 import java.util.Map;
 
+import javax.management.MBeanInfo;
 import javax.management.ObjectName;
 
 import com.jkoolcloud.tnt4j.core.Activity;
 import com.jkoolcloud.tnt4j.core.OpLevel;
+import com.jkoolcloud.tnt4j.core.Snapshot;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeSample;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.NestedHandler;
 
@@ -76,8 +78,25 @@ public interface SampleListener {
 	 * @param sample
 	 *            current attribute sample
 	 * @throws UnsupportedAttributeException
+	 *             if attribute value can not be resolved
 	 */
 	void post(SampleContext context, AttributeSample sample) throws UnsupportedAttributeException;
+
+	/**
+	 * This method is called after all MBean attributes are sampled.
+	 *
+	 * @param context
+	 *            current sample context
+	 * @param activity
+	 *            sampling activity instance
+	 * @param name
+	 *            MBean object name
+	 * @param info
+	 *            MBean info
+	 * @param snapshot
+	 *            MBean attribute values snapshot
+	 */
+	void complete(SampleContext context, Activity activity, ObjectName name, MBeanInfo info, Snapshot snapshot);
 
 	/**
 	 * This method is called if sample fails with exception.
@@ -108,7 +127,7 @@ public interface SampleListener {
 	 * @param context
 	 *            current sample context
 	 * @param activity
-	 *            instance
+	 *            sampling activity instance
 	 */
 	void pre(SampleContext context, Activity activity);
 
@@ -120,7 +139,7 @@ public interface SampleListener {
 	 * @param context
 	 *            current sample context
 	 * @param activity
-	 *            instance
+	 *            sampling activity instance
 	 */
 	void post(SampleContext context, Activity activity);
 

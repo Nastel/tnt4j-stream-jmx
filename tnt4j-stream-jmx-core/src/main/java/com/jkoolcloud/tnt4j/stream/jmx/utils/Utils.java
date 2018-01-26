@@ -34,10 +34,7 @@ import com.jkoolcloud.tnt4j.core.Snapshot;
  * @version $Revision: 1 $
  */
 public class Utils extends com.jkoolcloud.tnt4j.utils.Utils {
-	public static final String INTERNAl_PROP_PREFIX = "<==";
-	public static final String INTERNAl_PROP_SUFFIX = "==>";
-
-	public static final String OBJ_NAME_PROP = makeInternalPropKey("OBJ_NAME_PROP");
+	public static final String OBJ_NAME_PROP = "ObjectName";
 
 	/**
 	 * Loads properties from resource with given name.
@@ -156,18 +153,6 @@ public class Utils extends com.jkoolcloud.tnt4j.utils.Utils {
 		}
 
 		return pValue;
-	}
-
-	/**
-	 * Makes internally used property key by surrounding provided {@code propName} with {@value #INTERNAl_PROP_PREFIX}
-	 * and {@value #INTERNAl_PROP_SUFFIX}.
-	 *
-	 * @param propName
-	 *            property name
-	 * @return internally used property key
-	 */
-	public static String makeInternalPropKey(String propName) {
-		return INTERNAl_PROP_PREFIX + propName + INTERNAl_PROP_SUFFIX;
 	}
 
 	/**

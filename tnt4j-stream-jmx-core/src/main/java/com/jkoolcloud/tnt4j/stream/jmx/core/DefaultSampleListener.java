@@ -24,16 +24,14 @@ import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.management.MBeanAttributeInfo;
+import javax.management.MBeanInfo;
 import javax.management.ObjectName;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.jkoolcloud.tnt4j.core.Activity;
-import com.jkoolcloud.tnt4j.core.OpLevel;
-import com.jkoolcloud.tnt4j.core.Property;
-import com.jkoolcloud.tnt4j.core.PropertySnapshot;
+import com.jkoolcloud.tnt4j.core.*;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeSample;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.Utils;
 
@@ -163,24 +161,39 @@ public class DefaultSampleListener implements SampleListener {
 		} finally {
 			buildLock.unlock();
 		}
-
-		if (forceObjectName) {
-			forceObjectNameAttribute(sample);
-		}
 	}
 
-	private void forceObjectNameAttribute(AttributeSample sample) {
-		MBeanAttributeInfo mbAttrInfo = sample.getAttributeInfo();
-		PropertySnapshot snapshot = sample.getSnapshot();
-		Property objNameProp = Utils.getSnapPropertyIgnoreCase(snapshot, "objectName");
+	@Override
+	public void complete(SampleContext context, Activity activity, ObjectName name, MBeanInfo info, Snapshot snapshot) {
+		forceObjectNameAttribute(name, snapshot);
+		objNamePropsToSnapshot(name, snapshot);
+	}
+
+	private void forceObjectNameAttribute(ObjectName name, Snapshot snapshot) {
+		Property objNameProp = Utils.getSnapPropertyIgnoreCase(snapshot, Utils.OBJ_NAME_PROP);
 
 		if (objNameProp == null) {
 			buildLock.lock();
 			try {
-				processAttrValue(snapshot, mbAttrInfo, initPropName("objectName"), sample.getObjectName());
+				snapshot.add(Utils.OBJ_NAME_PROP, name, !forceObjectName);
 			} finally {
 				buildLock.unlock();
 			}
+		}
+	}
+
+	private void objNamePropsToSnapshot(ObjectName name, Snapshot snapshot) {
+		Map<String, String> objNameProps = name.getKeyPropertyList();
+
+		buildLock.lock();
+		try {
+			for (Map.Entry<String, String> objNameProp : objNameProps.entrySet()) {
+				Property p = snapshot.get(objNameProp.getKey());
+				// p = Utils.getSnapPropertyIgnoreCase(snapshot, objNameProp.getKey());
+				snapshot.add(objNameProp.getKey() + (p == null ? "" : "_"), objNameProp.getValue());
+			}
+		} finally {
+			buildLock.unlock();
 		}
 	}
 
@@ -334,7 +347,8 @@ public class DefaultSampleListener implements SampleListener {
 		 */
 		TRACE("trace"),
 		/**
-		 * Flag indicating to forcibly add {@code "objectName"} attribute if such is not present for a MBean.
+		 * Flag indicating to forcibly add {@value com.jkoolcloud.tnt4j.stream.jmx.utils.Utils#OBJ_NAME_PROP} attribute
+		 * if such is not present for a MBean.
 		 */
 		FORCE_OBJECT_NAME("forceObjectName"),
 		/**

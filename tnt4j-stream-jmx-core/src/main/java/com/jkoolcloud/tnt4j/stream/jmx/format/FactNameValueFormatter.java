@@ -59,7 +59,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	private String[] replaceable = new String[] { EQ, FIELD_SEP };
 	private String[] replacement = new String[] { PATH_DELIM, FS_REP };
 
-	private static final String SNAP_NAME_PROP = Utils.makeInternalPropKey("JMX_SNAP_NAME");
+	private static final String SNAP_NAME_PROP = "JMX_SNAP_NAME";
 
 	// NOTE: group 1 - original, group 2 - replacement
 	// protected static final Pattern REP_CFG_PATTERN = Pattern.compile("\"(\\s*[^\"]+\\s*)\"->\"(\\s*[^\"]+\\s*)\"");
