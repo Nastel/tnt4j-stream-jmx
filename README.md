@@ -511,7 +511,8 @@ value **after**.
 JMS sampler configuration properties are:
 * `trace` - flag indicating whether the sample listener should print trace entries to print stream. Default value - `false`.
 * `forceObjectName` - flag indicating to forcibly add `objectName` attribute if such is not present for a MBean. Default value - `false`.
-* `compositeDelimiter` - delimiter used to tokenize composite/tabular type MBean properties keys. Default value - `\`;	  
+* `compositeDelimiter` - delimiter used to tokenize composite/tabular type MBean properties keys. Default value - `\`;
+* `useObjectNameProperties` - flag indicating to copy MBean `ObjectName` contained properties into sample snapshot properties.
 
 See [System properties used](#system-properties-used) how to configure Stream-JMX using system properties.
 See [Program arguments used](#program-arguments-used) how to configure Stream-JMX using program arguments.
@@ -528,6 +529,9 @@ Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.forceObjectName=true`
 * `com.jkoolcloud.tnt4j.stream.jmx.agent.compositeDelimiter` - defines delimiter used to tokenize composite/tabular type MBean properties 
 keys. Default value - `\`.
 Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.compositeDelimiter=.`
+* `com.jkoolcloud.tnt4j.stream.jmx.agent.useObjectNameProperties` - defines whether to copy MBean `ObjectName` contained properties into 
+sample snapshot properties. Default value - `true`.
+Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.useObjectNameProperties=false`
 
 ### Program arguments used
 
@@ -537,6 +541,7 @@ properties use as many argument definitions as there are required properties. Fo
 -slp:trace=true
 -slp:forceObjectName=true
 -slp:compositeDelimiter=.
+-slp:useObjectNameProperties=false
 ``` 
 
 ## Stream-JMX event data formatters

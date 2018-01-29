@@ -104,10 +104,12 @@ public class SamplingAgent {
 		copyProperty(TRACE, DEFAULTS, LISTENER_PROPERTIES, false);
 		copyProperty(FORCE_OBJECT_NAME, DEFAULTS, LISTENER_PROPERTIES, false);
 		copyProperty(COMPOSITE_DELIMITER, DEFAULTS, LISTENER_PROPERTIES, "\\");
+		copyProperty(USE_OBJECT_NAME_PROPERTIES, DEFAULTS, LISTENER_PROPERTIES, true);
 
 		copyProperty(TRACE, System.getProperties(), LISTENER_PROPERTIES);
 		copyProperty(FORCE_OBJECT_NAME, System.getProperties(), LISTENER_PROPERTIES);
 		copyProperty(COMPOSITE_DELIMITER, System.getProperties(), LISTENER_PROPERTIES);
+		copyProperty(USE_OBJECT_NAME_PROPERTIES, System.getProperties(), LISTENER_PROPERTIES);
 	}
 
 	private static boolean stopSampling = false;
@@ -197,6 +199,11 @@ public class SamplingAgent {
 					String[] prop = arg.split("=", 2);
 					if (prop.length > 1) {
 						LISTENER_PROPERTIES.put(COMPOSITE_DELIMITER.pName(), prop[1]);
+					}
+				} else if (arg.startsWith(USE_OBJECT_NAME_PROPERTIES.pName() + "=")) {
+					String[] prop = arg.split("=", 2);
+					if (prop.length > 1) {
+						LISTENER_PROPERTIES.put(USE_OBJECT_NAME_PROPERTIES.pName(), prop[1]);
 					}
 				} else {
 					agentParams += agentParams.isEmpty() ? arg : "!" + arg;

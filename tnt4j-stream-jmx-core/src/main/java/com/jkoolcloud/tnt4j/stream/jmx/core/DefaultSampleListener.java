@@ -50,6 +50,7 @@ public class DefaultSampleListener implements SampleListener {
 	public static final String STAT_TRACE_MODE = "listener.trace.mode";
 	public static final String STAT_FORCE_OBJECT_NAME_MODE = "listener.forceObjectName.mode";
 	public static final String STAT_COMPOSITE_DELIMITER = "listener.compositeProperty.delimiter";
+	public static final String STAT_USE_OBJ_NAME_PROPS = "listener.useObjectNameProperties.mode";
 	public static final String STAT_EXCLUDE_SET_COUNT = "listener.exclude.set.count";
 	public static final String STAT_SILENCE_SET_COUNT = "listener.silence.set.count";
 
@@ -57,6 +58,7 @@ public class DefaultSampleListener implements SampleListener {
 	boolean forceObjectName = false;
 	PrintStream out;
 	String compositeDelimiter = null;
+	boolean useObjectNameProperties = true;
 
 	Collection<MBeanAttributeInfo> excAttrs = new HashSet<MBeanAttributeInfo>(89);
 	Collection<MBeanAttributeInfo> silenceAttrs = new HashSet<MBeanAttributeInfo>(89);
@@ -81,6 +83,8 @@ public class DefaultSampleListener implements SampleListener {
 				forceObjectName);
 		this.compositeDelimiter = Utils.getString(ListenerProperties.COMPOSITE_DELIMITER.pName(), properties,
 				compositeDelimiter);
+		this.useObjectNameProperties = Utils.getBoolean(ListenerProperties.USE_OBJECT_NAME_PROPERTIES.pName(),
+				properties, useObjectNameProperties);
 	}
 
 	/**
@@ -166,7 +170,9 @@ public class DefaultSampleListener implements SampleListener {
 	@Override
 	public void complete(SampleContext context, Activity activity, ObjectName name, MBeanInfo info, Snapshot snapshot) {
 		forceObjectNameAttribute(name, snapshot);
-		objNamePropsToSnapshot(name, snapshot);
+		if (useObjectNameProperties) {
+			objNamePropsToSnapshot(name, snapshot);
+		}
 	}
 
 	private void forceObjectNameAttribute(ObjectName name, Snapshot snapshot) {
@@ -255,6 +261,7 @@ public class DefaultSampleListener implements SampleListener {
 		stats.put(STAT_TRACE_MODE, trace);
 		stats.put(STAT_FORCE_OBJECT_NAME_MODE, forceObjectName);
 		stats.put(STAT_COMPOSITE_DELIMITER, compositeDelimiter);
+		stats.put(STAT_USE_OBJ_NAME_PROPS, useObjectNameProperties);
 		stats.put(STAT_EXCLUDE_SET_COUNT, excAttrs.size());
 		stats.put(STAT_SILENCE_SET_COUNT, silenceAttrs.size());
 	}
@@ -354,7 +361,12 @@ public class DefaultSampleListener implements SampleListener {
 		/**
 		 * Delimiter used to tokenize composite/tabular type MBean properties keys.
 		 */
-		COMPOSITE_DELIMITER("compositeDelimiter");
+		COMPOSITE_DELIMITER("compositeDelimiter"),
+		/**
+		 * Flag indicating to copy MBean {@link javax.management.ObjectName} contained properties into sample snapshot
+		 * properties.
+		 */
+		USE_OBJECT_NAME_PROPERTIES("useObjectNameProperties");
 
 		private String pName;
 		private String apName;
