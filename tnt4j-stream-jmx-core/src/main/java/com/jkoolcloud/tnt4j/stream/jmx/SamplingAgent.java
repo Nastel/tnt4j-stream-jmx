@@ -247,7 +247,7 @@ public class SamplingAgent {
 				method.invoke(classLoader, classPathEntryURL);
 			} catch (Exception e) {
 				System.out.println("SamplingAgent.extendClasspath: could not load lib " + classPathEntryURL);
-				System.out.println("                    Exception: " + Utils.toString(e));
+				System.out.println("                    Exception: " + Utils.getExceptionMessages(e));
 			}
 		}
 	}
@@ -308,7 +308,7 @@ public class SamplingAgent {
 					}
 				} catch (Throwable ex) {
 					System.out.println("SamplingAgent.main: failed to configure and run JMX sampling...");
-					System.out.println("         Exception: " + Utils.toString(ex));
+					System.out.println("         Exception: " + Utils.getExceptionMessages(ex));
 				}
 			}
 		} else {
@@ -434,7 +434,7 @@ public class SamplingAgent {
 				}
 			} catch (IllegalArgumentException exc) {
 				System.out.println("SamplingAgent.parseArgs: arguments parsing failed...");
-				System.out.println("              Exception: " + Utils.toString(exc));
+				System.out.println("              Exception: " + Utils.getExceptionMessages(exc));
 				return false;
 			}
 
@@ -900,7 +900,7 @@ public class SamplingAgent {
 				}
 			} catch (IOException exc) {
 				System.out.println("SamplingAgent.connect: failed to connect JMX service");
-				System.out.println("            Exception: " + Utils.toString(exc));
+				System.out.println("            Exception: " + Utils.getExceptionMessages(exc));
 
 				if (connRetryInterval < 0) {
 					stopSampling = true;

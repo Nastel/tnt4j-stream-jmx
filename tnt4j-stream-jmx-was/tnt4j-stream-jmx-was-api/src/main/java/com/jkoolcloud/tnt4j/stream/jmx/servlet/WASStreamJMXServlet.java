@@ -144,8 +144,8 @@ public class WASStreamJMXServlet extends StreamJMXServlet {
 
 				method.invoke(getServletConfig(), prop.key(), propertyValue);
 			} catch (Exception e) {
-				System.err
-						.println("!!!!   Save failed " + e.getClass().getName() + " " + Utils.toString(e) + "   !!!!");
+				System.err.println("!!!!   Save failed " + e.getClass().getName() + " " + Utils.getExceptionMessages(e)
+						+ "   !!!!");
 				last = e;
 			}
 		}

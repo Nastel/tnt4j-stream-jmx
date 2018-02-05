@@ -230,7 +230,7 @@ public class DefaultSampleListener implements SampleListener {
 		try {
 			return String.valueOf(context.getMBeanServer().getMBeanCount());
 		} catch (IOException exc) {
-			return Utils.toString(exc);
+			return Utils.getExceptionMessages(exc);
 		}
 	}
 

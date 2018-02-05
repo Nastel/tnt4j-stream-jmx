@@ -455,8 +455,8 @@ public abstract class StreamJMXServlet extends HttpServlet {
 					try {
 						return System.getProperty(property.key(), defValue);
 					} catch (SecurityException e) {
-						System.err
-								.println("!!!!   Failed to get property " + key + ": " + Utils.toString(e) + "  !!!!");
+						System.err.println("!!!!   Failed to get property " + key + ": " + Utils.getExceptionMessages(e)
+								+ "  !!!!");
 
 						return defValue;
 					}
@@ -474,8 +474,8 @@ public abstract class StreamJMXServlet extends HttpServlet {
 			try {
 				return System.getProperty(property.key(), property.defaultValue());
 			} catch (SecurityException e) {
-				System.err.println(
-						"!!!!   Failed to get property " + property.key() + ": " + Utils.toString(e) + "  !!!!");
+				System.err.println("!!!!   Failed to get property " + property.key() + ": "
+						+ Utils.getExceptionMessages(e) + "  !!!!");
 				return property.defaultValue();
 			}
 		}

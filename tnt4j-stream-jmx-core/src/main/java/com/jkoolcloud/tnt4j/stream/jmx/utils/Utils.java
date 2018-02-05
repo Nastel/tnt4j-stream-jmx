@@ -156,17 +156,6 @@ public class Utils extends com.jkoolcloud.tnt4j.utils.Utils {
 	}
 
 	/**
-	 * Represents provided <tt>t</tt> throwable as string.
-	 *
-	 * @param t
-	 *            throwable to represent as string
-	 * @return string representation of throwable
-	 */
-	public static String toString(Throwable t) {
-		return t.toString();
-	}
-
-	/**
 	 * Copies property <tt>sKey</tt> value from <tt>sProperties</tt> to <tt>tProperties</tt> using key <tt>tKey</tt>.
 	 * 
 	 * @param sKey
