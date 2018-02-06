@@ -426,7 +426,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	 *            attribute value
 	 * @return decorated string representation of attribute value
 	 *
-	 * @see #toString(Object)
+	 * @see com.jkoolcloud.tnt4j.utils.Utils#toString(Object)
 	 * @see #initDefaultValueReplacements()
 	 * @see #replace(String, Map)
 	 */
@@ -438,28 +438,10 @@ public class FactNameValueFormatter extends DefaultFormatter {
 			// System.out.println("Unsupported value type=" + (value == null ? null : value.getClass()) + " value="
 			// + toString(value));
 		} else {
-			valStr = toString(value);
+			valStr = Utils.toString(value);
 		}
 
 		return replace(valStr, valueReplacements);
-	}
-
-	/**
-	 * Makes string representation of argument attribute value.
-	 * 
-	 * @param value
-	 *            attribute value
-	 * @return string representation of attribute value
-	 */
-	protected String toString(Object value) {
-		if (value instanceof Collection) {
-			Collection<?> c = (Collection<?>) value;
-			Object[] dca = c.toArray();
-
-			value = dca[0];
-		}
-
-		return String.valueOf(value);
 	}
 
 	@Override

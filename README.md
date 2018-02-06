@@ -508,7 +508,7 @@ using `System property` or `program argument`. Depending on sampling environment
 approach or another. When both definitions available **first** `System property` defined value is assigned and then `program argument` 
 value **after**.
  
-JMS sampler configuration properties are:
+JMX sampler configuration properties are:
 * `trace` - flag indicating whether the sample listener should print trace entries to print stream. Default value - `false`.
 * `forceObjectName` - flag indicating to forcibly add `objectName` attribute if such is not present for a MBean. Default value - `false`.
 * `compositeDelimiter` - delimiter used to tokenize composite/tabular type MBean properties keys. Default value - `\`;
