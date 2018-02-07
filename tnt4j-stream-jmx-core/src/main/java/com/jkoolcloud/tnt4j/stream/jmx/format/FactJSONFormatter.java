@@ -17,8 +17,10 @@
 package com.jkoolcloud.tnt4j.stream.jmx.format;
 
 import java.util.*;
+import java.util.regex.Matcher;
 
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.jkoolcloud.tnt4j.core.Operation;
 import com.jkoolcloud.tnt4j.core.Property;
@@ -45,6 +47,9 @@ public class FactJSONFormatter extends JSONFormatter {
 
 	private Comparator<Snapshot> snapshotComparator;
 	private Comparator<Property> propertyComparator;
+
+	protected Map<String, String> keyReplacements = new HashMap<String, String>();
+	protected Map<String, String> valueReplacements = new HashMap<String, String>();
 
 	/**
 	 * Create facts JSON formatter without newlines during formatting
@@ -212,17 +217,34 @@ public class FactJSONFormatter extends JSONFormatter {
 
 		Object value = prop.getValue();
 
-		if (doSuppressSpecials(value)) {
+		if (isSpecialSuppress(value)) {
 			return EMPTY_STR;
 		}
 
 		StringBuilder jsonString = new StringBuilder(1024);
-		jsonString.append(Utils.quote(StringEscapeUtils.escapeJson(prop.getKey()))).append(ATTR_SEP);
-		if (value instanceof Number && doMaintainSpecials(value)) {
+		jsonString
+				.append(Utils.quote(
+						StringEscapeUtils.escapeJson(FactNameValueFormatter.replace(prop.getKey(), keyReplacements))))
+				.append(ATTR_SEP);
+
+		boolean valueAdded = false;
+		if (value == null) {
 			jsonString.append(value);
-		} else {
-			String valueText = StringEscapeUtils.escapeJson(Utils.toString(value));
-			Utils.quote(valueText, jsonString);
+			valueAdded = true;
+		} else if (value instanceof Number) {
+			if (!isSpecialEnquote(value)) {
+				jsonString.append(value);
+				valueAdded = true;
+			}
+		} else if (value instanceof Boolean) {
+			jsonString.append(value);
+			valueAdded = true;
+		}
+
+		if (!valueAdded) {
+			String valStr = Utils.toString(value);
+			Utils.quote(StringEscapeUtils.escapeJson(FactNameValueFormatter.replace(valStr, valueReplacements)),
+					jsonString);
 		}
 		jsonString.append(ATTR_JSON);
 
@@ -290,5 +312,46 @@ public class FactJSONFormatter extends JSONFormatter {
 		}
 
 		return propertyComparator;
+	}
+
+	@Override
+	public void setConfiguration(Map<String, Object> settings) {
+		super.setConfiguration(settings);
+
+		String pValue = com.jkoolcloud.tnt4j.stream.jmx.utils.Utils.getString("KeyReplacements", settings, "");
+		if (StringUtils.isEmpty(pValue)) {
+			initDefaultKeyReplacements();
+		} else {
+			Matcher m = FactNameValueFormatter.REP_CFG_PATTERN.matcher(pValue);
+
+			while (m.find()) {
+				keyReplacements.put(StringEscapeUtils.unescapeJava(m.group(1)),
+						StringEscapeUtils.unescapeJava(m.group(3)));
+			}
+		}
+
+		pValue = com.jkoolcloud.tnt4j.stream.jmx.utils.Utils.getString("ValueReplacements", settings, "");
+		if (StringUtils.isEmpty(pValue)) {
+			initDefaultValueReplacements();
+		} else {
+			Matcher m = FactNameValueFormatter.REP_CFG_PATTERN.matcher(pValue);
+
+			while (m.find()) {
+				valueReplacements.put(StringEscapeUtils.unescapeJava(m.group(1)),
+						StringEscapeUtils.unescapeJava(m.group(3)));
+			}
+		}
+	}
+
+	/**
+	 * Initializes default set symbol replacements for a attribute keys.
+	 */
+	protected void initDefaultKeyReplacements() {
+	}
+
+	/**
+	 * Initializes default set symbol replacements for a attribute values.
+	 */
+	protected void initDefaultValueReplacements() {
 	}
 }

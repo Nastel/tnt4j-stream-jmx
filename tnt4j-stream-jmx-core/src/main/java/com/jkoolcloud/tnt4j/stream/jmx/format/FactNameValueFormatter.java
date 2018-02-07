@@ -61,9 +61,6 @@ public class FactNameValueFormatter extends DefaultFormatter {
 
 	private static final String SNAP_NAME_PROP = "JMX_SNAP_NAME";
 
-	// NOTE: group 1 - original, group 2 - replacement
-	// protected static final Pattern REP_CFG_PATTERN = Pattern.compile("\"(\\s*[^\"]+\\s*)\"->\"(\\s*[^\"]+\\s*)\"");
-	// NOTE: group 1 - original, group 3 - replacement. Properly handles escaped quotes within quotes.
 	protected static final Pattern REP_CFG_PATTERN = Pattern
 			.compile("\"(\\s*([^\"\\\\]|\\\\.)+\\s*)\"->\"(\\s*([^\"\\\\]|\\\\.)+\\s*)\"");
 
@@ -468,7 +465,6 @@ public class FactNameValueFormatter extends DefaultFormatter {
 
 	/**
 	 * Initializes default set symbol replacements for a attribute keys.
-	 *
 	 * <p>
 	 * Default keys string replacements mapping is:
 	 * <ul>
