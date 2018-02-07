@@ -88,30 +88,13 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		nvString.append("OBJ:Streams");
 		toString(nvString, event.getSource()).append(event.getName()).append("\\Events").append(FIELD_SEP);
 
-		Snapshot selfSnapshot = new PropertySnapshot("Self");
-
-		if (event.getCorrelator() != null) {
-			Set<String> cids = event.getCorrelator();
-			if (!cids.isEmpty()) {
-				selfSnapshot.add("corrid", cids);
-			}
-		}
+		Snapshot selfSnapshot = getSelfSnapshot(event.getOperation());
 		if (event.getTag() != null) {
 			Set<String> tags = event.getTag();
 			if (!tags.isEmpty()) {
 				selfSnapshot.add("tag", tags);
 			}
 		}
-		if (event.getOperation().getUser() != null) {
-			selfSnapshot.add("user", event.getOperation().getUser());
-		}
-		if (event.getLocation() != null) {
-			selfSnapshot.add("location", event.getLocation());
-		}
-		selfSnapshot.add("level", event.getOperation().getSeverity());
-		selfSnapshot.add("pid", event.getOperation().getPID());
-		selfSnapshot.add("tid", event.getOperation().getTID());
-		selfSnapshot.add("elapsed.usec", event.getOperation().getElapsedTimeUsec());
 
 		event.getOperation().addSnapshot(selfSnapshot);
 
@@ -141,26 +124,8 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		nvString.append("OBJ:Streams");
 		toString(nvString, activity.getSource()).append("\\Activities").append(FIELD_SEP);
 
-		Snapshot selfSnapshot = new PropertySnapshot("Self");
-
-		if (activity.getCorrelator() != null) {
-			Set<String> cids = activity.getCorrelator();
-			if (!cids.isEmpty()) {
-				selfSnapshot.add("corrid", cids);
-			}
-		}
-		if (activity.getUser() != null) {
-			selfSnapshot.add("user", activity.getUser());
-		}
-		if (activity.getLocation() != null) {
-			selfSnapshot.add("location", activity.getLocation());
-		}
-		selfSnapshot.add("level", activity.getSeverity());
+		Snapshot selfSnapshot = getSelfSnapshot(activity);
 		selfSnapshot.add("id.count", activity.getIdCount());
-		selfSnapshot.add("pid", activity.getPID());
-		selfSnapshot.add("tid", activity.getTID());
-		selfSnapshot.add("snap.count", activity.getSnapshotCount());
-		selfSnapshot.add("elapsed.usec", activity.getElapsedTimeUsec());
 
 		activity.addSnapshot(selfSnapshot);
 
@@ -170,6 +135,30 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		}
 
 		return nvString.append(END_SEP).toString();
+	}
+
+	private Snapshot getSelfSnapshot(Operation op) {
+		Snapshot selfSnapshot = new PropertySnapshot("Self");
+
+		if (op.getCorrelator() != null) {
+			Set<String> cids = op.getCorrelator();
+			if (!cids.isEmpty()) {
+				selfSnapshot.add("corrid", cids);
+			}
+		}
+		if (op.getUser() != null) {
+			selfSnapshot.add("user", op.getUser());
+		}
+		if (op.getLocation() != null) {
+			selfSnapshot.add("location", op.getLocation());
+		}
+		selfSnapshot.add("level", op.getSeverity());
+		selfSnapshot.add("pid", op.getPID());
+		selfSnapshot.add("tid", op.getTID());
+		selfSnapshot.add("snap.count", op.getSnapshotCount());
+		selfSnapshot.add("elapsed.usec", op.getElapsedTimeUsec());
+
+		return selfSnapshot;
 	}
 
 	@Override
