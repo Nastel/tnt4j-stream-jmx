@@ -221,30 +221,17 @@ public class FactJSONFormatter extends JSONFormatter {
 			return EMPTY_STR;
 		}
 
-		StringBuilder jsonString = new StringBuilder(1024);
+		StringBuilder jsonString = new StringBuilder(256);
 		jsonString
 				.append(Utils.quote(
 						StringEscapeUtils.escapeJson(FactNameValueFormatter.replace(prop.getKey(), keyReplacements))))
 				.append(ATTR_SEP);
 
-		boolean valueAdded = false;
-		if (value == null) {
+		jsonString.append(JSON_VALUE_LABEL).append(ATTR_SEP);
+		if (isNoNeedToQuote(value)) {
 			jsonString.append(value);
-			valueAdded = true;
-		} else if (value instanceof Number) {
-			if (!isSpecialEnquote(value)) {
-				jsonString.append(value);
-				valueAdded = true;
-			}
-		} else if (value instanceof Boolean) {
-			jsonString.append(value);
-			valueAdded = true;
-		}
-
-		if (!valueAdded) {
-			String valStr = Utils.toString(value);
-			Utils.quote(StringEscapeUtils.escapeJson(FactNameValueFormatter.replace(valStr, valueReplacements)),
-					jsonString);
+		} else {
+			Utils.quote(StringEscapeUtils.escapeJson(Utils.toString(value)), jsonString);
 		}
 		jsonString.append(ATTR_JSON);
 
