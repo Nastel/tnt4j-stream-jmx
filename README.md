@@ -81,7 +81,8 @@ Command line to run `stream-jmx` as JVM agent looks like this:
 java -javaagent:tnt4j-stream-jmx.jar="*:*!30000" -Dtnt4j.config=tnt4j.properties -classpath "tnt4j-stream-jmx.jar;lib/*" your.class.name your-args
 ```
 The options are `-javaagent:tnt4j-stream-jmx.jar="mbean-filter!sample-time-ms"`, classpath must include tnt4j-stream-jmx jar files as well 
-as locations of log4j and tnt4j configuration files.
+as locations of log4j and tnt4j configuration files. See [JMX Sampling Agent sampler options](#jmx-sampling-agent-sampler-options) for 
+details.
 
 ## Attaching Stream-JMX to running JVM
 
@@ -104,7 +105,8 @@ define full or relative path, e.g., `..\build\tnt4j-stream-jmx\tnt4j-stream-jmx-
 argument.
 * `-ao:*:*!10000` - is JMX sampler options stating to include all MBeans and schedule sampling every 10 seconds. Sampler options are 
 optional - default value is `*:*!30000`. Initial sampler delay can be configured by adding numeric parameter `*:*!30000!1000` defining 
-initial sampler delay as 1 second. Default sampler delay value is equal to sampling period value.
+initial sampler delay as 1 second. Default sampler delay value is equal to sampling period value. See 
+[JMX Sampling Agent sampler options](#jmx-sampling-agent-sampler-options) for details.
 * `-slp:` - any JMX sampler configuration property. See [Program arguments used](#program-arguments-used) for details.
 
 **NOTE:** arguments and properties defined running `SamplingAgent.main` is forwarded to `SamplingAgent` agent attached to JVM process.
@@ -171,7 +173,8 @@ System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [S
 PID. Mandatory argument.
 * `-ao:*:*!*:dummy!10000` - is JMX sampler options stating to include all MBeans, exclude all `dummy` MBeans and schedule sampling every 10 
 seconds. Sampler options are optional - default value is `*:*!30000`. Initial sampler delay can be configured by adding numeric parameter 
-`*:*!30000!1000` defining initial sampler delay as 1 second. Default sampler delay value is equal to sampling period value.
+`*:*!30000!1000` defining initial sampler delay as 1 second. Default sampler delay value is equal to sampling period value. See 
+[JMX Sampling Agent sampler options](#jmx-sampling-agent-sampler-options) for details.
 * `-slp:` - any JMX sampler configuration property. See [Program arguments used](#program-arguments-used) for details.
 
 #### To connect to JMX service over URL
@@ -190,7 +193,8 @@ System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [S
 * `-up:admin` - is user password. In this case it is `admin`. User password argument is optional.
 * `-ao:*:*!!10000` - is JMX sampler options stating to include all MBeans and schedule sampling every 10 seconds. Sampler options are 
 optional - default value is `*:*!30000`. Initial sampler delay can be configured by adding numeric parameter `*:*!30000!1000` defining 
-initial sampler delay as 1 second. Default sampler delay value is equal to sampling period value.
+initial sampler delay as 1 second. Default sampler delay value is equal to sampling period value. See 
+[JMX Sampling Agent sampler options](#jmx-sampling-agent-sampler-options) for details.
 * `-cp:java.naming.security.authentication=simple -cp:java.naming.factory.initial=com.sun.jndi.ldap.LdapCtxFactory` - is JMX connector 
 parameters definitions in properties format `key=value`. JMX connector parameters are optional and can be defined multiple times - as many 
 as there are required JMX connector parameters. See [Java API Context class documentation](https://docs.oracle.com/javase/7/docs/api/javax/naming/Context.html) 
@@ -332,7 +336,8 @@ System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [S
 * `-local` - defines that `SamplingAgent` shall run sampling on local process runner JVM.
 * `-ao:*:*!*:dummy!10000` - is JMX sampler options stating to include all MBeans, exclude all `dummy` MBeans and schedule sampling every 10 
 seconds. Sampler options are optional - default value is `*:*!30000`. Initial sampler delay can be configured by adding numeric parameter 
-`*:*!30000!1000` defining initial sampler delay as 1 second. Default sampler delay value is equal to sampling period value.
+`*:*!30000!1000` defining initial sampler delay as 1 second. Default sampler delay value is equal to sampling period value. See 
+[JMX Sampling Agent sampler options](#jmx-sampling-agent-sampler-options) for details.
 * `-slp:` - any JMX sampler configuration property. See [Program arguments used](#program-arguments-used) for details.
 
 ### Coding into API
@@ -543,6 +548,16 @@ properties use as many argument definitions as there are required properties. Fo
 -slp:compositeDelimiter=.
 -slp:useObjectNameProperties=false
 ``` 
+
+### JMX Sampling Agent sampler options
+
+Agent options are defined using format: `mbean-filter!exclude-filter!sample-ms!init-delay-ms`
+* `mbean-filter` - MBean include name filter defined using object name pattern: `domainName:keysSet`
+* `exclude-filter` - MBean exclude name filter defined using object name pattern: `domainName:keysSet`
+* `sample-ms` - MBeans sampling rate in milliseconds
+* `init-delay-ms` - MBeans sampling initial delay in milliseconds. Optional, by default it is equal to `sample-ms` value
+
+Default sampling agent options value is: `*:*!!30000` 
 
 ## Stream-JMX event data formatters
 
