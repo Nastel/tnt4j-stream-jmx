@@ -307,16 +307,16 @@ public class DefaultSampleListener implements SampleListener {
 			for (String key : keys) {
 				Object cVal = cdata.get(key);
 				processAttrValue(snapshot, mbAttrInfo, propName.append(key), cVal);
-				propName.popLevel();
 			}
+			propName.popLevel();
 		} else if (value instanceof TabularData) {
 			TabularData tData = (TabularData) value;
 			Collection<?> values = tData.values();
 			int row = 0;
 			for (Object tVal : values) {
 				processAttrValue(snapshot, mbAttrInfo, propName.append(padNumber(++row)), tVal);
-				propName.popLevel();
 			}
+			propName.popLevel();
 		} else {
 			snapshot.add(propName.propString(), value);
 		}
