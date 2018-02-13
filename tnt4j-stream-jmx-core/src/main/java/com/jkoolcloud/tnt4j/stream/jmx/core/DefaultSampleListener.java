@@ -304,11 +304,12 @@ public class DefaultSampleListener implements SampleListener {
 		if (value instanceof CompositeData) {
 			CompositeData cdata = (CompositeData) value;
 			Set<String> keys = cdata.getCompositeType().keySet();
+			boolean isKVSet = keys.contains("key") && keys.contains("value"); // NON-NLS
 			for (String key : keys) {
 				Object cVal = cdata.get(key);
-				if ("key".equals(key)) {
+				if (isKVSet && "key".equals(key)) {
 					propName.append(Utils.toString(cVal));
-				} else if ("value".equals(key)) {
+				} else if (isKVSet && "value".equals(key)) {
 					processAttrValue(snapshot, mbAttrInfo, propName, cVal);
 				} else {
 					processAttrValue(snapshot, mbAttrInfo, propName.append(key), cVal);
