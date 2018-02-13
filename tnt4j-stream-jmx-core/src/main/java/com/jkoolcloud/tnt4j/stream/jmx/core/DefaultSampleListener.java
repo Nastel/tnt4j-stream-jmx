@@ -306,7 +306,13 @@ public class DefaultSampleListener implements SampleListener {
 			Set<String> keys = cdata.getCompositeType().keySet();
 			for (String key : keys) {
 				Object cVal = cdata.get(key);
-				processAttrValue(snapshot, mbAttrInfo, propName.append(key), cVal);
+				if ("key".equals(key)) {
+					propName.append(Utils.toString(cVal));
+				} else if ("value".equals(key)) {
+					processAttrValue(snapshot, mbAttrInfo, propName, cVal);
+				} else {
+					processAttrValue(snapshot, mbAttrInfo, propName.append(key), cVal);
+				}
 			}
 			propName.popLevel();
 		} else if (value instanceof TabularData) {
@@ -314,7 +320,8 @@ public class DefaultSampleListener implements SampleListener {
 			Collection<?> values = tData.values();
 			int row = 0;
 			for (Object tVal : values) {
-				processAttrValue(snapshot, mbAttrInfo, propName.append(padNumber(++row)), tVal);
+				processAttrValue(snapshot, mbAttrInfo,
+						tVal instanceof CompositeData ? propName : propName.append(padNumber(++row)), tVal);
 			}
 			propName.popLevel();
 		} else {
