@@ -19,12 +19,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.management.ObjectName;
 
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.jkoolcloud.tnt4j.core.*;
@@ -60,9 +57,6 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	private String[] replacement = new String[] { PATH_DELIM, FS_REP };
 
 	private static final String SNAP_NAME_PROP = "JMX_SNAP_NAME";
-
-	protected static final Pattern REP_CFG_PATTERN = Pattern
-			.compile("\"(\\s*([^\"\\\\]|\\\\.)+\\s*)\"->\"(\\s*([^\"\\\\]|\\\\.)+\\s*)\"");
 
 	protected boolean serializeSimpleTypesOnly = false;
 	protected String uniqueSuffix = UNIQUE_SUFFIX;
@@ -208,33 +202,12 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	 *            source name
 	 * @return decorated string representation of source name
 	 *
-	 * @see #replace(String, Map)
+	 * @see Utils#replace(String, Map)
 	 */
 	protected String getSourceNameStr(String sourceName) {
 		// return replace(sourceName, FIELD_SEP, FS_REP);
 
-		return replace(sourceName, keyReplacements);
-	}
-
-	/**
-	 * Performs provided string contents replacement using symbols defined in {@code replacements} map.
-	 *
-	 * @param str
-	 *            string to apply replacements
-	 * @param replacements
-	 *            replacements map
-	 * @return string having applied replacements
-	 *
-	 * @see #replace(String, String, String)
-	 */
-	protected static String replace(String str, Map<String, String> replacements) {
-		if (StringUtils.isNotEmpty(str)) {
-			for (Map.Entry<String, String> kre : replacements.entrySet()) {
-				str = replace(str, kre.getKey(), kre.getValue());
-			}
-		}
-
-		return str;
+		return Utils.replace(sourceName, keyReplacements);
 	}
 
 	/**
@@ -389,12 +362,12 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	 * @return decorated string representation of attribute key
 	 *
 	 * @see #initDefaultKeyReplacements()
-	 * @see #replace(String, Map)
+	 * @see Utils#replace(String, Map)
 	 */
 	protected String getKeyStr(String sName, String pKey) {
 		String keyStr = sName + PATH_DELIM + pKey;
 
-		return replace(keyStr, keyReplacements);
+		return Utils.replace(keyStr, keyReplacements);
 	}
 
 	/**
@@ -414,7 +387,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	 *
 	 * @see com.jkoolcloud.tnt4j.utils.Utils#toString(Object)
 	 * @see #initDefaultValueReplacements()
-	 * @see #replace(String, Map)
+	 * @see Utils#replace(String, Map)
 	 */
 	protected String getValueStr(Object value) {
 		String valStr;
@@ -427,7 +400,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 			valStr = Utils.toString(value);
 		}
 
-		return replace(valStr, valueReplacements);
+		return Utils.replace(valStr, valueReplacements);
 	}
 
 	@Override
@@ -440,24 +413,14 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		if (StringUtils.isEmpty(pValue)) {
 			initDefaultKeyReplacements();
 		} else {
-			Matcher m = REP_CFG_PATTERN.matcher(pValue);
-
-			while (m.find()) {
-				keyReplacements.put(StringEscapeUtils.unescapeJava(m.group(1)),
-						StringEscapeUtils.unescapeJava(m.group(3)));
-			}
+			Utils.parseReplacements(pValue, keyReplacements);
 		}
 
 		pValue = Utils.getString("ValueReplacements", settings, "");
 		if (StringUtils.isEmpty(pValue)) {
 			initDefaultValueReplacements();
 		} else {
-			Matcher m = REP_CFG_PATTERN.matcher(pValue);
-
-			while (m.find()) {
-				valueReplacements.put(StringEscapeUtils.unescapeJava(m.group(1)),
-						StringEscapeUtils.unescapeJava(m.group(3)));
-			}
+			Utils.parseReplacements(pValue, valueReplacements);
 		}
 
 		uniqueSuffix = Utils.getString("DuplicateKeySuffix", settings, uniqueSuffix);
@@ -497,41 +460,5 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		valueReplacements.put("[", "{(");
 		valueReplacements.put("]", ")}");
 		valueReplacements.put("\"", "'");
-	}
-
-	/**
-	 * Performs source string contents replacement with provided new fragment.
-	 *
-	 * @param source
-	 *            source string
-	 * @param os
-	 *            fragment to be replaced
-	 * @param ns
-	 *            replacement fragment
-	 * @return string having replaced content
-	 */
-	public static String replace(String source, String os, String ns) {
-		if (source == null) {
-			return null;
-		}
-		int i = 0;
-		if ((i = source.indexOf(os, i)) >= 0) {
-			char[] sourceArray = source.toCharArray();
-			char[] nsArray = ns.toCharArray();
-			int oLength = os.length();
-			StringBuilder buf = new StringBuilder(sourceArray.length);
-			buf.append(sourceArray, 0, i).append(nsArray);
-			i += oLength;
-			int j = i;
-			// Replace all remaining instances of oldString with newString.
-			while ((i = source.indexOf(os, i)) > 0) {
-				buf.append(sourceArray, j, i - j).append(nsArray);
-				i += oLength;
-				j = i;
-			}
-			buf.append(sourceArray, j, sourceArray.length - j);
-			source = Utils.getString(buf);
-		}
-		return source;
 	}
 }
