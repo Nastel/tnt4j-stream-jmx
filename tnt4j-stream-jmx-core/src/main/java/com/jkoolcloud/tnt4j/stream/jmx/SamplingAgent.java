@@ -72,6 +72,7 @@ public class SamplingAgent {
 	private static final String PARAM_AGENT_CONN_PARAM = "-cp:";
 	private static final String PARAM_AGENT_CONN_RETRY_INTERVAL = "-cri:";
 	private static final String PARAM_AGENT_LISTENER_PARAM = "-slp:";
+	private static final String PARAM_AGENT_SYSTEM_PROPERTY = "-sp:";
 
 	private static final String AGENT_MODE_AGENT = "-agent";
 	private static final String AGENT_MODE_ATTACH = "-attach";
@@ -336,7 +337,9 @@ public class SamplingAgent {
 			System.out.println("  -slp: - sampler parameter string using '=' symbol as delimiter. Defines only one parameter, to define more than one use this argument multiple times. Argument format: -slp:key=value");
 			System.out.println("       trace - flag indicating whether the sample listener should print trace entries to print stream. Default value - 'false'");
 			System.out.println("       forceObjectName - flag indicating to forcibly add 'objectName' attribute if such is not present for a MBean. Default value - 'false'");
-			System.out.println("       compositeDelimiter - delimiter used to tokenize composite/tabular type MBean properties keys. Default value - '\\'");			
+			System.out.println("       compositeDelimiter - delimiter used to tokenize composite/tabular type MBean properties keys. Default value - '\\'");
+			System.out.println("       useObjectNameProperties - flag indicating to copy MBean ObjectName contained properties into sample snapshot properties. Default value - 'true'");
+			System.out.println("   -sp: - sampler system property string using '=' symbol as delimiter. Defines only one system property, to define more than one use this argument multiple times. Argument format: -sp:key=value");
 
 			System.exit(1);
 		}
@@ -432,6 +435,13 @@ public class SamplingAgent {
 						}
 
 						LISTENER_PROPERTIES.put(slp[0], slp[1]);
+					} else if (arg.startsWith(PARAM_AGENT_SYSTEM_PROPERTY)) {
+						String[] slp = parseCompositeArg(arg, PARAM_AGENT_SYSTEM_PROPERTY);
+						if (slp == null) {
+							return false;
+						}
+
+						System.setProperty(slp[0], slp[1]);
 					} else {
 						System.out.println("SamplingAgent.parseArgs: invalid argument [" + arg + "]");
 						return false;
