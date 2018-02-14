@@ -108,6 +108,7 @@ optional - default value is `*:*!30000`. Initial sampler delay can be configured
 initial sampler delay as 1 second. Default sampler delay value is equal to sampling period value. See 
 [JMX Sampling Agent sampler options](#jmx-sampling-agent-sampler-options) for details.
 * `-slp:` - any JMX sampler configuration property. See [Program arguments used](#program-arguments-used) for details.
+* `-sp:` - any system property used by sampler. See [System properties used](#system-properties-used) for details.
 
 **NOTE:** arguments and properties defined running `SamplingAgent.main` is forwarded to `SamplingAgent` agent attached to JVM process.
 **NOTE:** if you get exception `com.sun.tools.attach.AgentInitializationException: Agent JAR loaded but agent failed to initialize` while 
@@ -176,6 +177,7 @@ seconds. Sampler options are optional - default value is `*:*!30000`. Initial sa
 `*:*!30000!1000` defining initial sampler delay as 1 second. Default sampler delay value is equal to sampling period value. See 
 [JMX Sampling Agent sampler options](#jmx-sampling-agent-sampler-options) for details.
 * `-slp:` - any JMX sampler configuration property. See [Program arguments used](#program-arguments-used) for details.
+* `-sp:` - any system property used by sampler. See [System properties used](#system-properties-used) for details.
 
 #### To connect to JMX service over URL
 
@@ -204,7 +206,8 @@ connection configuration properties.
 is optional - default value is `10sec`. Special values are:
     * `0` indicates no delay between repeating connect attempts.
     * `-1` indicates no repeating connect attempts shall be made at all and application has to stop on first failed attempt to connect.
-* `-slp:` - any JMX sampler configuration property. See [Program arguments used](#program-arguments-used) for details.    
+* `-slp:` - any JMX sampler configuration property. See [Program arguments used](#program-arguments-used) for details.
+* `-sp:` - any system property used by sampler. See [System properties used](#system-properties-used) for details.    
 
 **NOTE**:
 * URI of remote RMI service (e.g., to connect remote Kafka service) may require additional `/` chars:
@@ -339,6 +342,7 @@ seconds. Sampler options are optional - default value is `*:*!30000`. Initial sa
 `*:*!30000!1000` defining initial sampler delay as 1 second. Default sampler delay value is equal to sampling period value. See 
 [JMX Sampling Agent sampler options](#jmx-sampling-agent-sampler-options) for details.
 * `-slp:` - any JMX sampler configuration property. See [Program arguments used](#program-arguments-used) for details.
+* `-sp:` - any system property used by sampler. See [System properties used](#system-properties-used) for details.
 
 ### Coding into API
 You can run `SamplingAgent` for local process runner JVM from your custom API by calling [SamplingAgent.sampleLocalVM(String,boolean)](./tnt4j-stream-jmx-core/src/main/java/com/jkoolcloud/tnt4j/stream/jmx/SamplingAgent.java#L686) method. 
@@ -524,6 +528,8 @@ See [Program arguments used](#program-arguments-used) how to configure Stream-JM
 
 ### System properties used
 
+To define system property for application you can use common JVM argument `-Dkey=value` or `SamplingAgent` program argument `-sp:key=value`. 
+
 * `tnt4j.config` - defines TNT4J properties file path. 
 Example: `-Dtnt4j.config=".\config\tnt4j.properties"`
 * `com.jkoolcloud.tnt4j.stream.jmx.agent.trace` - defines whether to dump trace data to application console output. Default value - `false`.
@@ -537,6 +543,8 @@ Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.compositeDelimiter=.`
 * `com.jkoolcloud.tnt4j.stream.jmx.agent.useObjectNameProperties` - defines whether to copy MBean `ObjectName` contained properties into 
 sample snapshot properties. Default value - `true`.
 Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.useObjectNameProperties=false`
+* `sjmx.serviceId` - defines `stream-jmx` service identifier used by TNT4J source FQN to distinguish monitored application instance.
+Example: `-Dsjmx.serviceId=broker-0` or `-sp:sjmx.serviceId=broker-0`.
 
 ### Program arguments used
 
@@ -880,7 +888,8 @@ Below is an example of TNT4J stream configuration writing collected JMX samples 
     source.factory: com.jkoolcloud.tnt4j.source.SourceFactoryImpl
     source.factory.GEOADDR: New York
     source.factory.DATACENTER: YourDC
-    source.factory.RootFQN: SERVER=?#DATACENTER=?#GEOADDR=?
+    source.factory.SERVICE: $sjmx.serviceId
+    source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?#GEOADDR=?
     source.factory.RootSSN: tnt4j-stream-jmx
 
     tracker.factory: com.jkoolcloud.tnt4j.tracker.DefaultTrackerFactory
@@ -915,7 +924,8 @@ Below is an example of TNT4J stream configuration writing collected JMX samples 
     source.factory: com.jkoolcloud.tnt4j.source.SourceFactoryImpl
     source.factory.GEOADDR: New York
     source.factory.DATACENTER: YourDC
-    source.factory.RootFQN: SERVER=?#DATACENTER=?#GEOADDR=?
+    source.factory.SERVICE: $sjmx.serviceId
+    source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?#GEOADDR=?
     source.factory.RootSSN: tnt4j-stream-jmx
 
     tracker.factory: com.jkoolcloud.tnt4j.tracker.DefaultTrackerFactory
@@ -971,7 +981,8 @@ Below is an example of TNT4J stream configuration writing collected JMX samples 
     source.factory: com.jkoolcloud.tnt4j.source.SourceFactoryImpl
     source.factory.GEOADDR: New York
     source.factory.DATACENTER: YourDC
-    source.factory.RootFQN: SERVER=?#DATACENTER=?#GEOADDR=?
+    source.factory.SERVICE: $sjmx.serviceId
+    source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?#GEOADDR=?
     source.factory.RootSSN: tnt4j-stream-jmx
 
     tracker.factory: com.jkoolcloud.tnt4j.tracker.DefaultTrackerFactory
