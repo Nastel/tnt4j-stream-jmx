@@ -123,6 +123,8 @@ public class SamplingAgent {
 	 *            separated list of mbean filters and {@code initDelay} is optional
 	 * @param inst
 	 *            instrumentation handle
+	 * @throws IOException
+	 *             if IO exception occurs while initializing MBeans sampling
 	 */
 	public static void premain(String options, Instrumentation inst) throws IOException {
 		String incFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.include.filter", Sampler.JMX_FILTER_ALL);
@@ -257,6 +259,9 @@ public class SamplingAgent {
 	 *
 	 * @param args
 	 *            argument list: [sampling-mode vm-descriptor] [mbean-filter sample_time_ms]
+	 *
+	 * @throws Exception
+	 *             if exception occurs while initializing MBeans sampling
 	 */
 	public static void main(String[] args) throws Exception {
 		Properties props = new Properties();
@@ -498,6 +503,9 @@ public class SamplingAgent {
 
 	/**
 	 * Schedule sample with default MBean server instance as well as all registered MBean servers within the JVM.
+	 *
+	 * @throws IOException
+	 *             if IO exception occurs while initializing MBeans sampling
 	 */
 	public static void sample() throws IOException {
 		String incFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.include.filter", Sampler.JMX_FILTER_ALL);
@@ -515,6 +523,9 @@ public class SamplingAgent {
 	 *            semicolon separated include filter list
 	 * @param period
 	 *            sampling in milliseconds.
+	 *
+	 * @throws IOException
+	 *             if IO exception occurs while initializing MBeans sampling
 	 */
 	public static void sample(String incFilter, long period) throws IOException {
 		sample(incFilter, null, period);
@@ -529,6 +540,9 @@ public class SamplingAgent {
 	 *            semicolon separated exclude filter list (null if empty)
 	 * @param period
 	 *            sampling in milliseconds.
+	 *
+	 * @throws IOException
+	 *             if IO exception occurs while initializing MBeans sampling
 	 */
 	public static void sample(String incFilter, String excFilter, long period) throws IOException {
 		sample(incFilter, excFilter, period, period);
@@ -545,6 +559,9 @@ public class SamplingAgent {
 	 *            initial delay before first sampling
 	 * @param period
 	 *            sampling in milliseconds.
+	 *
+	 * @throws IOException
+	 *             if IO exception occurs while initializing MBeans sampling
 	 */
 	public static void sample(String incFilter, String excFilter, long initDelay, long period) throws IOException {
 		sample(incFilter, excFilter, initDelay, period, TimeUnit.MILLISECONDS);
@@ -563,6 +580,8 @@ public class SamplingAgent {
 	 *            sampling time
 	 * @param tUnit
 	 *            time units for sampling period
+	 * @throws IOException
+	 *             if IO exception occurs while initializing MBeans sampling
 	 */
 	public static void sample(String incFilter, String excFilter, long initDelay, long period, TimeUnit tUnit)
 			throws IOException {
@@ -594,6 +613,9 @@ public class SamplingAgent {
 	 *            time units for sampling period
 	 * @param conn
 	 *            JMX connector to get MBean server connection instance
+	 *
+	 * @throws IOException
+	 *             if IO exception occurs while initializing MBeans sampling
 	 */
 	public static void sample(String incFilter, String excFilter, long initDelay, long period, TimeUnit tUnit,
 			JMXConnector conn) throws IOException {

@@ -42,10 +42,12 @@ public class AttributeSample {
 	boolean silence = false;
 
 	/**
-	 * Create an attribute sample
+	 * Create an attribute sample.
 	 * 
 	 * @param activity
 	 *            associated with current sample
+	 * @param snapshot
+	 *            to put MBean attribute values
 	 * @param serverConn
 	 *            MBean server connection instance
 	 * @param name
@@ -63,16 +65,19 @@ public class AttributeSample {
 	}
 
 	/**
-	 * Create an attribute sample
+	 * Creates an attribute sample instance.
 	 * 
 	 * @param activity
 	 *            associated with current sample
+	 * @param snapshot
+	 *            to put MBean attribute values
 	 * @param serverConn
 	 *            MBean server connection instance
 	 * @param name
 	 *            MBean object name reference
 	 * @param ainfo
 	 *            MBean attribute info
+	 * @return a new attribute sample instance
 	 */
 	public static AttributeSample newAttributeSample(Activity activity, PropertySnapshot snapshot,
 			MBeanServerConnection serverConn, ObjectName name, MBeanAttributeInfo ainfo) {
@@ -83,6 +88,9 @@ public class AttributeSample {
 	 * Sample and retrieve the value associated with the MBean attribute.
 	 * 
 	 * @return the value associated with the current attribute
+	 *
+	 * @throws Exception
+	 *             if any sampling error occurs
 	 */
 	public Object sample() throws Exception {
 		try {
@@ -182,8 +190,8 @@ public class AttributeSample {
 	 * @param silence
 	 *            {@code true} to suppress exceptions printing to console output, {@code false} otherwise
 	 */
-	public boolean silence(boolean silence) {
-		return this.silence = silence;
+	public void silence(boolean silence) {
+		this.silence = silence;
 	}
 
 	/**

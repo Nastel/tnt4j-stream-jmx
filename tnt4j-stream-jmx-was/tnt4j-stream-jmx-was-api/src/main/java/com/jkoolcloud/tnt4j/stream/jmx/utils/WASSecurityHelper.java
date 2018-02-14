@@ -92,6 +92,8 @@ public class WASSecurityHelper {
 	 *
 	 * @param action
 	 *            privileged action to perform
+	 * @param <T>
+	 *            type of privileged action result
 	 * @return result the value returned by the {@link PrivilegedAction#run()} method
 	 * @throws WSSecurityException
 	 *             if WAS security is enabled and there is no subject provided
@@ -111,6 +113,8 @@ public class WASSecurityHelper {
 	 *
 	 * @param action
 	 *            privileged exception action to perform
+	 * @param <T>
+	 *            type of privileged exception action result
 	 * @return result the value returned by the {@link PrivilegedExceptionAction#run()} method
 	 * @throws WSSecurityException
 	 *             if WAS security is enabled and there is no subject provided

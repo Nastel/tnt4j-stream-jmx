@@ -29,6 +29,7 @@ public interface NestedHandler<V, K> {
 	 * 
 	 * @param listener
 	 *            instance return instance of another object
+	 * @return handler instance
 	 */
 	V addListener(K listener);
 
@@ -37,6 +38,7 @@ public interface NestedHandler<V, K> {
 	 * 
 	 * @param listener
 	 *            instance return instance of another object
+	 * @return handler instance
 	 */
 	V removeListener(K listener);
 }

@@ -39,6 +39,8 @@ public interface SamplerFactory {
 	/**
 	 * Create a default instance with default MBean server instance
 	 * {@link java.lang.management.ManagementFactory#getPlatformMBeanServer()}.
+	 *
+	 * @return new sampler instance
 	 * 
 	 * @see Sampler
 	 */
@@ -49,6 +51,8 @@ public interface SamplerFactory {
 	 * 
 	 * @param mServerConn
 	 *            MBean server connection instance
+	 * @return new sampler instance
+	 * 
 	 * @see Sampler
 	 */
 	Sampler newInstance(MBeanServerConnection mServerConn);

@@ -35,6 +35,7 @@ public interface SampleHandler extends ActivityListener, NestedHandler<SampleHan
 	 * 
 	 * @param cond
 	 *            user defined condition with {@link NoopAction}
+	 * @return this handler instance
 	 */
 	SampleHandler register(AttributeCondition cond);
 
@@ -45,6 +46,7 @@ public interface SampleHandler extends ActivityListener, NestedHandler<SampleHan
 	 *            user defined condition
 	 * @param action
 	 *            action to be triggered when condition evaluates to true
+	 * @return this handler instance
 	 */
 	SampleHandler register(AttributeCondition cond, AttributeAction action);
 
@@ -52,7 +54,6 @@ public interface SampleHandler extends ActivityListener, NestedHandler<SampleHan
 	 * Obtain sample context associated with the handler
 	 *
 	 * @return sample context associated with the handler
-	 * 
 	 */
 	SampleContext getContext();
 

@@ -17,8 +17,8 @@ package com.jkoolcloud.tnt4j.stream.jmx.conditions;
 
 /**
  * <p>
- * This class defines a simple numeric condition that supports =, !=, >, >=, <, <= operators for a given JMX object,
- * property.
+ * This class defines a simple numeric condition that supports =, !=, &gt;, &gt;=, &lt;, &lt;= operators for a given JMX
+ * object, property.
  * </p>
  * 
  * @see AttributeCondition
@@ -43,7 +43,7 @@ public class SimpleCondition implements AttributeCondition {
 	 * @param value
 	 *            numeric value to apply operator
 	 * @param op
-	 *            operator to apply ( =, !=, >, >=, <, <=)
+	 *            operator to apply ( =, !=, &gt;, &gt;=, &lt;, &lt;=)
 	 */
 	public SimpleCondition(String objName, String attrName, Number value, String op) {
 		this.objName = objName;

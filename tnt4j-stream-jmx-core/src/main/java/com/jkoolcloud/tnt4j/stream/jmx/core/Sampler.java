@@ -97,6 +97,8 @@ public interface Sampler extends NestedHandler<Sampler, SampleListener>, Runnabl
 	 *
 	 * @param period
 	 *            sampling time in milliseconds
+	 * @return this sampler instance
+	 *
 	 * @throws IOException
 	 *             if I/O exception occurs opening sampler
 	 * @throws IllegalStateException
@@ -111,6 +113,8 @@ public interface Sampler extends NestedHandler<Sampler, SampleListener>, Runnabl
 	 *            semicolon separated filter list
 	 * @param period
 	 *            sampling time in milliseconds
+	 * @return this sampler instance
+	 *
 	 * @throws IOException
 	 *             if I/O exception occurs opening sampler
 	 * @throws IllegalStateException
@@ -127,6 +131,8 @@ public interface Sampler extends NestedHandler<Sampler, SampleListener>, Runnabl
 	 *            semicolon separated exclude filter list
 	 * @param period
 	 *            sampling time in milliseconds
+	 * @return this sampler instance
+	 *
 	 * @throws IOException
 	 *             if I/O exception occurs opening sampler
 	 * @throws IllegalStateException
@@ -145,6 +151,8 @@ public interface Sampler extends NestedHandler<Sampler, SampleListener>, Runnabl
 	 *            sampling time
 	 * @param tUnit
 	 *            time units for sampling period
+	 * @return this sampler instance
+	 * 
 	 * @throws IOException
 	 *             if I/O exception occurs opening sampler
 	 * @throws IllegalStateException
@@ -165,6 +173,8 @@ public interface Sampler extends NestedHandler<Sampler, SampleListener>, Runnabl
 	 *            sampling time
 	 * @param tUnit
 	 *            time units for sampling period
+	 * @return this sampler instance
+	 * 
 	 * @throws IOException
 	 *             if I/O exception occurs opening sampler
 	 * @throws IllegalStateException
@@ -188,6 +198,8 @@ public interface Sampler extends NestedHandler<Sampler, SampleListener>, Runnabl
 	 *            time units for sampling period
 	 * @param sFactory
 	 *            sampler factory instance
+	 * @return this sampler instance
+	 * 
 	 * @throws IOException
 	 *             if I/O exception occurs opening sampler
 	 * @throws IllegalStateException
@@ -203,6 +215,8 @@ public interface Sampler extends NestedHandler<Sampler, SampleListener>, Runnabl
 	 *            user defined condition
 	 * @param action
 	 *            user defined action
+	 * @return this sampler instance
+	 * 
 	 * @throws IllegalStateException
 	 *             if setSchedule is not called first
 	 */

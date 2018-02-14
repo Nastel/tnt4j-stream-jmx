@@ -49,6 +49,7 @@ public interface Scheduler extends Runnable {
 	 * Open current scheduled activity instance.
 	 * 
 	 * @throws IOException
+	 *             if error opening scheduler
 	 */
 	void open() throws IOException;
 
