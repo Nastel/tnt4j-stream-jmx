@@ -950,8 +950,6 @@ Below is an example of TNT4J stream configuration writing collected JMX samples 
     #event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.FactPathValueFormatter
     ; If JMX attributes should be formatted as JMX object paths for IBM WAS and Liberty
     #event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.SLIFactPathValueFormatter
-    ; If formatter should serialize only simple types JMX attribute values. Rest are replaced by dummy value.
-    event.formatter.SerializeSimplesOnly: false
     ; Mapping of attribute key string symbol replacements
     #event.formatter.KeyReplacements: " "->"_" "\""->"'" "/"->"%"
     ; Mapping of attribute value string symbol replacements
@@ -1001,8 +999,6 @@ Below is an example of TNT4J stream configuration writing collected JMX samples 
     #event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.FactPathValueFormatter
     ; If JMX attributes should be formatted as JMX object paths for IBM WAS and Liberty
     #event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.SLIFactPathValueFormatter
-    ; If formatter should serialize only simple types JMX attribute values. Rest are replaced by dummy value.
-    event.formatter.SerializeSimplesOnly: false
     ; Mapping of attribute key string symbol replacements
     #event.formatter.KeyReplacements: " "->"_" "\""->"'" "/"->"%"
     ; Mapping of attribute value string symbol replacements

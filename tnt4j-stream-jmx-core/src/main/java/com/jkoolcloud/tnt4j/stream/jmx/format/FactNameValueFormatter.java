@@ -58,7 +58,6 @@ public class FactNameValueFormatter extends DefaultFormatter {
 
 	private static final String SNAP_NAME_PROP = "JMX_SNAP_NAME";
 
-	protected boolean serializeSimpleTypesOnly = false;
 	protected String uniqueSuffix = UNIQUE_SUFFIX;
 
 	protected Map<String, String> keyReplacements = new HashMap<String, String>();
@@ -286,19 +285,6 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	}
 
 	/**
-	 * Determine if a given value can be meaningfully serialized to string.
-	 *
-	 * @param value
-	 *            value to test for serialization
-	 * @return {@code true} if a given value can be serialized to string meaningfully, {@code false} - otherwise
-	 */
-	protected static boolean isSerializable(Object value) {
-		return value == null || value.getClass().isPrimitive() || value.getClass().isEnum() || value instanceof String
-				|| value instanceof Number || value instanceof Boolean || value instanceof Character;
-
-	}
-
-	/**
 	 * Makes decorated string representation of snapshot name.
 	 * <p>
 	 * Replaces {@value #EQ} to {@value #PATH_DELIM} and {@value #FIELD_SEP} to {@value #FS_REP}.
@@ -373,9 +359,6 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	/**
 	 * Makes decorated string representation of argument attribute value.
 	 * <p>
-	 * If property {@link #serializeSimpleTypesOnly} is set to {@code true} - validates if value can be represented as
-	 * simple type. If no, then actual value is replaced by dummy string {@code "<unsupported value type>"}.
-	 * <p>
 	 * Value representation string containing {@code "\n"} or {@code "\r"} symbols gets those replaced by escaped
 	 * representations {@code "\\n"} amd {@code "\\r"}.
 	 * <p>
@@ -390,15 +373,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	 * @see Utils#replace(String, Map)
 	 */
 	protected String getValueStr(Object value) {
-		String valStr;
-
-		if (serializeSimpleTypesOnly && !isSerializable(value)) {
-			valStr = value == null ? "<null>" : "<unsupported value type>";// : " + value.getClass() + ">";
-			// System.out.println("Unsupported value type=" + (value == null ? null : value.getClass()) + " value="
-			// + toString(value));
-		} else {
-			valStr = Utils.toString(value);
-		}
+		String valStr = Utils.toString(value);
 
 		return Utils.replace(valStr, valueReplacements);
 	}
@@ -406,8 +381,6 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	@Override
 	public void setConfiguration(Map<String, Object> settings) {
 		super.setConfiguration(settings);
-
-		serializeSimpleTypesOnly = Utils.getBoolean("SerializeSimplesOnly", settings, serializeSimpleTypesOnly);
 
 		String pValue = Utils.getString("KeyReplacements", settings, "");
 		if (StringUtils.isEmpty(pValue)) {
