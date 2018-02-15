@@ -84,7 +84,7 @@
                         <manifestEntries>
                             <Implementation-Vendor>${product.vendor}</Implementation-Vendor>
                             <Implementation-Title>${project.name}</Implementation-Title>
-                            <Implementation-Version>${project.version}</Implementation-Version>
+                            <Implementation-Version>${project.version}-${maven.build.timestamp}</Implementation-Version>
                         </manifestEntries>
                     </archive>
                 </configuration>
