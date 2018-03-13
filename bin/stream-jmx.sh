@@ -7,6 +7,17 @@ fi
 
 LIBPATH="$SCRIPTPATH/../*:$SCRIPTPATH/../lib/*"
 TNT4JOPTS="-Dorg.slf4j.simpleLogger.defaultLogLevel=debug -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -Dtnt4j.dump.on.vm.shutdown=true -Dtnt4j.dump.on.exception=true -Dtnt4j.dump.provider.default=true"
-TNT4JOPTS="$TNT4JOPTS -Dtnt4j.config=$SCRIPTPATH/../config/tnt4j.properties"
+
+# tnt4j file
+if [ -z "$TNT4J_PROPERTIES" ]; then
+  TNT4J_PROPERTIES="$SCRIPTPATH/../config/tnt4j.properties"
+fi
+TNT4JOPTS="$TNT4JOPTS -Dtnt4j.config=$TNT4J_PROPERTIES"
+
+# AppServer identifies source
+if [ -z "$TNT4J_APPSERVER" ]; then
+    TNT4J_APPSERVER="Default"
+fi
+TNT4JOPTS="$TNT4JOPTS -Dsjmx.serviceId=$TNT4J_APPSERVER"
 
 java $TNT4JOPTS -classpath "$LIBPATH" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent "*:*" "" 10000 60000
