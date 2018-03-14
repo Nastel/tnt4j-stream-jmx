@@ -1,6 +1,15 @@
 @echo off
 setlocal
 
+rem ---- parameters expected ----
+rem see readme for additional details
+rem
+rem 1. process id or service (required)
+rem 2. agent options for mbeans and interval (optional, if . set to default value)
+rem 3. service identifier for the process being monitored  (optional, if . set to default value)
+rem 4. program arguments (optional, if . set to default value)
+rem -----------------------------
+
 set RUNDIR=%~dp0
 set TOOLS_PATH=%JAVA_HOME%\lib\tools.jar
 
@@ -24,17 +33,25 @@ set TNT4JOPTS="-Dorg.slf4j.simpleLogger.defaultLogLevel=debug" "-Dcom.jkoolcloud
 IF ["%TNT4J_PROPERTIES%"] EQU [""] set TNT4J_PROPERTIES="%RUNDIR%..\config\tnt4j.properties"
 set TNT4JOPTS=%TNT4JOPTS% "-Dtnt4j.config=%TNT4J_PROPERTIES%"
 
-set AGENT_OPTIONS="*:*!!60000"
+rem ---- Agent sampler options ----
+set AGENT_OPTIONS=*:*!!60000
 if "%TNT4J_AGENT_OPTIONS%"=="" set TNT4J_AGENT_OPTIONS=%AGENT_OPTIONS%
-if NOT "%2"=="" set TNT4J_AGENT_OPTIONS=%2
+if not "%2"=="" if not "%2"=="." set TNT4J_AGENT_OPTIONS=%2
+rem -------------------------------
 
 rem ---- AppServer identifies source ----
-if "%TNT4J_APPSERVER%"=="" set TNT4J_APPSERVER="Default"
+if "%TNT4J_APPSERVER%"=="" set TNT4J_APPSERVER=Default
+if not "%3"=="" if not "%3"=="." set TNT4J_APPSERVER=%3
 set TNT4JOPTS="%TNT4JOPTS% -Dsjmx.serviceId=%TNT4J_APPSERVER%"
 rem -------------------------------------
 
+rem ---- Agent arguments ----
+if "%TNT4J_AGENT_ARGS%"=="" set TNT4J_AGENT_ARGS=-slp:compositeDelimiter=_
+if not "%4"=="" if not "%4"=="." set TNT4J_AGENT_ARGS=%4
+rem -------------------------
+
 @echo on
-java %TNT4JOPTS% -classpath "%LIBPATH%" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -vm:%1 -ao:%TNT4J_AGENT_OPTIONS%
+java %TNT4JOPTS% -classpath "%LIBPATH%" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -vm:%1 -ao:%TNT4J_AGENT_OPTIONS% %TNT4J_AGENT_ARGS%
 @echo off
 goto :eof
 

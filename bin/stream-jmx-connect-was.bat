@@ -1,6 +1,15 @@
 @echo off
 setlocal
 
+rem ---- parameters expected ----
+rem see readme for additional details
+rem
+rem 1. process id or service (required)
+rem 2. agent options for mbeans and interval (optional, if . set to default value)
+rem 3. service identifier for the process being monitored  (optional, if . set to default value)
+rem 4. program arguments (optional, if . set to default value)
+rem -----------------------------
+
 set RUNDIR=%~dp0
 
 rem ---- WAS environment configuration ----
@@ -25,14 +34,22 @@ rem ---- adding WAS specific JMX sampler options ----
 set TNT4JOPTS=%TNT4JOPTS% "-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.forceObjectName=true" "-Dcom.jkoolcloud.tnt4j.stream.jmx.sampler.factory=com.jkoolcloud.tnt4j.stream.jmx.impl.WASSamplerFactory"
 rem -------------------------------------------------
 
-set AGENT_OPTIONS="*:*!!60000"
+rem ---- Agent sampler options ----
+set AGENT_OPTIONS=*:*!!60000
 if "%TNT4J_AGENT_OPTIONS%"=="" set TNT4J_AGENT_OPTIONS=%AGENT_OPTIONS%
-if NOT "%2"=="" set TNT4J_AGENT_OPTIONS=%2
+if not "%2"=="" if not "%2"=="." set TNT4J_AGENT_OPTIONS=%2
+rem -------------------------------
 
 rem ---- AppServer identifies source ----
-if "%TNT4J_APPSERVER%"=="" set TNT4J_APPSERVER="Default"
+if "%TNT4J_APPSERVER%"=="" set TNT4J_APPSERVER=Default
+if not "%3"=="" if not "%3"=="." set TNT4J_APPSERVER=%3
 set TNT4JOPTS="%TNT4JOPTS% -Dsjmx.serviceId=%TNT4J_APPSERVER%"
 rem -------------------------------------
+
+rem ---- Agent arguments ----
+if "%TNT4J_AGENT_ARGS%"=="" set TNT4J_AGENT_ARGS=-slp:compositeDelimiter=_
+if not "%4"=="" if not "%4"=="." set TNT4J_AGENT_ARGS=%4
+rem -------------------------
 
 set CONN_OPTIONS=-connect -vm:service:jmx:iiop://localhost:2809/jndi/JMXConnector -cp:java.naming.provider.url=corbaname:iiop:localhost:2809
 rem --- Uncomment if WAS and IBM JVM requires connection authentication or getting naming related exceptions ---
@@ -42,5 +59,5 @@ rem ----------------------------------------------------------------------------
 
 @echo on
 rem --- using JAVA_HOME java and setting WAS specific options ---
-"%JAVA_HOME%\bin\java" %TNT4JOPTS% %MYCLIENTSAS% %MYCLIENTSSL% -classpath "%LIBPATH%" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent %CONN_OPTIONS% -ao:%TNT4J_AGENT_OPTIONS%
+"%JAVA_HOME%\bin\java" %TNT4JOPTS% %MYCLIENTSAS% %MYCLIENTSSL% -classpath "%LIBPATH%" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent %CONN_OPTIONS% -ao:%TNT4J_AGENT_OPTIONS% %TNT4J_AGENT_ARGS%
 rem -------------------------------------------------------------
