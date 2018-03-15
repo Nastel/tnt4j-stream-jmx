@@ -311,6 +311,14 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		return getSnapNameStr(objName.getCanonicalName());
 	}
 
+	private String getSnapNameStr(Object nameObj) {
+		if (nameObj instanceof ObjectName) {
+			return getSnapNameStr((ObjectName) nameObj);
+		}
+
+		return getSnapNameStr(String.valueOf(nameObj));
+	}
+
 	/**
 	 * Makes decorated string representation of {@link Snapshot} name and puts it as snapshot property
 	 * {@code 'JMX_SNAP_NAME'} for a later use.
@@ -324,12 +332,11 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	protected String getSnapName(Snapshot snap) {
 		Property pSnapName = snap.get(SNAP_NAME_PROP);
 		if (pSnapName == null) {
-			Property objName = Utils.getSnapPropertyIgnoreCase(snap, Utils.OBJ_NAME_PROP);
-			if (objName != null) {
-				pSnapName = new Property(SNAP_NAME_PROP, getSnapNameStr((ObjectName) objName.getValue()), true);
-			} else {
-				pSnapName = new Property(SNAP_NAME_PROP, getSnapNameStr(snap.getName()), true);
-			}
+			Property pObjName = Utils.getSnapPropertyIgnoreCase(snap, Utils.OBJ_NAME_PROP);
+			String snapNameStr = pObjName == null ? getSnapNameStr(snap.getName())
+					: getSnapNameStr(pObjName.getValue());
+			pSnapName = new Property(SNAP_NAME_PROP, snapNameStr, true);
+
 			snap.add(pSnapName);
 		}
 

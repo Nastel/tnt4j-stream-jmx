@@ -42,6 +42,10 @@ public class SLIFactPathValueFormatter extends FactPathValueFormatter {
 
 	@Override
 	protected String getObjNameStr(Map<?, ?> objNameProps) {
+		if (pathLevelAttrKeys == null) {
+			return super.getObjNameStr(objNameProps);
+		}
+
 		StringBuilder pathBuilder = new StringBuilder(256);
 		String pv;
 
