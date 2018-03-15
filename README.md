@@ -951,7 +951,7 @@ Below is an example of TNT4J stream configuration writing collected JMX samples 
     ; If JMX attributes should be formatted as JMX object paths for IBM WAS and Liberty
     #event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.SLIFactPathValueFormatter
     ; Mapping of attribute key string symbol replacements
-    #event.formatter.KeyReplacements: " "->"_" "\""->"'" "/"->"%"
+    #event.formatter.KeyReplacements: " "->"_" "\""->"'" "/"->"%" "="->"\\" ","->"!'" "\\\\"->"\\"
     ; Mapping of attribute value string symbol replacements
     #event.formatter.ValueReplacements: "\r"->"\\r" "\n"->"\\n" ";"->"|" ","->"|" "["->"{(" "]"->")}" "\""->"'"
     ; Definitions ObjectName attributes sets used when building path: ';' is level set delimiter and ',' is set attribute names delimiter
@@ -1000,7 +1000,7 @@ Below is an example of TNT4J stream configuration writing collected JMX samples 
     ; If JMX attributes should be formatted as JMX object paths for IBM WAS and Liberty
     #event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.SLIFactPathValueFormatter
     ; Mapping of attribute key string symbol replacements
-    #event.formatter.KeyReplacements: " "->"_" "\""->"'" "/"->"%"
+    #event.formatter.KeyReplacements: " "->"_" "\""->"'" "/"->"%" "="->"\\" ","->"!'" "\\\\"->"\\"
     ; Mapping of attribute value string symbol replacements
     #event.formatter.ValueReplacements: "\r"->"\\r" "\n"->"\\n" ";"->"|" ","->"|" "["->"{(" "]"->")}" "\""->"'"
     ; Definitions ObjectName attributes sets used when building path: ';' is level set delimiter and ',' is set attribute names delimiter

@@ -18,8 +18,6 @@ package com.jkoolcloud.tnt4j.stream.jmx.format;
 
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.jkoolcloud.tnt4j.utils.Utils;
 
 /**
@@ -30,9 +28,6 @@ import com.jkoolcloud.tnt4j.utils.Utils;
  */
 public class SLIFactPathValueFormatter extends FactPathValueFormatter {
 	private static final String[][] PATH_LEVEL_ATTR_KEYS = new String[][] { { "domain" }, { "type" }, { "name" } };
-
-	private String[] replaceable = new String[] { "\\\\", "#", "/" };
-	private String[] replacement = new String[] { PATH_DELIM, "\\", "\\" };
 
 	public SLIFactPathValueFormatter() {
 		super();
@@ -53,7 +48,7 @@ public class SLIFactPathValueFormatter extends FactPathValueFormatter {
 			for (String pKey : levelAttrKeys) {
 				pv = (String) objNameProps.remove(pKey);
 				if (!Utils.isEmpty(pv) && !"null".equals(pv)) {
-					pv = StringUtils.replaceEach(pv, replaceable, replacement);
+					pv = Utils.replace(pv, keyReplacements);
 					if (pv.startsWith(PATH_DELIM)) {
 						pv = pv.substring(1);
 					}
@@ -70,5 +65,29 @@ public class SLIFactPathValueFormatter extends FactPathValueFormatter {
 		}
 
 		return pathBuilder.toString();
+	}
+
+	/**
+	 * Initializes default set symbol replacements for a attribute keys.
+	 * <p>
+	 * Default keys string replacements mapping is:
+	 * <ul>
+	 * <li>{@code " "} to {@code "_"}</li>
+	 * <li>{@code "\""} to {@code "'"}</li>
+	 * <li>{@code "/"} to {@code "%"}</li>
+	 * <li>{@value #EQ} to {@value #PATH_DELIM}</li>
+	 * <li>{@value #FIELD_SEP} to {@value #FS_REP}</li>
+	 * <li>{@code "\\"} to {@value #PATH_DELIM}</li>
+	 * <li>{@code "#"} to {@code "\"}</li>
+	 * <li>{@code "/"} to {@code "\"}</li>
+	 * </ul>
+	 */
+	@Override
+	protected void initDefaultKeyReplacements() {
+		super.initDefaultKeyReplacements();
+
+		keyReplacements.put("\\\\", PATH_DELIM);
+		keyReplacements.put("#", "\\");
+		keyReplacements.put("/", "\\");
 	}
 }

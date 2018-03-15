@@ -53,9 +53,6 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	public static final String FS_REP = "!";
 	public static final String UNIQUE_SUFFIX = "_";
 
-	private String[] replaceable = new String[] { EQ, FIELD_SEP };
-	private String[] replacement = new String[] { PATH_DELIM, FS_REP };
-
 	private static final String SNAP_NAME_PROP = "JMX_SNAP_NAME";
 
 	protected String uniqueSuffix = UNIQUE_SUFFIX;
@@ -98,7 +95,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 
 	/**
 	 * Returns operation contained snapshots collection.
-	 * 
+	 *
 	 * @param op
 	 *            operation instance
 	 * @return collection of operation snapshots
@@ -176,7 +173,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 
 	/**
 	 * Makes string representation of source and appends it to provided string builder.
-	 * 
+	 *
 	 * @param nvString
 	 *            string builder instance to append
 	 * @param source
@@ -204,14 +201,12 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	 * @see Utils#replace(String, Map)
 	 */
 	protected String getSourceNameStr(String sourceName) {
-		// return replace(sourceName, FIELD_SEP, FS_REP);
-
 		return Utils.replace(sourceName, keyReplacements);
 	}
 
 	/**
 	 * Returns snapshot contained properties collection.
-	 * 
+	 *
 	 * @param snap
 	 *            snapshot instance
 	 * @return collection of snapshot properties
@@ -228,7 +223,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	 * In case snapshot properties have same key for "branch" and "leaf" nodes at same path level, than "leaf" node
 	 * property key value is appended by configuration defined (cfg. key {@code "DuplicateKeySuffix"}, default value
 	 * {@value #UNIQUE_SUFFIX}) suffix.
-	 * 
+	 *
 	 * @param nvString
 	 *            string builder instance to append
 	 * @param snap
@@ -287,14 +282,14 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	/**
 	 * Makes decorated string representation of snapshot name.
 	 * <p>
-	 * Replaces {@value #EQ} to {@value #PATH_DELIM} and {@value #FIELD_SEP} to {@value #FS_REP}.
+	 * Snapshot name string gets symbols replaced using ones defined in {@link #keyReplacements} map.
 	 * 
 	 * @param snapName
 	 *            snapshot name
 	 * @return decorated string representation of snapshot name
 	 */
 	protected String getSnapNameStr(String snapName) {
-		return StringUtils.replaceEach(snapName, replaceable, replacement);
+		return Utils.replace(snapName, keyReplacements);
 	}
 
 	/**
@@ -333,7 +328,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		Property pSnapName = snap.get(SNAP_NAME_PROP);
 		if (pSnapName == null) {
 			Property pObjName = Utils.getSnapPropertyIgnoreCase(snap, Utils.OBJ_NAME_OBJ_PROP);
-			String snapNameStr = pObjName == null ? getSnapNameStr(snap.getName())
+			String snapNameStr = isEmpty(pObjName) ? getSnapNameStr(snap.getName())
 					: getSnapNameStr(pObjName.getValue());
 			pSnapName = new Property(SNAP_NAME_PROP, snapNameStr, true);
 
@@ -343,11 +338,15 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		return (String) pSnapName.getValue();
 	}
 
+	private boolean isEmpty(Property p) {
+		return p == null || p.getValue() == null;
+	}
+
 	/**
 	 * Makes decorated string representation of argument attribute key.
 	 * <p>
 	 * Key representation string gets symbols replaced using ones defined in {@link #keyReplacements} map.
-	 * 
+	 *
 	 * @param sName
 	 *            snapshot name
 	 * @param pKey
@@ -414,12 +413,16 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	 * <li>{@code " "} to {@code "_"}</li>
 	 * <li>{@code "\""} to {@code "'"}</li>
 	 * <li>{@code "/"} to {@code "%"}</li>
+	 * <li>{@value #EQ} to {@value #PATH_DELIM}</li>
+	 * <li>{@value #FIELD_SEP} to {@value #FS_REP}</li>
 	 * </ul>
 	 */
 	protected void initDefaultKeyReplacements() {
 		keyReplacements.put(" ", "_");
 		keyReplacements.put("\"", "'");
 		keyReplacements.put("/", "%");
+		keyReplacements.put(EQ, PATH_DELIM);
+		keyReplacements.put(FIELD_SEP, FS_REP);
 	}
 
 	/**
