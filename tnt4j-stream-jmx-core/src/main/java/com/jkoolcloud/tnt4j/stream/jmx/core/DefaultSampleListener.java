@@ -176,6 +176,7 @@ public class DefaultSampleListener implements SampleListener {
 	}
 
 	private void forceObjectNameAttribute(ObjectName name, Snapshot snapshot) {
+		snapshot.add(Utils.OBJ_NAME_OBJ_PROP, name, true);
 		Property objNameProp = Utils.getSnapPropertyIgnoreCase(snapshot, Utils.OBJ_NAME_PROP);
 
 		if (objNameProp == null) {
@@ -196,11 +197,18 @@ public class DefaultSampleListener implements SampleListener {
 			for (Map.Entry<String, String> objNameProp : objNameProps.entrySet()) {
 				Property p = snapshot.get(objNameProp.getKey());
 				// p = Utils.getSnapPropertyIgnoreCase(snapshot, objNameProp.getKey());
+				if (p != null && isSameValue(p.getValue(), objNameProp.getValue())) {
+					continue;
+				}
 				snapshot.add(objNameProp.getKey() + (p == null ? "" : "_"), objNameProp.getValue());
 			}
 		} finally {
 			buildLock.unlock();
 		}
+	}
+
+	private static boolean isSameValue(Object v1, Object v2) {
+		return Utils.equal(v1, v2) || String.valueOf(v1).equals(String.valueOf(v2));
 	}
 
 	@Override

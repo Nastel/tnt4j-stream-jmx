@@ -34,7 +34,15 @@ import com.jkoolcloud.tnt4j.core.Snapshot;
  * @version $Revision: 1 $
  */
 public class Utils extends com.jkoolcloud.tnt4j.utils.Utils {
+	/**
+	 * Definition of MBeans provided property {@value}.
+	 */
 	public static final String OBJ_NAME_PROP = "ObjectName";
+	/**
+	 * Definition of stream-jmx internally used snapshot property to have referenced MBean
+	 * {@link javax.management.ObjectName} value.
+	 */
+	public static final String OBJ_NAME_OBJ_PROP = "ObjectNameObjProp";
 
 	/**
 	 * Loads properties from resource with given name.

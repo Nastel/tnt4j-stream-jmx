@@ -332,7 +332,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	protected String getSnapName(Snapshot snap) {
 		Property pSnapName = snap.get(SNAP_NAME_PROP);
 		if (pSnapName == null) {
-			Property pObjName = Utils.getSnapPropertyIgnoreCase(snap, Utils.OBJ_NAME_PROP);
+			Property pObjName = Utils.getSnapPropertyIgnoreCase(snap, Utils.OBJ_NAME_OBJ_PROP);
 			String snapNameStr = pObjName == null ? getSnapNameStr(snap.getName())
 					: getSnapNameStr(pObjName.getValue());
 			pSnapName = new Property(SNAP_NAME_PROP, snapNameStr, true);
