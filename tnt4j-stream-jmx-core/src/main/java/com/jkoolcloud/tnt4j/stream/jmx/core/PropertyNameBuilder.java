@@ -85,7 +85,10 @@ public class PropertyNameBuilder {
 	 */
 	public PropertyNameBuilder append(String str) {
 		marks.push(sb.length());
-		sb.append(delimiter).append(checkNull(str));
+		if (!isEmpty()) {
+			sb.append(delimiter);
+		}
+		sb.append(checkNull(str));
 		return this;
 	}
 
@@ -112,6 +115,15 @@ public class PropertyNameBuilder {
 		popLevel();
 
 		return str;
+	}
+
+	/**
+	 * Checks whether internal {@link StringBuilder} contained property name is empty.
+	 *
+	 * @return {@code true} if property name is empty, {@code false} - otherwise
+	 */
+	public boolean isEmpty() {
+		return sb.length() == 0;
 	}
 
 	@Override

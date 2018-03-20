@@ -16,10 +16,13 @@
 package com.jkoolcloud.tnt4j.stream.jmx.impl;
 
 import java.io.PrintStream;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.management.MBeanAttributeInfo;
 import javax.management.j2ee.statistics.*;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.jkoolcloud.tnt4j.core.PropertySnapshot;
 import com.jkoolcloud.tnt4j.stream.jmx.core.DefaultSampleListener;
@@ -53,16 +56,99 @@ public class J2EESampleListener extends DefaultSampleListener {
 			PropertyNameBuilder propName, Object value) {
 		if (value instanceof Stats) {
 			Stats stats = (Stats) value;
-			Statistic[] statistics = stats.getStatistics();
-			for (Statistic stat : statistics) {
-				processAttrValue(snapshot, mbAttrInfo, propName.append(stat.getName()), stat);
-				propName.popLevel();
+			Map<String, Statistic> statisticMap = new HashMap<String, Statistic>();
+			collectStats(stats, statisticMap, createPropName(""));
+			if (statisticMap.isEmpty()) {
+				processEmptyStats(stats, snapshot, propName);
+			} else {
+				for (Map.Entry<String, Statistic> sme : statisticMap.entrySet()) {
+					processAttrValue(snapshot, mbAttrInfo, propName.append(sme.getKey()), sme.getValue());
+					propName.popLevel();
+				}
 			}
 
 			return snapshot;
 		} else {
 			return super.processAttrValue(snapshot, mbAttrInfo, propName, value);
 		}
+	}
+
+	private void collectStats(Stats stats, Map<String, Statistic> statisticMap, PropertyNameBuilder statName) {
+		String tmpStatName = statName.toString();
+
+		getStatsName(stats, statName);
+
+		if (stats instanceof JCAStats) {
+			JCAStats jcaStats = (JCAStats) stats;
+			collectStats(jcaStats.getConnections(), statisticMap, statName);
+			collectStats(jcaStats.getConnectionPools(), statisticMap, statName);
+		}
+		if (stats instanceof JMSSessionStats) {
+			JMSSessionStats jmsSessionStats = (JMSSessionStats) stats;
+
+			collectStats(jmsSessionStats.getProducers(), statisticMap, statName);
+			collectStats(jmsSessionStats.getConsumers(), statisticMap, statName);
+		}
+		if (stats instanceof JDBCStats) {
+			JDBCStats jdbcStats = (JDBCStats) stats;
+			collectStats(jdbcStats.getConnections(), statisticMap, statName);
+			collectStats(jdbcStats.getConnectionPools(), statisticMap, statName);
+		}
+		if (stats instanceof JMSConnectionStats) {
+			JMSConnectionStats jmsConnectionStats = (JMSConnectionStats) stats;
+			collectStats(jmsConnectionStats.getSessions(), statisticMap, statName);
+		}
+		if (stats instanceof JMSStats) {
+			JMSStats jmsStats = (JMSStats) stats;
+			collectStats(jmsStats.getConnections(), statisticMap, statName);
+		}
+
+		Statistic[] statistics = stats.getStatistics();
+		for (Statistic statistic : statistics) {
+			collectStatistic(statistic, statisticMap, statName);
+		}
+
+		statName.reset(tmpStatName);
+	}
+
+	private void collectStats(Stats[] stats, Map<String, Statistic> statisticMap, PropertyNameBuilder statName) {
+		for (int i = 0; i < stats.length; i++) {
+			collectStats(stats[i], statisticMap, statName.append(String.valueOf(i)));
+		}
+	}
+
+	private static void collectStatistic(Statistic statistic, Map<String, Statistic> statisticMap,
+			PropertyNameBuilder statName) {
+		statisticMap.put(statName.append(statistic.getName()).propString(), statistic);
+	}
+
+	protected void getStatsName(Stats stats, PropertyNameBuilder statName) {
+		if (stats instanceof JMSProducerStats) {
+			statName.popLevel();
+			statName.append(((JMSProducerStats) stats).getDestination());
+		}
+		if (stats instanceof JMSConsumerStats) {
+			statName.popLevel();
+			statName.append(((JMSConsumerStats) stats).getOrigin());
+		}
+		if (stats instanceof JCAConnectionStats) {
+			JCAConnectionStats jcaConnectionStats = (JCAConnectionStats) stats;
+			if (StringUtils.isNotEmpty(jcaConnectionStats.getConnectionFactory())) {
+				statName.popLevel();
+				statName.append(jcaConnectionStats.getConnectionFactory());
+			} else if (StringUtils.isNotEmpty(jcaConnectionStats.getManagedConnectionFactory())) {
+				statName.popLevel();
+				statName.append(jcaConnectionStats.getManagedConnectionFactory());
+			}
+		}
+		if (stats instanceof JDBCConnectionStats) {
+			statName.popLevel();
+			statName.append(((JDBCConnectionStats) stats).getJdbcDataSource());
+		}
+	}
+
+	protected void processEmptyStats(Stats stats, PropertySnapshot snapshot, PropertyNameBuilder propName) {
+		snapshot.add(propName.propString(), stats.toString());
 	}
 
 	private void processAttrValue(PropertySnapshot snapshot, MBeanAttributeInfo mbAttrInfo,
@@ -75,6 +161,7 @@ public class J2EESampleListener extends DefaultSampleListener {
 		processAttrValue(snapshot, mbAttrInfo, propName.append("Description"), stat.getDescription());
 		processAttrValue(snapshot, mbAttrInfo, propName.append("LastSampleTime"), stat.getLastSampleTime());
 		processAttrValue(snapshot, mbAttrInfo, propName.append("StartTime"), stat.getStartTime());
+		processAttrValue(snapshot, mbAttrInfo, propName.append("Unit"), stat.getUnit());
 
 		if (stat instanceof CountStatistic) {
 			CountStatistic cs = (CountStatistic) stat;
@@ -98,7 +185,5 @@ public class J2EESampleListener extends DefaultSampleListener {
 			processAttrValue(snapshot, mbAttrInfo, propName.append("MinTime"), ts.getMinTime());
 			processAttrValue(snapshot, mbAttrInfo, propName.append("TotalTime"), ts.getTotalTime());
 		}
-
-		processAttrValue(snapshot, mbAttrInfo, propName.append("Unit"), stat.getUnit());
 	}
 }

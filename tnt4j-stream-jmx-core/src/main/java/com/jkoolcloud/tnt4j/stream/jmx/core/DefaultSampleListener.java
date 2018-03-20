@@ -344,21 +344,34 @@ public class DefaultSampleListener implements SampleListener {
 	}
 
 	/**
-	 * Initializes property name builder with provided property name string.
+	 * Initializes (creates or resets) property name builder with provided property name string.
 	 *
 	 * @param propName
 	 *            property name string
 	 * @return property name builder instance
+	 *
+	 * @see #createPropName(String)
 	 */
 	protected PropertyNameBuilder initPropName(String propName) {
 		if (pnb == null) {
-			pnb = StringUtils.isNotEmpty(compositeDelimiter) ? new PropertyNameBuilder(propName, compositeDelimiter)
-					: new PropertyNameBuilder(propName);
+			pnb = createPropName(propName);
 		} else {
 			pnb.reset(propName);
 		}
 
 		return pnb;
+	}
+
+	/**
+	 * Creates instance of property name builder with provided property name string.
+	 *
+	 * @param propName
+	 *            property name string
+	 * @return property name builder instance
+	 */
+	protected PropertyNameBuilder createPropName(String propName) {
+		return StringUtils.isNotEmpty(compositeDelimiter) ? new PropertyNameBuilder(propName, compositeDelimiter)
+				: new PropertyNameBuilder(propName);
 	}
 
 	/**

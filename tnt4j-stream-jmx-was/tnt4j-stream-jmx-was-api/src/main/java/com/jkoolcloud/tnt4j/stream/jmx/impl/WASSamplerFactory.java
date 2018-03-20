@@ -15,9 +15,13 @@
  */
 package com.jkoolcloud.tnt4j.stream.jmx.impl;
 
+import java.io.PrintStream;
+import java.util.Map;
+
 import javax.management.MBeanServerConnection;
 
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.SampleHandler;
+import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
 import com.jkoolcloud.tnt4j.stream.jmx.scheduler.WASSampleHandlerImpl;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.WASSecurityHelper;
@@ -32,6 +36,7 @@ import com.jkoolcloud.tnt4j.stream.jmx.utils.WASSecurityHelper;
  * 
  * @see Sampler
  * @see WASJmxSampler
+ * @see WASSampleListener
  */
 public class WASSamplerFactory extends J2EESamplerFactory {
 
@@ -51,6 +56,11 @@ public class WASSamplerFactory extends J2EESamplerFactory {
 	@Override
 	public String defaultEventFormatterClassName() {
 		return "com.jkoolcloud.tnt4j.stream.jmx.format.SLIFactPathValueFormatter";
+	}
+
+	@Override
+	public SampleListener newListener(PrintStream pStream, Map<String, ?> properties) {
+		return new WASSampleListener(pStream, properties);
 	}
 
 	@Override
