@@ -50,16 +50,15 @@ public class WASSampleListener extends J2EESampleListener {
 	}
 
 	@Override
-	protected void getStatsName(Stats stats, PropertyNameBuilder statName) {
+	protected String getStatsName(Stats stats) {
 		if (stats instanceof StatsImpl) {
 			StatsImpl wsStatsImpl = (StatsImpl) stats;
 			WSStats wsStats = wsStatsImpl.getWSImpl();
 
-			statName.popLevel();
-			statName.append(wsStats.getName());
-		} else {
-			super.getStatsName(stats, statName);
+			return wsStats.getName();
 		}
+
+		return super.getStatsName(stats);
 	}
 
 	@Override

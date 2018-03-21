@@ -16,7 +16,6 @@
 package com.jkoolcloud.tnt4j.stream.jmx.impl;
 
 import java.io.PrintStream;
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.management.MBeanAttributeInfo;
@@ -56,16 +55,7 @@ public class J2EESampleListener extends DefaultSampleListener {
 			PropertyNameBuilder propName, Object value) {
 		if (value instanceof Stats) {
 			Stats stats = (Stats) value;
-			Map<String, Statistic> statisticMap = new HashMap<String, Statistic>();
-			collectStats(stats, statisticMap, createPropName(""));
-			if (statisticMap.isEmpty()) {
-				processEmptyStats(stats, snapshot, propName);
-			} else {
-				for (Map.Entry<String, Statistic> sme : statisticMap.entrySet()) {
-					processAttrValue(snapshot, mbAttrInfo, propName.append(sme.getKey()), sme.getValue());
-					propName.popLevel();
-				}
-			}
+			collectStats(stats, snapshot, mbAttrInfo, propName);
 
 			return snapshot;
 		} else {
@@ -73,78 +63,87 @@ public class J2EESampleListener extends DefaultSampleListener {
 		}
 	}
 
-	private void collectStats(Stats stats, Map<String, Statistic> statisticMap, PropertyNameBuilder statName) {
-		String tmpStatName = statName.toString();
+	private void collectStats(Stats stats, PropertySnapshot snapshot, MBeanAttributeInfo mbAttrInfo,
+			PropertyNameBuilder statName) {
+		String initialStatName = statName.toString();
+		int initialPropsCount = snapshot.size();
 
-		getStatsName(stats, statName);
+		// getStatsName(stats, statName);
 
 		if (stats instanceof JCAStats) {
 			JCAStats jcaStats = (JCAStats) stats;
-			collectStats(jcaStats.getConnections(), statisticMap, statName);
-			collectStats(jcaStats.getConnectionPools(), statisticMap, statName);
+			collectStats(jcaStats.getConnections(), snapshot, mbAttrInfo, statName);
+			collectStats(jcaStats.getConnectionPools(), snapshot, mbAttrInfo, statName);
 		}
 		if (stats instanceof JMSSessionStats) {
 			JMSSessionStats jmsSessionStats = (JMSSessionStats) stats;
 
-			collectStats(jmsSessionStats.getProducers(), statisticMap, statName);
-			collectStats(jmsSessionStats.getConsumers(), statisticMap, statName);
+			collectStats(jmsSessionStats.getProducers(), snapshot, mbAttrInfo, statName);
+			collectStats(jmsSessionStats.getConsumers(), snapshot, mbAttrInfo, statName);
 		}
 		if (stats instanceof JDBCStats) {
 			JDBCStats jdbcStats = (JDBCStats) stats;
-			collectStats(jdbcStats.getConnections(), statisticMap, statName);
-			collectStats(jdbcStats.getConnectionPools(), statisticMap, statName);
+			collectStats(jdbcStats.getConnections(), snapshot, mbAttrInfo, statName);
+			collectStats(jdbcStats.getConnectionPools(), snapshot, mbAttrInfo, statName);
 		}
 		if (stats instanceof JMSConnectionStats) {
 			JMSConnectionStats jmsConnectionStats = (JMSConnectionStats) stats;
-			collectStats(jmsConnectionStats.getSessions(), statisticMap, statName);
+			collectStats(jmsConnectionStats.getSessions(), snapshot, mbAttrInfo, statName);
 		}
 		if (stats instanceof JMSStats) {
 			JMSStats jmsStats = (JMSStats) stats;
-			collectStats(jmsStats.getConnections(), statisticMap, statName);
+			collectStats(jmsStats.getConnections(), snapshot, mbAttrInfo, statName);
 		}
 
 		Statistic[] statistics = stats.getStatistics();
 		for (Statistic statistic : statistics) {
-			collectStatistic(statistic, statisticMap, statName);
+			collectStatistic(statistic, snapshot, mbAttrInfo, statName);
 		}
 
-		statName.reset(tmpStatName);
-	}
-
-	private void collectStats(Stats[] stats, Map<String, Statistic> statisticMap, PropertyNameBuilder statName) {
-		for (int i = 0; i < stats.length; i++) {
-			collectStats(stats[i], statisticMap, statName.append(String.valueOf(i)));
+		if (snapshot.size() == initialPropsCount) {
+			processEmptyStats(stats, snapshot, statName);
 		}
+
+		statName.reset(initialStatName);
 	}
 
-	private static void collectStatistic(Statistic statistic, Map<String, Statistic> statisticMap,
+	private void collectStats(Stats[] stats, PropertySnapshot snapshot, MBeanAttributeInfo mbAttrInfo,
 			PropertyNameBuilder statName) {
-		statisticMap.put(statName.append(statistic.getName()).propString(), statistic);
+		for (int i = 0; i < stats.length; i++) {
+			String sName = getStatsName(stats[i]);
+			statName.append(StringUtils.isEmpty(sName) ? String.valueOf(i) : sName);
+			collectStats(stats[i], snapshot, mbAttrInfo, statName);
+		}
 	}
 
-	protected void getStatsName(Stats stats, PropertyNameBuilder statName) {
+	private void collectStatistic(Statistic statistic, PropertySnapshot snapshot, MBeanAttributeInfo mbAttrInfo,
+			PropertyNameBuilder statName) {
+		processAttrValue(snapshot, mbAttrInfo, statName.append(statistic.getName()), statistic);
+		statName.popLevel();
+	}
+
+	protected String getStatsName(Stats stats) {
+		String statsName = null;
+
 		if (stats instanceof JMSProducerStats) {
-			statName.popLevel();
-			statName.append(((JMSProducerStats) stats).getDestination());
+			statsName = ((JMSProducerStats) stats).getDestination();
 		}
 		if (stats instanceof JMSConsumerStats) {
-			statName.popLevel();
-			statName.append(((JMSConsumerStats) stats).getOrigin());
+			statsName = ((JMSConsumerStats) stats).getOrigin();
 		}
 		if (stats instanceof JCAConnectionStats) {
 			JCAConnectionStats jcaConnectionStats = (JCAConnectionStats) stats;
 			if (StringUtils.isNotEmpty(jcaConnectionStats.getConnectionFactory())) {
-				statName.popLevel();
-				statName.append(jcaConnectionStats.getConnectionFactory());
+				statsName = jcaConnectionStats.getConnectionFactory();
 			} else if (StringUtils.isNotEmpty(jcaConnectionStats.getManagedConnectionFactory())) {
-				statName.popLevel();
-				statName.append(jcaConnectionStats.getManagedConnectionFactory());
+				statsName = jcaConnectionStats.getManagedConnectionFactory();
 			}
 		}
 		if (stats instanceof JDBCConnectionStats) {
-			statName.popLevel();
-			statName.append(((JDBCConnectionStats) stats).getJdbcDataSource());
+			statsName = ((JDBCConnectionStats) stats).getJdbcDataSource();
 		}
+
+		return statsName;
 	}
 
 	protected void processEmptyStats(Stats stats, PropertySnapshot snapshot, PropertyNameBuilder propName) {
