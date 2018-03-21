@@ -53,6 +53,9 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	public static final String FS_REP = "!";
 	public static final String UNIQUE_SUFFIX = "_";
 
+	private static final String SELF_SNAP_NAME = "Self";
+	private static final String SELF_SNAP_ID = SELF_SNAP_NAME + "@" + PropertySnapshot.CATEGORY_DEFAULT;
+
 	private static final String SNAP_NAME_PROP = "JMX_SNAP_NAME";
 
 	protected String uniqueSuffix = UNIQUE_SUFFIX;
@@ -75,15 +78,17 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		nvString.append("OBJ:Streams");
 		toString(nvString, event.getSource()).append(event.getName()).append("\\Events").append(FIELD_SEP);
 
-		Snapshot selfSnapshot = getSelfSnapshot(event.getOperation());
-		if (event.getTag() != null) {
-			Set<String> tags = event.getTag();
-			if (!tags.isEmpty()) {
-				selfSnapshot.add("tag", tags);
+		if (event.getOperation().getSnapshot(SELF_SNAP_ID) == null) {
+			Snapshot selfSnapshot = getSelfSnapshot(event.getOperation());
+			if (event.getTag() != null) {
+				Set<String> tags = event.getTag();
+				if (!tags.isEmpty()) {
+					selfSnapshot.add("tag", tags);
+				}
 			}
-		}
 
-		event.getOperation().addSnapshot(selfSnapshot);
+			event.getOperation().addSnapshot(selfSnapshot);
+		}
 
 		Collection<Snapshot> sList = getSnapshots(event.getOperation());
 		for (Snapshot snap : sList) {
@@ -111,10 +116,12 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		nvString.append("OBJ:Streams");
 		toString(nvString, activity.getSource()).append("\\Activities").append(FIELD_SEP);
 
-		Snapshot selfSnapshot = getSelfSnapshot(activity);
-		selfSnapshot.add("id.count", activity.getIdCount());
+		if (activity.getSnapshot(SELF_SNAP_ID) == null) {
+			Snapshot selfSnapshot = getSelfSnapshot(activity);
+			selfSnapshot.add("id.count", activity.getIdCount());
 
-		activity.addSnapshot(selfSnapshot);
+			activity.addSnapshot(selfSnapshot);
+		}
 
 		Collection<Snapshot> sList = getSnapshots(activity);
 		for (Snapshot snap : sList) {
@@ -125,7 +132,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	}
 
 	private Snapshot getSelfSnapshot(Operation op) {
-		Snapshot selfSnapshot = new PropertySnapshot("Self");
+		Snapshot selfSnapshot = new PropertySnapshot(SELF_SNAP_NAME);
 
 		if (op.getCorrelator() != null) {
 			Set<String> cids = op.getCorrelator();
