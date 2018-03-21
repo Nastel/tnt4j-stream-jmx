@@ -1258,13 +1258,13 @@ Download the above libraries and place into the `tnt4j-stream-jmx/tnt4j-stream-j
 
 Additionally alter system executables `bin/stream-jmx*.bat` or `bin/stream-jmx*.sh` by extending environment variable `LIBPATH` value:
 ```cmd
-set WAS_HOME="c:\IBM\WebSphere\AppServer"
-set WAS_PATH="%WAS_HOME%\runtimes\*"
-set LIBPATH="%RUNDIR%..\*;%RUNDIR%..\lib\*;%TOOLS_PATH%;%WAS_PATH%"
+set WAS_HOME=C:\IBM\WebSphere\AppServer
+set WAS_PATH=%WAS_HOME%\runtimes\*;%WAS_HOME%\lib\webadmin\management.jar;%WAS_HOME%\plugins\com.ibm.ws.runtime.jar
+set LIBPATH=%RUNDIR%..\*;%RUNDIR%..\lib\*;%TOOLS_PATH%;%WAS_PATH%
 ```
 ```bash
-WAS_HOME=/opt/IBM/WebSphere/AppServer
-WAS_PATH="$WAS_HOME/runtimes/*"
+WAS_HOME="/opt/IBM/WebSphere/AppServer"
+WAS_PATH="$WAS_HOME/runtimes/*:$WAS_HOME/lib/webadmin/management.jar:$WAS_HOME/plugins/com.ibm.ws.runtime.jar"
 LIBPATH="$SCRIPTPATH/../*:$SCRIPTPATH/../lib/*:$TOOLS_PATH:$WAS_PATH"
 ```
 
