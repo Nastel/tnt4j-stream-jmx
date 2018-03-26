@@ -75,9 +75,9 @@ public class SLIFactPathValueFormatter extends FactPathValueFormatter {
 	 * <li>{@code " "} to {@code "_"}</li>
 	 * <li>{@code "\""} to {@code "'"}</li>
 	 * <li>{@code "/"} to {@code "%"}</li>
-	 * <li>{@value #EQ} to {@value #PATH_DELIM}</li>
-	 * <li>{@value #FIELD_SEP} to {@value #FS_REP}</li>
-	 * <li>{@code "\\"} to {@value #PATH_DELIM}</li>
+	 * <li>{@code "="} to {@code "\"}</li>
+	 * <li>{@code ","} to {@code "!"}</li>
+	 * <li>{@code "\\"} to {@code "\"}</li>
 	 * <li>{@code "#"} to {@code "\"}</li>
 	 * <li>{@code "/"} to {@code "\"}</li>
 	 * </ul>
@@ -87,7 +87,7 @@ public class SLIFactPathValueFormatter extends FactPathValueFormatter {
 		super.initDefaultKeyReplacements();
 
 		keyReplacements.put("\\\\", PATH_DELIM);
-		keyReplacements.put("#", "\\");
-		keyReplacements.put("/", "\\");
+		keyReplacements.put("#", PATH_DELIM);
+		keyReplacements.put("/", PATH_DELIM);
 	}
 }
