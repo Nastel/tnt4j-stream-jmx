@@ -43,7 +43,7 @@ rem -------------------------------
 rem ---- AppServer identifies source ----
 if "%TNT4J_APPSERVER%"=="" set TNT4J_APPSERVER=Default
 if not "%3"=="" if not "%3"=="." set TNT4J_APPSERVER=%3
-set TNT4JOPTS="%TNT4JOPTS% -Dsjmx.serviceId=%TNT4J_APPSERVER%"
+set TNT4JOPTS=%TNT4JOPTS% "-Dsjmx.serviceId=%TNT4J_APPSERVER%"
 rem -------------------------------------
 
 rem ---- Agent arguments ----

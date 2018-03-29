@@ -16,7 +16,7 @@ set TNT4JOPTS=%TNT4JOPTS% "-Dtnt4j.config=%TNT4J_PROPERTIES%"
 rem ---- AppServer identifies source ----
 if "%TNT4J_APPSERVER%"=="" set TNT4J_APPSERVER=Default
 if not "%1"=="" if not "%1"=="." set TNT4J_APPSERVER=%1
-set TNT4JOPTS="%TNT4JOPTS% -Dsjmx.serviceId=%TNT4J_APPSERVER%"
+set TNT4JOPTS=%TNT4JOPTS% "-Dsjmx.serviceId=%TNT4J_APPSERVER%"
 rem -------------------------------------
 
 @echo on
