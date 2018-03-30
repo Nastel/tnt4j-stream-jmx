@@ -401,7 +401,7 @@ There is a simple Liberty `server.xml` configuration required to run Stream-JMX 
         <feature>restConnector-1.0</feature>		
         <feature>localConnector-1.0</feature>
         <feature>monitor-1.0</feature>
-        <feature>javaee-7.0</feature>		
+        <feature>j2eeManagement-1.1</feature>
     </featureManager>
 
     <!-- To access this server from a remote client add a host attribute to the following element, e.g. host="*" -->
