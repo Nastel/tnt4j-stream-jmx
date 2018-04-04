@@ -131,12 +131,13 @@
             <version>${project.version}</version>
         </dependency>
 
-        <!--<dependency>-->
-        <!--<groupId>javax</groupId>-->
-        <!--<artifactId>javaee-api</artifactId>-->
-        <!--<version>6.0</version>-->
-        <!--<scope>provided</scope>-->
-        <!--</dependency>-->
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-api</artifactId>
+            <version>6.0</version>
+            <scope>provided</scope>
+        </dependency>
+
         <dependency>
             <groupId>com.ibm.ws</groupId>
             <artifactId>admin.client</artifactId>
@@ -157,13 +158,6 @@
             <version>8.5.0</version>
             <scope>system</scope>
             <systemPath>${pom.basedir}/lib/was/com.ibm.ws.orb_8.5.0.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>com.ibm.ws</groupId>
-            <artifactId>management</artifactId>
-            <version>8.5.0</version>
-            <scope>system</scope>
-            <systemPath>${pom.basedir}/lib/was/management.jar</systemPath>
         </dependency>
     </dependencies>
 
