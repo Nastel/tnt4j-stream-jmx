@@ -125,9 +125,7 @@ public class PlatformJmxSampler implements Sampler {
 
 	@Override
 	public synchronized void cancel() {
-		if (sampler == null) {
-			throw new IllegalStateException("no schedule set: call setSchedule() first");
-		} else {
+		if (sampler != null) {
 			sampler.close();
 			sampler = null;
 		}

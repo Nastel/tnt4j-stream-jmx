@@ -22,6 +22,7 @@ import javax.management.MBeanServerConnection;
 import org.apache.commons.lang3.StringUtils;
 
 import com.jkoolcloud.tnt4j.ActivityScheduler;
+import com.jkoolcloud.tnt4j.TrackingLogger;
 import com.jkoolcloud.tnt4j.config.DefaultConfigFactory;
 import com.jkoolcloud.tnt4j.config.TrackerConfig;
 import com.jkoolcloud.tnt4j.config.TrackerConfigStore;
@@ -237,7 +238,7 @@ public class SchedulerImpl extends ActivityScheduler implements Scheduler {
 	public void close() {
 		super.close();
 
-		// TrackingLogger.shutdown(getLogger());
+		TrackingLogger.shutdown(getLogger());
 		listener.cleanup();
 	}
 }
