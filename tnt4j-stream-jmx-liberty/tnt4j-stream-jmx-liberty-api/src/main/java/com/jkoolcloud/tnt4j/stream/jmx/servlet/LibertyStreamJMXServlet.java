@@ -51,7 +51,11 @@ public class LibertyStreamJMXServlet extends StreamJMXServlet {
 		/**
 		 * TNT4J configuration file used to stream Liberty JMX samples.
 		 */
-		TNT4J_CONFIG(TrackerConfigStore.TNT4J_PROPERTIES_KEY, "file:./tnt4j_liberty.properties", READ_ONLY, SYSTEM, LOCAL);
+		TNT4J_CONFIG(TrackerConfigStore.TNT4J_PROPERTIES_KEY, "file:./tnt4j_liberty.properties", READ_ONLY, SYSTEM, LOCAL),
+		/**
+		 * LOG4J configuration file used by Liberty JMX sampler.
+		 */
+		LOG4J_CONFIG("log4j.configuration", "file:./log4j_liberty.properties", READ_ONLY, SYSTEM, LOCAL);
 
 		private String key;
 		private String defaultValue;

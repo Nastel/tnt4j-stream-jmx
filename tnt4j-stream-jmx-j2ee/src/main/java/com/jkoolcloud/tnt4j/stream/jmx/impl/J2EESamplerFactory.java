@@ -16,7 +16,6 @@
 
 package com.jkoolcloud.tnt4j.stream.jmx.impl;
 
-import java.io.PrintStream;
 import java.util.Map;
 
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
@@ -35,8 +34,8 @@ import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
 public class J2EESamplerFactory extends PlatformSamplerFactory {
 
 	@Override
-	public SampleListener newListener(PrintStream pStream, Map<String, ?> properties) {
-		return new J2EESampleListener(pStream, properties);
+	public SampleListener newListener(Map<String, ?> properties) {
+		return new J2EESampleListener(properties);
 	}
 
 }

@@ -20,6 +20,7 @@
     <properties>
         <tnt4j.version>2.7-SNAPSHOT</tnt4j.version>
         <jesl.version>0.5-SNAPSHOT</jesl.version>
+        <org.slf4j.version>1.7.25</org.slf4j.version>
     </properties>
 
     <build>
@@ -130,6 +131,12 @@
             <groupId>com.jkoolcloud</groupId>
             <artifactId>tnt4j</artifactId>
             <version>${tnt4j.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-simple</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.jkoolcloud</groupId>
@@ -149,6 +156,12 @@
             <version>${project.java.version}</version>
             <scope>system</scope>
             <systemPath>${java.home}/../lib/tools.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>${org.slf4j.version}</version>
+            <scope>runtime</scope>
         </dependency>
     </dependencies>
 

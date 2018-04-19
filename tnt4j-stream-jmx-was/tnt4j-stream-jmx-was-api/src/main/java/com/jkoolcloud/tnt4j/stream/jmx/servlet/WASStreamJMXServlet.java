@@ -26,6 +26,9 @@ import java.lang.reflect.Method;
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.jkoolcloud.tnt4j.config.TrackerConfigStore;
+import com.jkoolcloud.tnt4j.core.OpLevel;
+import com.jkoolcloud.tnt4j.sink.DefaultEventSinkFactory;
+import com.jkoolcloud.tnt4j.sink.EventSink;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.Utils;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.WASSecurityHelper;
 
@@ -38,6 +41,7 @@ import com.jkoolcloud.tnt4j.stream.jmx.utils.WASSecurityHelper;
  */
 public class WASStreamJMXServlet extends StreamJMXServlet {
 	private static final long serialVersionUID = -8291650473147748942L;
+	private static final EventSink LOGGER = DefaultEventSinkFactory.defaultEventSink(WASStreamJMXServlet.class);
 
 	/**
 	 * WAS specific properties values enumeration.
@@ -63,7 +67,11 @@ public class WASStreamJMXServlet extends StreamJMXServlet {
 		/**
 		 * TNT4J configuration file used to stream WAS JMX samples.
 		 */
-		TNT4J_CONFIG(TrackerConfigStore.TNT4J_PROPERTIES_KEY, "file:./tnt4j_was.properties", READ_ONLY, SYSTEM, LOCAL);
+		TNT4J_CONFIG(TrackerConfigStore.TNT4J_PROPERTIES_KEY, "file:./tnt4j_was.properties", READ_ONLY, SYSTEM, LOCAL),
+		/**
+		 * LOG4J configuration file used by WAS JMX sampler.
+		 */
+		LOG4J_CONFIG("log4j.configuration", "file:./log4j_was.properties", READ_ONLY, SYSTEM, LOCAL);
 
 		private String key;
 		private String defaultValue;
@@ -139,18 +147,18 @@ public class WASStreamJMXServlet extends StreamJMXServlet {
 			String propertyValue = getProperty(prop.key(), null);
 
 			try {
-				System.out.println("==> Saving parameter '" + prop.key() + "' to servlet context...");
+				LOGGER.log(OpLevel.INFO, "==> Saving parameter '{0}' to servlet context...", prop.key());
 				Method method = getServletConfig().getClass().getMethod("setInitParameter", String.class, String.class);
 
 				method.invoke(getServletConfig(), prop.key(), propertyValue);
 			} catch (Exception e) {
-				System.err.println("!!!!   Save failed " + e.getClass().getName() + " " + Utils.getExceptionMessages(e)
-						+ "   !!!!");
+				LOGGER.log(OpLevel.ERROR, "!!!!   Save failed {0} {1}   !!!!", e.getClass().getName(),
+						Utils.getExceptionMessages(e));
 				last = e;
 			}
 		}
 		if (last != null) {
-			last.printStackTrace();
+			LOGGER.log(OpLevel.ERROR, "Last exception caught: ", last);
 		}
 	}
 
@@ -158,9 +166,9 @@ public class WASStreamJMXServlet extends StreamJMXServlet {
 	protected void envCheck() {
 		super.envCheck();
 
-		System.out.println("==> IBM.ORB: " + getClassLocation("com.ibm.CORBA.MinorCodes"));
-		System.out.println("==> IBM.EJB.THIN.CLIENT: " + getClassLocation("com.ibm.tx.TranConstants"));
-		System.out.println("==> IBM.ADMIN.CLIENT: " + getClassLocation("com.ibm.ws.pmi.j2ee.StatisticImpl"));
+		LOGGER.log(OpLevel.INFO, "==> IBM.ORB: {0}", getClassLocation("com.ibm.CORBA.MinorCodes"));
+		LOGGER.log(OpLevel.INFO, "==> IBM.EJB.THIN.CLIENT: {0}", getClassLocation("com.ibm.tx.TranConstants"));
+		LOGGER.log(OpLevel.INFO, "==> IBM.ADMIN.CLIENT: {0}", getClassLocation("com.ibm.ws.pmi.j2ee.StatisticImpl"));
 	}
 
 }

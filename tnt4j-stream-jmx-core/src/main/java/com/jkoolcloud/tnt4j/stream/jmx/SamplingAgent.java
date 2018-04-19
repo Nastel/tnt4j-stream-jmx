@@ -37,6 +37,9 @@ import javax.management.remote.JMXServiceURL;
 import org.apache.commons.lang3.StringUtils;
 
 import com.jkoolcloud.tnt4j.config.TrackerConfigStore;
+import com.jkoolcloud.tnt4j.core.OpLevel;
+import com.jkoolcloud.tnt4j.sink.DefaultEventSinkFactory;
+import com.jkoolcloud.tnt4j.sink.EventSink;
 import com.jkoolcloud.tnt4j.stream.jmx.core.DefaultSampleListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
 import com.jkoolcloud.tnt4j.stream.jmx.factory.DefaultSamplerFactory;
@@ -56,12 +59,16 @@ import com.jkoolcloud.tnt4j.stream.jmx.utils.VMUtils;
  * @see SamplerFactory
  */
 public class SamplingAgent {
+	private static final EventSink LOGGER = DefaultEventSinkFactory.defaultEventSink(SamplingAgent.class);
+
 	protected static Sampler platformJmx;
 	protected static ConcurrentHashMap<MBeanServerConnection, Sampler> STREAM_AGENTS = new ConcurrentHashMap<MBeanServerConnection, Sampler>(
 			89);
 	protected static final long CONN_RETRY_INTERVAL = 10;
 
-	private static final String SYS_PROP_TNT4J_CFG = "-Dtnt4j.config";
+	private static final String LOG4J_PROPERTIES_KEY = "log4j.configuration";
+	private static final String SYS_PROP_LOG4J_CFG = "-D" + LOG4J_PROPERTIES_KEY;
+	private static final String SYS_PROP_TNT4J_CFG = "-D" + TrackerConfigStore.TNT4J_PROPERTIES_KEY;
 	private static final String SYS_PROP_AGENT_PATH = "-DSamplingAgent.path";
 
 	private static final String PARAM_VM_DESCRIPTOR = "-vm:";
@@ -102,12 +109,10 @@ public class SamplingAgent {
 	static {
 		initDefaults(DEFAULTS);
 
-		copyProperty(TRACE, DEFAULTS, LISTENER_PROPERTIES, false);
 		copyProperty(FORCE_OBJECT_NAME, DEFAULTS, LISTENER_PROPERTIES, false);
 		copyProperty(COMPOSITE_DELIMITER, DEFAULTS, LISTENER_PROPERTIES, "\\");
 		copyProperty(USE_OBJECT_NAME_PROPERTIES, DEFAULTS, LISTENER_PROPERTIES, true);
 
-		copyProperty(TRACE, System.getProperties(), LISTENER_PROPERTIES);
 		copyProperty(FORCE_OBJECT_NAME, System.getProperties(), LISTENER_PROPERTIES);
 		copyProperty(COMPOSITE_DELIMITER, System.getProperties(), LISTENER_PROPERTIES);
 		copyProperty(USE_OBJECT_NAME_PROPERTIES, System.getProperties(), LISTENER_PROPERTIES);
@@ -147,13 +152,10 @@ public class SamplingAgent {
 			}
 		}
 		sample(incFilter, excFilter, initDelay, period, TimeUnit.MILLISECONDS);
-		System.out.println("SamplingAgent.premain: include.filter=" + incFilter
-				+ ", exclude.filter=" + excFilter
-				+ ", sample.ms=" + period
-				+ ", initDelay.ms=" + initDelay
-				+ ", listener.properties=" + LISTENER_PROPERTIES
-				+ ", tnt4j.config=" + System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY)
-				+ ", jmx.sample.list=" + STREAM_AGENTS);
+		LOGGER.log(OpLevel.INFO,
+				"SamplingAgent.premain: include.filter={0}, exclude.filter={1}, sample.ms={2}, initDelay.ms={3}, listener.properties={4}, tnt4j.config={5}, jmx.sample.list={6}",
+				incFilter, excFilter, period, initDelay, LISTENER_PROPERTIES,
+				System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY), STREAM_AGENTS);
 	}
 
 	/**
@@ -170,9 +172,10 @@ public class SamplingAgent {
 	 * @see #premain(String, Instrumentation)
 	 */
 	public static void agentmain(String agentArgs, Instrumentation inst) throws Exception {
-		System.out.println("SamplingAgent.agentmain(): agentArgs=" + agentArgs);
+		LOGGER.log(OpLevel.INFO, "SamplingAgent.agentmain(): agentArgs={0}", agentArgs);
 		String agentParams = "";
 		String tnt4jProp = System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY);
+		String log4jProp = System.getProperty(LOG4J_PROPERTIES_KEY);
 		String agentLibPath = "";
 		if (!Utils.isEmpty(agentArgs)) {
 			String[] args = agentArgs.split("!");
@@ -188,10 +191,13 @@ public class SamplingAgent {
 				} else if (arg.startsWith(SYS_PROP_AGENT_PATH)) {
 					String[] prop = arg.split("=", 2);
 					agentLibPath = prop.length > 1 ? prop[1] : null;
-				} else if (arg.startsWith(TRACE.pName() + "=")) {
-					String[] prop = arg.split("=", 2);
-					if (prop.length > 1) {
-						LISTENER_PROPERTIES.put(TRACE.pName(), prop[1]);
+				}
+				if (arg.startsWith(SYS_PROP_LOG4J_CFG)) {
+					if (Utils.isEmpty(log4jProp)) {
+						String[] prop = arg.split("=", 2);
+						log4jProp = prop.length > 1 ? prop[1] : null;
+
+						System.setProperty(LOG4J_PROPERTIES_KEY, log4jProp);
 					}
 				} else if (arg.startsWith(FORCE_OBJECT_NAME.pName() + "=")) {
 					String[] prop = arg.split("=", 2);
@@ -214,10 +220,10 @@ public class SamplingAgent {
 			}
 		}
 
-		System.out.println("SamplingAgent.agentmain: agent.params=" + agentParams
-				+ ", agent.lib.path=" + agentLibPath
-				+ ", listener.properties=" + LISTENER_PROPERTIES
-				+ ", tnt4j.config=" + System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY));
+		LOGGER.log(OpLevel.INFO,
+				"SamplingAgent.agentmain: agent.params={0}, agent.lib.path={1}, listener.properties={2}, tnt4j.config={3}",
+				agentParams, agentLibPath, LISTENER_PROPERTIES,
+				System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY));
 
 		File agentPath = new File(agentLibPath);
 		String[] classPathEntries = agentPath.list(new JarFilter());
@@ -225,7 +231,8 @@ public class SamplingAgent {
 			File pathFile;
 			for (String classPathEntry : classPathEntries) {
 				pathFile = new File(classPathEntry);
-				System.out.println("SamplingAgent.agentmain: extending classpath with: " + pathFile.getAbsolutePath());
+				LOGGER.log(OpLevel.INFO, "SamplingAgent.agentmain: extending classpath with: {0}",
+						pathFile.getAbsolutePath());
 				extendClasspath(pathFile.toURI().toURL());
 			}
 		}
@@ -249,8 +256,8 @@ public class SamplingAgent {
 			try {
 				method.invoke(classLoader, classPathEntryURL);
 			} catch (Exception e) {
-				System.out.println("SamplingAgent.extendClasspath: could not load lib " + classPathEntryURL);
-				System.out.println("                    Exception: " + Utils.getExceptionMessages(e));
+				LOGGER.log(OpLevel.ERROR, "SamplingAgent.extendClasspath: could not load lib {0}", classPathEntryURL);
+				LOGGER.log(OpLevel.ERROR, "                    Exception: {0}", Utils.getExceptionMessages(e));
 			}
 		}
 	}
@@ -269,6 +276,10 @@ public class SamplingAgent {
 		boolean argsValid = parseArgs(props, args);
 
 		if (argsValid) {
+			SamplerFactory sFactory = DefaultSamplerFactory
+					.getInstance(Utils.getConfProperty(DEFAULTS, "com.jkoolcloud.tnt4j.stream.jmx.sampler.factory"));
+			sFactory.initialize();
+
 			String am = props.getProperty(AGENT_ARG_MODE);
 			if (AGENT_MODE_CONNECT.equalsIgnoreCase(am)) {
 				String vmDescr = props.getProperty(AGENT_ARG_VM);
@@ -301,23 +312,20 @@ public class SamplingAgent {
 							.parseInt(props.getProperty(AGENT_ARG_D_TIME, String.valueOf(sample_time)));
 					long wait_time = Integer.parseInt(props.getProperty(AGENT_ARG_W_TIME, "0"));
 					sample(inclF, exclF, delay_time, sample_time, TimeUnit.MILLISECONDS);
-					System.out.println("SamplingAgent.main: include.filter=" + inclF
-							+ ", exclude.filter=" + exclF
-							+ ", sample.ms=" + sample_time
-							+ ", delay.ms=" + delay_time
-							+ ", wait.ms=" + wait_time
-							+ ", listener.properties=" + LISTENER_PROPERTIES
-							+ ", tnt4j.config=" + System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY)
-							+ ", jmx.sample.list=" + STREAM_AGENTS);
+					LOGGER.log(OpLevel.INFO,
+							"SamplingAgent.main: include.filter={0}, exclude.filter={1}, sample.ms={2}, delay.ms={3}, wait.ms={4}, listener.properties={5}, tnt4j.config={6}, jmx.sample.list={7}",
+							inclF, exclF, sample_time, delay_time, wait_time, LISTENER_PROPERTIES,
+							System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY), STREAM_AGENTS);
 					synchronized (platformJmx) {
 						platformJmx.wait(wait_time);
 					}
 				} catch (Throwable ex) {
-					System.out.println("SamplingAgent.main: failed to configure and run JMX sampling...");
-					System.out.println("         Exception: " + Utils.getExceptionMessages(ex));
+					LOGGER.log(OpLevel.ERROR, "SamplingAgent.main: failed to configure and run JMX sampling...");
+					LOGGER.log(OpLevel.ERROR, "         Exception: {0}", Utils.getExceptionMessages(ex));
 				}
 			}
 		} else {
+			LOGGER.log(OpLevel.INFO, "Printing usage instructions before exit!..");
 			System.out.println("Usage: mbean-filter exclude-filter sample-ms [wait-ms] (e.g \"*:*\" \"\" 10000 60000)");
 			System.out.println("   or: -attach -vm:vmName/vmId -ap:agentJarPath -ao:agentOptions (e.g -attach -vm:activemq -ap:[ENV_PATH]/tnt-stream-jmx.jar -ao:*:*!!10000)");
 			System.out.println("   or: -connect -vm:vmName/vmId/JMX_URL -ao:agentOptions (e.g -connect -vm:activemq -ao:*:*!!10000");
@@ -346,7 +354,7 @@ public class SamplingAgent {
 	}
 
 	private static boolean parseArgs(Properties props, String... args) {
-		System.out.println("SamplingAgent.parseArgs(): args=" + Arrays.toString(args));
+		LOGGER.log(OpLevel.INFO, "SamplingAgent.parseArgs(): args={0}", Arrays.toString(args));
 		boolean ac = StringUtils.equalsAnyIgnoreCase(args[0], AGENT_MODE_ATTACH, AGENT_MODE_CONNECT);
 		boolean local = AGENT_MODE_LOCAL.equalsIgnoreCase(args[0]);
 
@@ -362,45 +370,45 @@ public class SamplingAgent {
 
 					if (arg.startsWith(PARAM_VM_DESCRIPTOR)) {
 						if (StringUtils.isNotEmpty(props.getProperty(AGENT_ARG_VM))) {
-							System.out.println(
-									"SamplingAgent.parseArgs: JVM descriptor already defined. Can not use argument ["
-											+ PARAM_VM_DESCRIPTOR + "] multiple times.");
+							LOGGER.log(OpLevel.WARNING,
+									"SamplingAgent.parseArgs: JVM descriptor already defined. Can not use argument [{0}] multiple times.",
+									PARAM_VM_DESCRIPTOR);
 							return false;
 						}
 
 						setProperty(props, arg, PARAM_VM_DESCRIPTOR, AGENT_ARG_VM);
 					} else if (arg.startsWith(PARAM_AGENT_LIB_PATH)) {
 						if (StringUtils.isNotEmpty(props.getProperty(AGENT_ARG_LIB_PATH))) {
-							System.out.println(
-									"SamplingAgent.parseArgs: agent library path already defined. Can not use argument ["
-											+ PARAM_AGENT_LIB_PATH + "] multiple times.");
+							LOGGER.log(OpLevel.WARNING,
+									"SamplingAgent.parseArgs: agent library path already defined. Can not use argument [{0}] multiple times.",
+									PARAM_AGENT_LIB_PATH);
 							return false;
 						}
 
 						setProperty(props, arg, PARAM_AGENT_LIB_PATH, AGENT_ARG_LIB_PATH);
 					} else if (arg.startsWith(PARAM_AGENT_OPTIONS)) {
 						if (StringUtils.isNotEmpty(props.getProperty(AGENT_ARG_OPTIONS))) {
-							System.out.println(
-									"SamplingAgent.parseArgs: agent options already defined. Can not use argument ["
-											+ PARAM_AGENT_OPTIONS + "] multiple times.");
+							LOGGER.log(OpLevel.WARNING,
+									"SamplingAgent.parseArgs: agent options already defined. Can not use argument [{0}] multiple times.",
+									PARAM_AGENT_OPTIONS);
 							return false;
 						}
 
 						setProperty(props, arg, PARAM_AGENT_OPTIONS, AGENT_ARG_OPTIONS);
 					} else if (arg.startsWith(PARAM_AGENT_USER_LOGIN)) {
 						if (StringUtils.isNotEmpty(props.getProperty(AGENT_ARG_USER))) {
-							System.out.println(
-									"SamplingAgent.parseArgs: user login already defined. Can not use argument ["
-											+ PARAM_AGENT_USER_LOGIN + "] multiple times.");
+							LOGGER.log(OpLevel.WARNING,
+									"SamplingAgent.parseArgs: user login already defined. Can not use argument [{0}] multiple times.",
+									PARAM_AGENT_USER_LOGIN);
 							return false;
 						}
 
 						setProperty(props, arg, PARAM_AGENT_USER_LOGIN, AGENT_ARG_USER);
 					} else if (arg.startsWith(PARAM_AGENT_USER_PASS)) {
 						if (StringUtils.isNotEmpty(props.getProperty(AGENT_ARG_PASS))) {
-							System.out.println(
-									"SamplingAgent.parseArgs: user password already defined. Can not use argument ["
-											+ PARAM_AGENT_USER_PASS + "] multiple times.");
+							LOGGER.log(OpLevel.WARNING,
+									"SamplingAgent.parseArgs: user password already defined. Can not use argument [{0}] multiple times.",
+									PARAM_AGENT_USER_PASS);
 							return false;
 						}
 
@@ -421,9 +429,9 @@ public class SamplingAgent {
 						connParams.put(cp[0], cp[1]);
 					} else if (arg.startsWith(PARAM_AGENT_CONN_RETRY_INTERVAL)) {
 						if (StringUtils.isNotEmpty(props.getProperty(AGENT_ARG_CONN_RETRY_INTERVAL))) {
-							System.out.println(
-									"SamplingAgent.parseArgs: connection retry interval already defined. Can not use argument ["
-											+ PARAM_AGENT_CONN_RETRY_INTERVAL + "] multiple times.");
+							LOGGER.log(OpLevel.WARNING,
+									"SamplingAgent.parseArgs: connection retry interval already defined. Can not use argument [{0}] multiple times.",
+									PARAM_AGENT_CONN_RETRY_INTERVAL);
 							return false;
 						}
 
@@ -443,27 +451,28 @@ public class SamplingAgent {
 
 						System.setProperty(slp[0], slp[1]);
 					} else {
-						System.out.println("SamplingAgent.parseArgs: invalid argument [" + arg + "]");
+						LOGGER.log(OpLevel.WARNING, "SamplingAgent.parseArgs: invalid argument [{0}]", arg);
 						return false;
 					}
 				}
 			} catch (IllegalArgumentException exc) {
-				System.out.println("SamplingAgent.parseArgs: arguments parsing failed...");
-				System.out.println("              Exception: " + Utils.getExceptionMessages(exc));
+				LOGGER.log(OpLevel.ERROR, "SamplingAgent.parseArgs: arguments parsing failed...");
+				LOGGER.log(OpLevel.ERROR, "              Exception: {0}", Utils.getExceptionMessages(exc));
 				return false;
 			}
 
 			if (StringUtils.isEmpty(props.getProperty(AGENT_ARG_VM)) && ac) {
-				System.out.println("SamplingAgent.parseArgs: missing mandatory argument [" + PARAM_VM_DESCRIPTOR
-						+ "] defining JVM descriptor.");
+				LOGGER.log(OpLevel.WARNING,
+						"SamplingAgent.parseArgs: missing mandatory argument [{0}] defining JVM descriptor.",
+						PARAM_VM_DESCRIPTOR);
 				return false;
 			}
 
 			// if (AGENT_MODE_ATTACH.equalsIgnoreCase(props.getProperty(AGENT_ARG_MODE))
 			// && StringUtils.isEmpty(props.getProperty(AGENT_ARG_LIB_PATH))) {
-			// System.out.println(
-			// "SamplingAgent.parseArgs: missing mandatory argument [" + PARAM_AGENT_LIB_PATH + "] defining agent
-			// library path.");
+			// LOGGER.log(OpLevel.WARNING,
+			// "SamplingAgent.parseArgs: missing mandatory argument [{0}] defining agent library path.",
+			// PARAM_AGENT_LIB_PATH);
 			// return false;
 			// }
 		} else {
@@ -486,15 +495,15 @@ public class SamplingAgent {
 	private static String[] parseCompositeArg(String arg, String argName) {
 		String argValue = arg.substring(argName.length());
 		if (StringUtils.isEmpty(argValue)) {
-			System.out.println("SamplingAgent.parseArgs: missing argument [" + argName + "] value");
+			LOGGER.log(OpLevel.WARNING, "SamplingAgent.parseArgs: missing argument [{0}] value", argName);
 			return null;
 		}
 
 		String[] slp = argValue.split("=", 2);
 
 		if (slp.length < 2) {
-			System.out
-					.println("SamplingAgent.parseArgs: malformed argument [" + argName + "] value [" + argValue + "]");
+			LOGGER.log(OpLevel.WARNING, "SamplingAgent.parseArgs: malformed argument [{0}] value [{1}]", argName,
+					argValue);
 			return null;
 		}
 
@@ -655,7 +664,7 @@ public class SamplingAgent {
 	private static void scheduleSampler(String incFilter, String excFilter, long initDelay, long period, TimeUnit tUnit,
 			SamplerFactory sFactory, Sampler sampler, Map<MBeanServerConnection, Sampler> agents) throws IOException {
 		sampler.setSchedule(incFilter, excFilter, initDelay, period, tUnit, sFactory)
-				.addListener(sFactory.newListener(System.out, LISTENER_PROPERTIES)).run();
+				.addListener(sFactory.newListener(LISTENER_PROPERTIES)).run();
 		agents.put(sampler.getMBeanServer(), sampler);
 	}
 
@@ -672,21 +681,23 @@ public class SamplingAgent {
 	 *             if any exception occurs while attaching to JVM
 	 */
 	public static void attach(String vmDescr, String agentJarPath, String agentOptions) throws Exception {
-		System.out.println("SamplingAgent.attach(): vmDescr=" + vmDescr + ", agentJarPath=" + agentJarPath
-				+ ", agentOptions=" + agentOptions);
+		LOGGER.log(OpLevel.INFO, "SamplingAgent.attach(): vmDescr={0}, agentJarPath={1}, agentOptions={2}", vmDescr,
+				agentJarPath, agentOptions);
 		if (Utils.isEmpty(vmDescr)) {
 			throw new RuntimeException("Java VM descriptor must be not empty!..");
 		}
 
 		File pathFile;
 		if (StringUtils.isEmpty(agentJarPath)) {
-			System.out.println("SamplingAgent.attach: no agent jar defined");
+			LOGGER.log(OpLevel.INFO, "SamplingAgent.attach: no agent jar defined");
 			pathFile = getSAPath();
 		} else {
 			pathFile = new File(agentJarPath);
 			if (!pathFile.exists()) {
-				System.out.println("SamplingAgent.attach: non-existing argument defined agent jar: " + agentJarPath);
-				System.out.println("                      absolute agent jar path: " + pathFile.getAbsolutePath());
+				LOGGER.log(OpLevel.INFO, "SamplingAgent.attach: non-existing argument defined agent jar: {0}",
+						agentJarPath);
+				LOGGER.log(OpLevel.INFO, "                      absolute agent jar path: {0}",
+						pathFile.getAbsolutePath());
 				pathFile = getSAPath();
 			}
 		}
@@ -700,20 +711,25 @@ public class SamplingAgent {
 		agentOptions += "!" + SYS_PROP_AGENT_PATH + "=" + agentPath;
 
 		String tnt4jConf = System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY);
-
 		if (!Utils.isEmpty(tnt4jConf)) {
 			String tnt4jPropPath = new File(tnt4jConf).getAbsolutePath();
 			agentOptions += "!" + SYS_PROP_TNT4J_CFG + "=" + tnt4jPropPath;
 		}
+		String log4jConf = System.getProperty(LOG4J_PROPERTIES_KEY);
+		if (!Utils.isEmpty(log4jConf)) {
+			String log4jPropPath = new File(log4jConf).getAbsolutePath();
+			agentOptions += "!" + SYS_PROP_LOG4J_CFG + "=" + log4jPropPath;
+		}
 
-		System.out.println("SamplingAgent.attach: attaching JVM using vmDescr=" + vmDescr + ", agentJarPath="
-				+ agentJarPath + ", agentOptions=" + agentOptions);
+		LOGGER.log(OpLevel.INFO,
+				"SamplingAgent.attach: attaching JVM using vmDescr={0}, agentJarPath={1}, agentOptions={2}", vmDescr,
+				agentJarPath, agentOptions);
 		VMUtils.attachVM(vmDescr, agentPath, agentOptions);
 	}
 
 	private static File getSAPath() throws URISyntaxException {
 		String saPath = SamplingAgent.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
-		System.out.println("SamplingAgent.attach: using SamplingAgent class referenced jar path: " + saPath);
+		LOGGER.log(OpLevel.INFO, "SamplingAgent.attach: using SamplingAgent class referenced jar path: {0}", saPath);
 		File agentFile = new File(saPath);
 
 		if (!agentFile.exists()) {
@@ -876,8 +892,9 @@ public class SamplingAgent {
 	 */
 	public static void connect(String vmDescr, String user, String pass, String options, Map<String, ?> connParams,
 			long connRetryInterval) throws Exception {
-		System.out.println("SamplingAgent.connect(): vmDescr=" + vmDescr + ", user=" + user + ", pass=" + pass
-				+ ", options=" + options + ", connParams=" + connParams + ", connRetryInterval=" + connRetryInterval);
+		LOGGER.log(OpLevel.INFO,
+				"SamplingAgent.connect(): vmDescr={0}, user={1}, pass={2}, options={3}, connParams={4}, connRetryInterval={5}",
+				vmDescr, user, Utils.hideEnd(pass, "x", 0), options, connParams, connRetryInterval);
 		if (Utils.isEmpty(vmDescr)) {
 			throw new RuntimeException("Java VM descriptor must be not empty!..");
 		}
@@ -885,7 +902,8 @@ public class SamplingAgent {
 		Map<String, Object> params = new HashMap<String, Object>(connParams == null ? 1 : connParams.size() + 1);
 
 		if (StringUtils.isNotEmpty(user) && StringUtils.isNotEmpty(pass)) {
-			System.out.println("SamplingAgent.connect: adding user login and password to connection credentials...");
+			LOGGER.log(OpLevel.INFO,
+					"SamplingAgent.connect: adding user login and password to connection credentials...");
 			String[] credentials = new String[] { user, pass };
 			params.put(JMXConnector.CREDENTIALS, credentials);
 		}
@@ -903,10 +921,11 @@ public class SamplingAgent {
 					connectorAddress = VMUtils.getVMConnAddress(vmDescr);
 				}
 
-				System.out.println("SamplingAgent.connect: making JMX service URL from address=" + connectorAddress);
+				LOGGER.log(OpLevel.INFO, "SamplingAgent.connect: making JMX service URL from address={0}",
+						connectorAddress);
 				JMXServiceURL url = new JMXServiceURL(connectorAddress);
 
-				System.out.println("SamplingAgent.connect: connecting JMX service using URL=" + url);
+				LOGGER.log(OpLevel.INFO, "SamplingAgent.connect: connecting JMX service using URL={0}", url);
 				JMXConnector connector = JMXConnectorFactory.connect(url, params);
 
 				try {
@@ -915,8 +934,8 @@ public class SamplingAgent {
 						public void handleNotification(Notification notification, Object key) {
 							if (notification.getType().contains("closed") || notification.getType().contains("failed")
 									|| notification.getType().contains("lost")) {
-								System.out.println("SamplingAgent.connect: JMX connection status change: "
-										+ notification.getType());
+								LOGGER.log(OpLevel.INFO, "SamplingAgent.connect: JMX connection status change: {0}",
+										notification.getType());
 								stopSampler();
 							}
 						}
@@ -931,16 +950,16 @@ public class SamplingAgent {
 					Utils.close(connector);
 				}
 			} catch (IOException exc) {
-				System.out.println("SamplingAgent.connect: failed to connect JMX service");
-				System.out.println("            Exception: " + Utils.getExceptionMessages(exc));
+				LOGGER.log(OpLevel.ERROR, "SamplingAgent.connect: failed to connect JMX service");
+				LOGGER.log(OpLevel.ERROR, "            Exception: {0}", Utils.getExceptionMessages(exc));
 
 				if (connRetryInterval < 0) {
 					stopSampling = true;
 				}
 
 				if (!stopSampling && connRetryInterval > 0) {
-					System.out.println("SamplingAgent.connect: will retry connect attempt in " + connRetryInterval
-							+ " seconds...");
+					LOGGER.log(OpLevel.INFO, "SamplingAgent.connect: will retry connect attempt in {0} seconds...",
+							connRetryInterval);
 					Thread.sleep(TimeUnit.SECONDS.toMillis(connRetryInterval));
 				}
 			}
@@ -948,7 +967,7 @@ public class SamplingAgent {
 	}
 
 	private static void stopSampler() {
-		System.out.println("SamplingAgent.stopSampler: releasing sampler lock...");
+		LOGGER.log(OpLevel.INFO, "SamplingAgent.stopSampler: releasing sampler lock...");
 
 		if (platformJmx != null) {
 			synchronized (platformJmx) {
@@ -969,7 +988,7 @@ public class SamplingAgent {
 	 *             if any exception occurs while initializing local JVM sampler or stopping sampling process
 	 */
 	public static void sampleLocalVM(String options, boolean wait) throws Exception {
-		System.out.println("SamplingAgent.sampleLocalVM(): options=" + options + ", wait=" + wait);
+		LOGGER.log(OpLevel.INFO, "SamplingAgent.sampleLocalVM(): options={0}, wait={1}", options, wait);
 		if (wait) {
 			startSamplerAndWait(options);
 		} else {
@@ -996,20 +1015,21 @@ public class SamplingAgent {
 					mainThread.join(TimeUnit.SECONDS.toMillis(2));
 				} catch (Exception exc) {
 				}
-				System.out.println("SamplingAgent.startSamplerAndWait: waited "
-						+ (System.currentTimeMillis() - startTime) + "ms. on Stream-JMX to complete...");
+				LOGGER.log(OpLevel.INFO,
+						"SamplingAgent.startSamplerAndWait: waited {0}ms. on Stream-JMX to complete...",
+						(System.currentTimeMillis() - startTime));
 			}
 		});
 		Runtime.getRuntime().addShutdownHook(shutdownHook);
 
-		System.out.println("SamplingAgent.startSamplerAndWait: locking on sampler...");
+		LOGGER.log(OpLevel.INFO, "SamplingAgent.startSamplerAndWait: locking on sampler...");
 		if (platformJmx != null) {
 			synchronized (platformJmx) {
 				platformJmx.wait();
 			}
 		}
 
-		System.out.println("SamplingAgent.startSamplerAndWait: stopping Stream-JMX...");
+		LOGGER.log(OpLevel.INFO, "SamplingAgent.startSamplerAndWait: stopping Stream-JMX...");
 		try {
 			Runtime.getRuntime().removeShutdownHook(shutdownHook);
 		} catch (IllegalStateException exc) {
@@ -1046,13 +1066,11 @@ public class SamplingAgent {
 			sample(incFilter, excFilter, initDelay, period, TimeUnit.MILLISECONDS, connector);
 		}
 
-		System.out.println("SamplingAgent.startSampler: include.filter=" + incFilter
-				+ ", exclude.filter=" + excFilter
-				+ ", sample.ms=" + period
-				+ ", initDelay.ms=" + initDelay
-				+ ", listener.properties=" + LISTENER_PROPERTIES
-				+ ", tnt4j.config=" + System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY)
-				+ ", jmx.sample.list=" + STREAM_AGENTS);
+		LOGGER.log(OpLevel.INFO,
+				"SamplingAgent.startSampler: include.filter={0}, exclude.filter={1}, sample.ms={2}, initDelay.ms={3}, listener.properties={4}, tnt4j.config={5}, jmx.sample.list={6}",
+				incFilter, excFilter, period, initDelay, LISTENER_PROPERTIES,
+				System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY), STREAM_AGENTS);
+
 	}
 
 	/**

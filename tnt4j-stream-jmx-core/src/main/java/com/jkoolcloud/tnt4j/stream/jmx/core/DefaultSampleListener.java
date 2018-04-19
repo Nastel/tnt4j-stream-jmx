@@ -16,7 +16,6 @@
 package com.jkoolcloud.tnt4j.stream.jmx.core;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
@@ -32,6 +31,8 @@ import javax.management.openmbean.TabularData;
 import org.apache.commons.lang3.StringUtils;
 
 import com.jkoolcloud.tnt4j.core.*;
+import com.jkoolcloud.tnt4j.sink.DefaultEventSinkFactory;
+import com.jkoolcloud.tnt4j.sink.EventSink;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeSample;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.Utils;
 
@@ -45,18 +46,17 @@ import com.jkoolcloud.tnt4j.stream.jmx.utils.Utils;
  * @see SampleListener
  */
 public class DefaultSampleListener implements SampleListener {
+	private static final EventSink LOGGER = DefaultEventSinkFactory.defaultEventSink(DefaultSampleListener.class);
+
 	private static final String AGENT_PROP_PREFIX = "com.jkoolcloud.tnt4j.stream.jmx.agent.";
 
-	public static final String STAT_TRACE_MODE = "listener.trace.mode";
 	public static final String STAT_FORCE_OBJECT_NAME_MODE = "listener.forceObjectName.mode";
 	public static final String STAT_COMPOSITE_DELIMITER = "listener.compositeProperty.delimiter";
 	public static final String STAT_USE_OBJ_NAME_PROPS = "listener.useObjectNameProperties.mode";
 	public static final String STAT_EXCLUDE_SET_COUNT = "listener.exclude.set.count";
 	public static final String STAT_SILENCE_SET_COUNT = "listener.silence.set.count";
 
-	boolean trace = false;
 	boolean forceObjectName = false;
-	PrintStream out;
 	String compositeDelimiter = null;
 	boolean useObjectNameProperties = true;
 
@@ -69,16 +69,12 @@ public class DefaultSampleListener implements SampleListener {
 	/**
 	 * Create an instance of {@code DefaultSampleListener} with a a given print stream and configuration properties.
 	 *
-	 * @param pStream
-	 *            print stream instance for tracing
 	 * @param properties
 	 *            listener configuration properties map
 	 *
 	 * @see com.jkoolcloud.tnt4j.stream.jmx.core.DefaultSampleListener.ListenerProperties
 	 */
-	public DefaultSampleListener(PrintStream pStream, Map<String, ?> properties) {
-		this.trace = Utils.getBoolean(ListenerProperties.TRACE.pName(), properties, trace);
-		this.out = pStream == null ? System.out : pStream;
+	public DefaultSampleListener(Map<String, ?> properties) {
 		this.forceObjectName = Utils.getBoolean(ListenerProperties.FORCE_OBJECT_NAME.pName(), properties,
 				forceObjectName);
 		this.compositeDelimiter = Utils.getString(ListenerProperties.COMPOSITE_DELIMITER.pName(), properties,
@@ -133,20 +129,11 @@ public class DefaultSampleListener implements SampleListener {
 
 	@Override
 	public void pre(SampleContext context, Activity activity) {
-		if (trace) {
-			out.println("Pre: " + activity.getName() 
-					+ ": sample.count=" + context.getSampleCount() 
-					+ ", mbean.count=" + getMBeanCount(context) 
-					+ ", sample.mbeans.count=" + context.getMBeanCount() 
-					+ ", exclude.attr.set=" + excAttrs.size() 
-					+ ", silence.attr.set=" + silenceAttrs.size() 
-					+ ", total.noop.count=" + context.getTotalNoopCount() 
-					+ ", total.exclude.count=" + context.getExcludeAttrCount() 
-					+ ", total.error.count=" + context.getTotalErrorCount() 
-					+ ", tracking.id=" + activity.getTrackingId() 
-					+ ", mbean.server=" + context.getMBeanServer()
-					);
-		}
+		LOGGER.log(OpLevel.TRACE,
+				"Pre: {0}: sample.count={1}, mbean.count={2}, sample.mbeans.count={3}, exclude.attr.set={4}, silence.attr.set={5}, total.noop.count={6}, total.exclude.count={7}, total.error.count={8}, tracking.id={9}, mbean.server={10}",
+				activity.getName(), context.getSampleCount(), getMBeanCount(context), context.getMBeanCount(),
+				excAttrs.size(), silenceAttrs.size(), context.getTotalNoopCount(), context.getExcludeAttrCount(),
+				context.getTotalErrorCount(), activity.getTrackingId(), context.getMBeanServer());
 	}
 
 	@Override
@@ -213,25 +200,13 @@ public class DefaultSampleListener implements SampleListener {
 
 	@Override
 	public void post(SampleContext context, Activity activity) {
-		if (trace) {
-			out.println("Post: " + activity.getName() 
-					+ ": sample.count=" + context.getSampleCount() 
-					+ ", mbean.count=" + getMBeanCount(context) 
-					+ ", elapsed.usec=" + activity.getElapsedTimeUsec() 
-					+ ", snap.count=" + activity.getSnapshotCount() 
-					+ ", id.count=" + activity.getIdCount() 
-					+ ", sample.mbeans.count=" + context.getMBeanCount() 
-					+ ", sample.metric.count=" + context.getLastMetricCount() 
-					+ ", sample.time.usec=" + context.getLastSampleUsec() 
-					+ ", exclude.attr.set=" + excAttrs.size() 
-					+ ", silence.attr.set=" + silenceAttrs.size() 
-					+ ", total.noop.count=" + context.getTotalNoopCount() 
-					+ ", total.exclude.count=" + context.getExcludeAttrCount() 
-					+ ", total.error.count=" + context.getTotalErrorCount() 
-					+ ", tracking.id=" + activity.getTrackingId() 
-					+ ", mbean.server=" + context.getMBeanServer()
-					);
-		}
+		LOGGER.log(OpLevel.TRACE,
+				"Post: {0}: sample.count={1}, mbean.count={2}, elapsed.usec={3}, snap.count={4}, id.count={5}, sample.mbeans.count={6}, sample.metric.count={7}, sample.time.usec={8}, exclude.attr.set={9}, silence.attr.set={10}, total.noop.count={11}, total.exclude.count={12}, total.error.count={13}, tracking.id={14}, mbean.server={15}",
+				activity.getName(), context.getSampleCount(), getMBeanCount(context), activity.getElapsedTimeUsec(),
+				activity.getSnapshotCount(), activity.getIdCount(), context.getMBeanCount(),
+				context.getLastMetricCount(), context.getLastSampleUsec(), excAttrs.size(), silenceAttrs.size(),
+				context.getTotalNoopCount(), context.getExcludeAttrCount(), context.getTotalErrorCount(),
+				activity.getTrackingId(), context.getMBeanServer());
 	}
 
 	private static String getMBeanCount(SampleContext context) {
@@ -246,12 +221,9 @@ public class DefaultSampleListener implements SampleListener {
 	public void error(SampleContext context, AttributeSample sample, OpLevel level) {
 		sample.excludeNext(isFatalError(level == null ? OpLevel.ERROR : level));
 		sample.silence(true);
-		if (trace) {
-			out.println(
-					"Failed to sample:\n ojbName=" + sample.getObjectName() + ",\n info=" + sample.getAttributeInfo()
-							+ ",\n exclude=" + sample.excludeNext() + ",\n ex=" + sample.getError());
-			sample.getError().printStackTrace(out);
-		}
+		LOGGER.log(OpLevel.TRACE, "Failed to sample:\n ojbName={0},\n info={1},\n exclude={2}\n ex={3}",
+				sample.getObjectName(), sample.getAttributeInfo(), sample.excludeNext(), sample.getError().getMessage(),
+				sample.getError());
 		if (sample.excludeNext()) {
 			exclude(sample.getAttributeInfo());
 		}
@@ -266,7 +238,6 @@ public class DefaultSampleListener implements SampleListener {
 
 	@Override
 	public void getStats(SampleContext context, Map<String, Object> stats) {
-		stats.put(STAT_TRACE_MODE, trace);
 		stats.put(STAT_FORCE_OBJECT_NAME_MODE, forceObjectName);
 		stats.put(STAT_COMPOSITE_DELIMITER, compositeDelimiter);
 		stats.put(STAT_USE_OBJ_NAME_PROPS, useObjectNameProperties);
@@ -276,22 +247,17 @@ public class DefaultSampleListener implements SampleListener {
 
 	@Override
 	public void register(SampleContext context, ObjectName oName) {
-		if (trace) {
-			out.println("Register mbean: " + oName + ", mbean.server=" + context.getMBeanServer());
-		}
+		LOGGER.log(OpLevel.TRACE, "Register mbean: {0}, mbean.server={1}", oName, context.getMBeanServer());
 	}
 
 	@Override
 	public void unregister(SampleContext context, ObjectName oName) {
-		if (trace) {
-			out.println("Unregister mbean: " + oName + ", mbean.server=" + context.getMBeanServer());
-		}
+		LOGGER.log(OpLevel.TRACE, "Un-register mbean: {0}, mbean.server={1}", oName, context.getMBeanServer());
 	}
 
 	@Override
 	public void error(SampleContext context, Throwable ex) {
-		out.println("Unexpected error when sampling mbean.server=" + context.getMBeanServer());
-		ex.printStackTrace(out);
+		LOGGER.log(OpLevel.ERROR, "Unexpected error when sampling mbean.server={0}", context.getMBeanServer(), ex);
 	}
 
 	/**
@@ -378,10 +344,6 @@ public class DefaultSampleListener implements SampleListener {
 	 * Sample listener configuration properties enumeration.
 	 */
 	public enum ListenerProperties {
-		/**
-		 * Flag indicating whether the sample listener should print trace entries to print stream.
-		 */
-		TRACE("trace"),
 		/**
 		 * Flag indicating to forcibly add {@value com.jkoolcloud.tnt4j.stream.jmx.utils.Utils#OBJ_NAME_PROP} attribute
 		 * if such is not present for a MBean.

@@ -15,16 +15,18 @@
  */
 package com.jkoolcloud.tnt4j.stream.jmx.impl;
 
-import java.io.PrintStream;
 import java.util.Map;
 
 import javax.management.MBeanServerConnection;
+
+import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.SampleHandler;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
 import com.jkoolcloud.tnt4j.stream.jmx.scheduler.WASSampleHandlerImpl;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.WASSecurityHelper;
+import com.jkoolcloud.tnt4j.utils.Utils;
 
 /**
  * <p>
@@ -49,6 +51,16 @@ public class WASSamplerFactory extends J2EESamplerFactory {
 	}
 
 	@Override
+	public void initialize() {
+		boolean redirectJULToStreamLog = Utils.getBoolean(
+				"com.jkoolcloud.tnt4j.stream.jmx.sampler.redirectJULToStreamLog", System.getProperties(), false);
+		if (redirectJULToStreamLog) {
+			SLF4JBridgeHandler.removeHandlersForRootLogger();
+			SLF4JBridgeHandler.install();
+		}
+	}
+
+	@Override
 	public Sampler newInstance(MBeanServerConnection mServerConn) {
 		return mServerConn == null ? newInstance() : new WASJmxSampler(mServerConn, this);
 	}
@@ -59,8 +71,8 @@ public class WASSamplerFactory extends J2EESamplerFactory {
 	}
 
 	@Override
-	public SampleListener newListener(PrintStream pStream, Map<String, ?> properties) {
-		return new WASSampleListener(pStream, properties);
+	public SampleListener newListener(Map<String, ?> properties) {
+		return new WASSampleListener(properties);
 	}
 
 	@Override

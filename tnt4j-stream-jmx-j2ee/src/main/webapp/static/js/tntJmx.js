@@ -1,6 +1,7 @@
 /* Script to scroll down console output on window load*/
 window.onload = function () {
     scrollDownTA ('tnt4j_jmx_output');
+    scrollDownTA ('tnt4j_logger_output');
 }
 
 /* Script to scroll down textArea */

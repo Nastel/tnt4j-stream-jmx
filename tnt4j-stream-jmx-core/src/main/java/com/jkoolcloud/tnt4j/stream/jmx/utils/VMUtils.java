@@ -22,6 +22,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import com.jkoolcloud.tnt4j.core.OpLevel;
+import com.jkoolcloud.tnt4j.sink.DefaultEventSinkFactory;
+import com.jkoolcloud.tnt4j.sink.EventSink;
 import com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent;
 import com.sun.tools.attach.VirtualMachine;
 import com.sun.tools.attach.VirtualMachineDescriptor;
@@ -32,6 +35,7 @@ import com.sun.tools.attach.VirtualMachineDescriptor;
  * @version $Revision: 1 $
  */
 public class VMUtils {
+	private static final EventSink LOGGER = DefaultEventSinkFactory.defaultEventSink(VMUtils.class);
 
 	private static final String CONNECTOR_ADDRESS = "com.sun.management.jmxremote.localConnectorAddress";
 
@@ -53,17 +57,17 @@ public class VMUtils {
 		Collection<VirtualMachineDescriptor> descriptors = findVMs(vmDescr);
 
 		for (VirtualMachineDescriptor descriptor : descriptors) {
-			System.out.println(
-					"SamplingAgent.attachVM: attaching agent " + agentPath + " to " + vmString(descriptor) + "");
+			LOGGER.log(OpLevel.INFO, "SamplingAgent.attachVM: attaching agent {0} to {1}", agentPath,
+					vmString(descriptor));
 			VirtualMachine virtualMachine = VirtualMachine.attach(descriptor.id());
 
 			try {
-				System.out.println("SamplingAgent.attachVM: VM loading agent agent.path=" + agentPath
-						+ ", agent.options=" + agentOptions);
+				LOGGER.log(OpLevel.INFO, "SamplingAgent.attachVM: VM loading agent agent.path={0}, agent.options={1}",
+						agentPath, agentOptions);
 
 				virtualMachine.loadAgent(agentPath, agentOptions);
 
-				System.out.println("SamplingAgent.attachVM: attached and loaded...");
+				LOGGER.log(OpLevel.INFO, "SamplingAgent.attachVM: attached and loaded...");
 			} finally {
 				virtualMachine.detach();
 			}
@@ -91,8 +95,9 @@ public class VMUtils {
 			try {
 				connectorAddress = virtualMachine.getAgentProperties().getProperty(CONNECTOR_ADDRESS);
 				if (connectorAddress == null) {
-					System.out.println("SamplingAgent.getVMConnAddress: initializing JVM [" + vmString(descriptor)
-							+ "] management agent...");
+					LOGGER.log(OpLevel.INFO,
+							"SamplingAgent.getVMConnAddress: initializing JVM [{0}] management agent...",
+							vmString(descriptor));
 					String agent = virtualMachine.getSystemProperties().getProperty("java.home") + File.separator
 							+ "lib" + File.separator + "management-agent.jar";
 					virtualMachine.loadAgent(agent);
@@ -144,11 +149,11 @@ public class VMUtils {
 		}
 
 		if (descriptors.isEmpty()) {
-			System.out.println("SamplingAgent.findVMs: ----------- Available JVMs -----------");
+			LOGGER.log(OpLevel.INFO, "SamplingAgent.findVMs: ----------- Available JVMs -----------");
 			for (VirtualMachineDescriptor vmD : runningVMsList) {
-				System.out.println("SamplingAgent.findVMs: JVM.id=" + vmD.id() + ", name=" + vmD.displayName());
+				LOGGER.log(OpLevel.INFO, "SamplingAgent.findVMs: JVM.id={0}, name={1}", vmD.id(), vmD.displayName());
 			}
-			System.out.println("SamplingAgent.findVMs: ---------------- END ----------------");
+			LOGGER.log(OpLevel.INFO, "SamplingAgent.findVMs: ---------------- END ----------------");
 			throw new RuntimeException("Java VM not found using provided descriptor: [" + vmDescr + "]");
 		}
 

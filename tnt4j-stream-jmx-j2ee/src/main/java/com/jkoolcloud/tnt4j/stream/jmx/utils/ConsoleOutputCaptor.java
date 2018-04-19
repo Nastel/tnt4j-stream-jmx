@@ -26,6 +26,9 @@ import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.jkoolcloud.tnt4j.core.OpLevel;
+import com.jkoolcloud.tnt4j.sink.DefaultEventSinkFactory;
+import com.jkoolcloud.tnt4j.sink.EventSink;
 import com.jkoolcloud.tnt4j.utils.Utils;
 
 /**
@@ -34,7 +37,7 @@ import com.jkoolcloud.tnt4j.utils.Utils;
  * @version $Revision: 1 $
  */
 public class ConsoleOutputCaptor {
-	private static final int OUT_BUF_SIZE = 65536;
+	private static final EventSink LOGGER = DefaultEventSinkFactory.defaultEventSink(ConsoleOutputCaptor.class);
 
 	private CaptorPrintStream outStream;
 	private CaptorPrintStream errStream;
@@ -54,11 +57,11 @@ public class ConsoleOutputCaptor {
 
 	public void start() {
 		if (System.out instanceof CaptorPrintStream) {
-			System.err.println("!!!!   ConsoleOutputCaptor must be already running!..   !!!!");
+			LOGGER.log(OpLevel.WARNING, "!!!!   ConsoleOutputCaptor must be already running!..   !!!!");
 			outStream = (CaptorPrintStream) System.out;
 			errStream = (CaptorPrintStream) System.err;
 		} else {
-			ByteArrayOutputStream captorOutput = new RollingOutputStream(OUT_BUF_SIZE);
+			ByteArrayOutputStream captorOutput = new RollingOutputStream(RollingOutputStream.OUT_BUF_SIZE);
 			outStream = new CaptorPrintStream(System.out, captorOutput, "OUT");
 			errStream = new CaptorPrintStream(System.err, captorOutput, "ERR");
 
@@ -214,69 +217,4 @@ public class ConsoleOutputCaptor {
 		}
 	}
 
-	private static class RollingOutputStream extends ByteArrayOutputStream {
-		public RollingOutputStream() {
-			super();
-		}
-
-		public RollingOutputStream(int size) {
-			super(size);
-		}
-
-		@Override
-		public synchronized void write(byte b[], int off, int len) {
-			if ((off < 0) || (off > b.length) || (len < 0) || ((off + len) - b.length > 0)) {
-				throw new IndexOutOfBoundsException();
-			}
-			int nl = ensureCapacity(count + len);
-			if (nl != len) {
-				off += len - nl;
-				len = nl;
-			}
-			System.arraycopy(b, off, buf, count, len);
-			count += len;
-		}
-
-		@Override
-		public synchronized void write(int b) {
-			ensureCapacity(count + 1);
-			buf[count] = (byte) b;
-			count += 1;
-		}
-
-		private int ensureCapacity(int minCapacity) {
-			// overflow-conscious code
-			if (minCapacity - buf.length > 0) {
-				return roll(minCapacity);
-			}
-
-			return minCapacity - count;
-		}
-
-		private int roll(int minCapacity) {
-			int rollSize = minCapacity - count;
-			int fitSize = buf.length - rollSize;
-			if (fitSize <= 0) {
-				count = 0;
-				return buf.length;
-			}
-
-			int free = buf.length - count;
-			int pos = rollSize - free;
-			int len = count - pos;
-
-			rollBuf(buf, pos, len);
-			count = len;
-
-			return rollSize;
-		}
-
-		private static void rollBuf(byte[] buf, int pos, int len) {
-			System.arraycopy(buf, pos, buf, 0, len);
-
-			for (int i = len; i < buf.length; i++) {
-				buf[i] = 0;
-			}
-		}
-	}
 }

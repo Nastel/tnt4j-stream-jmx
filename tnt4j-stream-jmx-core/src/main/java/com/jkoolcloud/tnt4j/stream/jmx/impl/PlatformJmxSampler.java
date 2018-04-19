@@ -200,8 +200,8 @@ public class PlatformJmxSampler implements Sampler {
 	protected Scheduler newScheduler(MBeanServerConnection mServerConn, String incFilter, String excFilter,
 			long initDelay, long period, TimeUnit tUnit, SamplerFactory sFactory) {
 		return new SchedulerImpl(this.getClass().getName(),
-				sFactory.newSampleHandler(mServerConn, incFilter, excFilter), incFilter, excFilter, initDelay, period,
-				tUnit, sFactory);
+				sFactory == null ? null : sFactory.newSampleHandler(mServerConn, incFilter, excFilter), incFilter,
+				excFilter, initDelay, period, tUnit, sFactory);
 	}
 
 	@Override

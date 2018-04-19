@@ -21,6 +21,9 @@ import java.lang.reflect.Method;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerConnection;
 
+import com.jkoolcloud.tnt4j.core.OpLevel;
+import com.jkoolcloud.tnt4j.sink.DefaultEventSinkFactory;
+import com.jkoolcloud.tnt4j.sink.EventSink;
 import com.jkoolcloud.tnt4j.stream.jmx.factory.SamplerFactory;
 import com.jkoolcloud.tnt4j.utils.Utils;
 
@@ -36,6 +39,8 @@ import com.jkoolcloud.tnt4j.utils.Utils;
  * @see PlatformJmxSampler
  */
 public class JBossJmxSampler extends PlatformJmxSampler {
+	private static final EventSink LOGGER = DefaultEventSinkFactory.defaultEventSink(JBossJmxSampler.class);
+
 	public static final String JBOSS_JMX_ADMIN_CLASS = "org.jboss.mx.util.MBeanServerLocator";
 
 	/**
@@ -66,7 +71,7 @@ public class JBossJmxSampler extends PlatformJmxSampler {
 		try {
 			return getAdminServer();
 		} catch (Throwable ex) {
-			ex.printStackTrace();
+			LOGGER.log(OpLevel.ERROR, "Failed to load and initialize JBoss JMX MBean Server", ex);
 		}
 		return ManagementFactory.getPlatformMBeanServer();
 	}

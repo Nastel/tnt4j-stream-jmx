@@ -15,7 +15,6 @@
  */
 package com.jkoolcloud.tnt4j.stream.jmx.utils;
 
-import java.io.PrintStream;
 import java.security.Principal;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
@@ -35,6 +34,9 @@ import com.ibm.websphere.security.WSSecurityHelper;
 import com.ibm.websphere.security.auth.WSSubject;
 import com.ibm.websphere.security.auth.callback.WSCallbackHandlerImpl;
 import com.ibm.websphere.security.cred.WSCredential;
+import com.jkoolcloud.tnt4j.core.OpLevel;
+import com.jkoolcloud.tnt4j.sink.DefaultEventSinkFactory;
+import com.jkoolcloud.tnt4j.sink.EventSink;
 
 /**
  * Helper class used to simplify use of WAS security entities.
@@ -45,6 +47,8 @@ import com.ibm.websphere.security.cred.WSCredential;
  * @version $Revision: 1 $
  */
 public class WASSecurityHelper {
+	private static final EventSink LOGGER = DefaultEventSinkFactory.defaultEventSink(WASSecurityHelper.class);
+
 	private static final String REALM_NAME = "default";
 
 	private static LoginContext loginContext;
@@ -140,43 +144,41 @@ public class WASSecurityHelper {
 	}
 
 	/**
-	 * Prints RunAs subject credentials to provided print stream.
-	 *
-	 * @param out
-	 *            print stream to use for output
+	 * Prints RunAs subject credentials to logger INFO level.
 	 */
-	public static void printCurrentCredentials(PrintStream out) {
+	public static void printCurrentCredentials() {
+		LOGGER.log(OpLevel.INFO, "=-=-=-=-=-=-= CREDENTIALS START =-=-=-=-=-=-=");
 		try {
 			Subject runAsSubject = WSSubject.getRunAsSubject();
 			if (runAsSubject != null) {
 				Iterator<Principal> iterator = runAsSubject.getPrincipals().iterator();
-				out.print("Running as: ");
+				LOGGER.log(OpLevel.INFO, "Running as: ");
 				while (iterator.hasNext()) {
-					out.print(iterator.next().getName() + ", ");
+					LOGGER.log(OpLevel.INFO, iterator.next().getName() + ", ");
 				}
 			} else {
-				out.println("!!!!   Security failure - no subject!..   !!!!");
+				LOGGER.log(OpLevel.INFO, "!!!!   Security failure - no subject!..   !!!!");
+				LOGGER.log(OpLevel.INFO, "=-=-=-=-=-=-=- CREDENTIALS END -=-=-=-=-=-=-=");
 				return;
 			}
 
 			Set<WSCredential> credentials = runAsSubject.getPublicCredentials(WSCredential.class);
 
 			for (WSCredential cred : credentials) {
-				out.println("getSecurityName: " + cred.getSecurityName());
-				out.println("getUniqueSecurityName: " + cred.getUniqueSecurityName());
-				out.println("getRealmName: " + cred.getRealmName());
-				out.println("getRealmSecurityName: " + cred.getRealmSecurityName());
-				out.println("getRealmUniqueSecurityName: " + cred.getRealmUniqueSecurityName());
+				LOGGER.log(OpLevel.INFO, "getSecurityName: {0}", cred.getSecurityName());
+				LOGGER.log(OpLevel.INFO, "getUniqueSecurityName: {0}", cred.getUniqueSecurityName());
+				LOGGER.log(OpLevel.INFO, "getRealmName: {0}", cred.getRealmName());
+				LOGGER.log(OpLevel.INFO, "getRealmSecurityName: {0}", cred.getRealmSecurityName());
+				LOGGER.log(OpLevel.INFO, "getRealmUniqueSecurityName: {0}", cred.getRealmUniqueSecurityName());
 				// always return null
-				out.println("getRoles: " + cred.getRoles());
+				LOGGER.log(OpLevel.INFO, "getRoles: {0}", cred.getRoles());
 				ArrayList<?> groupIds = cred.getGroupIds();
-				out.println("getGroupIds: " + groupIds);
-				out.println("=-=-=-=-=-=-=-=-=-=-=-=-=-=");
+				LOGGER.log(OpLevel.INFO, "getGroupIds: {0}", groupIds);
 			}
 		} catch (Exception e) {
-			out.println("!!!!   Security access failure!..   !!!!");
-			e.printStackTrace(out);
+			LOGGER.log(OpLevel.INFO, "!!!!   Security access failure!..   !!!!", e);
 		}
+		LOGGER.log(OpLevel.INFO, "=-=-=-=-=-=-=- CREDENTIALS END -=-=-=-=-=-=-=");
 	}
 
 	/**
@@ -208,19 +210,17 @@ public class WASSecurityHelper {
 	public static void acquireSubject(String user, String pass) {
 		if (isServerSecurityEnabled()) {
 			if (StringUtils.isNotEmpty(user) && StringUtils.isNotEmpty(pass)) {
-				System.out.println("==> trying to login manually as: " + user);
+				LOGGER.log(OpLevel.INFO, "==> trying to login manually as: {0}", user);
 				try {
 					login(user, pass);
 				} catch (LoginException e) {
-					System.err.println("!!!!   Failed to login user " + user + " and acquire subject!..   !!!!");
-					e.printStackTrace();
+					LOGGER.log(OpLevel.ERROR, "!!!!   Failed to login user {0} and acquire subject!..   !!!!", user, e);
 				}
 			} else {
 				try {
 					loginCurrent();
 				} catch (WSSecurityException e) {
-					System.err.println("!!!!   Failed to acquire RunAs subject!..   !!!!");
-					e.printStackTrace();
+					LOGGER.log(OpLevel.ERROR, "!!!!   Failed to acquire RunAs subject!..   !!!!", e);
 				}
 			}
 		}

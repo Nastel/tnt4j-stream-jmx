@@ -78,7 +78,7 @@ Executable OS shell run script files `bin/stream-jmx.bat` or `bin/stream-jmx.sh`
 
 Command line to run `stream-jmx` as JVM agent looks like this:
 ```cmd
-java -javaagent:tnt4j-stream-jmx.jar="*:*!30000" -Dtnt4j.config=tnt4j.properties -classpath "tnt4j-stream-jmx.jar;lib/*" your.class.name your-args
+java -javaagent:tnt4j-stream-jmx.jar="*:*!30000" -Dtnt4j.config=tnt4j.properties -Dlog4j.configuration=file:log4j.properties -classpath "tnt4j-stream-jmx.jar;lib/*" your.class.name your-args
 ```
 The options are `-javaagent:tnt4j-stream-jmx.jar="mbean-filter!sample-time-ms"`, classpath must include tnt4j-stream-jmx jar files as well 
 as locations of log4j and tnt4j configuration files. See [JMX Sampling Agent sampler options](#jmx-sampling-agent-sampler-options) for 
@@ -92,7 +92,7 @@ Executable OS shell run script files `bin/stream-jmx-attach.bat` or `bin/stream-
 
 Command line to attach local JVM process JMX looks like this:
 ```cmd
-java -Dtnt4j.config=.\config\tnt4j.properties -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -attach -vm:activemq -ap:tnt4j-stream-jmx-core-0.7-all.jar -ao:*:*!10000
+java -Dtnt4j.config=.\config\tnt4j.properties -Dlog4j.configuration=file:.\config\log4j.properties -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -attach -vm:activemq -ap:tnt4j-stream-jmx-core-0.7-all.jar -ao:*:*!10000
 ```
 System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [Stream-JMX configuration ](#stream-jmx-configuration).
 
@@ -163,7 +163,7 @@ rem using pid
 
 Command line to connect local JVM process JMX looks like this:
 ```cmd
-java -Dtnt4j.config=.\config\tnt4j.properties -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -vm:activemq -ao:*:*!*:dummy!10000
+java -Dtnt4j.config=.\config\tnt4j.properties -Dlog4j.configuration=file:.\config\log4j.properties -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -vm:activemq -ao:*:*!*:dummy!10000
 ```
 
 System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [Stream-JMX configuration ](#stream-jmx-configuration).
@@ -183,7 +183,7 @@ seconds. Sampler options are optional - default value is `*:*!30000`. Initial sa
 
 Command line to connect remote JMX service looks like this:
 ```cmd
-java -Dtnt4j.config=.\config\tnt4j.properties -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -vm:service:jmx:<JMX_URL> -ul:admin -up:admin -ao:*:*!!10000 -cri:30 -cp:java.naming.security.authentication=simple -cp:java.naming.factory.initial=com.sun.jndi.ldap.LdapCtxFactory
+java -Dtnt4j.config=.\config\tnt4j.properties -Dlog4j.configuration=file:.\config\log4j.properties -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -vm:service:jmx:<JMX_URL> -ul:admin -up:admin -ao:*:*!!10000 -cri:30 -cp:java.naming.security.authentication=simple -cp:java.naming.factory.initial=com.sun.jndi.ldap.LdapCtxFactory
 ```
 System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [Stream-JMX configuration ](#stream-jmx-configuration).
 
@@ -330,7 +330,7 @@ try {
 
 ### Command line to run
 ```cmd
-java -Dtnt4j.config=.\config\tnt4j.properties -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -local -ao:*:*!*:dummy!10000
+java -Dtnt4j.config=.\config\tnt4j.properties -Dlog4j.configuration=file:.\config\log4j.properties -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -local -ao:*:*!*:dummy!10000
 ```
 
 System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [Stream-JMX configuration ](#stream-jmx-configuration).
@@ -507,7 +507,7 @@ For more information on TNT4J and `tnt4j.properties` [see TNT4J Wiki](https://gi
 Example below runs `SamplingAgent` helper class as a standalone java application with a given MBean filter `"*:*"`, sampling period in 
 milliseconds (`10000`), and time to run in milliseconds (`60000`):
 ```cmd
-java -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true -classpath "*;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent "*:*" "" 10000 60000
+java -Dlog4j.configuration=file:.\config\log4j.properties -classpath "*;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent "*:*" "" 10000 60000
 ```
 
 ## Stream-JMX configuration
@@ -518,7 +518,6 @@ approach or another. When both definitions available **first** `System property`
 value **after**.
  
 JMX sampler configuration properties are:
-* `trace` - flag indicating whether the sample listener should print trace entries to print stream. Default value - `false`.
 * `forceObjectName` - flag indicating to forcibly add `objectName` attribute if such is not present for a MBean. Default value - `false`.
 * `compositeDelimiter` - delimiter used to tokenize composite/tabular type MBean properties keys. Default value - `\`;
 * `useObjectNameProperties` - flag indicating to copy MBean `ObjectName` contained properties into sample snapshot properties.
@@ -530,10 +529,11 @@ See [Program arguments used](#program-arguments-used) how to configure Stream-JM
 
 To define system property for application you can use common JVM argument `-Dkey=value` or `SamplingAgent` program argument `-sp:key=value`. 
 
+General use:
 * `tnt4j.config` - defines TNT4J properties file path. 
 Example: `-Dtnt4j.config=".\config\tnt4j.properties"`
-* `com.jkoolcloud.tnt4j.stream.jmx.agent.trace` - defines whether to dump trace data to application console output. Default value - `false`.
-Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true`
+* `log4j.configuration` - defines `stream-jmx` logging used LOG4J properties file path.
+Example: `-Dlog4j.configuration="file:.\config\log4j.properties"`
 * `com.jkoolcloud.tnt4j.stream.jmx.agent.forceObjectName` - defines whether to forcibly add `objectName` attribute if such is not present 
 for a MBean. Default value - `false`. 
 Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.forceObjectName=true`
@@ -545,13 +545,29 @@ sample snapshot properties. Default value - `true`.
 Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.useObjectNameProperties=false`
 * `sjmx.serviceId` - defines `stream-jmx` service identifier used by TNT4J source FQN to distinguish monitored application instance.
 Example: `-Dsjmx.serviceId=broker-0` or `-sp:sjmx.serviceId=broker-0`.
+* `com.jkoolcloud.tnt4j.stream.jmx.sampler.factory`- defines class name of `SamplerFactory` class to be used by stream. Default value -
+`com.jkoolcloud.tnt4j.stream.jmx.factory.DefaultSamplerFactory`. 
+Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.sampler.factory=com.jkoolcloud.tnt4j.stream.jmx.impl.WASSamplerFactory`.
+
+Used by **`tnt4j-stream-jmx-was`** module:
+* `com.jkoolcloud.tnt4j.stream.jmx.sampler.redirectJULToStreamLog` - defines whether to redirect WAS API used JUL logging output to 
+stream-jmx log. Default value - `false`.
+Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.sampler.redirectJULToStreamLog=true`
+
+**Changes between versions:**
+* Prior to version `0.7` `stream-jmx` was writing logging messages to `System.out/err` print streams. Since version `0.7` logging is 
+performed over `TNT4J` Log Sink to `slf4j-log4j12`. Logger configuration is defined in `./config/log4j.properties` file. 
+If you where using system property `-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true` prior to `0.7` version, this is now configured over 
+logger log level, by setting it to `TRACE` value, e.g:
+```properties
+log4j.logger.com.jkoolcloud.tnt4j.stream.jmx=TRACE
+```  
 
 ### Program arguments used
 
 To define stream JMX sampler configuration property use program argument`-slp:`. One argument defines one property. To define multiple 
 properties use as many argument definitions as there are required properties. For example:
 ```cmd
--slp:trace=true
 -slp:forceObjectName=true
 -slp:compositeDelimiter=.
 -slp:useObjectNameProperties=false

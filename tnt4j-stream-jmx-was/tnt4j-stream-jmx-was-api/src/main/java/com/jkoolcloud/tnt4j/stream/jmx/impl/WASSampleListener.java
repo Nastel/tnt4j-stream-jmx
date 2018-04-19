@@ -16,7 +16,6 @@
 
 package com.jkoolcloud.tnt4j.stream.jmx.impl;
 
-import java.io.PrintStream;
 import java.util.Map;
 
 import javax.management.j2ee.statistics.Stats;
@@ -38,15 +37,13 @@ public class WASSampleListener extends J2EESampleListener {
 	/**
 	 * Create an instance of {@code WASSampleListener} with a a given print stream and configuration properties.
 	 *
-	 * @param pStream
-	 *            print stream instance for tracing
 	 * @param properties
 	 *            listener configuration properties map
 	 *
 	 * @see com.jkoolcloud.tnt4j.stream.jmx.core.DefaultSampleListener.ListenerProperties
 	 */
-	public WASSampleListener(PrintStream pStream, Map<String, ?> properties) {
-		super(pStream, properties);
+	public WASSampleListener(Map<String, ?> properties) {
+		super(properties);
 	}
 
 	@Override

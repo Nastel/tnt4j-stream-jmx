@@ -21,6 +21,9 @@ import java.lang.reflect.Method;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerConnection;
 
+import com.jkoolcloud.tnt4j.core.OpLevel;
+import com.jkoolcloud.tnt4j.sink.DefaultEventSinkFactory;
+import com.jkoolcloud.tnt4j.sink.EventSink;
 import com.jkoolcloud.tnt4j.stream.jmx.factory.SamplerFactory;
 import com.jkoolcloud.tnt4j.utils.Utils;
 
@@ -35,6 +38,8 @@ import com.jkoolcloud.tnt4j.utils.Utils;
  * @see PlatformJmxSampler
  */
 public class WASJmxSampler extends PlatformJmxSampler {
+	private static final EventSink LOGGER = DefaultEventSinkFactory.defaultEventSink(WASJmxSampler.class);
+
 	public static final String WAS_JMX_ADMIN_CLASS = "com.ibm.websphere.management.AdminServiceFactory";
 
 	/**
@@ -69,7 +74,7 @@ public class WASJmxSampler extends PlatformJmxSampler {
 		try {
 			return getAdminServer();
 		} catch (Throwable ex) {
-			ex.printStackTrace();
+			LOGGER.log(OpLevel.ERROR, "Failed to load and initialize WebSphere JMX MBean Server", ex);
 		}
 		return ManagementFactory.getPlatformMBeanServer();
 	}

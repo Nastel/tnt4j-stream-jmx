@@ -15,7 +15,6 @@
  */
 package com.jkoolcloud.tnt4j.stream.jmx.impl;
 
-import java.io.PrintStream;
 import java.util.Map;
 
 import javax.management.MBeanAttributeInfo;
@@ -39,15 +38,13 @@ public class J2EESampleListener extends DefaultSampleListener {
 	/**
 	 * Create an instance of {@code J2EESampleListener} with a a given print stream and configuration properties.
 	 *
-	 * @param pStream
-	 *            print stream instance for tracing
 	 * @param properties
 	 *            listener configuration properties map
 	 *
 	 * @see com.jkoolcloud.tnt4j.stream.jmx.core.DefaultSampleListener.ListenerProperties
 	 */
-	public J2EESampleListener(PrintStream pStream, Map<String, ?> properties) {
-		super(pStream, properties);
+	public J2EESampleListener(Map<String, ?> properties) {
+		super(properties);
 	}
 
 	@Override

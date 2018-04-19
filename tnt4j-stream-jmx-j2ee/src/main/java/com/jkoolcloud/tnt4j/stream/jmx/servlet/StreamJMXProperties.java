@@ -68,10 +68,6 @@ public enum StreamJMXProperties implements StreamJMXProperty {
 	 */
 	PORT("com.jkoolcloud.tnt4j.stream.jmx.tnt4j.out.port", "6000", EDITABLE, SYSTEM, LOCAL),
 	/**
-	 * Agent trace flag.
-	 */
-	TRACE("com.jkoolcloud.tnt4j.stream.jmx.agent.trace", "true", EDITABLE, SYSTEM),
-	/**
 	 * Agent force object name flag.
 	 */
 	FORCE_OBJ_NAME("com.jkoolcloud.tnt4j.stream.jmx.agent.forceObjectName", "true", EDITABLE, SYSTEM),
@@ -103,7 +99,11 @@ public enum StreamJMXProperties implements StreamJMXProperty {
 	/**
 	 * TNT4J configuration file.
 	 */
-	TNT4J_CONFIG(TrackerConfigStore.TNT4J_PROPERTIES_KEY, "file:./tnt4j.properties", READ_ONLY, SYSTEM, LOCAL);
+	TNT4J_CONFIG(TrackerConfigStore.TNT4J_PROPERTIES_KEY, "file:./tnt4j.properties", READ_ONLY, SYSTEM, LOCAL),
+	/**
+	 * LOG4J configuration file.
+	 */
+	LOG4J_CONFIG("log4j.configuration", "file:./log4j.properties", READ_ONLY, SYSTEM, LOCAL);
 
 	private String key;
 	private String defaultValue;

@@ -15,7 +15,6 @@
  */
 package com.jkoolcloud.tnt4j.stream.jmx.factory;
 
-import java.io.PrintStream;
 import java.util.Map;
 
 import javax.management.MBeanServerConnection;
@@ -47,6 +46,11 @@ public interface SamplerFactory {
 	Sampler newInstance();
 
 	/**
+	 * Performs sampling procedure initialization.
+	 */
+	void initialize();
+
+	/**
 	 * Create a default instance with a given MBean server instance.
 	 * 
 	 * @param mServerConn
@@ -60,15 +64,13 @@ public interface SamplerFactory {
 	/**
 	 * Creates instance of {@link SampleListener} to be used by {@link Sampler}.
 	 * 
-	 * @param pStream
-	 *            print stream instance for tracing
 	 * @param properties
 	 *            listener configuration properties map
 	 * @return sample listener instance to use
 	 *
 	 * @see SampleListener
 	 */
-	SampleListener newListener(PrintStream pStream, Map<String, ?> properties);
+	SampleListener newListener(Map<String, ?> properties);
 
 	/**
 	 * Returns default class name for a event formatter to be used by sampler logger.

@@ -15,7 +15,6 @@
  */
 package com.jkoolcloud.tnt4j.stream.jmx.impl;
 
-import java.io.PrintStream;
 import java.util.Map;
 
 import javax.management.MBeanServerConnection;
@@ -47,6 +46,10 @@ public class PlatformSamplerFactory implements SamplerFactory {
 	}
 
 	@Override
+	public void initialize() {
+	}
+
+	@Override
 	public Sampler newInstance(MBeanServerConnection mServerConn) {
 		return mServerConn == null ? newInstance() : new PlatformJmxSampler(mServerConn, this);
 	}
@@ -57,8 +60,8 @@ public class PlatformSamplerFactory implements SamplerFactory {
 	 * @see com.jkoolcloud.tnt4j.stream.jmx.core.DefaultSampleListener.ListenerProperties
 	 */
 	@Override
-	public SampleListener newListener(PrintStream pStream, Map<String, ?> properties) {
-		return new DefaultSampleListener(pStream, properties);
+	public SampleListener newListener(Map<String, ?> properties) {
+		return new DefaultSampleListener(properties);
 	}
 
 	@Override
