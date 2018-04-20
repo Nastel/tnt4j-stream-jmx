@@ -944,7 +944,7 @@ public class SamplingAgent {
 
 					startSamplerAndWait(options, connector);
 
-					shutdownSampler();
+					shutdownSamplers();
 					connector.removeConnectionNotificationListener(cnl);
 				} finally {
 					Utils.close(connector);
@@ -1117,11 +1117,13 @@ public class SamplingAgent {
 	public static void destroy() {
 		synchronized (STREAM_AGENTS) {
 			stopSampler();
-			shutdownSampler();
+			shutdownSamplers();
+
+			DefaultEventSinkFactory.shutdownAll();
 		}
 	}
 
-	private static void shutdownSampler() {
+	private static void shutdownSamplers() {
 		cancel();
 		// TrackingLogger.shutdownAll();
 		platformJmx = null;
