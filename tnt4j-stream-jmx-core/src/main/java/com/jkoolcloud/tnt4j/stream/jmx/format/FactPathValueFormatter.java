@@ -42,6 +42,9 @@ import com.jkoolcloud.tnt4j.utils.Utils;
  */
 public class FactPathValueFormatter extends FactNameValueFormatter {
 
+	public static final String UNIQUE_SUFFIX = "_";
+
+	protected String uniqueSuffix = UNIQUE_SUFFIX;
 	protected String[][] pathLevelAttrKeys = null;
 
 	protected final Properties objNameProps = new Properties();
@@ -292,6 +295,8 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 	@Override
 	public void setConfiguration(Map<String, Object> settings) {
 		super.setConfiguration(settings);
+
+		uniqueSuffix = Utils.getString("DuplicateKeySuffix", settings, uniqueSuffix);
 
 		String pValue = Utils.getString("PathLevelAttributes", settings, "");
 		if (StringUtils.isNotEmpty(pValue)) {

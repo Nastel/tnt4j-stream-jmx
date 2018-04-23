@@ -25,9 +25,6 @@ import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.jkoolcloud.tnt4j.core.Property;
-import com.jkoolcloud.tnt4j.core.Snapshot;
-
 /**
  * General utility methods used by TNT4J-Stream-JMX.
  *
@@ -100,27 +97,6 @@ public class Utils extends com.jkoolcloud.tnt4j.utils.Utils {
 		}
 
 		return rProps;
-	}
-
-	/**
-	 * Finds snapshot contained property by defined property name ignoring case.
-	 * 
-	 * @param snapshot
-	 *            property snapshot instance
-	 * @param propName
-	 *            property name
-	 * @return snapshot contained property
-	 */
-	public static Property getSnapPropertyIgnoreCase(Snapshot snapshot, String propName) {
-		if (snapshot != null) {
-			for (Property prop : snapshot.getSnapshot()) {
-				if (prop.getKey().equalsIgnoreCase(propName)) {
-					return prop;
-				}
-			}
-		}
-
-		return null;
 	}
 
 	/**

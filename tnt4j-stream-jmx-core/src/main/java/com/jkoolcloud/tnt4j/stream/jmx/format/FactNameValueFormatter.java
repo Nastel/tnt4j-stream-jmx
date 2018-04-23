@@ -51,14 +51,11 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	public static final String PATH_DELIM = "\\";
 	public static final String EQ = "=";
 	public static final String FS_REP = "!";
-	public static final String UNIQUE_SUFFIX = "_";
 
 	private static final String SELF_SNAP_NAME = "Self";
 	private static final String SELF_SNAP_ID = SELF_SNAP_NAME + "@" + PropertySnapshot.CATEGORY_DEFAULT;
 
 	private static final String SNAP_NAME_PROP = "JMX_SNAP_NAME";
-
-	protected String uniqueSuffix = UNIQUE_SUFFIX;
 
 	protected Map<String, String> keyReplacements = new HashMap<String, String>();
 	protected Map<String, String> valueReplacements = new HashMap<String, String>();
@@ -372,8 +369,6 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		} else {
 			Utils.parseReplacements(pValue, valueReplacements);
 		}
-
-		uniqueSuffix = Utils.getString("DuplicateKeySuffix", settings, uniqueSuffix);
 	}
 
 	/**
