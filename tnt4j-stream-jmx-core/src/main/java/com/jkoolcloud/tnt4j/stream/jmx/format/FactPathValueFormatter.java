@@ -108,6 +108,71 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 		return propertyComparator;
 	}
 
+	/**
+	 * Makes string representation of snapshot and appends it to provided string builder.
+	 * <p>
+	 * Note: Custom internal use snapshot property named {@code 'JMX_SNAP_NAME'} is ignored.
+	 * <p>
+	 * In case snapshot properties have same key for "branch" and "leaf" nodes at same path level, than "leaf" node
+	 * property key value is appended by configuration defined (cfg. key {@code "DuplicateKeySuffix"}, default value
+	 * {@value #UNIQUE_SUFFIX}) suffix.
+	 *
+	 * @param nvString
+	 *            string builder instance to append
+	 * @param snap
+	 *            snapshot instance to represent as string
+	 * @return appended string builder reference
+	 *
+	 * @see #getUniquePropertyKey(String, com.jkoolcloud.tnt4j.core.Property[], int)
+	 */
+	@Override
+	protected StringBuilder toString(StringBuilder nvString, Snapshot snap) {
+		Collection<Property> list = getProperties(snap);
+		Property[] pArray = new Property[list.size()];
+		pArray = list.toArray(pArray);
+		String sName = getSnapName(snap);
+		for (int i = 0; i < pArray.length; i++) {
+			Property p = pArray[i];
+			if (p.isTransient()) {
+				continue;
+			}
+
+			String pKey = getUniquePropertyKey(p.getKey(), pArray, i);
+			Object value = p.getValue();
+
+			nvString.append(getKeyStr(sName, pKey));
+			nvString.append(EQ).append(getValueStr(value)).append(FIELD_SEP);
+		}
+		return nvString;
+	}
+
+	/**
+	 * Gets property key value and makes it to be unique on same path level among all array properties.
+	 * <p>
+	 * In case of duplicate keys uniqueness is made by adding configuration defined (cfg. key
+	 * {@code "DuplicateKeySuffix"}, default value {@value #UNIQUE_SUFFIX}) suffix to property key value.
+	 *
+	 * @param pKey
+	 *            property key value
+	 * @param pArray
+	 *            properties array
+	 * @param pIdx
+	 *            property index in array
+	 * @return unique property key value
+	 */
+	protected String getUniquePropertyKey(String pKey, Property[] pArray, int pIdx) {
+		String ppKey;
+		for (int i = pIdx + 1; i < pArray.length; i++) {
+			ppKey = pArray[i].getKey();
+
+			if (ppKey.startsWith(pKey + PATH_DELIM)) {
+				pKey += uniqueSuffix;
+			}
+		}
+
+		return pKey;
+	}
+
 	@Override
 	protected String getSnapNameStr(String objCanonName) {
 		if (Utils.isEmpty(objCanonName)) {

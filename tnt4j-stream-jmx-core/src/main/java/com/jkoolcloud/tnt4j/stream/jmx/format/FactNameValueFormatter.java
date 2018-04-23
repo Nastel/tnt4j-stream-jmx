@@ -76,7 +76,9 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		StringBuilder nvString = new StringBuilder(1024);
 
 		nvString.append("OBJ:Streams");
-		toString(nvString, event.getSource()).append(event.getName()).append("\\Events").append(FIELD_SEP);
+		// ------------------------------------------------------------- name
+		toString(nvString, event.getSource()).append(PATH_DELIM).append(event.getName()).append(PATH_DELIM)
+				.append("Events").append(FIELD_SEP);
 
 		if (event.getOperation().getSnapshot(SELF_SNAP_ID) == null) {
 			Snapshot selfSnapshot = getSelfSnapshot(event.getOperation());
@@ -114,7 +116,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		StringBuilder nvString = new StringBuilder(1024);
 
 		nvString.append("OBJ:Streams");
-		toString(nvString, activity.getSource()).append("\\Activities").append(FIELD_SEP);
+		toString(nvString, activity.getSource()).append(PATH_DELIM).append("Activities").append(FIELD_SEP);
 
 		if (activity.getSnapshot(SELF_SNAP_ID) == null) {
 			Snapshot selfSnapshot = getSelfSnapshot(activity);
@@ -159,8 +161,8 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	public String format(Snapshot snapshot) {
 		StringBuilder nvString = new StringBuilder(1024);
 
-		String prefix = "OBJ:Metrics\\" + snapshot.getCategory();
-		nvString.append(prefix).append(FIELD_SEP);
+		// ------------------------------------------------------ category, id or name
+		nvString.append("OBJ:Metrics").append(PATH_DELIM).append(snapshot.getCategory()).append(FIELD_SEP);
 		toString(nvString, snapshot).append(END_SEP);
 
 		return nvString.toString();
@@ -171,9 +173,9 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		StringBuilder nvString = new StringBuilder(1024);
 
 		nvString.append("OBJ:Streams");
-		toString(nvString, source).append("\\Message").append(FIELD_SEP);
-		nvString.append("Self\\level=").append(getValueStr(level)).append(FIELD_SEP);
-		nvString.append("Self\\msg-text=");
+		toString(nvString, source).append(PATH_DELIM).append("Message").append(FIELD_SEP);
+		nvString.append("Self").append(PATH_DELIM).append("level=").append(getValueStr(level)).append(FIELD_SEP);
+		nvString.append("Self").append(PATH_DELIM).append("msg-text=");
 		Utils.quote(Utils.format(msg, args), nvString).append(END_SEP);
 		return nvString.toString();
 	}
@@ -224,66 +226,28 @@ public class FactNameValueFormatter extends DefaultFormatter {
 
 	/**
 	 * Makes string representation of snapshot and appends it to provided string builder.
-	 * <p>
-	 * Note: Custom internal use snapshot property named {@code 'JMX_SNAP_NAME'} is ignored.
-	 * <p>
-	 * In case snapshot properties have same key for "branch" and "leaf" nodes at same path level, than "leaf" node
-	 * property key value is appended by configuration defined (cfg. key {@code "DuplicateKeySuffix"}, default value
-	 * {@value #UNIQUE_SUFFIX}) suffix.
 	 *
 	 * @param nvString
 	 *            string builder instance to append
 	 * @param snap
 	 *            snapshot instance to represent as string
 	 * @return appended string builder reference
-	 *
-	 * @see #getUniquePropertyKey(String, com.jkoolcloud.tnt4j.core.Property[], int)
 	 */
 	protected StringBuilder toString(StringBuilder nvString, Snapshot snap) {
 		Collection<Property> list = getProperties(snap);
-		Property[] pArray = new Property[list.size()];
-		pArray = list.toArray(pArray);
 		String sName = getSnapName(snap);
-		for (int i = 0; i < pArray.length; i++) {
-			Property p = pArray[i];
+		for (Property p : list) {
 			if (p.isTransient()) {
 				continue;
 			}
 
-			String pKey = getUniquePropertyKey(p.getKey(), pArray, i);
+			String pKey = p.getKey();
 			Object value = p.getValue();
 
 			nvString.append(getKeyStr(sName, pKey));
 			nvString.append(EQ).append(getValueStr(value)).append(FIELD_SEP);
 		}
 		return nvString;
-	}
-
-	/**
-	 * Gets property key value and makes it to be unique on same path level among all array properties.
-	 * <p>
-	 * In case of duplicate keys uniqueness is made by adding configuration defined (cfg. key
-	 * {@code "DuplicateKeySuffix"}, default value {@value #UNIQUE_SUFFIX}) suffix to property key value.
-	 *
-	 * @param pKey
-	 *            property key value
-	 * @param pArray
-	 *            properties array
-	 * @param pIdx
-	 *            property index in array
-	 * @return unique property key value
-	 */
-	protected String getUniquePropertyKey(String pKey, Property[] pArray, int pIdx) {
-		String ppKey;
-		for (int i = pIdx + 1; i < pArray.length; i++) {
-			ppKey = pArray[i].getKey();
-
-			if (ppKey.startsWith(pKey + PATH_DELIM)) {
-				pKey += uniqueSuffix;
-			}
-		}
-
-		return pKey;
 	}
 
 	/**
