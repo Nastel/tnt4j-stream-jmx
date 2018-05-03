@@ -11,10 +11,6 @@
     </parent>
     <packaging>pom</packaging>
 
-    <prerequisites>
-        <maven>3.0.0</maven>
-    </prerequisites>
-
     <artifactId>tnt4j-stream-jmx--distribution</artifactId>
 
     <properties>

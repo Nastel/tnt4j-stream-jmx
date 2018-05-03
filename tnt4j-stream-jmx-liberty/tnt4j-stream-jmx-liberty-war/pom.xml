@@ -11,10 +11,6 @@
     </parent>
     <packaging>war</packaging>
 
-    <prerequisites>
-        <maven>3.0.0</maven>
-    </prerequisites>
-
     <artifactId>tnt4j-stream-jmx-liberty-war</artifactId>
     <description>IBM WebSphere Liberty profile JMX collection and streaming WAR package</description>
 

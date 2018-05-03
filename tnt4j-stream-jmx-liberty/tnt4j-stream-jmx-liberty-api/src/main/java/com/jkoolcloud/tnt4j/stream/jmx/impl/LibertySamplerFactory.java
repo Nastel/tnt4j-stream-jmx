@@ -16,18 +16,16 @@
 
 package com.jkoolcloud.tnt4j.stream.jmx.impl;
 
-import com.jkoolcloud.tnt4j.stream.jmx.format.SLIFactPathValueFormatter;
-
 /**
  * <p>
  * This class provides a {@link com.jkoolcloud.tnt4j.stream.jmx.factory.SamplerFactory} implementation with
- * {@link SLIFactPathValueFormatter} as underlying samples formatter implementation.
+ * {@code com.jkoolcloud.tnt4j.stream.jmx.format.SLIFactPathValueFormatter} as underlying samples formatter
+ * implementation.
  * </p>
  *
  * @version $Revision: 1 $
  *
  * @see com.jkoolcloud.tnt4j.stream.jmx.core.Sampler
- * @see SLIFactPathValueFormatter
  */
 public class LibertySamplerFactory extends J2EESamplerFactory {
 	@Override

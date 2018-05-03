@@ -11,10 +11,6 @@
     </parent>
     <packaging>ear</packaging>
 
-    <prerequisites>
-        <maven>3.0.0</maven>
-    </prerequisites>
-
     <artifactId>tnt4j-stream-jmx-was-ear</artifactId>
     <description>IBM WAS JMX collection and streaming EAR package</description>
 

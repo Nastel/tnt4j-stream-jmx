@@ -7,9 +7,9 @@
     <version>0.7-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <prerequisites>
-        <maven>3.0.0</maven>
-    </prerequisites>
+    <!--<prerequisites>-->
+    <!--<maven>3.0.0</maven>-->
+    <!--</prerequisites>-->
 
     <name>tnt4j-stream-jmx</name>
     <url>${project.organization.url}</url>

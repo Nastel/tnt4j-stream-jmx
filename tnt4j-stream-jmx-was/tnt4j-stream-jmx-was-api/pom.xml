@@ -11,10 +11,6 @@
     </parent>
     <packaging>jar</packaging>
 
-    <prerequisites>
-        <maven>3.0.0</maven>
-    </prerequisites>
-
     <artifactId>tnt4j-stream-jmx-was-api</artifactId>
     <description>IBM WAS JMX collection and streaming API package</description>
 

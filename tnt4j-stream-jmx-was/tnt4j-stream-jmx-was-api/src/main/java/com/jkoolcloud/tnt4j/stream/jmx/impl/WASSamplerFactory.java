@@ -31,7 +31,8 @@ import com.jkoolcloud.tnt4j.utils.Utils;
 /**
  * <p>
  * This class provides a {@link com.jkoolcloud.tnt4j.stream.jmx.factory.SamplerFactory} implementation with
- * {@link WASJmxSampler} as underlying sampler implementation.
+ * {@link WASJmxSampler} as underlying sampler implementation and
+ * {@code com.jkoolcloud.tnt4j.stream.jmx.format.SLIFactPathValueFormatter} as samples formatter.
  * </p>
  *
  * @version $Revision: 1 $
