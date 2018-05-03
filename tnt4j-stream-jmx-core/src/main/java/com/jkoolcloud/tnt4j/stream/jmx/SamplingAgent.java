@@ -1118,14 +1118,12 @@ public class SamplingAgent {
 		synchronized (STREAM_AGENTS) {
 			stopSampler();
 			shutdownSamplers();
-
-			DefaultEventSinkFactory.shutdownAll();
 		}
 	}
 
 	private static void shutdownSamplers() {
 		cancel();
-		// TrackingLogger.shutdownAll();
+		DefaultEventSinkFactory.shutdownAll();
 		platformJmx = null;
 	}
 
