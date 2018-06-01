@@ -353,7 +353,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	}
 
 	@Override
-	public void setConfiguration(Map<String, Object> settings) {
+	public void setConfiguration(Map<String, ?> settings) {
 		super.setConfiguration(settings);
 
 		String pValue = Utils.getString("KeyReplacements", settings, "");

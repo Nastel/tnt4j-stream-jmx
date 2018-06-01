@@ -293,7 +293,7 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 	}
 
 	@Override
-	public void setConfiguration(Map<String, Object> settings) {
+	public void setConfiguration(Map<String, ?> settings) {
 		super.setConfiguration(settings);
 
 		uniqueSuffix = Utils.getString("DuplicateKeySuffix", settings, uniqueSuffix);
