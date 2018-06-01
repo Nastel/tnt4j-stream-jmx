@@ -32,6 +32,9 @@ set TNT4JOPTS=%TNT4JOPTS% "-Dsjmx.serviceId=%TNT4J_APPSERVER%"
 rem -------------------------------------
 
 rem ---- Agent arguments ----
+rem use this when streaming to AutoPilot
+rem if "%TNT4J_AGENT_ARGS%"=="" set TNT4J_AGENT_ARGS=-slp:compositeDelimiter=\
+rem use this when streaming to JKool
 if "%TNT4J_AGENT_ARGS%"=="" set TNT4J_AGENT_ARGS=-slp:compositeDelimiter=_
 if not "%4"=="" if not "%4"=="." set TNT4J_AGENT_ARGS=%4
 rem -------------------------

@@ -71,6 +71,9 @@ TNT4JOPTS="$TNT4JOPTS -Dsjmx.serviceId=$TNT4J_APPSERVER"
 
 ### ---- Agent arguments ----
 if [ -z "$TNT4J_AGENT_ARGS" ]; then
+### use this when streaming to AutoPilot
+#    TNT4J_AGENT_ARGS="-slp:compositeDelimiter=\\"
+### use this when streaming to JKool
     TNT4J_AGENT_ARGS="-slp:compositeDelimiter=_"
 fi
 if [ "x$4" != "x" ] && [ "x$4" != "x." ]; then
