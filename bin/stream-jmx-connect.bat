@@ -50,7 +50,7 @@ rem -------------------------------------
 rem ---- Agent arguments ----
 rem use this when streaming to AutoPilot
 rem if "%TNT4J_AGENT_ARGS%"=="" set TNT4J_AGENT_ARGS=-slp:compositeDelimiter=\
-rem use this when streaming to JKool
+rem use this when streaming to jKool
 if "%TNT4J_AGENT_ARGS%"=="" set TNT4J_AGENT_ARGS=-slp:compositeDelimiter=_
 if not "%4"=="" if not "%4"=="." set TNT4J_AGENT_ARGS=%4
 rem -------------------------
