@@ -89,6 +89,8 @@ public class VMUtils {
 	public static String getVMConnAddress(String vmDescr) throws IOException {
 		try {
 			VirtualMachineDescriptor descriptor = findVMs(vmDescr).get(0);
+			LOGGER.log(OpLevel.INFO, "SamplingAgent.getVMConnAddress: VM descriptor matched JVM [{0}]",
+					vmString(descriptor));
 			VirtualMachine virtualMachine = VirtualMachine.attach(descriptor.id());
 			String connectorAddress;
 

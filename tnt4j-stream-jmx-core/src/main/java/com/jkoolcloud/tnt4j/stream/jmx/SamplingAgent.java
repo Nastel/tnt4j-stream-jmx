@@ -41,6 +41,7 @@ import com.jkoolcloud.tnt4j.core.OpLevel;
 import com.jkoolcloud.tnt4j.sink.DefaultEventSinkFactory;
 import com.jkoolcloud.tnt4j.sink.EventSink;
 import com.jkoolcloud.tnt4j.stream.jmx.core.DefaultSampleListener;
+import com.jkoolcloud.tnt4j.stream.jmx.core.PropertyNameBuilder;
 import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
 import com.jkoolcloud.tnt4j.stream.jmx.factory.DefaultSamplerFactory;
 import com.jkoolcloud.tnt4j.stream.jmx.factory.SamplerFactory;
@@ -110,7 +111,7 @@ public class SamplingAgent {
 		initDefaults(DEFAULTS);
 
 		copyProperty(FORCE_OBJECT_NAME, DEFAULTS, LISTENER_PROPERTIES, false);
-		copyProperty(COMPOSITE_DELIMITER, DEFAULTS, LISTENER_PROPERTIES, "\\");
+		copyProperty(COMPOSITE_DELIMITER, DEFAULTS, LISTENER_PROPERTIES, PropertyNameBuilder.DEFAULT_COMPOSITE_DELIMITER);
 		copyProperty(USE_OBJECT_NAME_PROPERTIES, DEFAULTS, LISTENER_PROPERTIES, true);
 
 		copyProperty(FORCE_OBJECT_NAME, System.getProperties(), LISTENER_PROPERTIES);

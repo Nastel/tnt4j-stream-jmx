@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.jkoolcloud.tnt4j.config.TrackerConfigStore;
+import com.jkoolcloud.tnt4j.stream.jmx.core.PropertyNameBuilder;
 
 /**
  * Common Stream-JMX servlet used properties enumeration.
@@ -74,7 +75,7 @@ public enum StreamJMXProperties implements StreamJMXProperty {
 	/**
 	 * Agent MBean attribute composite/tabular data tokens delimiter.
 	 */
-	COMPOSITE_DELIMITER("com.jkoolcloud.tnt4j.stream.jmx.agent.compositeDelimiter", "\\", EDITABLE, SYSTEM),
+	COMPOSITE_DELIMITER("com.jkoolcloud.tnt4j.stream.jmx.agent.compositeDelimiter", PropertyNameBuilder.DEFAULT_COMPOSITE_DELIMITER, EDITABLE, SYSTEM),
 	/**
 	 * Agent force object name flag.
 	 */

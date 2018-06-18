@@ -20,6 +20,7 @@ import java.util.Deque;
 
 /**
  * Utility class for building JMX attribute property names as paths tokenized by defined {@code delimiter} string.
+ * Default delimiter is {@value #DEFAULT_COMPOSITE_DELIMITER}.
  * <p>
  * It uses {@link StringBuilder} to store property name string and {@link Deque} to mark string builder positions
  * allowing to rewind to particular path position by popping tokens out from built path.
@@ -27,9 +28,13 @@ import java.util.Deque;
  * @version $Revision: 1 $
  */
 public class PropertyNameBuilder {
+	public static final String DEFAULT_COMPOSITE_DELIMITER = "\\";
+	public static final String DEFAULT_COMPOSITE_DELIMITER_REPLACEMENT = "_";
+
 	private StringBuilder sb;
 	private Deque<Integer> marks;
-	private String delimiter = "\\";
+	private String delimiter;
+	private String delimReplacement = DEFAULT_COMPOSITE_DELIMITER_REPLACEMENT;
 
 	/**
 	 * Constructs a new PropertyNameBuilder. Default delimiter is {@code "\"}.
@@ -38,7 +43,7 @@ public class PropertyNameBuilder {
 	 *            initial property name string
 	 */
 	public PropertyNameBuilder(String initName) {
-		this(initName, "\\");
+		this(initName, DEFAULT_COMPOSITE_DELIMITER);
 	}
 
 	/**
@@ -50,9 +55,9 @@ public class PropertyNameBuilder {
 	 *            property tokens delimiter
 	 */
 	public PropertyNameBuilder(String initName, String delimiter) {
-		this.sb = new StringBuilder(checkNull(initName));
 		this.marks = new ArrayDeque<Integer>(5);
 		this.delimiter = delimiter;
+		this.sb = new StringBuilder(checkPropertyName(initName));
 	}
 
 	/**
@@ -65,12 +70,12 @@ public class PropertyNameBuilder {
 	 */
 	public void reset(String initName) {
 		sb.setLength(0);
-		sb.append(checkNull(initName));
+		sb.append(checkPropertyName(initName));
 		marks.clear();
 	}
 
-	private static String checkNull(String initName) {
-		return initName == null ? "null" : initName;
+	private String checkPropertyName(String pName) {
+		return pName == null ? "null" : pName.replace(delimiter, delimReplacement);
 	}
 
 	/**
@@ -88,7 +93,7 @@ public class PropertyNameBuilder {
 		if (!isEmpty()) {
 			sb.append(delimiter);
 		}
-		sb.append(checkNull(str));
+		sb.append(checkPropertyName(str));
 		return this;
 	}
 
