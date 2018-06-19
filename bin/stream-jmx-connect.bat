@@ -56,7 +56,7 @@ if not "%4"=="" if not "%4"=="." set TNT4J_AGENT_ARGS=%4
 rem -------------------------
 
 @echo on
-java %TNT4JOPTS% -classpath "%LIBPATH%" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -vm:%1 -ao:%TNT4J_AGENT_OPTIONS% %TNT4J_AGENT_ARGS%
+"%JAVA_HOME%\bin\java" %TNT4JOPTS% -classpath "%LIBPATH%" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -vm:%1 -ao:%TNT4J_AGENT_OPTIONS% %TNT4J_AGENT_ARGS%
 @echo off
 goto :eof
 
@@ -69,7 +69,7 @@ IF ["%LIBPATH%"] EQU [""] (
 EXIT /B 0
 :search_lib_path
 for /f "delims=" %%a in ('
-    dir /a-d /b /s %RUNDIR%..\tnt4j-stream-jmx-%1*.jar ^| find /i /v "-sources" ^| find /i /v "-javadoc" ^| find /i /v "-test"
+    dir /a-d /b /s %RUNDIR%..\tnt4j-stream-jmx-%1*.jar ^| find /i /v "-sources" ^| find /i /v "-javadoc" ^| find /i /v "-test" ^| find /i /v "-all"
 ') do call :concat_lib_path %%~fa
 EXIT /B 0
 :eof

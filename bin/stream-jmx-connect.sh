@@ -9,7 +9,7 @@
 ### -----------------------------
 
 # Exclude jars not necessary for running commands.
-regex="(-(test|sources|javadoc)\.jar|jar.asc)$"
+regex="(-(test|sources|javadoc|all)\.jar|jar.asc)$"
 should_include_file() {
   file=$1
   if [ -z "$(echo "$file" | egrep "$regex")" ] ; then
@@ -104,4 +104,4 @@ if [ "x$4" != "x" ] && [ "x$4" != "x." ]; then
 fi
 ### -------------------------
 
-java $TNT4JOPTS -classpath "$LIBPATH" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -vm:$1  -ao:$TNT4J_AGENT_OPTIONS $TNT4J_AGENT_ARGS
+"$JAVA_HOME/bin/java" $TNT4JOPTS -classpath "$LIBPATH" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -vm:$1  -ao:$TNT4J_AGENT_OPTIONS $TNT4J_AGENT_ARGS

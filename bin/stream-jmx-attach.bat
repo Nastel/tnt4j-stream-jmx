@@ -40,4 +40,4 @@ if not "%4"=="" if not "%4"=="." set TNT4J_AGENT_ARGS=%4
 rem -------------------------
 
 @echo on
-java %TNT4JOPTS% -classpath "%LIBPATH%" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -attach -vm:%1 -ap:.\..\lib\tnt4j-stream-jmx-0.6.0.jar -ao:%TNT4J_AGENT_OPTIONS% %TNT4J_AGENT_ARGS%
+"%JAVA_HOME%\bin\java" %TNT4JOPTS% -classpath "%LIBPATH%" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -attach -vm:%1 -ap:.\..\lib\tnt4j-stream-jmx-0.6.0.jar -ao:%TNT4J_AGENT_OPTIONS% %TNT4J_AGENT_ARGS%
