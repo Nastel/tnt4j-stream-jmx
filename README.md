@@ -78,9 +78,9 @@ Executable OS shell run script files `bin/stream-jmx.bat` or `bin/stream-jmx.sh`
 
 Command line to run `stream-jmx` as JVM agent looks like this:
 ```cmd
-java -javaagent:tnt4j-stream-jmx.jar="*:*!30000" -Dtnt4j.config=tnt4j.properties -Dlog4j.configuration=file:log4j.properties -classpath "tnt4j-stream-jmx.jar;lib/*" your.class.name your-args
+java -javaagent:tnt4j-stream-jmx-core-all.jar="*:*!30000" -Dtnt4j.config=tnt4j.properties -Dlog4j.configuration=file:log4j.properties -classpath "tnt4j-stream-jmx.jar;lib/*" your.class.name your-args
 ```
-The options are `-javaagent:tnt4j-stream-jmx.jar="mbean-filter!sample-time-ms"`, classpath must include tnt4j-stream-jmx jar files as well 
+The options are `-javaagent:tnt4j-stream-jmx-core-all.jar="mbean-filter!sample-time-ms"`, classpath must include tnt4j-stream-jmx jar files as well 
 as locations of log4j and tnt4j configuration files. See [JMX Sampling Agent sampler options](#jmx-sampling-agent-sampler-options) for 
 details.
 
@@ -92,16 +92,16 @@ Executable OS shell run script files `bin/stream-jmx-attach.bat` or `bin/stream-
 
 Command line to attach local JVM process JMX looks like this:
 ```cmd
-java -Dtnt4j.config=.\config\tnt4j.properties -Dlog4j.configuration=file:.\config\log4j.properties -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -attach -vm:activemq -ap:tnt4j-stream-jmx-core-0.7-all.jar -ao:*:*!10000
+java -Dtnt4j.config=.\config\tnt4j.properties -Dlog4j.configuration=file:.\config\log4j.properties -classpath "tnt4j-stream-jmx-core-all.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -attach -vm:activemq -ap:tnt4j-stream-jmx-core-all.jar -ao:*:*!10000
 ```
 System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [Stream-JMX configuration ](#stream-jmx-configuration).
 
-`SamplingAgent` arguments `-attach -vm:activemq -ap:tnt4j-stream-jmx-core-0.7-all.jar -ao:*:*!10000` states:
+`SamplingAgent` arguments `-attach -vm:activemq -ap:tnt4j-stream-jmx-core-all.jar -ao:*:*!10000` states:
 * `-attach` - defines that `SamplingAgent` shall be attached to running JVM process
 * `-vm:activemq` - is JVM descriptor. In this case it is running JVM name fragment `activemq`. But it also may be JVM process identifier - 
 PID. Mandatory argument.
-* `-ap:tnt4j-stream-jmx-core-0.7-all.jar` - is agent library name. If it is class path - then only name should be sufficient. In any other case 
-define full or relative path, e.g., `..\build\tnt4j-stream-jmx\tnt4j-stream-jmx-0.7\lib\tnt4j-stream-jmx-core-0.7-all.jar`. Mandatory 
+* `-ap:tnt4j-stream-jmx-core-all.jar` - is agent library name. If it is class path - then only name should be sufficient. In any other case 
+define full or relative path, e.g., `..\build\tnt4j-stream-jmx\tnt4j-stream-jmx-0.7\lib\tnt4j-stream-jmx-core-all.jar`. Mandatory 
 argument.
 * `-ao:*:*!10000` - is JMX sampler options stating to include all MBeans and schedule sampling every 10 seconds. Sampler options are 
 optional - default value is `*:*!30000`. Initial sampler delay can be configured by adding numeric parameter `*:*!30000!1000` defining 
@@ -118,12 +118,12 @@ are trying to attach application implementing J2EE API, use `tnt4j-stream-jmx-j2
 when attaching WAS and Liberty instances - use `-all.jar` for matching product API.
 
 ### Coding into API
-You can attach `SamplingAgent` to JVM from your custom API by calling [SamplingAgent.attach(String,String,String)](./tnt4j-stream-jmx-core/src/main/java/com/jkoolcloud/tnt4j/stream/jmx/SamplingAgent.java#L520) method. 
+You can attach `SamplingAgent` to JVM from your custom API by calling [SamplingAgent.attach(String,String,String)](./tnt4j-stream-jmx-core/src/main/java/com/jkoolcloud/tnt4j/stream/jmx/SamplingAgent.java#L684) method. 
 
 Sample `attach` call:
 ```java
 try {
-  SamplingAgent.attach("activemq", "tnt4j-stream-jmx-core-0.7-all.jar", "*:*!10000");
+  SamplingAgent.attach("activemq", "tnt4j-stream-jmx-core-all.jar", "*:*!10000");
 } catch (Exception exc) {
   exc.printStackTrace();
 }
@@ -163,7 +163,7 @@ rem using pid
 
 Command line to connect local JVM process JMX looks like this:
 ```cmd
-java -Dtnt4j.config=.\config\tnt4j.properties -Dlog4j.configuration=file:.\config\log4j.properties -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -vm:activemq -ao:*:*!*:dummy!10000
+java -Dtnt4j.config=.\config\tnt4j.properties -Dlog4j.configuration=file:.\config\log4j.properties -classpath "tnt4j-stream-jmx-core.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -vm:activemq -ao:*:*!*:dummy!10000
 ```
 
 System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [Stream-JMX configuration ](#stream-jmx-configuration).
@@ -183,7 +183,7 @@ seconds. Sampler options are optional - default value is `*:*!30000`. Initial sa
 
 Command line to connect remote JMX service looks like this:
 ```cmd
-java -Dtnt4j.config=.\config\tnt4j.properties -Dlog4j.configuration=file:.\config\log4j.properties -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -vm:service:jmx:<JMX_URL> -ul:admin -up:admin -ao:*:*!!10000 -cri:30 -cp:java.naming.security.authentication=simple -cp:java.naming.factory.initial=com.sun.jndi.ldap.LdapCtxFactory
+java -Dtnt4j.config=.\config\tnt4j.properties -Dlog4j.configuration=file:.\config\log4j.properties -classpath "tnt4j-stream-jmx-core.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -vm:service:jmx:<JMX_URL> -ul:admin -up:admin -ao:*:*!!10000 -cri:30 -cp:java.naming.security.authentication=simple -cp:java.naming.factory.initial=com.sun.jndi.ldap.LdapCtxFactory
 ```
 System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [Stream-JMX configuration ](#stream-jmx-configuration).
 
@@ -286,7 +286,7 @@ For more see [Programming WebLogic JNDI](https://docs.oracle.com/cd/E13222_01/wl
 [WebLogic API Environment class documentation](https://docs.oracle.com/cd/E68505_01/wls/WLAPI/weblogic/jndi/Environment.html).
 
 ### Coding into API
-You can connect `SamplingAgent` to JVM from your custom API by calling [SamplingAgent.connect(String,String)](./tnt4j-stream-jmx-core/src/main/java/com/jkoolcloud/tnt4j/stream/jmx/SamplingAgent.java#L574) method. 
+You can connect `SamplingAgent` to JVM from your custom API by calling [SamplingAgent.connect(String,String)](./tnt4j-stream-jmx-core/src/main/java/com/jkoolcloud/tnt4j/stream/jmx/SamplingAgent.java#L757) method. 
 
 Sample `connect` call for local JVM:
 ```java
@@ -330,7 +330,7 @@ try {
 
 ### Command line to run
 ```cmd
-java -Dtnt4j.config=.\config\tnt4j.properties -Dlog4j.configuration=file:.\config\log4j.properties -classpath "tnt4j-stream-jmx.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -local -ao:*:*!*:dummy!10000
+java -Dtnt4j.config=.\config\tnt4j.properties -Dlog4j.configuration=file:.\config\log4j.properties -classpath "tnt4j-stream-jmx-core.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -local -ao:*:*!*:dummy!10000
 ```
 
 System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [Stream-JMX configuration ](#stream-jmx-configuration).
@@ -345,7 +345,7 @@ seconds. Sampler options are optional - default value is `*:*!30000`. Initial sa
 * `-sp:` - any system property used by sampler. See [System properties used](#system-properties-used) for details.
 
 ### Coding into API
-You can run `SamplingAgent` for local process runner JVM from your custom API by calling [SamplingAgent.sampleLocalVM(String,boolean)](./tnt4j-stream-jmx-core/src/main/java/com/jkoolcloud/tnt4j/stream/jmx/SamplingAgent.java#L686) method. 
+You can run `SamplingAgent` for local process runner JVM from your custom API by calling [SamplingAgent.sampleLocalVM(String,boolean)](./tnt4j-stream-jmx-core/src/main/java/com/jkoolcloud/tnt4j/stream/jmx/SamplingAgent.java#L991) method. 
 
 Sample `sampleLocalVM` call for a local process runner JVM:
 ```java
@@ -426,7 +426,7 @@ There is a simple Liberty `server.xml` configuration required to run Stream-JMX 
         <user>Admin</user>
     </administrator-role>
 	
-    <application contextRoot="tnt-jmx" location="tnt4j-stream-jmx-liberty-war-0.6.war" type="war" id="tnt-jmx" name="tnt-jmx">
+    <application contextRoot="tnt-jmx" location="tnt4j-stream-jmx-liberty-war-0.7.war" type="war" id="tnt-jmx" name="tnt-jmx">
         <application-bnd>
             <security-role name="StreamJmxManager">
                 <user name="JMXManager" />
@@ -558,9 +558,9 @@ Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.sampler.redirectJULToStreamLog=true`
 * Prior to version `0.7` `stream-jmx` was writing logging messages to `System.out/err` print streams. Since version `0.7` logging is 
 performed over `TNT4J` Log Sink to `slf4j-log4j12`. Logger configuration is defined in `./config/log4j.properties` file. 
 If you where using system property `-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true` prior to `0.7` version, this is now configured over 
-logger log level, by setting it to `TRACE` value, e.g:
+logger log level, by setting it to `DEBUG` value, e.g:
 ```properties
-log4j.logger.com.jkoolcloud.tnt4j.stream.jmx=TRACE
+log4j.logger.com.jkoolcloud.tnt4j.stream.jmx=DEBUG
 ```  
 
 ### Program arguments used
@@ -916,7 +916,7 @@ Below is an example of TNT4J stream configuration writing collected JMX samples 
     ; Event Sink configuration for streaming to jKoolCloud
     ; NOTE: Requires JESL libraries (http://nastel.github.io/JESL/)
     event.sink.factory.EventSinkFactory: com.jkoolcloud.jesl.tnt4j.sink.JKCloudEventSinkFactory
-    event.sink.factory.EventSinkFactory.Filename: logs/stream-jmx_activities.json
+    event.sink.factory.EventSinkFactory.LogSink: file:./logs/stream-jmx_activities.json
     event.sink.factory.EventSinkFactory.Url: https://data.jkoolcloud.com
     event.sink.factory.EventSinkFactory.Token: YOUR-ACCESS-TOKEN
     event.formatter: com.jkoolcloud.tnt4j.format.JSONFormatter
@@ -951,10 +951,9 @@ Below is an example of TNT4J stream configuration writing collected JMX samples 
 
     event.sink.factory.EventSinkFactory: com.jkoolcloud.tnt4j.sink.impl.SocketEventSinkFactory
     ; If socket sent data should no be logged anywhere else
-    event.sink.factory.EventSinkFactory.eventSinkFactory: com.jkoolcloud.tnt4j.sink.impl.NullEventSinkFactory
+    event.sink.factory.EventSinkFactory.LogSink: null
     ; If socket sent data should be logged to file
-    #event.sink.factory.EventSinkFactory.eventSinkFactory: com.jkoolcloud.tnt4j.sink.impl.FileEventSinkFactory
-    #event.sink.factory.EventSinkFactory.eventSinkFactory.FileName: logs/tnt4j-stream-jmx_samples_socket.log
+    #event.sink.factory.EventSinkFactory.LogSink: file:./logs/tnt4j-stream-jmx_samples_socket.log
     event.sink.factory.EventSinkFactory.Host: localhost
     event.sink.factory.EventSinkFactory.Port: 6060
     ; NOTE: DO NOT define "event.formatter" property value if have no need for custom formatter.

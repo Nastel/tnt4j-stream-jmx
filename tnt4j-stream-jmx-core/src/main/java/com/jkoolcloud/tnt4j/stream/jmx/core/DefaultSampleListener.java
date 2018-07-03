@@ -129,7 +129,7 @@ public class DefaultSampleListener implements SampleListener {
 
 	@Override
 	public void pre(SampleContext context, Activity activity) {
-		LOGGER.log(OpLevel.TRACE,
+		LOGGER.log(OpLevel.DEBUG,
 				"Pre: {0}: sample.count={1}, mbean.count={2}, sample.mbeans.count={3}, exclude.attr.set={4}, silence.attr.set={5}, total.noop.count={6}, total.exclude.count={7}, total.error.count={8}, tracking.id={9}, mbean.server={10}",
 				activity.getName(), context.getSampleCount(), getMBeanCount(context), context.getMBeanCount(),
 				excAttrs.size(), silenceAttrs.size(), context.getTotalNoopCount(), context.getExcludeAttrCount(),
@@ -200,7 +200,7 @@ public class DefaultSampleListener implements SampleListener {
 
 	@Override
 	public void post(SampleContext context, Activity activity) {
-		LOGGER.log(OpLevel.TRACE,
+		LOGGER.log(OpLevel.DEBUG,
 				"Post: {0}: sample.count={1}, mbean.count={2}, elapsed.usec={3}, snap.count={4}, id.count={5}, sample.mbeans.count={6}, sample.metric.count={7}, sample.time.usec={8}, exclude.attr.set={9}, silence.attr.set={10}, total.noop.count={11}, total.exclude.count={12}, total.error.count={13}, tracking.id={14}, mbean.server={15}",
 				activity.getName(), context.getSampleCount(), getMBeanCount(context), activity.getElapsedTimeUsec(),
 				activity.getSnapshotCount(), activity.getIdCount(), context.getMBeanCount(),
@@ -221,7 +221,7 @@ public class DefaultSampleListener implements SampleListener {
 	public void error(SampleContext context, AttributeSample sample, OpLevel level) {
 		sample.excludeNext(isFatalError(level == null ? OpLevel.ERROR : level));
 		sample.silence(true);
-		LOGGER.log(OpLevel.TRACE, "Failed to sample:\n ojbName={0},\n info={1},\n exclude={2}\n ex={3}",
+		LOGGER.log(OpLevel.DEBUG, "Failed to sample:\n ojbName={0},\n info={1},\n exclude={2}\n ex={3}",
 				sample.getObjectName(), sample.getAttributeInfo(), sample.excludeNext(), sample.getError().getMessage(),
 				sample.getError());
 		if (sample.excludeNext()) {
@@ -247,12 +247,12 @@ public class DefaultSampleListener implements SampleListener {
 
 	@Override
 	public void register(SampleContext context, ObjectName oName) {
-		LOGGER.log(OpLevel.TRACE, "Register mbean: {0}, mbean.server={1}", oName, context.getMBeanServer());
+		LOGGER.log(OpLevel.DEBUG, "Register mbean: {0}, mbean.server={1}", oName, context.getMBeanServer());
 	}
 
 	@Override
 	public void unregister(SampleContext context, ObjectName oName) {
-		LOGGER.log(OpLevel.TRACE, "Un-register mbean: {0}, mbean.server={1}", oName, context.getMBeanServer());
+		LOGGER.log(OpLevel.DEBUG, "Un-register mbean: {0}, mbean.server={1}", oName, context.getMBeanServer());
 	}
 
 	@Override

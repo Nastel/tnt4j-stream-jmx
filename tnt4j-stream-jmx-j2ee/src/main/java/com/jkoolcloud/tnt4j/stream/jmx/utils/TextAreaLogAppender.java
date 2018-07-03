@@ -47,23 +47,17 @@ public class TextAreaLogAppender implements SinkLogEventListener {
 		DefaultEventSinkFactory.setDefaultEventSinkFactory(new EventSinkFactory() {
 			@Override
 			public EventSink getEventSink(String name) {
-				EventSink eventSink = delegate.getEventSink(name);
-				configure(eventSink);
-				return eventSink;
+				return configure(delegate.getEventSink(name));
 			}
 
 			@Override
 			public EventSink getEventSink(String name, Properties props) {
-				EventSink eventSink = delegate.getEventSink(name, props);
-				configure(eventSink);
-				return eventSink;
+				return configure(delegate.getEventSink(name, props));
 			}
 
 			@Override
 			public EventSink getEventSink(String name, Properties props, EventFormatter frmt) {
-				EventSink eventSink = delegate.getEventSink(name, props, frmt);
-				configure(eventSink);
-				return eventSink;
+				return configure(delegate.getEventSink(name, props, frmt));
 			}
 
 			@Override
@@ -76,9 +70,11 @@ public class TextAreaLogAppender implements SinkLogEventListener {
 				delegate.setTTL(ttl);
 			}
 
-			private void configure(EventSink eventSink) {
+			private EventSink configure(EventSink eventSink) {
 				eventSink.filterOnLog(false);
 				eventSink.addSinkLogEventListener(logToConsoleEvenSinkListener);
+
+				return eventSink;
 			}
 		});
 
