@@ -22,6 +22,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -30,6 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import javax.management.*;
+import javax.management.remote.JMXAddressable;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
@@ -61,6 +63,8 @@ import com.jkoolcloud.tnt4j.stream.jmx.utils.VMUtils;
  */
 public class SamplingAgent {
 	private static final EventSink LOGGER = DefaultEventSinkFactory.defaultEventSink(SamplingAgent.class);
+	public static final String SOURCE_SERVER_ADDRESS = "sjmx.serverAddress";
+	public static final String SOURCE_SERVER_NAME = "sjmx.serverName";
 
 	protected static Sampler platformJmx;
 	protected static ConcurrentHashMap<MBeanServerConnection, Sampler> STREAM_AGENTS = new ConcurrentHashMap<MBeanServerConnection, Sampler>(
@@ -160,7 +164,7 @@ public class SamplingAgent {
 	}
 
 	/**
-	 * Entry point to bea loaded as JVM agent. Does same as {@link #premain(String, Instrumentation)}.
+	 * Entry point to be loaded as JVM agent. Does same as {@link #premain(String, Instrumentation)}.
 	 *
 	 * @param agentArgs
 	 *            '!' separated list of options mbean-filter!sample.ms!initDelay.ms, where mbean-filter is semicolon
@@ -282,6 +286,7 @@ public class SamplingAgent {
 			sFactory.initialize();
 
 			String am = props.getProperty(AGENT_ARG_MODE);
+			assignServerAddress(props, am);
 			if (AGENT_MODE_CONNECT.equalsIgnoreCase(am)) {
 				String vmDescr = props.getProperty(AGENT_ARG_VM);
 				String user = props.getProperty(AGENT_ARG_USER);
@@ -352,6 +357,22 @@ public class SamplingAgent {
 
 			System.exit(1);
 		}
+	}
+
+	private static void resolveServer(String host) {
+		String serverAddress;
+		String serverName;
+
+		if (StringUtils.isEmpty(host)) {
+			serverAddress = Utils.getLocalHostAddress();
+			serverName = Utils.getLocalHostName();
+		} else {
+			serverAddress = Utils.resolveHostNameToAddress(host);
+			serverName = Utils.resolveAddressToHostName(host);
+		}
+
+		System.setProperty(SOURCE_SERVER_ADDRESS, serverAddress);
+		System.setProperty(SOURCE_SERVER_NAME, serverName);
 	}
 
 	private static boolean parseArgs(Properties props, String... args) {
@@ -605,6 +626,7 @@ public class SamplingAgent {
 	 */
 	public static void sample(String incFilter, String excFilter, long initDelay, long period, TimeUnit tUnit)
 			throws IOException {
+		resolveServer(null);
 		SamplerFactory sFactory = initPlatformJMX(incFilter, excFilter, initDelay, period, tUnit, null);
 
 		// find other registered MBean servers and initiate sampling for all
@@ -640,6 +662,10 @@ public class SamplingAgent {
 	public static void sample(String incFilter, String excFilter, long initDelay, long period, TimeUnit tUnit,
 			JMXConnector conn) throws IOException {
 		// get MBeanServerConnection from JMX RMI connector
+		if (conn instanceof JMXAddressable) {
+			JMXServiceURL url = ((JMXAddressable) conn).getAddress();
+			resolveServer(url == null ? null : url.getHost());
+		}
 		MBeanServerConnection mbSrvConn = conn.getMBeanServerConnection();
 		initPlatformJMX(incFilter, excFilter, initDelay, period, tUnit, mbSrvConn);
 	}
@@ -664,9 +690,9 @@ public class SamplingAgent {
 
 	private static void scheduleSampler(String incFilter, String excFilter, long initDelay, long period, TimeUnit tUnit,
 			SamplerFactory sFactory, Sampler sampler, Map<MBeanServerConnection, Sampler> agents) throws IOException {
+		agents.put(sampler.getMBeanServer(), sampler);
 		sampler.setSchedule(incFilter, excFilter, initDelay, period, tUnit, sFactory)
 				.addListener(sFactory.newListener(LISTENER_PROPERTIES)).run();
-		agents.put(sampler.getMBeanServer(), sampler);
 	}
 
 	/**

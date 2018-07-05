@@ -583,6 +583,46 @@ Agent options are defined using format: `mbean-filter!exclude-filter!sample-ms!i
 
 Default sampling agent options value is: `*:*!!30000` 
 
+### TNT4J Source fields configuration
+
+Stream-JMS has couple additional features in comparison with basic `TNT4J` when building Source `RootFQN` value:
+
+1. Has two dedicated System properties `sjmx.serverAddress` and `sjmx.serverName` to resolve remotely sampled machine IP address and host 
+name. To map those System properties values into source field put `$` symbol before System property name in source field definition. In this 
+case `tnt4j.properties` configuration would be like this:
+    ```properties
+    ; Remote machine Address
+    ...
+    source.factory.DATACENTER: HQDC
+    source.factory.SERVICE: broker-01
+    source.factory.SERVER: $sjmx.serverAddress
+    source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?
+    ...
+
+    ; Remote machine host name
+    ...
+    source.factory.DATACENTER: HQDC
+    source.factory.SERVICE: broker-01
+    source.factory.SERVER: $sjmx.serverName
+    source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?
+    ...
+    ```
+2. Can resolve values for source fields from JMX MBean attributes. Two items are required to use in `tnt4j.properties` configuration to 
+enable this feature:
+    1. Set `source.factory` to `com.jkoolcloud.tnt4j.stream.jmx.source.JMXSourceFactoryImpl`
+    2. Put MBean attribute descriptor as source field value. Mbean descriptor pattern is `"@bean:MBean_ObjectName/AttributeName`. 
+     
+    putting all together, `tnt4j.properties` configuration will be like this:
+    ```properties
+    ...
+    source.factory: com.jkoolcloud.tnt4j.stream.jmx.source.JMXSourceFactoryImpl
+    source.factory.DATACENTER: HQDC
+    source.factory.SERVICE: @bean:org.apache.activemq:type=Broker,brokerName=localhost/?BrokerId
+    source.factory.SERVER: @bean:JMImplementation:type=MBeanServerDelegate/?MBeanServerId
+    source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?
+    ...
+    ``` 
+
 ## Stream-JMX event data formatters
 
 * FactNameValueFormatter - this class provides key/value formatting for tnt4j activities, events and snapshots. The output format follows 
@@ -901,7 +941,7 @@ Below is an example of TNT4J stream configuration writing collected JMX samples 
 ;Stanza used for Stream-JMX sources
 {
     source: com.jkoolcloud.tnt4j.stream.jmx
-    source.factory: com.jkoolcloud.tnt4j.source.SourceFactoryImpl
+    source.factory: com.jkoolcloud.tnt4j.stream.jmx.source.JMXSourceFactoryImpl
     source.factory.GEOADDR: New York
     source.factory.DATACENTER: YourDC
     source.factory.SERVICE: $sjmx.serviceId
@@ -937,7 +977,7 @@ Below is an example of TNT4J stream configuration writing collected JMX samples 
 ;Stanza used for Stream-JMX sources
 {
 	source: com.jkoolcloud.tnt4j.stream.jmx
-    source.factory: com.jkoolcloud.tnt4j.source.SourceFactoryImpl
+    source.factory: com.jkoolcloud.tnt4j.stream.jmx.source.JMXSourceFactoryImpl
     source.factory.GEOADDR: New York
     source.factory.DATACENTER: YourDC
     source.factory.SERVICE: $sjmx.serviceId
@@ -991,7 +1031,7 @@ Below is an example of TNT4J stream configuration writing collected JMX samples 
 ;Stanza used for Stream-JMX sources
 {
     source: com.jkoolcloud.tnt4j.stream.jmx
-    source.factory: com.jkoolcloud.tnt4j.source.SourceFactoryImpl
+    source.factory: com.jkoolcloud.tnt4j.stream.jmx.source.JMXSourceFactoryImpl
     source.factory.GEOADDR: New York
     source.factory.DATACENTER: YourDC
     source.factory.SERVICE: $sjmx.serviceId
