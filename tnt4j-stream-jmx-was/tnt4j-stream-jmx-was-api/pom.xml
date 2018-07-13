@@ -136,24 +136,27 @@
 
         <dependency>
             <groupId>com.ibm.ws</groupId>
-            <artifactId>admin.client</artifactId>
+            <artifactId>com.ibm.ws.admin.client</artifactId>
             <version>8.5.0</version>
-            <scope>system</scope>
-            <systemPath>${pom.basedir}/lib/was/com.ibm.ws.admin.client_8.5.0.jar</systemPath>
+            <scope>provided</scope>
+            <!--<scope>system</scope>-->
+            <!--<systemPath>${pom.basedir}/lib/was/com.ibm.ws.admin.client_8.5.0.jar</systemPath>-->
         </dependency>
         <dependency>
             <groupId>com.ibm.ws</groupId>
-            <artifactId>ejb.thinclient</artifactId>
+            <artifactId>com.ibm.ws.ejb.thinclient</artifactId>
             <version>8.5.0</version>
-            <scope>system</scope>
-            <systemPath>${pom.basedir}/lib/was/com.ibm.ws.ejb.thinclient_8.5.0.jar</systemPath>
+            <scope>provided</scope>
+            <!--<scope>system</scope>-->
+            <!--<systemPath>${pom.basedir}/lib/was/com.ibm.ws.ejb.thinclient_8.5.0.jar</systemPath>-->
         </dependency>
         <dependency>
             <groupId>com.ibm.ws</groupId>
             <artifactId>com.ibm.ws.orb</artifactId>
             <version>8.5.0</version>
-            <scope>system</scope>
-            <systemPath>${pom.basedir}/lib/was/com.ibm.ws.orb_8.5.0.jar</systemPath>
+            <scope>provided</scope>
+            <!--<scope>system</scope>-->
+            <!--<systemPath>${pom.basedir}/lib/was/com.ibm.ws.orb_8.5.0.jar</systemPath>-->
         </dependency>
 
         <dependency>
