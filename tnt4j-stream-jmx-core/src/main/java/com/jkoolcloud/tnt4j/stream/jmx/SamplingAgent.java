@@ -22,7 +22,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Method;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -286,7 +285,6 @@ public class SamplingAgent {
 			sFactory.initialize();
 
 			String am = props.getProperty(AGENT_ARG_MODE);
-			assignServerAddress(props, am);
 			if (AGENT_MODE_CONNECT.equalsIgnoreCase(am)) {
 				String vmDescr = props.getProperty(AGENT_ARG_VM);
 				String user = props.getProperty(AGENT_ARG_USER);
