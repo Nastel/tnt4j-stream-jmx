@@ -26,8 +26,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import javax.management.*;
 import javax.management.remote.JMXAddressable;
@@ -85,6 +84,8 @@ public class SamplingAgent {
 	private static final String PARAM_AGENT_LISTENER_PARAM = "-slp:";
 	private static final String PARAM_AGENT_SYSTEM_PROPERTY = "-sp:";
 
+	public static final String OPTION_SEPARATOR = ";";
+
 	private static final String AGENT_MODE_AGENT = "-agent";
 	private static final String AGENT_MODE_ATTACH = "-attach";
 	private static final String AGENT_MODE_CONNECT = "-connect";
@@ -114,7 +115,8 @@ public class SamplingAgent {
 		initDefaults(DEFAULTS);
 
 		copyProperty(FORCE_OBJECT_NAME, DEFAULTS, LISTENER_PROPERTIES, false);
-		copyProperty(COMPOSITE_DELIMITER, DEFAULTS, LISTENER_PROPERTIES, PropertyNameBuilder.DEFAULT_COMPOSITE_DELIMITER);
+		copyProperty(COMPOSITE_DELIMITER, DEFAULTS, LISTENER_PROPERTIES,
+				PropertyNameBuilder.DEFAULT_COMPOSITE_DELIMITER);
 		copyProperty(USE_OBJECT_NAME_PROPERTIES, DEFAULTS, LISTENER_PROPERTIES, true);
 
 		copyProperty(FORCE_OBJECT_NAME, System.getProperties(), LISTENER_PROPERTIES);
@@ -286,16 +288,25 @@ public class SamplingAgent {
 
 			String am = props.getProperty(AGENT_ARG_MODE);
 			if (AGENT_MODE_CONNECT.equalsIgnoreCase(am)) {
-				String vmDescr = props.getProperty(AGENT_ARG_VM);
-				String user = props.getProperty(AGENT_ARG_USER);
-				String pass = props.getProperty(AGENT_ARG_PASS);
-				String agentOptions = props.getProperty(AGENT_ARG_OPTIONS, DEFAULT_AGENT_OPTIONS);
 				@SuppressWarnings("unchecked")
-				Map<String, ?> connParams = (Map<String, ?>) props.get(AGENT_CONN_PARAMS);
-				long cri = Long.parseLong(
+				final Map<String, ?> connParams = (Map<String, ?>) props.get(AGENT_CONN_PARAMS);
+				final long cri = Long.parseLong(
 						props.getProperty(AGENT_ARG_CONN_RETRY_INTERVAL, String.valueOf(CONN_RETRY_INTERVAL)));
 
-				connect(vmDescr, user, pass, agentOptions, connParams, cri);
+				ExecutorService executorService = Executors.newCachedThreadPool();
+
+				List<ConnectionParams> allVMs = getAllVMs(props);
+				for (final ConnectionParams cp : allVMs) {
+					Callable<Integer> connect = new Callable<Integer>() {
+						@Override
+						public Integer call() throws Exception {
+							connect(cp.vmDescr, cp.user, cp.pass, cp.agentOptions, connParams, cri);
+							return 0;
+						}
+					};
+					executorService.submit(connect);
+				}
+
 			} else if (AGENT_MODE_ATTACH.equalsIgnoreCase(am)) {
 				String vmDescr = props.getProperty(AGENT_ARG_VM);
 				String jarPath = props.getProperty(AGENT_ARG_LIB_PATH);
@@ -354,6 +365,71 @@ public class SamplingAgent {
 			System.out.println("   -sp: - sampler system property string using '=' symbol as delimiter. Defines only one system property, to define more than one use this argument multiple times. Argument format: -sp:key=value");
 
 			System.exit(1);
+		}
+	}
+
+	private static List<ConnectionParams> getAllVMs(Properties props) {
+		String vmDescrs[] = props.getProperty(AGENT_ARG_VM).split(OPTION_SEPARATOR);
+		String users[] = props.getProperty(AGENT_ARG_USER) == null ? null
+				: props.getProperty(AGENT_ARG_USER).split(OPTION_SEPARATOR);
+		String passes[] = props.getProperty(AGENT_ARG_PASS) == null ? null
+				: props.getProperty(AGENT_ARG_PASS).split(OPTION_SEPARATOR);
+		String agentOptions[] = props.getProperty(AGENT_ARG_OPTIONS, DEFAULT_AGENT_OPTIONS).split(OPTION_SEPARATOR);
+
+		String user = null;
+		String pass = null;
+		String agentOption = null;
+
+		if (users != null) {
+			if (!(vmDescrs.length == users.length || users.length == 1)) {
+				throw new IllegalArgumentException("Argument " + AGENT_ARG_USER + " length should be equal "
+						+ AGENT_ARG_VM + " length or exactly one for all. " + "\n " + Arrays.toString(vmDescrs) + "("
+						+ vmDescrs.length + ") " + "\n " + Arrays.toString(users) + "(" + users.length + ") ");
+			}
+
+			if (!(users.length == passes.length || passes.length == 1)) {
+				throw new IllegalArgumentException("Argument " + AGENT_ARG_PASS + " length should be equal "
+						+ AGENT_ARG_USER + " length or exactly one for all. " + "\n " + Arrays.toString(users) + "("
+						+ users.length + ") " + "\n " + Arrays.toString(passes) + "(" + passes.length + ") ");
+			}
+		}
+		if (!(vmDescrs.length == agentOptions.length || agentOptions.length == 1)) {
+			throw new IllegalArgumentException("Argument " + AGENT_ARG_OPTIONS + " length should be equal "
+					+ AGENT_ARG_VM + " length or exactly one for all. " + "\n " + Arrays.toString(vmDescrs) + "("
+					+ vmDescrs.length + ") " + "\n " + Arrays.toString(agentOptions) + "(" + agentOptions.length
+					+ ") ");
+		}
+
+		List<ConnectionParams> connectionParamsList = new ArrayList<ConnectionParams>();
+
+		for (int i = 0; i < vmDescrs.length; i++) {
+			try {
+				if (users != null && passes != null) {
+					user = users[i];
+					pass = passes[i];
+				}
+
+				agentOption = agentOptions[i];
+			} catch (IndexOutOfBoundsException e) {
+				// fine if it's common param;
+			}
+			connectionParamsList.add(new ConnectionParams(vmDescrs[i], user, pass, agentOption));
+
+		}
+		return connectionParamsList;
+	}
+
+	static class ConnectionParams {
+		String vmDescr;
+		String user;
+		String pass;
+		String agentOptions;
+
+		public ConnectionParams(String vmDescr, String user, String pass, String agentOptions) {
+			this.vmDescr = vmDescr;
+			this.user = user;
+			this.pass = pass;
+			this.agentOptions = agentOptions;
 		}
 	}
 
