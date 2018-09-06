@@ -117,8 +117,6 @@ attention to use `tnt4j-stream-jmx-core-[VERSION]-all.jar` as agent lib to have 
 are trying to attach application implementing J2EE API, use `tnt4j-stream-jmx-j2ee-[VERSION]-all.jar`. Same approach should be followed 
 when attaching WAS and Liberty instances - use `-all.jar` for matching product API.
 
-
-
 ### Coding into API
 You can attach `SamplingAgent` to JVM from your custom API by calling [SamplingAgent.attach(String,String,String)](./tnt4j-stream-jmx-core/src/main/java/com/jkoolcloud/tnt4j/stream/jmx/SamplingAgent.java#L684) method. 
 
@@ -161,24 +159,21 @@ rem using pid
 ./bin/stream-jmx-connect.sh 1553
 ```
 
-#### Multiple VM's support
+#### Multiple VMs monitoring over single stream run
 
-In case of multiple vms you can separate vm's by ";" 
-
+It is possible to monitor multiple VMs making single `Stream-JMX` (`SamplerAgent`) run by delimiting VM descriptors using `;` delimiter, 
+e.g.: 
+```bash
+./bin/stream-jmx-connect.sh service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi;service:jmx:rmi:///jndi/rmi://192.168.1.1:9999/jmxrmi
 ```
-/bin/stream-jmx-connect.bat service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi;service:jmx:rmi:///jndi/rmi://192.168.1.1:9999/jmxrmi
+Also you can define single set of JMX sampler options for all monitored VMs, e.g.:
+```bash
+./bin/stream-jmx-connect.sh service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi;service:jmx:rmi:///jndi/rmi://192.168.1.1:9999/jmxrmi *:*!!60000 
 ```
-
-using single set of parameters:
+or individual JMX sampler options for every defined VM (number of defined VMs and JMX sampler options must match):
+```bash
+./bin/stream-jmx-connect.bat service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi;service:jmx:rmi:///jndi/rmi://192.168.1.1:9999/jmxrmi *:*!!60000;*:*!!30000 -ul:admin;adminLocal -up:admin;password 
 ```
-/bin/stream-jmx-connect.bat service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi;service:jmx:rmi:///jndi/rmi://192.168.1.1:9999/jmxrmi *:*!!60000;*:*!!30000  -ul:admin;adminLocal -up:admin:password 
-```
-
-or single set for all of parameters:
-```
-/bin/stream-jmx-connect.bat service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi;service:jmx:rmi:///jndi/rmi://192.168.1.1:9999/jmxrmi *:*!!60000 
-```
-
 
 #### To connect to local JVM process
 

@@ -341,28 +341,33 @@ public class SamplingAgent {
 			}
 		} else {
 			LOGGER.log(OpLevel.INFO, "Printing usage instructions before exit!..");
-			System.out.println("Usage: mbean-filter exclude-filter sample-ms [wait-ms] (e.g \"*:*\" \"\" 10000 60000)");
-			System.out.println("   or: -attach -vm:vmName/vmId -ap:agentJarPath -ao:agentOptions (e.g -attach -vm:activemq -ap:[ENV_PATH]/tnt-stream-jmx.jar -ao:*:*!!10000)");
-			System.out.println("   or: -connect -vm:vmName/vmId/JMX_URL -ao:agentOptions (e.g -connect -vm:activemq -ao:*:*!!10000");
-			System.out.println("   or: -connect -vm:vmName/vmId/JMX_URL -cri:connRetryIntervalSec -ao:agentOptions (e.g -connect -vm:activemq -cri:30 -ao:*:*!!10000");
-			System.out.println("   or: -connect -vm:vmName/vmId/JMX_URL -ul:userLogin -up:userPassword -ao:agentOptions (e.g -connect -vm:activemq -ul:admin -up:admin -ao:*:*!!10000");
-			System.out.println("   or: -connect -vm:vmName/vmId/JMX_URL -ul:userLogin -up:userPassword -ao:agentOptions -cp:jmcConnParam1 -cp:jmcConnParam2 -cp:... (e.g -connect -vm:activemq -ul:admin -up:admin -ao:*:*!!10000 -cp:javax.net.ssl.trustStorePassword=trustPass");
-			System.out.println("   or: -local -ao:agentOptions (e.g -local -ao:*:*!!10000");
-			System.out.println();
-			System.out.println("Arguments definition:");
-			System.out.println("   -ao: - agent options string using '!' symbol as delimiter. Options format: mbean-filter!exclude-filter!sample-ms!init-delay-ms");
-			System.out.println("       mbean-filter - MBean include name filter defined using object name pattern: domainName:keysSet");
-			System.out.println("       exclude-filter - MBean exclude name filter defined using object name pattern: domainName:keysSet");
-			System.out.println("       sample-ms - MBeans sampling rate in milliseconds");
-			System.out.println("       init-delay-ms - MBeans sampling initial delay in milliseconds. Optional, by default it is equal to 'sample-ms' value.");
-			System.out.println("   -cp: - JMX connection parameter string using '=' symbol as delimiter. Defines only one parameter, to define more than one use this argument multiple times. Argument format: -cp:key=value");
-			System.out.println("       see https://docs.oracle.com/javase/7/docs/technotes/guides/management/agent.html for more details");
-			System.out.println("  -slp: - sampler parameter string using '=' symbol as delimiter. Defines only one parameter, to define more than one use this argument multiple times. Argument format: -slp:key=value");
-			System.out.println("       trace - flag indicating whether the sample listener should print trace entries to print stream. Default value - 'false'");
-			System.out.println("       forceObjectName - flag indicating to forcibly add 'objectName' attribute if such is not present for a MBean. Default value - 'false'");
-			System.out.println("       compositeDelimiter - delimiter used to tokenize composite/tabular type MBean properties keys. Default value - '\\'");
-			System.out.println("       useObjectNameProperties - flag indicating to copy MBean ObjectName contained properties into sample snapshot properties. Default value - 'true'");
-			System.out.println("   -sp: - sampler system property string using '=' symbol as delimiter. Defines only one system property, to define more than one use this argument multiple times. Argument format: -sp:key=value");
+			String usageStr = "Usage: mbean-filter exclude-filter sample-ms [wait-ms] (e.g \"*:*\" \"\" 10000 60000)\n"
+					+ "   or: -attach -vm:vmName/vmId -ap:agentJarPath -ao:agentOptions (e.g -attach -vm:activemq -ap:[ENV_PATH]/tnt-stream-jmx.jar -ao:*:*!!10000)\n"
+					+ "   or: -connect -vm:vmName/vmId/JMX_URL -ao:agentOptions (e.g -connect -vm:activemq -ao:*:*!!10000\n"
+					+ "   or: -connect -vm:vmName/vmId/JMX_URL -cri:connRetryIntervalSec -ao:agentOptions (e.g -connect -vm:activemq -cri:30 -ao:*:*!!10000\n"
+					+ "   or: -connect -vm:vmName/vmId/JMX_URL -ul:userLogin -up:userPassword -ao:agentOptions (e.g -connect -vm:activemq -ul:admin -up:admin -ao:*:*!!10000\n"
+					+ "   or: -connect -vm:vmName/vmId/JMX_URL -ul:userLogin -up:userPassword -ao:agentOptions -cp:jmcConnParam1 -cp:jmcConnParam2 -cp:... (e.g -connect -vm:activemq -ul:admin -up:admin -ao:*:*!!10000 -cp:javax.net.ssl.trustStorePassword=trustPass\n"
+					+ "   or: -local -ao:agentOptions (e.g -local -ao:*:*!!10000\n"
+					+ "                                                         \n"
+					+ "Arguments definition:                                    \n"
+					+ "   -vm: - virtual machine descriptor.                    \n"
+					+ "       Can be defined multiple VMs by separating descriptors using ';' delimiter.\n"
+					+ "       Can be defined one pair of user credentials/agent options for all VMs, or define individual pairs for every VM. Count of user credentials/agent options pairs then should match number of defined VM descriptors!\n"
+					+ "   -ao: - agent options string using '!' symbol as delimiter. Options format: mbean-filter!exclude-filter!sample-ms!init-delay-ms\n"
+					+ "       mbean-filter - MBean include name filter defined using object name pattern: domainName:keysSet\n"
+					+ "       exclude-filter - MBean exclude name filter defined using object name pattern: domainName:keysSet\n"
+					+ "       sample-ms - MBeans sampling rate in milliseconds\n"
+					+ "       init-delay-ms - MBeans sampling initial delay in milliseconds. Optional, by default it is equal to 'sample-ms' value.\n"
+					+ "   -cp: - JMX connection parameter string using '=' symbol as delimiter. Defines only one parameter, to define more than one use this argument multiple times. Argument format: -cp:key=value\n"
+					+ "       see https://docs.oracle.com/javase/7/docs/technotes/guides/management/agent.html for more details\n"
+					+ "  -slp: - sampler parameter string using '=' symbol as delimiter. Defines only one parameter, to define more than one use this argument multiple times. Argument format: -slp:key=value\n"
+					+ "       trace - flag indicating whether the sample listener should print trace entries to print stream. Default value - 'false'\n"
+					+ "       forceObjectName - flag indicating to forcibly add 'objectName' attribute if such is not present for a MBean. Default value - 'false'\n"
+					+ "       compositeDelimiter - delimiter used to tokenize composite/tabular type MBean properties keys. Default value - '\\'\n"
+					+ "       useObjectNameProperties - flag indicating to copy MBean ObjectName contained properties into sample snapshot properties. Default value - 'true'\n"
+					+ "   -sp: - sampler system property string using '=' symbol as delimiter. Defines only one system property, to define more than one use this argument multiple times. Argument format: -sp:key=value";
+
+			System.out.println(usageStr);
 
 			System.exit(1);
 		}
