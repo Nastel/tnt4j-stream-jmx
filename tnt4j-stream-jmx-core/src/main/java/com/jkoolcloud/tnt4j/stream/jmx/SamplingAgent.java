@@ -43,7 +43,6 @@ import com.jkoolcloud.tnt4j.sink.DefaultEventSinkFactory;
 import com.jkoolcloud.tnt4j.sink.EventSink;
 import com.jkoolcloud.tnt4j.source.Source;
 import com.jkoolcloud.tnt4j.source.SourceFactory;
-import com.jkoolcloud.tnt4j.source.SourceFactoryImpl;
 import com.jkoolcloud.tnt4j.source.SourceType;
 import com.jkoolcloud.tnt4j.stream.jmx.core.DefaultSampleListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.PropertyNameBuilder;
@@ -397,7 +396,7 @@ public class SamplingAgent {
 		String ao = null;
 		String user = null;
 		String pass = null;
-		String sourceDescriptor = getSingleSourceDescriptor();
+		String sourceDescriptor = null;
 
 		List<ConnectionParams> allVMs = new ArrayList<ConnectionParams>();
 
@@ -457,20 +456,15 @@ public class SamplingAgent {
 		String user = props.getProperty(AGENT_ARG_USER) == null ? null : props.getProperty(AGENT_ARG_USER);
 		String pass = props.getProperty(AGENT_ARG_PASS) == null ? null : props.getProperty(AGENT_ARG_PASS);
 		String agentOptions = props.getProperty(AGENT_ARG_OPTIONS, DEFAULT_AGENT_OPTIONS);
-		String sourcesDescriptor = getSingleSourceDescriptor();
 
 		List<ConnectionParams> connectionParamsList = new ArrayList<ConnectionParams>();
 
 		List<JMXServiceURL> jmxServiceURLs = getJmxServiceURLs(vmDescr);
 		for (JMXServiceURL jmxServiceURL : jmxServiceURLs) {
-			connectionParamsList.add(new ConnectionParams(jmxServiceURL, user, pass, agentOptions, sourcesDescriptor));
+			connectionParamsList.add(new ConnectionParams(jmxServiceURL, user, pass, agentOptions, null));
 		}
 
 		return connectionParamsList;
-	}
-
-	private static String getSingleSourceDescriptor() {
-		return System.getProperty(SOURCE_SERVICE_ID, SourceFactoryImpl.UNKNOWN_SOURCE);
 	}
 
 	public static Map<MBeanServerConnection, Sampler> getAllSamplers() {
