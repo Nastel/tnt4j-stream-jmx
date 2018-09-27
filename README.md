@@ -53,7 +53,7 @@ and same architecture (`x86`, `x64`). Also check which JDK `tools.jar` you have 
 runner JVM. If JVM provider or architecture differs, then only way to collect JMX samples is using `-connect` mode defining `JMXConnector` 
 (over `RMI`) URL.
 
-**NOTE:** when running `stream-jmx` sometimes it may appear some `Unsupported` type exceptions in console/log, e.g.:  
+**NOTE:** when running `stream-jmx` sometimes it may appear some `Unsupported` type exceptions in console/log, e.g.:
 ```text
 Failed to sample:
  ojbName=java.lang:type=MemoryPool,name=PS Eden Space,
@@ -101,7 +101,7 @@ System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [S
 * `-vm:activemq` - is JVM descriptor. In this case it is running JVM name fragment `activemq`. But it also may be JVM process identifier - 
 PID. Mandatory argument.
 * `-ap:tnt4j-stream-jmx-core-all.jar` - is agent library name. If it is class path - then only name should be sufficient. In any other case 
-define full or relative path, e.g., `..\build\tnt4j-stream-jmx\tnt4j-stream-jmx-0.7\lib\tnt4j-stream-jmx-core-all.jar`. Mandatory 
+define full or relative path, e.g., `..\build\tnt4j-stream-jmx\tnt4j-stream-jmx-0.8\lib\tnt4j-stream-jmx-core-all.jar`. Mandatory 
 argument.
 * `-ao:*:*!10000` - is JMX sampler options stating to include all MBeans and schedule sampling every 10 seconds. Sampler options are 
 optional - default value is `*:*!30000`. Initial sampler delay can be configured by adding numeric parameter `*:*!30000!1000` defining 
@@ -118,7 +118,7 @@ are trying to attach application implementing J2EE API, use `tnt4j-stream-jmx-j2
 when attaching WAS and Liberty instances - use `-all.jar` for matching product API.
 
 ### Coding into API
-You can attach `SamplingAgent` to JVM from your custom API by calling [SamplingAgent.attach(String,String,String)](./tnt4j-stream-jmx-core/src/main/java/com/jkoolcloud/tnt4j/stream/jmx/SamplingAgent.java#L684) method. 
+You can attach `SamplingAgent` to JVM from your custom API by calling [SamplingAgent.attach(String,String,String)](./tnt4j-stream-jmx-core/src/main/java/com/jkoolcloud/tnt4j/stream/jmx/SamplingAgent.java#L684) method.
 
 Sample `attach` call:
 ```java
@@ -135,13 +135,19 @@ try {
 
 Executable OS shell run script files `bin/stream-jmx-conenct.bat` or `bin/stream-jmx-conenct.sh` are dedicated to do the job:
 
-* Windows
+`stream-jmx-connect` script has 4 parameters:
+1. process id or service URI (required)
+2. agent options for MBeans include/exclude filter and sampling interval (optional, `.` value sets default)
+3. service identifier for the process/service being monitored  (optional, `.` value sets default)
+4. sampling agent arguments (optional, `.` value sets default)
+
+* MS Windows
 ```cmd
-rem using URL  
+rem using URL
 /bin/stream-jmx-connect.bat service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi
-rem using URL with connection parameters  
-/bin/stream-jmx-connect.bat service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi -ul:admin -up:admin -cp:java.naming.security.authentication=simple -cp:java.naming.factory.initial=com.sun.jndi.ldap.LdapCtxFactory
-rem using process name part        
+rem using URL with connection parameters
+/bin/stream-jmx-connect.bat service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi . . -ul:admin -up:admin -cp:java.naming.security.authentication=simple -cp:java.naming.factory.initial=com.sun.jndi.ldap.LdapCtxFactory
+rem using process name part
 /bin/stream-jmx-connect.bat activemq
 rem using pid
 /bin/stream-jmx-connect.bat 1553 
@@ -149,30 +155,14 @@ rem using pid
 
 * *nix
 ```bash
-# using URL  
+# using URL
 ./bin/stream-jmx-connect.sh service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi
-# using URL with connection parameters  
-./bin/stream-jmx-connect.sh service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi -ul:admin -up:admin -cp:java.naming.security.authentication=simple -cp:java.naming.factory.initial=com.sun.jndi.ldap.LdapCtxFactory
-# using process name part        
+# using URL with connection parameters
+./bin/stream-jmx-connect.sh service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi . . -ul:admin -up:admin -cp:java.naming.security.authentication=simple -cp:java.naming.factory.initial=com.sun.jndi.ldap.LdapCtxFactory
+# using process name part
 ./bin/stream-jmx-connect.sh activemq
 # using pid
 ./bin/stream-jmx-connect.sh 1553
-```
-
-#### Multiple VMs monitoring over single stream run
-
-It is possible to monitor multiple VMs making single `Stream-JMX` (`SamplerAgent`) run by delimiting VM descriptors using `;` delimiter, 
-e.g.: 
-```bash
-./bin/stream-jmx-connect.sh service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi;service:jmx:rmi:///jndi/rmi://192.168.1.1:9999/jmxrmi
-```
-Also you can define single set of JMX sampler options for all monitored VMs, e.g.:
-```bash
-./bin/stream-jmx-connect.sh service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi;service:jmx:rmi:///jndi/rmi://192.168.1.1:9999/jmxrmi *:*!!60000 
-```
-or individual JMX sampler options for every defined VM (number of defined VMs and JMX sampler options must match):
-```bash
-./bin/stream-jmx-connect.bat service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi;service:jmx:rmi:///jndi/rmi://192.168.1.1:9999/jmxrmi *:*!!60000;*:*!!30000 -ul:admin;adminLocal -up:admin;password 
 ```
 
 #### To connect to local JVM process
@@ -223,7 +213,7 @@ is optional - default value is `10sec`. Special values are:
     * `0` indicates no delay between repeating connect attempts.
     * `-1` indicates no repeating connect attempts shall be made at all and application has to stop on first failed attempt to connect.
 * `-slp:` - any JMX sampler configuration property. See [Program arguments used](#program-arguments-used) for details.
-* `-sp:` - any system property used by sampler. See [System properties used](#system-properties-used) for details.    
+* `-sp:` - any system property used by sampler. See [System properties used](#system-properties-used) for details.
 
 **NOTE**:
 * URI of remote RMI service (e.g., to connect remote Kafka service) may require additional `/` chars:
@@ -253,15 +243,91 @@ metrics over JMX. Executable OS shell run script files uses only `core` as `MODU
  on how to setup such Tomcat server instance to be accessible from outside.** 
 * See [ActiveMQ JMX](http://activemq.apache.org/jmx.html) how to enable remote ActiveMQ JMX access.
 
+#### Multiple VMs monitoring over single stream run
+
+##### Multiple local JVM processes monitoring
+
+If sampling agent finds multiple VM's matching provided JVM descriptor, it will bind and sample JMX beans from all these VM's, e.g.:
+```bash
+./bin/stream-jmx-connect.sh kafka
+```
+sampler will collect JMX beans for all local machine running VM's containing `kafka` token within VM process name.
+
+##### Multiple VM's monitoring configuration using external file
+
+You can configure multiple VM's connections using external configuration file. Sample configuration file is `./config/connections.cfg`. The 
+syntax for that file is:
+```
+##############################################################################################################################################################
+#            VM connection string                      #    Agent options   #  User name    #    Password       #                Source addition             #
+##############################################################################################################################################################
+ service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi 		*:*!!60000 			admin 				admin		   SERVICE=@bean:java.lang:type=Runtime/?Name
+ service:jmx:rmi:///jndi/rmi://192.168.1.1:9999/jmxrmi 		*:*!!30000 			admin 				admin		   SERVICE=@bean:java.lang:type=Runtime/?Name
+ service:jmx:rmi:///jndi/rmi://192.168.1.2:9999/jmxrmi 		*:*!!45000 			admin 				admin		   SERVICE=@bean:java.lang:type=Runtime/?Name
+##############################################################################################################################################################
+```
+To run JMX samples streaming for multiple VM's define in external configuration file use `stream-jmx-connect-file-config.bat/.sh` files, e.g.:
+
+*nix
+```bash
+./bin/stream-jmx-connect-file-config.sh ./config/connections.cfg
+```
+
+MS Windows
+```cmd
+\bin\stream-jmx-connect-file-config.bat \config\connections.cfg
+```
+
+##### Multiple VM's monitoring notes for Source
+
+See [TNT4J Source fields configuration](#tnt4j-source-fields-configuration) as base Source fields configuration reference.
+
+Multiple VM's monitoring requires additional data Source configuration when you want to distinguish where JMX data came from.
+
+When all monitored VM's can uniquely identify itself using same `SourceFQN` by using dynamic MBean property value (common when monitoring 
+same service on different machines), e.g. 
+```properties
+    source.factory.SERVICE: @bean:org.apache.activemq:type=Broker,brokerName=localhost/?BrokerId
+    source.factory.SERVER: @bean:java.lang:type=Runtime/?Name
+    source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?
+``` 
+then no additional source configuration is required.
+
+But when your services ecosystem is widely distributed running different services on different machines (or multiple different services on 
+same machine), every service identifies itself over different MBean property. In this case you can configure source `RootFQN` in 
+`tnt4j.properties` and define additional `SourceFQN` path fragment for every monitored VM. This way final VM MBeans sample will have 
+`SourceFQN` made by Stream-JMX by concatenating `tnt4j.properties` defined `RootFQN` with that additional VM `SourceFQN` path fragment.
+
+For example, when `tnt4j.properties` defines `RootFQN` as:
+```properties
+    source.factory.DATACENTER: HQDC
+	source.factory.SERVER: @bean:java.lang:type=Runtime/?Name
+    source.factory.RootFQN: SERVER=?#DATACENTER=?
+```
+and having VMs configured this way:
+```
+##############################################################################################################################################################
+#            VM connection string                      #    Agent options   #  User name    #    Password       #                Source addition             #
+##############################################################################################################################################################
+ service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi 		*:*!!60000 			admin 				admin		   SERVICE=@bean:org.apache.activemq:type=Broker,brokerName=localhost/?BrokerId
+ service:jmx:rmi:///jndi/rmi://192.168.1.1:9998/jmxrmi 		*:*!!30000 			admin 				admin		   SERVICE=@bean:kafka.server:type=app-info/?id 
+##############################################################################################################################################################
+```
+may make make such 'SourceFQN's for VMs:
+* `localhost` - `SERVICE=ID:PC-NAME-52295-1538060220413-0:1#SERVER=2453@PC-NAME#DATACENTER=HQDC
+* `192.168.1.1` - `SERVICE=3SERVER=2457@boxName#DATACENTER=HQDC
+
+**NOTE:** VM additional `SourceFQN` path must be defined fallowing same rules as in TNT4J config - `SourceType1=value1#SourceType2=value2#...#SourceTypeN=valueN`.
+
 #### Connecting remote WebSphere Application Server (WAS)
 
 Additions needed to run `SamplingAgent` connected to remote WAS machine can be found in executable OS shell run script files 
-`bin/stream-jmx-conenct-was.bat` or `bin/stream-jmx-conenct-was.sh`. It contains those major configuration additions:
+`bin/stream-jmx-conenct-was.bat` or `bin/stream-jmx-conenct-was.sh`. It contains these major configuration additions:
 * WAS environment setup configuration
 * appending `LIBPATH` variable with WAS libs
 * adding WAS specific JMX sampler options
 * defining WAS `JMXConnector` parameters
-* adding those additional `java` command parameters
+* and adding them as additional `java` command parameters
 
 **NOTE:** When you have IBM JVM running on client side and getting authentication or naming related exceptions, you have to:
 * Alter `sas.client.props` by setting `com.ibm.CORBA.validateBasicAuth=false`
@@ -277,7 +343,7 @@ Additions needed to run `SamplingAgent` connected to remote WAS machine can be f
 #### Connecting remote WebLogic server instance
 
 Additions needed to run `SamplingAgent` connected to remote WebLogic machine can be found in executable OS shell run script files 
-`bin/stream-jmx-conenct.bat` or `bin/stream-jmx-conenct.sh`. It contains those major configuration additions:
+`bin/stream-jmx-conenct.bat` or `bin/stream-jmx-conenct.sh`. It contains these major configuration additions:
 * WebLogic environment setup configuration
 * appending `LIBPATH` variable with WebLogic client lib from `${WL_INSTALL_DIR}/inventory/wlserver/server/lib/wlclient.jar`
 * enable `j2ee` module use:
@@ -296,18 +362,18 @@ Additions needed to run `SamplingAgent` connected to remote WebLogic machine can
     # Add user credentials if needed
     -cp:java.naming.security.principal=user
     -cp:java.naming.security.credentials=password
-``` 
+```
 
 For more see [Programming WebLogic JNDI](https://docs.oracle.com/cd/E13222_01/wls/docs81/jndi/jndi.html) and 
 [WebLogic API Environment class documentation](https://docs.oracle.com/cd/E68505_01/wls/WLAPI/weblogic/jndi/Environment.html).
 
 ### Coding into API
-You can connect `SamplingAgent` to JVM from your custom API by calling [SamplingAgent.connect(String,String)](./tnt4j-stream-jmx-core/src/main/java/com/jkoolcloud/tnt4j/stream/jmx/SamplingAgent.java#L757) method. 
+You can connect `SamplingAgent` to JVM from your custom API by calling [SamplingAgent.connect(String,String)](./tnt4j-stream-jmx-core/src/main/java/com/jkoolcloud/tnt4j/stream/jmx/SamplingAgent.java#L757) method.
 
 Sample `connect` call for local JVM:
 ```java
 try {
-  SamplingAgent.connect("activemq", "*:*!!10000");
+   SamplingAgent.newSamplingAgent().connect("activemq", "*:*!!10000");
 } catch (Exception exc) {
   exc.printStackTrace();
 }
@@ -316,7 +382,7 @@ try {
 Sample `connect` call for remote JVM:
 ```java
 try {
-  SamplingAgent.connect("service:jmx:iiop://172.16.6.40:2809/jndi/JMXConnector", "*:*!!10000");
+   SamplingAgent.newSamplingAgent().connect("service:jmx:iiop://172.16.6.40:2809/jndi/JMXConnector", "*:*!!10000");
 } catch (Exception exc) {
   exc.printStackTrace();
 }
@@ -325,7 +391,7 @@ try {
 Sample `connect` call for remote JVM defining user name and password:
 ```java
 try {
-  SamplingAgent.connect("activemq", "admin", "admin", "*:*!!10000");
+   SamplingAgent.newSamplingAgent().connect("activemq", "admin", "admin", "*:*!!10000");
 } catch (Exception exc) {
   exc.printStackTrace();
 }
@@ -336,7 +402,7 @@ try {
   Map<String, Object> connParams = new HashMap<String, Object>();
   connParams.put("javax.net.ssl.trustStore", "/your/path/to/truststore.jks");
   connParams.put("javax.net.ssl.trustStorePassword", "truststore_pwd");
-  SamplingAgent.connect("activemq", "*:*!!10000", connParams);
+   SamplingAgent.newSamplingAgent().connect("activemq", "*:*!!10000", connParams);
 } catch (Exception exc) {
   exc.printStackTrace();
 }
@@ -361,7 +427,7 @@ seconds. Sampler options are optional - default value is `*:*!30000`. Initial sa
 * `-sp:` - any system property used by sampler. See [System properties used](#system-properties-used) for details.
 
 ### Coding into API
-You can run `SamplingAgent` for local process runner JVM from your custom API by calling [SamplingAgent.sampleLocalVM(String,boolean)](./tnt4j-stream-jmx-core/src/main/java/com/jkoolcloud/tnt4j/stream/jmx/SamplingAgent.java#L991) method. 
+You can run `SamplingAgent` for local process runner JVM from your custom API by calling [SamplingAgent.sampleLocalVM(String,boolean)](./tnt4j-stream-jmx-core/src/main/java/com/jkoolcloud/tnt4j/stream/jmx/SamplingAgent.java#L991) method.
 
 Sample `sampleLocalVM` call for a local process runner JVM:
 ```java
@@ -414,7 +480,7 @@ There is a simple Liberty `server.xml` configuration required to run Stream-JMX 
     <!-- Enable features -->
     <featureManager>
         <feature>webProfile-7.0</feature>
-        <feature>restConnector-1.0</feature>		
+        <feature>restConnector-1.0</feature>
         <feature>localConnector-1.0</feature>
         <feature>monitor-1.0</feature>
         <feature>j2eeManagement-1.1</feature>
@@ -428,12 +494,12 @@ There is a simple Liberty `server.xml` configuration required to run Stream-JMX 
 
     <!-- Automatically expand WAR files and EAR files -->
     <applicationManager autoExpand="true"/>
-	
+
 	<webContainer deferServletLoad="false"/>
 
     <auth-method>BASIC</auth-method>
 
-    <basicRegistry id="basic" realm="default">		
+    <basicRegistry id="basic" realm="default">
         <user name="Admin" password="admin" />
         <user name="JMXManager" password="jmxAdmin" />
     </basicRegistry>
@@ -441,8 +507,8 @@ There is a simple Liberty `server.xml` configuration required to run Stream-JMX 
     <administrator-role>
         <user>Admin</user>
     </administrator-role>
-	
-    <application contextRoot="tnt-jmx" location="tnt4j-stream-jmx-liberty-war-0.7.war" type="war" id="tnt-jmx" name="tnt-jmx">
+
+    <application contextRoot="tnt-jmx" location="tnt4j-stream-jmx-liberty-war-0.8.war" type="war" id="tnt-jmx" name="tnt-jmx">
         <application-bnd>
             <security-role name="StreamJmxManager">
                 <user name="JMXManager" />
@@ -508,7 +574,7 @@ Below is an example of how to sample all registered mbean servers:
 Alternatively, Stream-JMX provides a helper class `SamplingAgent` that lets you schedule sampling for all registered `MBeanServer` 
 instances.
 ```java
-    SamplingAgent.sample(Sampler.JMX_FILTER_ALL, Sampler.JMX_FILTER_NONE, 60000, TimeUnit.MILLISECONDS);
+     SamplingAgent.newSamplingAgent().sample(Sampler.JMX_FILTER_ALL, Sampler.JMX_FILTER_NONE, 60000, TimeUnit.MILLISECONDS);
 ```
 **NOTE:** Sampled MBean attributes and associated values are stored in a collection of `Snapshot` objects stored within `Activity` 
 instance. Current `Activity` instance can be obtained via `AttributeSample` passed when calling listeners such as `AttributeCondition`, 
@@ -532,7 +598,7 @@ Stream-JMX has configuration properties allowing to configure JMX sampler. It is
 using `System property` or `program argument`. Depending on sampling environment used, in some cases it is easier to configure it using one 
 approach or another. When both definitions available **first** `System property` defined value is assigned and then `program argument` 
 value **after**.
- 
+
 JMX sampler configuration properties are:
 * `forceObjectName` - flag indicating to forcibly add `objectName` attribute if such is not present for a MBean. Default value - `false`.
 * `compositeDelimiter` - delimiter used to tokenize composite/tabular type MBean properties keys. Default value - `\`;
@@ -543,7 +609,7 @@ See [Program arguments used](#program-arguments-used) how to configure Stream-JM
 
 ### System properties used
 
-To define system property for application you can use common JVM argument `-Dkey=value` or `SamplingAgent` program argument `-sp:key=value`. 
+To define system property for application you can use common JVM argument `-Dkey=value` or `SamplingAgent` program argument `-sp:key=value`.
 
 General use:
 * `tnt4j.config` - defines TNT4J properties file path. 
@@ -577,7 +643,7 @@ If you where using system property `-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trac
 logger log level, by setting it to `DEBUG` value, e.g:
 ```properties
 log4j.logger.com.jkoolcloud.tnt4j.stream.jmx=DEBUG
-```  
+```
 
 ### Program arguments used
 
@@ -587,7 +653,7 @@ properties use as many argument definitions as there are required properties. Fo
 -slp:forceObjectName=true
 -slp:compositeDelimiter=.
 -slp:useObjectNameProperties=false
-``` 
+```
 
 ### JMX Sampling Agent sampler options
 
@@ -597,15 +663,15 @@ Agent options are defined using format: `mbean-filter!exclude-filter!sample-ms!i
 * `sample-ms` - MBeans sampling rate in milliseconds
 * `init-delay-ms` - MBeans sampling initial delay in milliseconds. Optional, by default it is equal to `sample-ms` value
 
-Default sampling agent options value is: `*:*!!30000` 
+Default sampling agent options value is: `*:*!!30000`
 
 ### TNT4J Source fields configuration
 
 Stream-JMS has couple additional features in comparison with basic `TNT4J` when building Source `RootFQN` value:
 
 1. Has two dedicated System properties `sjmx.serverAddress` and `sjmx.serverName` to resolve remotely sampled machine IP address and host 
-name. To map those System properties values into source field put `$` symbol before System property name in source field definition. In this 
-case `tnt4j.properties` configuration would be like this:
+name. To map these System properties values into `source` field, put `$` symbol before System property name in `source` field definition. 
+In this case `tnt4j.properties` configuration would be like this:
     ```properties
     ; Remote machine Address
     ...
@@ -623,11 +689,11 @@ case `tnt4j.properties` configuration would be like this:
     source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?
     ...
     ```
-2. Can resolve values for source fields from JMX MBean attributes. Two items are required to use in `tnt4j.properties` configuration to 
+2. Can resolve values for `source` fields from JMX MBean attributes. Two items are required to use in `tnt4j.properties` configuration to 
 enable this feature:
     1. Set `source.factory` to `com.jkoolcloud.tnt4j.stream.jmx.source.JMXSourceFactoryImpl`
-    2. Put MBean attribute descriptor as source field value. Mbean descriptor pattern is `"@bean:MBean_ObjectName/AttributeName`. 
-     
+    2. Put MBean attribute descriptor as `source` field value. Mbean descriptor pattern is `"@bean:MBean_ObjectName/AttributeName`.
+
     putting all together, `tnt4j.properties` configuration will be like this:
     ```properties
     ...
@@ -637,7 +703,7 @@ enable this feature:
     source.factory.SERVER: @bean:JMImplementation:type=MBeanServerDelegate/?MBeanServerId
     source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?
     ...
-    ``` 
+    ```
 
 ## Stream-JMX event data formatters
 
@@ -809,7 +875,7 @@ the following format:
     ```
     **NOTE:** Entries are sorted by key alphanumeric ordering and key representation is more common to be used for, e.g., tree model 
     construction to represent JMX structure more like `JConsole` does.
-    
+
 * FactJSONFormatter - this class provides JSON formatting for tnt4j activities, events and snapshots. Difference from 
 `com.jkoolcloud.tnt4j.format.JSONFormatter` is only facts payload is present in produced JSON without major part of TNT4J metadata. 
     Sample output:
@@ -1029,7 +1095,7 @@ Below is an example of TNT4J stream configuration writing collected JMX samples 
     #event.formatter.PathLevelAttributes:  domain; type; name, brokerName; service, connector, destinationType; instanceName, connectorName, destinationName
     ; Defines JMX sample attribute key suffix to be added when duplicate keys for "branch" and "leaf" nodes are found.
     ; NOTE: AP does not allow to have same name for "branch" and "leaf" nodes at same tree level
-    #event.formatter.DuplicateKeySuffix: ___ 
+    #event.formatter.DuplicateKeySuffix: ___
 
     ; Configure default sink filter based on level and time (elapsed/wait)
     event.sink.factory.Filter: com.jkoolcloud.tnt4j.filters.EventLevelTimeFilter
@@ -1156,7 +1222,7 @@ class MySampleListener implements SampleListener {
     public void getStats(SampleContext context, Map<String, Object> stats) {
 		// add your own stats to the map
 	}
-	
+
 	@Override
     public void register(SampleContext context, ObjectName oname) {
 		System.out.println("Register mbean: " + oname + ", mbean.server=" + context.getMBeanServer());
@@ -1198,13 +1264,13 @@ class MySampleListener implements SampleListener {
 			activity.setType(OpType.NOOP);
 		}
 	}
-	
+
 	@Override
 	public void error(SampleContext context, Throwable ex) {
 		// called once for every exception that occurs not associated with a sample
 		ex.printStackTrace();
 	}
-	
+
 	@Override
 	public void error(SampleContext context, AttributeSample sample) {
 		// called once for every exception that occurs during each sample
@@ -1281,7 +1347,7 @@ defined dependencies automatically.
 ### Manually installed dependencies
 Some of required and optional dependencies may be not available in public [Maven Repository](http://repo.maven.apache.org/maven2/). In this 
 case we would recommend to download those dependencies manually into module's `lib` directory and install into local maven repository by 
-running maven script `lib/pom.xml` with `install` goal. For example see [`tnt4j-stream-jmx/tnt4j-stream-jmx-was/lib/pom.xml`](tnt4j-stream-jmx-was/lib/pom.xml) 
+running maven script `lib/pom.xml` with `install` goal. For example see [`tnt4j-stream-jmx/tnt4j-stream-jmx-was/tnt4j-stream-jmx-was-api/lib/pom.xml`](./tnt4j-stream-jmx-was/tnt4j-stream-jmx-was-api/lib/pom.xml) 
 how to do this.
 
 #### `Core` module

@@ -20,6 +20,7 @@ import java.security.PrivilegedExceptionAction;
 
 import javax.management.MBeanServerConnection;
 
+import com.jkoolcloud.tnt4j.source.Source;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeSample;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.WASSecurityHelper;
 
@@ -32,8 +33,8 @@ import com.jkoolcloud.tnt4j.stream.jmx.utils.WASSecurityHelper;
  */
 public class WASSampleHandlerImpl extends SampleHandlerImpl {
 
-	public WASSampleHandlerImpl(MBeanServerConnection mServerConn, String incFilter, String excFilter) {
-		super(mServerConn, incFilter, excFilter);
+	public WASSampleHandlerImpl(MBeanServerConnection mServerConn, String incFilter, String excFilter, Source source) {
+		super(mServerConn, incFilter, excFilter, source);
 	}
 
 	@Override

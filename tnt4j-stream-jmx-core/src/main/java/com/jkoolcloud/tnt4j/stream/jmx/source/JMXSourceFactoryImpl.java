@@ -17,6 +17,7 @@
 package com.jkoolcloud.tnt4j.stream.jmx.source;
 
 import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
 import javax.management.MBeanServerConnection;
@@ -25,9 +26,11 @@ import javax.management.ObjectName;
 import com.jkoolcloud.tnt4j.core.OpLevel;
 import com.jkoolcloud.tnt4j.sink.DefaultEventSinkFactory;
 import com.jkoolcloud.tnt4j.sink.EventSink;
+import com.jkoolcloud.tnt4j.source.DefaultSource;
+import com.jkoolcloud.tnt4j.source.Source;
 import com.jkoolcloud.tnt4j.source.SourceFactoryImpl;
 import com.jkoolcloud.tnt4j.source.SourceType;
-import com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent;
+import com.jkoolcloud.tnt4j.stream.jmx.SamplingAgentThread;
 import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
 import com.jkoolcloud.tnt4j.utils.Utils;
 
@@ -68,10 +71,15 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 				String objectNamePart = paths[0];
 				String attributeNamePart = paths[1];
 
-				Map<MBeanServerConnection, Sampler> samplers = SamplingAgent.getSamplers();
-				if (samplers != null && !samplers.isEmpty()) {
-					MBeanServerConnection mBeanServer = samplers.entrySet().iterator().next().getKey();
-					return String.valueOf(mBeanServer.getAttribute(new ObjectName(objectNamePart), attributeNamePart));
+				Thread thread = Thread.currentThread();
+				if (thread instanceof SamplingAgentThread) {
+					Map<MBeanServerConnection, Sampler> samplers = ((SamplingAgentThread) thread).getSamplingAgent()
+							.getSamplers();
+					if (!Utils.isEmpty(samplers)) {
+						MBeanServerConnection mBeanServer = samplers.entrySet().iterator().next().getKey();
+						return Utils
+								.toString(mBeanServer.getAttribute(new ObjectName(objectNamePart), attributeNamePart));
+					}
 				}
 			} catch (Exception e) {
 				LOGGER.log(OpLevel.ERROR, "Failed to resolve MBean attribute ''{0}'' value for source field {1}", name,
@@ -83,4 +91,40 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 
 		return super.getNameFromType(name, type);
 	}
+
+	@Override
+	public Source fromFQN(String fqn, Source parent) {
+		return createFromFQN(fqn, parent);
+	}
+
+	@Override
+	public Source newFromFQN(String fqn) {
+		return createFromFQN(fqn, null);
+	}
+
+	private Source createFromFQN(String fqn, Source parent) {
+		StringTokenizer tk = new StringTokenizer(fqn, "#");
+		DefaultSource child = null, root = null;
+		while (tk.hasMoreTokens()) {
+			String sName = tk.nextToken();
+			int firstEqSign = sName.indexOf("=");
+			String typeS = sName.substring(0, firstEqSign);
+			String valueS = sName.substring(++firstEqSign);
+			SourceType type = SourceType.valueOf(typeS);
+			DefaultSource source = new DefaultSource(this, getNameFromType(valueS, type), type, null,
+					getNameFromType("?", SourceType.USER));
+			if (child != null) {
+				child.setSource(source);
+			}
+			if (root == null) {
+				root = source;
+			}
+			child = source;
+		}
+		if (child != null) {
+			child.setSource(parent);
+		}
+		return root;
+	}
+
 }

@@ -19,6 +19,7 @@ import java.util.Map;
 
 import javax.management.MBeanServerConnection;
 
+import com.jkoolcloud.tnt4j.source.Source;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.SampleHandler;
 import com.jkoolcloud.tnt4j.stream.jmx.core.DefaultSampleListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
@@ -72,7 +73,14 @@ public class PlatformSamplerFactory implements SamplerFactory {
 	@Override
 	public SampleHandler newSampleHandler(MBeanServerConnection mServerConn, String incFilterList,
 			String excFilterList) {
-		return System.getSecurityManager() == null ? new SampleHandlerImpl(mServerConn, incFilterList, excFilterList)
-				: new PrivilegedSampleHandlerImpl(mServerConn, incFilterList, excFilterList);
+		return newSampleHandler(mServerConn, incFilterList, excFilterList, null);
+	}
+
+	@Override
+	public SampleHandler newSampleHandler(MBeanServerConnection mServerConn, String incFilterList, String excFilterList,
+			Source source) {
+		return System.getSecurityManager() == null
+				? new SampleHandlerImpl(mServerConn, incFilterList, excFilterList, source)
+				: new PrivilegedSampleHandlerImpl(mServerConn, incFilterList, excFilterList, source);
 	}
 }

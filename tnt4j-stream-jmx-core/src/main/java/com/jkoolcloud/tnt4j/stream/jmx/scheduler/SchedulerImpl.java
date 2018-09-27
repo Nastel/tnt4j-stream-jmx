@@ -27,6 +27,7 @@ import com.jkoolcloud.tnt4j.config.DefaultConfigFactory;
 import com.jkoolcloud.tnt4j.config.TrackerConfig;
 import com.jkoolcloud.tnt4j.config.TrackerConfigStore;
 import com.jkoolcloud.tnt4j.core.ActivityListener;
+import com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeAction;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeCondition;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.SampleHandler;
@@ -237,8 +238,11 @@ public class SchedulerImpl extends ActivityScheduler implements Scheduler {
 	@Override
 	public void close() {
 		super.close();
+		if (SamplingAgent.getAllSamplers().isEmpty()) {
 
-		TrackingLogger.shutdown(getLogger());
+			TrackingLogger.shutdown(getLogger());
+		}
+
 		listener.cleanup();
 	}
 }

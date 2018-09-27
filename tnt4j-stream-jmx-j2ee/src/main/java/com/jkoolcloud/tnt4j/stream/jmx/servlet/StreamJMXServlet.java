@@ -438,7 +438,7 @@ public abstract class StreamJMXServlet extends HttpServlet {
 						SamplingAgent.sampleLocalVM(ao, true);
 					} else {
 						LOGGER.log(OpLevel.INFO, "==> Connecting to remote JVM: vm={0}, options={1}", vm, ao);
-						SamplingAgent.connect(vm, ao);
+						SamplingAgent.newSamplingAgent().connect(vm, ao);
 					}
 				} catch (Exception e) {
 					LOGGER.log(OpLevel.ERROR, "!!!!   Failed to connect Sampler Agent   !!!!", e);

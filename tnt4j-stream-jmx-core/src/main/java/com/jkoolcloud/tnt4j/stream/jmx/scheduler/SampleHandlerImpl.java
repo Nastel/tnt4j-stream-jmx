@@ -28,6 +28,7 @@ import com.jkoolcloud.tnt4j.core.Activity;
 import com.jkoolcloud.tnt4j.core.OpLevel;
 import com.jkoolcloud.tnt4j.core.PropertySnapshot;
 import com.jkoolcloud.tnt4j.core.Snapshot;
+import com.jkoolcloud.tnt4j.source.Source;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.*;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleContext;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
@@ -61,6 +62,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	public static String STAT_SAMPLE_TIME_USEC = "sample.time.usec";
 
 	private final ReentrantLock lock = new ReentrantLock();
+	private final Source source;
 
 	String mbeanIncFilter, mbeanExcFilter;
 	long sampleCount = 0, totalMetricCount = 0, totalActionCount = 0;
@@ -87,11 +89,14 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	 *            MBean include filters semicolon separated
 	 * @param excFilter
 	 *            MBean exclude filters semicolon separated
+	 * @param source
+	 *            sampler source
 	 */
-	public SampleHandlerImpl(MBeanServerConnection mServerConn, String incFilter, String excFilter) {
+	public SampleHandlerImpl(MBeanServerConnection mServerConn, String incFilter, String excFilter, Source source) {
 		mbeanServer = mServerConn;
 		mbeanIncFilter = incFilter;
 		mbeanExcFilter = excFilter;
+		this.source = source;
 		context = new SampleContextImpl(this);
 	}
 
@@ -216,6 +221,10 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	 * @return number of metrics loaded from all MBeans
 	 */
 	private int sampleMBeans(Activity activity) {
+		if (source != null) {
+			activity.setSource(source);
+		}
+
 		int pCount = 0;
 		for (Entry<ObjectName, MBeanInfo> entry : mbeans.entrySet()) {
 			ObjectName name = entry.getKey();
@@ -231,6 +240,10 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 						doPost(sample);
 						if (sample.isError() && !sample.isSilence()) {
 							doError(sample, OpLevel.WARNING);
+						}
+						if (sample.isError()
+								&& "ConnectException".equals(sample.getError().getClass().getSimpleName())) {
+							return pCount;
 						}
 					}
 				} catch (Throwable ex) {

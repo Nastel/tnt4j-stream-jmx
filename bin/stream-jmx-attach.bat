@@ -23,11 +23,13 @@ rem ---- Agent sampler options ----
 set AGENT_OPTIONS=*:*!!60000
 if "%TNT4J_AGENT_OPTIONS%"=="" set TNT4J_AGENT_OPTIONS=%AGENT_OPTIONS%
 if not "%2"=="" if not "%2"=="." set TNT4J_AGENT_OPTIONS=%2
+shift /2
 rem -------------------------------
 
 rem ---- AppServer identifies source ----
 if "%TNT4J_APPSERVER%"=="" set TNT4J_APPSERVER=Default
-if not "%3"=="" if not "%3"=="." set TNT4J_APPSERVER=%3
+if not "%2"=="" if not "%2"=="." set TNT4J_APPSERVER=%2
+shift /2
 set TNT4JOPTS=%TNT4JOPTS% "-Dsjmx.serviceId=%TNT4J_APPSERVER%"
 rem -------------------------------------
 
@@ -36,7 +38,7 @@ rem use this when streaming to AutoPilot
 rem if "%TNT4J_AGENT_ARGS%"=="" set TNT4J_AGENT_ARGS=-slp:compositeDelimiter=\
 rem use this when streaming to jKool
 if "%TNT4J_AGENT_ARGS%"=="" set TNT4J_AGENT_ARGS=-slp:compositeDelimiter=_
-if not "%4"=="" if not "%4"=="." set TNT4J_AGENT_ARGS=%4
+if not "%2"=="" if not "%2"=="." set TNT4J_AGENT_ARGS=%2 %3 %4 %5 %6 %7 %8 %9
 rem -------------------------
 
 @echo on

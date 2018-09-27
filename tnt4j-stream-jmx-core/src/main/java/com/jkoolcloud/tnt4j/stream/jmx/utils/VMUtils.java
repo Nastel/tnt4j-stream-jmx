@@ -75,50 +75,54 @@ public class VMUtils {
 	}
 
 	/**
-	 * Resolves running JVM JMX server connection address string. JVM has to have defined agent property
-	 * {@code "com.sun.management.jmxremote.localConnectorAddress"}.
+	 * Resolves running JMX server connection addresses list for JVMs matching defined VM descriptor.
+	 * <p>
+	 * JVM has to have defined agent property {@code "com.sun.management.jmxremote.localConnectorAddress"}.
 	 * 
 	 * @param vmDescr
 	 *            JVM descriptor: display name fragment or pid
-	 * @return resolved JVM connection address string
-	 * @throws IOException
-	 *             if any exception occurs while retrieving JVM connection address
-	 *
+	 * @return resolved JVM connection addresses list
+	 * 
 	 * @see #findVMs(String)
 	 */
-	public static String getVMConnAddress(String vmDescr) throws IOException {
-		try {
-			VirtualMachineDescriptor descriptor = findVMs(vmDescr).get(0);
-			LOGGER.log(OpLevel.INFO, "SamplingAgent.getVMConnAddress: VM descriptor matched JVM [{0}]",
-					vmString(descriptor));
-			VirtualMachine virtualMachine = VirtualMachine.attach(descriptor.id());
-			String connectorAddress;
-
+	public static List<String> getVMConnAddresses(String vmDescr) {
+		List<VirtualMachineDescriptor> descriptors = findVMs(vmDescr);
+		List<String> connectorAddresses = new ArrayList<String>();
+		for (VirtualMachineDescriptor descriptor : descriptors) {
 			try {
-				connectorAddress = virtualMachine.getAgentProperties().getProperty(CONNECTOR_ADDRESS);
-				if (connectorAddress == null) {
-					LOGGER.log(OpLevel.INFO,
-							"SamplingAgent.getVMConnAddress: initializing JVM [{0}] management agent...",
-							vmString(descriptor));
-					String agent = virtualMachine.getSystemProperties().getProperty("java.home") + File.separator
-							+ "lib" + File.separator + "management-agent.jar";
-					virtualMachine.loadAgent(agent);
+				LOGGER.log(OpLevel.INFO, "SamplingAgent.getVMConnAddresses: VM descriptor matched JVM [{0}]",
+						vmString(descriptor));
+				VirtualMachine virtualMachine = VirtualMachine.attach(descriptor.id());
+				String connectorAddress;
 
+				try {
 					connectorAddress = virtualMachine.getAgentProperties().getProperty(CONNECTOR_ADDRESS);
 					if (connectorAddress == null) {
-						throw new IOException("JVM [" + vmString(descriptor) + "] does not support JMX connection...");
-					}
-				}
-			} finally {
-				virtualMachine.detach();
-			}
+						LOGGER.log(OpLevel.INFO,
+								"SamplingAgent.getVMConnAddresses: initializing JVM [{0}] management agent...",
+								vmString(descriptor));
+						String agent = virtualMachine.getSystemProperties().getProperty("java.home") + File.separator
+								+ "lib" + File.separator + "management-agent.jar";
+						virtualMachine.loadAgent(agent);
 
-			return connectorAddress;
-		} catch (IOException exc) {
-			throw exc;
-		} catch (Exception exc) {
-			throw new IOException(exc);
+						connectorAddress = virtualMachine.getAgentProperties().getProperty(CONNECTOR_ADDRESS);
+						if (connectorAddress == null) {
+							throw new IOException(
+									"JVM [" + vmString(descriptor) + "] does not support JMX connection...");
+						}
+					}
+					connectorAddresses.add(connectorAddress);
+				} finally {
+					virtualMachine.detach();
+				}
+			} catch (Exception exc) {
+				LOGGER.log(OpLevel.WARNING,
+						"SamplingAgent.getVMConnAddresses: failed to retrieve JVM [{0}] connection address...",
+						vmString(descriptor), exc);
+			}
 		}
+
+		return connectorAddresses;
 	}
 
 	private static String vmString(VirtualMachineDescriptor descriptor) {

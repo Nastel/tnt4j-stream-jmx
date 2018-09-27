@@ -21,6 +21,7 @@ import javax.management.MBeanServerConnection;
 
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
+import com.jkoolcloud.tnt4j.source.Source;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.SampleHandler;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
@@ -77,12 +78,12 @@ public class WASSamplerFactory extends J2EESamplerFactory {
 	}
 
 	@Override
-	public SampleHandler newSampleHandler(MBeanServerConnection mServerConn, String incFilterList,
-			String excFilterList) {
+	public SampleHandler newSampleHandler(MBeanServerConnection mServerConn, String incFilterList, String excFilterList,
+			Source source) {
 		if (local && WASSecurityHelper.isServerSecurityEnabled()) {
-			return new WASSampleHandlerImpl(mServerConn, incFilterList, excFilterList);
+			return new WASSampleHandlerImpl(mServerConn, incFilterList, excFilterList, source);
 		}
 
-		return super.newSampleHandler(mServerConn, incFilterList, excFilterList);
+		return super.newSampleHandler(mServerConn, incFilterList, excFilterList, source);
 	}
 }

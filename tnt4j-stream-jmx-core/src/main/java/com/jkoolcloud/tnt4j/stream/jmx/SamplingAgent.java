@@ -17,16 +17,15 @@ package com.jkoolcloud.tnt4j.stream.jmx;
 
 import static com.jkoolcloud.tnt4j.stream.jmx.core.DefaultSampleListener.ListenerProperties.*;
 
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
+import java.io.*;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import javax.management.*;
 import javax.management.remote.JMXAddressable;
@@ -36,10 +35,16 @@ import javax.management.remote.JMXServiceURL;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.jkoolcloud.tnt4j.config.DefaultConfigFactory;
+import com.jkoolcloud.tnt4j.config.TrackerConfig;
 import com.jkoolcloud.tnt4j.config.TrackerConfigStore;
 import com.jkoolcloud.tnt4j.core.OpLevel;
 import com.jkoolcloud.tnt4j.sink.DefaultEventSinkFactory;
 import com.jkoolcloud.tnt4j.sink.EventSink;
+import com.jkoolcloud.tnt4j.source.Source;
+import com.jkoolcloud.tnt4j.source.SourceFactory;
+import com.jkoolcloud.tnt4j.source.SourceFactoryImpl;
+import com.jkoolcloud.tnt4j.source.SourceType;
 import com.jkoolcloud.tnt4j.stream.jmx.core.DefaultSampleListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.PropertyNameBuilder;
 import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
@@ -63,10 +68,14 @@ public class SamplingAgent {
 	private static final EventSink LOGGER = DefaultEventSinkFactory.defaultEventSink(SamplingAgent.class);
 	public static final String SOURCE_SERVER_ADDRESS = "sjmx.serverAddress";
 	public static final String SOURCE_SERVER_NAME = "sjmx.serverName";
+	public static final String SOURCE_SERVICE_ID = "sjmx.serviceId";
 
-	protected static Sampler platformJmx;
-	protected static ConcurrentHashMap<MBeanServerConnection, Sampler> STREAM_AGENTS = new ConcurrentHashMap<MBeanServerConnection, Sampler>(
+	protected Sampler platformJmx;
+	protected ConcurrentHashMap<MBeanServerConnection, Sampler> STREAM_AGENTS = new ConcurrentHashMap<MBeanServerConnection, Sampler>(
 			89);
+
+	private static Map<Thread, SamplingAgent> agents = new HashMap<Thread, SamplingAgent>();
+
 	protected static final long CONN_RETRY_INTERVAL = 10;
 
 	private static final String LOG4J_PROPERTIES_KEY = "log4j.configuration";
@@ -83,8 +92,7 @@ public class SamplingAgent {
 	private static final String PARAM_AGENT_CONN_RETRY_INTERVAL = "-cri:";
 	private static final String PARAM_AGENT_LISTENER_PARAM = "-slp:";
 	private static final String PARAM_AGENT_SYSTEM_PROPERTY = "-sp:";
-
-	public static final String OPTION_SEPARATOR = ";";
+	private static final String PARAM_AGENT_CONNECTIONS_CONFIG_FILE = "-f:";
 
 	private static final String AGENT_MODE_AGENT = "-agent";
 	private static final String AGENT_MODE_ATTACH = "-attach";
@@ -105,6 +113,7 @@ public class SamplingAgent {
 	private static final String AGENT_ARG_W_TIME = "agent.wait.time";
 
 	private static final String AGENT_CONN_PARAMS = "agent.connection.params";
+	private static final String AGENT_CONNS_CONFIG_FILE = "agent.connections.config.file";
 
 	private static final String DEFAULT_AGENT_OPTIONS = Sampler.JMX_FILTER_ALL + "!" + Sampler.JMX_FILTER_NONE + "!"
 			+ Sampler.JMX_SAMPLE_PERIOD;
@@ -124,7 +133,16 @@ public class SamplingAgent {
 		copyProperty(USE_OBJECT_NAME_PROPERTIES, System.getProperties(), LISTENER_PROPERTIES);
 	}
 
-	private static boolean stopSampling = false;
+	private boolean stopSampling = false;
+
+	private SamplingAgent() {
+	}
+
+	public static SamplingAgent newSamplingAgent() {
+		SamplingAgent agent = new SamplingAgent();
+		agents.put(Thread.currentThread(), agent);
+		return agent;
+	}
 
 	/**
 	 * Entry point to be loaded as {@code -javaagent:jarpath="mbean-filter!sample.ms!initDelay.ms"} command line where
@@ -157,11 +175,12 @@ public class SamplingAgent {
 				initDelay = Integer.parseInt(args.length > 3 ? args[3] : args[2]);
 			}
 		}
-		sample(incFilter, excFilter, initDelay, period, TimeUnit.MILLISECONDS);
+		SamplingAgent agent = newSamplingAgent();
+		agent.sample(incFilter, excFilter, initDelay, period, TimeUnit.MILLISECONDS);
 		LOGGER.log(OpLevel.INFO,
 				"SamplingAgent.premain: include.filter={0}, exclude.filter={1}, sample.ms={2}, initDelay.ms={3}, listener.properties={4}, tnt4j.config={5}, jmx.sample.list={6}",
 				incFilter, excFilter, period, initDelay, LISTENER_PROPERTIES,
-				System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY), STREAM_AGENTS);
+				System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY), agent.STREAM_AGENTS);
 	}
 
 	/**
@@ -288,25 +307,19 @@ public class SamplingAgent {
 
 			String am = props.getProperty(AGENT_ARG_MODE);
 			if (AGENT_MODE_CONNECT.equalsIgnoreCase(am)) {
-				@SuppressWarnings("unchecked")
-				final Map<String, ?> connParams = (Map<String, ?>) props.get(AGENT_CONN_PARAMS);
-				final long cri = Long.parseLong(
-						props.getProperty(AGENT_ARG_CONN_RETRY_INTERVAL, String.valueOf(CONN_RETRY_INTERVAL)));
-
-				ExecutorService executorService = Executors.newCachedThreadPool();
-
-				List<ConnectionParams> allVMs = getAllVMs(props);
-				for (final ConnectionParams cp : allVMs) {
-					Callable<Integer> connect = new Callable<Integer>() {
-						@Override
-						public Integer call() throws Exception {
-							connect(cp.vmDescr, cp.user, cp.pass, cp.agentOptions, connParams, cri);
-							return 0;
-						}
-					};
-					executorService.submit(connect);
+				String fileName = props.getProperty(AGENT_CONNS_CONFIG_FILE);
+				if (StringUtils.isEmpty(fileName)) {
+					List<ConnectionParams> allVMs = getAllVMs(props);
+					connectAll(allVMs, props);
+				} else {
+					List<ConnectionParams> allVMs = getConnectionParamsFromFile(fileName);
+					if (allVMs == null || allVMs.isEmpty()) {
+						LOGGER.log(OpLevel.CRITICAL, "No JVM connections loaded from configuration file ''{0}''",
+								fileName);
+					} else {
+						connectAll(allVMs, props);
+					}
 				}
-
 			} else if (AGENT_MODE_ATTACH.equalsIgnoreCase(am)) {
 				String vmDescr = props.getProperty(AGENT_ARG_VM);
 				String jarPath = props.getProperty(AGENT_ARG_LIB_PATH);
@@ -326,13 +339,15 @@ public class SamplingAgent {
 					long delay_time = Integer
 							.parseInt(props.getProperty(AGENT_ARG_D_TIME, String.valueOf(sample_time)));
 					long wait_time = Integer.parseInt(props.getProperty(AGENT_ARG_W_TIME, "0"));
-					sample(inclF, exclF, delay_time, sample_time, TimeUnit.MILLISECONDS);
+					SamplingAgent samplingAgent = newSamplingAgent();
+					samplingAgent.sample(inclF, exclF, delay_time, sample_time, TimeUnit.MILLISECONDS, null);
 					LOGGER.log(OpLevel.INFO,
 							"SamplingAgent.main: include.filter={0}, exclude.filter={1}, sample.ms={2}, delay.ms={3}, wait.ms={4}, listener.properties={5}, tnt4j.config={6}, jmx.sample.list={7}",
 							inclF, exclF, sample_time, delay_time, wait_time, LISTENER_PROPERTIES,
-							System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY), STREAM_AGENTS);
-					synchronized (platformJmx) {
-						platformJmx.wait(wait_time);
+							System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY), samplingAgent.STREAM_AGENTS);
+
+					synchronized (samplingAgent.platformJmx) {
+						samplingAgent.platformJmx.wait(wait_time);
 					}
 				} catch (Throwable ex) {
 					LOGGER.log(OpLevel.ERROR, "SamplingAgent.main: failed to configure and run JMX sampling...");
@@ -350,9 +365,7 @@ public class SamplingAgent {
 					+ "   or: -local -ao:agentOptions (e.g -local -ao:*:*!!10000\n"
 					+ "                                                         \n"
 					+ "Arguments definition:                                    \n"
-					+ "   -vm: - virtual machine descriptor.                    \n"
-					+ "       Can be defined multiple VMs by separating descriptors using ';' delimiter.\n"
-					+ "       Can be defined one pair of user credentials/agent options for all VMs, or define individual pairs for every VM. Count of user credentials/agent options pairs then should match number of defined VM descriptors!\n"
+					+ "   -vm: - virtual machine descriptor. It can be PID or JVM process name fragment.\n"
 					+ "   -ao: - agent options string using '!' symbol as delimiter. Options format: mbean-filter!exclude-filter!sample-ms!init-delay-ms\n"
 					+ "       mbean-filter - MBean include name filter defined using object name pattern: domainName:keysSet\n"
 					+ "       exclude-filter - MBean exclude name filter defined using object name pattern: domainName:keysSet\n"
@@ -373,68 +386,117 @@ public class SamplingAgent {
 		}
 	}
 
-	private static List<ConnectionParams> getAllVMs(Properties props) {
-		String vmDescrs[] = props.getProperty(AGENT_ARG_VM).split(OPTION_SEPARATOR);
-		String users[] = props.getProperty(AGENT_ARG_USER) == null ? null
-				: props.getProperty(AGENT_ARG_USER).split(OPTION_SEPARATOR);
-		String passes[] = props.getProperty(AGENT_ARG_PASS) == null ? null
-				: props.getProperty(AGENT_ARG_PASS).split(OPTION_SEPARATOR);
-		String agentOptions[] = props.getProperty(AGENT_ARG_OPTIONS, DEFAULT_AGENT_OPTIONS).split(OPTION_SEPARATOR);
-
+	private static List<ConnectionParams> getConnectionParamsFromFile(String fileName) throws IOException {
+		File file = new File(fileName);
+		if (!file.exists()) {
+			LOGGER.log(OpLevel.CRITICAL, "JVM connections configuration file does not exist: {0}", fileName);
+			return null;
+		}
+		LineNumberReader reader = new LineNumberReader(new FileReader(file));
+		String line;
+		String ao = null;
 		String user = null;
 		String pass = null;
-		String agentOption = null;
+		String sourceDescriptor = getSingleSourceDescriptor();
 
-		if (users != null) {
-			if (!(vmDescrs.length == users.length || users.length == 1)) {
-				throw new IllegalArgumentException("Argument " + AGENT_ARG_USER + " length should be equal "
-						+ AGENT_ARG_VM + " length or exactly one for all. " + "\n " + Arrays.toString(vmDescrs) + "("
-						+ vmDescrs.length + ") " + "\n " + Arrays.toString(users) + "(" + users.length + ") ");
+		List<ConnectionParams> allVMs = new ArrayList<ConnectionParams>();
+
+		while ((line = reader.readLine()) != null) {
+			line = line.trim();
+			if (line.startsWith("#") || line.isEmpty()) {
+				continue;
+			}
+			String[] split = line.split("\\s+");
+
+			// vm
+			if (!(split.length == 5 || split.length == 1)) {
+
+				LOGGER.log(OpLevel.WARNING, "JVM connections configuration file line {0} has invalid syntax: {1}",
+						reader.getLineNumber(), line);
+				continue;
 			}
 
-			if (!(users.length == passes.length || passes.length == 1)) {
-				throw new IllegalArgumentException("Argument " + AGENT_ARG_PASS + " length should be equal "
-						+ AGENT_ARG_USER + " length or exactly one for all. " + "\n " + Arrays.toString(users) + "("
-						+ users.length + ") " + "\n " + Arrays.toString(passes) + "(" + passes.length + ") ");
-			}
+			String vm = split[0];
+			ao = split.length > 1 ? split[1] : ao;
+			user = split.length > 2 ? split[2] : user;
+			pass = split.length > 3 ? split[3] : pass;
+			sourceDescriptor = split.length > 4 ? split[4] : sourceDescriptor;
+
+			ConnectionParams connectionParams = new ConnectionParams(getJmxServiceURLs(vm).get(0), user, pass, ao,
+					sourceDescriptor);
+			allVMs.add(connectionParams);
 		}
-		if (!(vmDescrs.length == agentOptions.length || agentOptions.length == 1)) {
-			throw new IllegalArgumentException("Argument " + AGENT_ARG_OPTIONS + " length should be equal "
-					+ AGENT_ARG_VM + " length or exactly one for all. " + "\n " + Arrays.toString(vmDescrs) + "("
-					+ vmDescrs.length + ") " + "\n " + Arrays.toString(agentOptions) + "(" + agentOptions.length
-					+ ") ");
+		return allVMs;
+	}
+
+	private static void connectAll(List<ConnectionParams> allVMs, Properties props) throws Exception {
+		@SuppressWarnings("unchecked")
+		final Map<String, ?> connParams = (Map<String, ?>) props.get(AGENT_CONN_PARAMS);
+		final long cri = Long
+				.parseLong(props.getProperty(AGENT_ARG_CONN_RETRY_INTERVAL, String.valueOf(CONN_RETRY_INTERVAL)));
+
+		for (final ConnectionParams cp : allVMs) {
+			final SamplingAgent samplingAgent = SamplingAgent.newSamplingAgent();
+			Thread connect = new SamplingAgentThread(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						samplingAgent.connect(cp.serviceURL, cp.user, cp.pass, cp.agentOptions, connParams, cri);
+						samplingAgent.stopSampler();
+					} catch (Exception ex) {
+						throw new RuntimeException(ex);
+					}
+				}
+			}, samplingAgent, cp.additionalSourceFQN);
+			connect.start();
 		}
+	}
+
+	private static List<ConnectionParams> getAllVMs(Properties props) throws IOException {
+		String vmDescr = props.getProperty(AGENT_ARG_VM);
+		String user = props.getProperty(AGENT_ARG_USER) == null ? null : props.getProperty(AGENT_ARG_USER);
+		String pass = props.getProperty(AGENT_ARG_PASS) == null ? null : props.getProperty(AGENT_ARG_PASS);
+		String agentOptions = props.getProperty(AGENT_ARG_OPTIONS, DEFAULT_AGENT_OPTIONS);
+		String sourcesDescriptor = getSingleSourceDescriptor();
 
 		List<ConnectionParams> connectionParamsList = new ArrayList<ConnectionParams>();
 
-		for (int i = 0; i < vmDescrs.length; i++) {
-			try {
-				if (users != null && passes != null) {
-					user = users[i];
-					pass = passes[i];
-				}
-
-				agentOption = agentOptions[i];
-			} catch (IndexOutOfBoundsException e) {
-				// fine if it's common param;
-			}
-			connectionParamsList.add(new ConnectionParams(vmDescrs[i], user, pass, agentOption));
-
+		List<JMXServiceURL> jmxServiceURLs = getJmxServiceURLs(vmDescr);
+		for (JMXServiceURL jmxServiceURL : jmxServiceURLs) {
+			connectionParamsList.add(new ConnectionParams(jmxServiceURL, user, pass, agentOptions, sourcesDescriptor));
 		}
+
 		return connectionParamsList;
 	}
 
+	private static String getSingleSourceDescriptor() {
+		return System.getProperty(SOURCE_SERVICE_ID, SourceFactoryImpl.UNKNOWN_SOURCE);
+	}
+
+	public static Map<MBeanServerConnection, Sampler> getAllSamplers() {
+		Map<MBeanServerConnection, Sampler> samplers = new HashMap<MBeanServerConnection, Sampler>();
+		for (SamplingAgent agent : agents.values()) {
+			if (agent != null) {
+				samplers.putAll(agent.getSamplers());
+			}
+		}
+		return samplers;
+	}
+
 	static class ConnectionParams {
-		String vmDescr;
+		JMXServiceURL serviceURL;
 		String user;
 		String pass;
 		String agentOptions;
+		String additionalSourceFQN;
 
-		public ConnectionParams(String vmDescr, String user, String pass, String agentOptions) {
-			this.vmDescr = vmDescr;
+		public ConnectionParams(JMXServiceURL serviceURL, String user, String pass, String agentOptions,
+				String additionalSourceFQN) throws IOException {
+			this.serviceURL = serviceURL;
 			this.user = user;
 			this.pass = pass;
 			this.agentOptions = agentOptions;
+			this.additionalSourceFQN = additionalSourceFQN;
 		}
 	}
 
@@ -458,6 +520,7 @@ public class SamplingAgent {
 		LOGGER.log(OpLevel.INFO, "SamplingAgent.parseArgs(): args={0}", Arrays.toString(args));
 		boolean ac = StringUtils.equalsAnyIgnoreCase(args[0], AGENT_MODE_ATTACH, AGENT_MODE_CONNECT);
 		boolean local = AGENT_MODE_LOCAL.equalsIgnoreCase(args[0]);
+		boolean external = false;
 
 		if (ac || local) {
 			props.setProperty(AGENT_ARG_MODE, args[0]);
@@ -551,6 +614,16 @@ public class SamplingAgent {
 						}
 
 						System.setProperty(slp[0], slp[1]);
+					} else if (arg.startsWith(PARAM_AGENT_CONNECTIONS_CONFIG_FILE)) {
+						if (StringUtils.isNotEmpty(props.getProperty(AGENT_CONNS_CONFIG_FILE))) {
+							LOGGER.log(OpLevel.WARNING,
+									"SamplingAgent.parseArgs: JVM connections configuration file already defined. Can not use argument [{0}] multiple times.",
+									PARAM_AGENT_CONNECTIONS_CONFIG_FILE);
+							return false;
+						}
+
+						external = true;
+						setProperty(props, arg, PARAM_AGENT_CONNECTIONS_CONFIG_FILE, AGENT_CONNS_CONFIG_FILE);
 					} else {
 						LOGGER.log(OpLevel.WARNING, "SamplingAgent.parseArgs: invalid argument [{0}]", arg);
 						return false;
@@ -562,7 +635,7 @@ public class SamplingAgent {
 				return false;
 			}
 
-			if (StringUtils.isEmpty(props.getProperty(AGENT_ARG_VM)) && ac) {
+			if (StringUtils.isEmpty(props.getProperty(AGENT_ARG_VM)) && ac && !external) {
 				LOGGER.log(OpLevel.WARNING,
 						"SamplingAgent.parseArgs: missing mandatory argument [{0}] defining JVM descriptor.",
 						PARAM_VM_DESCRIPTOR);
@@ -627,7 +700,7 @@ public class SamplingAgent {
 	 * @throws IOException
 	 *             if IO exception occurs while initializing MBeans sampling
 	 */
-	public static void sample() throws IOException {
+	public void sample() throws IOException {
 		String incFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.include.filter", Sampler.JMX_FILTER_ALL);
 		String excFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.exclude.filter",
 				Sampler.JMX_FILTER_NONE);
@@ -647,7 +720,7 @@ public class SamplingAgent {
 	 * @throws IOException
 	 *             if IO exception occurs while initializing MBeans sampling
 	 */
-	public static void sample(String incFilter, long period) throws IOException {
+	public void sample(String incFilter, long period) throws IOException {
 		sample(incFilter, null, period);
 	}
 
@@ -664,7 +737,7 @@ public class SamplingAgent {
 	 * @throws IOException
 	 *             if IO exception occurs while initializing MBeans sampling
 	 */
-	public static void sample(String incFilter, String excFilter, long period) throws IOException {
+	public void sample(String incFilter, String excFilter, long period) throws IOException {
 		sample(incFilter, excFilter, period, period);
 	}
 
@@ -683,7 +756,7 @@ public class SamplingAgent {
 	 * @throws IOException
 	 *             if IO exception occurs while initializing MBeans sampling
 	 */
-	public static void sample(String incFilter, String excFilter, long initDelay, long period) throws IOException {
+	public void sample(String incFilter, String excFilter, long initDelay, long period) throws IOException {
 		sample(incFilter, excFilter, initDelay, period, TimeUnit.MILLISECONDS);
 	}
 
@@ -703,7 +776,7 @@ public class SamplingAgent {
 	 * @throws IOException
 	 *             if IO exception occurs while initializing MBeans sampling
 	 */
-	public static void sample(String incFilter, String excFilter, long initDelay, long period, TimeUnit tUnit)
+	public void sample(String incFilter, String excFilter, long initDelay, long period, TimeUnit tUnit)
 			throws IOException {
 		resolveServer(null);
 		SamplerFactory sFactory = initPlatformJMX(incFilter, excFilter, initDelay, period, tUnit, null);
@@ -717,6 +790,40 @@ public class SamplingAgent {
 				scheduleSampler(incFilter, excFilter, initDelay, period, tUnit, sFactory, jmxSampler, STREAM_AGENTS);
 			}
 		}
+	}
+
+	private Source getSource() {
+		TrackerConfig config = DefaultConfigFactory.getInstance().getConfig(getClass().getName());
+		SourceFactory instance = config.getSourceFactory();
+
+		String sourceDescriptor = null;
+		Thread thread = Thread.currentThread();
+		if (thread instanceof SamplingAgentThread) {
+			sourceDescriptor = ((SamplingAgentThread) thread).getVMSourceFQN();
+		}
+
+		if (sourceDescriptor == null) {
+			return instance.getRootSource();
+		}
+
+		Source source;
+
+		try {
+			source = instance.fromFQN(sourceDescriptor);
+		} catch (IllegalArgumentException e) {
+			// TODO placeholders doesn't fill right
+			LOGGER.log(OpLevel.WARNING,
+					"SamplingAgent.getSource: source descriptor ''{1}'' doesn't match FQN pattern 'SourceType=SourceValue'. Erroneous source type. Valid types ''{0}''. Cause: {2}",
+					Arrays.toString(SourceType.values()), sourceDescriptor, e.getMessage());
+			throw new RuntimeException("Invalid Source configuration");
+		} catch (IndexOutOfBoundsException e) {
+			LOGGER.log(OpLevel.WARNING,
+					"SamplingAgent.getSource: source descriptor ''{0}'' doesn't match FQN pattern 'SourceType=SourceValue'. Defaulting to ''SERVICE={0}''",
+					sourceDescriptor);
+			source = instance.newSource(sourceDescriptor, SourceType.SERVICE);
+		}
+
+		return source;
 	}
 
 	/**
@@ -738,7 +845,7 @@ public class SamplingAgent {
 	 * @throws IOException
 	 *             if IO exception occurs while initializing MBeans sampling
 	 */
-	public static void sample(String incFilter, String excFilter, long initDelay, long period, TimeUnit tUnit,
+	public void sample(String incFilter, String excFilter, long initDelay, long period, TimeUnit tUnit,
 			JMXConnector conn) throws IOException {
 		// get MBeanServerConnection from JMX RMI connector
 		if (conn instanceof JMXAddressable) {
@@ -749,7 +856,7 @@ public class SamplingAgent {
 		initPlatformJMX(incFilter, excFilter, initDelay, period, tUnit, mbSrvConn);
 	}
 
-	private static SamplerFactory initPlatformJMX(String incFilter, String excFilter, long initDelay, long period,
+	private SamplerFactory initPlatformJMX(String incFilter, String excFilter, long initDelay, long period,
 			TimeUnit tUnit, MBeanServerConnection mbSrvConn) throws IOException {
 		// obtain a default sample factory
 		SamplerFactory sFactory = DefaultSamplerFactory
@@ -767,10 +874,10 @@ public class SamplingAgent {
 		return sFactory;
 	}
 
-	private static void scheduleSampler(String incFilter, String excFilter, long initDelay, long period, TimeUnit tUnit,
+	private void scheduleSampler(String incFilter, String excFilter, long initDelay, long period, TimeUnit tUnit,
 			SamplerFactory sFactory, Sampler sampler, Map<MBeanServerConnection, Sampler> agents) throws IOException {
 		agents.put(sampler.getMBeanServer(), sampler);
-		sampler.setSchedule(incFilter, excFilter, initDelay, period, tUnit, sFactory)
+		sampler.setSchedule(incFilter, excFilter, initDelay, period, tUnit, sFactory, getSource())
 				.addListener(sFactory.newListener(LISTENER_PROPERTIES)).run();
 	}
 
@@ -859,7 +966,7 @@ public class SamplingAgent {
 	 *
 	 * @see #connect(String,String,long)
 	 */
-	public static void connect(String vmDescr, String options) throws Exception {
+	public void connect(String vmDescr, String options) throws Exception {
 		connect(vmDescr, options, CONN_RETRY_INTERVAL);
 	}
 
@@ -879,7 +986,7 @@ public class SamplingAgent {
 	 *
 	 * @see #connect(String,String,Map,long)
 	 */
-	public static void connect(String vmDescr, String options, long connRetryInterval) throws Exception {
+	public void connect(String vmDescr, String options, long connRetryInterval) throws Exception {
 		connect(vmDescr, options, null, connRetryInterval);
 	}
 
@@ -899,7 +1006,7 @@ public class SamplingAgent {
 	 *
 	 * @see #connect(String, String, java.util.Map, long)
 	 */
-	public static void connect(String vmDescr, String options, Map<String, ?> connParams) throws Exception {
+	public void connect(String vmDescr, String options, Map<String, ?> connParams) throws Exception {
 		connect(vmDescr, options, connParams, CONN_RETRY_INTERVAL);
 	}
 
@@ -921,7 +1028,7 @@ public class SamplingAgent {
 	 *
 	 * @see #connect(String, String, String, String, java.util.Map, long)
 	 */
-	public static void connect(String vmDescr, String options, Map<String, ?> connParams, long connRetryInterval)
+	public void connect(String vmDescr, String options, Map<String, ?> connParams, long connRetryInterval)
 			throws Exception {
 		connect(vmDescr, null, null, options, connParams, connRetryInterval);
 	}
@@ -944,7 +1051,7 @@ public class SamplingAgent {
 	 *
 	 * @see #connect(String, String, String, String, long)
 	 */
-	public static void connect(String vmDescr, String user, String pass, String options) throws Exception {
+	public void connect(String vmDescr, String user, String pass, String options) throws Exception {
 		connect(vmDescr, user, pass, options, CONN_RETRY_INTERVAL);
 	}
 
@@ -968,7 +1075,7 @@ public class SamplingAgent {
 	 *
 	 * @see #connect(String, String, String, String, java.util.Map, long)
 	 */
-	public static void connect(String vmDescr, String user, String pass, String options, long connRetryInterval)
+	public void connect(String vmDescr, String user, String pass, String options, long connRetryInterval)
 			throws Exception {
 		connect(vmDescr, user, pass, options, null, connRetryInterval);
 	}
@@ -993,16 +1100,44 @@ public class SamplingAgent {
 	 * @throws Exception
 	 *             if any exception occurs while connecting to JVM
 	 *
+	 * @see #connect(javax.management.remote.JMXServiceURL, String, String, String, java.util.Map, long)
+	 */
+	public void connect(String vmDescr, String user, String pass, String options, Map<String, ?> connParams,
+			long connRetryInterval) throws Exception {
+		connect(getJmxServiceURLs(vmDescr).get(0), user, pass, options, connParams, connRetryInterval);
+	}
+
+	/**
+	 * Connects to {@code vmDescr} defined JVM over {@link JMXConnector} an uses {@link MBeanServerConnection} to
+	 * collect samples.
+	 *
+	 * @param url
+	 *            JMX service URL
+	 * @param user
+	 *            user login used by JMX service connection
+	 * @param pass
+	 *            user password used by JMX service connection
+	 * @param options
+	 *            '!' separated list of options mbean-filter!sample.ms!initDelay.ms, where mbean-filter is semicolon
+	 *            separated list of mbean filters and {@code initDelay} is optional
+	 * @param connParams
+	 *            map of JMX connection parameters, defined by {@link javax.naming.Context}
+	 * @param connRetryInterval
+	 *            connect reattempt interval value in seconds, {@code -1} - do not retry
+	 * @throws Exception
+	 *             if any exception occurs while connecting to JVM
+	 *
 	 * @see JMXConnectorFactory#connect(javax.management.remote.JMXServiceURL, java.util.Map)
 	 * @see javax.naming.Context
 	 */
-	public static void connect(String vmDescr, String user, String pass, String options, Map<String, ?> connParams,
+	public void connect(JMXServiceURL url, String user, String pass, String options, Map<String, ?> connParams,
 			long connRetryInterval) throws Exception {
 		LOGGER.log(OpLevel.INFO,
-				"SamplingAgent.connect(): vmDescr={0}, user={1}, pass={2}, options={3}, connParams={4}, connRetryInterval={5}",
-				vmDescr, user, Utils.hideEnd(pass, "x", 0), options, connParams, connRetryInterval);
-		if (Utils.isEmpty(vmDescr)) {
-			throw new RuntimeException("Java VM descriptor must be not empty!..");
+				"SamplingAgent.connect(): url={0}, user={1}, pass={2}, options={3}, connParams={4}, connRetryInterval={5}",
+				url, user, Utils.hideEnd(pass, "x", 0), options, connParams, connRetryInterval);
+
+		if (url == null) {
+			throw new RuntimeException("JMX service URL is null!..");
 		}
 
 		Map<String, Object> params = new HashMap<String, Object>(connParams == null ? 1 : connParams.size() + 1);
@@ -1020,17 +1155,6 @@ public class SamplingAgent {
 
 		do {
 			try {
-				String connectorAddress;
-				if (vmDescr.startsWith("service:jmx:")) {
-					connectorAddress = vmDescr;
-				} else {
-					connectorAddress = VMUtils.getVMConnAddress(vmDescr);
-				}
-
-				LOGGER.log(OpLevel.INFO, "SamplingAgent.connect: making JMX service URL from address={0}",
-						connectorAddress);
-				JMXServiceURL url = new JMXServiceURL(connectorAddress);
-
 				LOGGER.log(OpLevel.INFO, "SamplingAgent.connect: connecting JMX service using URL={0}", url);
 				JMXConnector connector = JMXConnectorFactory.connect(url, params);
 
@@ -1072,7 +1196,29 @@ public class SamplingAgent {
 		} while (!stopSampling);
 	}
 
-	private static void stopSampler() {
+	private static List<JMXServiceURL> getJmxServiceURLs(String vmDescr) throws IOException {
+		if (Utils.isEmpty(vmDescr)) {
+			throw new RuntimeException("Java VM descriptor must be not empty!..");
+		}
+		List<JMXServiceURL> returnList = new ArrayList<JMXServiceURL>();
+		if (vmDescr.startsWith("service:jmx:")) {
+			returnList.add(new JMXServiceURL(vmDescr));
+			LOGGER.log(OpLevel.INFO, "SamplingAgent.getJmxServiceURLs: making JMX service URL from address={0}",
+					vmDescr);
+		} else {
+			List<String> connAddresses = VMUtils.getVMConnAddresses(vmDescr);
+			for (String connAddress : connAddresses) {
+				returnList.add(new JMXServiceURL(connAddress));
+				LOGGER.log(OpLevel.INFO,
+						"SamplingAgent.getJmxServiceURLs: making JVM ''{0}'' JMX service URL from address={1}", vmDescr,
+						connAddress);
+			}
+		}
+
+		return returnList;
+	}
+
+	protected void stopSampler() {
 		LOGGER.log(OpLevel.INFO, "SamplingAgent.stopSampler: releasing sampler lock...");
 
 		if (platformJmx != null) {
@@ -1095,18 +1241,20 @@ public class SamplingAgent {
 	 */
 	public static void sampleLocalVM(String options, boolean wait) throws Exception {
 		LOGGER.log(OpLevel.INFO, "SamplingAgent.sampleLocalVM(): options={0}, wait={1}", options, wait);
+		SamplingAgent samplingAgent = newSamplingAgent();
 		if (wait) {
-			startSamplerAndWait(options);
+
+			samplingAgent.startSamplerAndWait(options);
 		} else {
-			startSampler(options);
+			samplingAgent.startSampler(options);
 		}
 	}
 
-	private static void startSamplerAndWait(String options) throws Exception {
+	private void startSamplerAndWait(String options) throws Exception {
 		startSamplerAndWait(options, null);
 	}
 
-	private static void startSamplerAndWait(String options, JMXConnector connector) throws Exception {
+	private void startSamplerAndWait(String options, JMXConnector connector) throws Exception {
 		startSampler(options, connector);
 
 		final Thread mainThread = Thread.currentThread(); // Reference to the current thread.
@@ -1128,7 +1276,7 @@ public class SamplingAgent {
 		});
 		Runtime.getRuntime().addShutdownHook(shutdownHook);
 
-		LOGGER.log(OpLevel.INFO, "SamplingAgent.startSamplerAndWait: locking on sampler...");
+		LOGGER.log(OpLevel.INFO, "SamplingAgent.startSamplerAndWait: locking on sampler: {0}...", platformJmx);
 		if (platformJmx != null) {
 			synchronized (platformJmx) {
 				platformJmx.wait();
@@ -1142,11 +1290,11 @@ public class SamplingAgent {
 		}
 	}
 
-	private static void startSampler(String options) throws Exception {
+	private void startSampler(String options) throws Exception {
 		startSampler(options, null);
 	}
 
-	private static void startSampler(String options, JMXConnector connector) throws Exception {
+	private void startSampler(String options, JMXConnector connector) throws Exception {
 		String incFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.include.filter", Sampler.JMX_FILTER_ALL);
 		String excFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.exclude.filter",
 				Sampler.JMX_FILTER_NONE);
@@ -1184,7 +1332,7 @@ public class SamplingAgent {
 	 *
 	 * @return map of all scheduled MBeanServerConnections and associated sample references.
 	 */
-	public static Map<MBeanServerConnection, Sampler> getSamplers() {
+	public Map<MBeanServerConnection, Sampler> getSamplers() {
 		HashMap<MBeanServerConnection, Sampler> copy = new HashMap<MBeanServerConnection, Sampler>(89);
 		copy.putAll(STREAM_AGENTS);
 		return copy;
@@ -1194,7 +1342,7 @@ public class SamplingAgent {
 	 * Cancel and close all outstanding {@link Sampler} instances and stop all sampling for all {@link MBeanServer}
 	 * instances.
 	 */
-	public static void cancel() {
+	public void cancel() {
 		for (Sampler sampler : STREAM_AGENTS.values()) {
 			sampler.cancel();
 		}
@@ -1207,7 +1355,7 @@ public class SamplingAgent {
 	 * @param mServerConn
 	 *            MBeanServerConnection instance
 	 */
-	public static void cancel(MBeanServerConnection mServerConn) {
+	public void cancel(MBeanServerConnection mServerConn) {
 		Sampler sampler = STREAM_AGENTS.remove(mServerConn);
 		if (sampler != null) {
 			sampler.cancel();
@@ -1221,15 +1369,17 @@ public class SamplingAgent {
 	 * @see #cancel()
 	 */
 	public static void destroy() {
-		synchronized (STREAM_AGENTS) {
-			stopSampler();
-			shutdownSamplers();
+		for (SamplingAgent agent : agents.values()) {
+			synchronized (agent.STREAM_AGENTS) {
+				agent.stopSampler();
+				agent.shutdownSamplers();
+			}
 		}
+		DefaultEventSinkFactory.shutdownAll();
 	}
 
-	private static void shutdownSamplers() {
+	private void shutdownSamplers() {
 		cancel();
-		DefaultEventSinkFactory.shutdownAll();
 		platformJmx = null;
 	}
 
