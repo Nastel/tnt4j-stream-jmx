@@ -70,10 +70,10 @@ public class SamplingAgent {
 	public static final String SOURCE_SERVICE_ID = "sjmx.serviceId";
 
 	protected Sampler platformJmx;
-	protected ConcurrentHashMap<MBeanServerConnection, Sampler> STREAM_AGENTS = new ConcurrentHashMap<MBeanServerConnection, Sampler>(
-			89);
+	protected final Map<MBeanServerConnection, Sampler> STREAM_SAMPLERS = new ConcurrentHashMap<MBeanServerConnection, Sampler>(
+			5);
 
-	private static Map<Thread, SamplingAgent> agents = new HashMap<Thread, SamplingAgent>();
+	private static final Map<Thread, SamplingAgent> ALL_AGENTS = new ConcurrentHashMap<Thread, SamplingAgent>(5);
 
 	protected static final long CONN_RETRY_INTERVAL = 10;
 
@@ -137,9 +137,14 @@ public class SamplingAgent {
 	private SamplingAgent() {
 	}
 
+	/**
+	 * Creates new instance of sampling agent and puts it to registry.
+	 *
+	 * @return new sampling agent instance
+	 */
 	public static SamplingAgent newSamplingAgent() {
 		SamplingAgent agent = new SamplingAgent();
-		agents.put(Thread.currentThread(), agent);
+		ALL_AGENTS.put(Thread.currentThread(), agent);
 		return agent;
 	}
 
@@ -179,7 +184,7 @@ public class SamplingAgent {
 		LOGGER.log(OpLevel.INFO,
 				"SamplingAgent.premain: include.filter={0}, exclude.filter={1}, sample.ms={2}, initDelay.ms={3}, listener.properties={4}, tnt4j.config={5}, jmx.sample.list={6}",
 				incFilter, excFilter, period, initDelay, LISTENER_PROPERTIES,
-				System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY), agent.STREAM_AGENTS);
+				System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY), agent.STREAM_SAMPLERS);
 	}
 
 	/**
@@ -343,7 +348,7 @@ public class SamplingAgent {
 					LOGGER.log(OpLevel.INFO,
 							"SamplingAgent.main: include.filter={0}, exclude.filter={1}, sample.ms={2}, delay.ms={3}, wait.ms={4}, listener.properties={5}, tnt4j.config={6}, jmx.sample.list={7}",
 							inclF, exclF, sample_time, delay_time, wait_time, LISTENER_PROPERTIES,
-							System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY), samplingAgent.STREAM_AGENTS);
+							System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY), samplingAgent.STREAM_SAMPLERS);
 
 					synchronized (samplingAgent.platformJmx) {
 						samplingAgent.platformJmx.wait(wait_time);
@@ -430,24 +435,13 @@ public class SamplingAgent {
 
 	private static void connectAll(List<ConnectionParams> allVMs, Properties props) throws Exception {
 		@SuppressWarnings("unchecked")
-		final Map<String, ?> connParams = (Map<String, ?>) props.get(AGENT_CONN_PARAMS);
-		final long cri = Long
+		Map<String, ?> connParams = (Map<String, ?>) props.get(AGENT_CONN_PARAMS);
+		long cri = Long
 				.parseLong(props.getProperty(AGENT_ARG_CONN_RETRY_INTERVAL, String.valueOf(CONN_RETRY_INTERVAL)));
 
-		for (final ConnectionParams cp : allVMs) {
-			final SamplingAgent samplingAgent = SamplingAgent.newSamplingAgent();
-			Thread connect = new SamplingAgentThread(new Runnable() {
-				@Override
-				public void run() {
-					try {
-						samplingAgent.connect(cp.serviceURL, cp.user, cp.pass, cp.agentOptions, connParams, cri);
-						samplingAgent.stopSampler();
-					} catch (Exception ex) {
-						throw new RuntimeException(ex);
-					}
-				}
-			}, samplingAgent, cp.additionalSourceFQN);
-			connect.start();
+		for (ConnectionParams cp : allVMs) {
+			SamplingAgentThread sat = new SamplingAgentThread(cp, connParams, cri);
+			sat.start();
 		}
 	}
 
@@ -467,9 +461,14 @@ public class SamplingAgent {
 		return connectionParamsList;
 	}
 
+	/**
+	 * Returns map of all registered samplers.
+	 *
+	 * @return map of all registered samplers
+	 */
 	public static Map<MBeanServerConnection, Sampler> getAllSamplers() {
 		Map<MBeanServerConnection, Sampler> samplers = new HashMap<MBeanServerConnection, Sampler>();
-		for (SamplingAgent agent : agents.values()) {
+		for (SamplingAgent agent : ALL_AGENTS.values()) {
 			if (agent != null) {
 				samplers.putAll(agent.getSamplers());
 			}
@@ -778,10 +777,10 @@ public class SamplingAgent {
 		// find other registered MBean servers and initiate sampling for all
 		ArrayList<MBeanServer> mbsList = MBeanServerFactory.findMBeanServer(null);
 		for (MBeanServer server : mbsList) {
-			Sampler jmxSampler = STREAM_AGENTS.get(server);
+			Sampler jmxSampler = STREAM_SAMPLERS.get(server);
 			if (jmxSampler == null) {
 				jmxSampler = sFactory.newInstance(server);
-				scheduleSampler(incFilter, excFilter, initDelay, period, tUnit, sFactory, jmxSampler, STREAM_AGENTS);
+				scheduleSampler(incFilter, excFilter, initDelay, period, tUnit, sFactory, jmxSampler, STREAM_SAMPLERS);
 			}
 		}
 	}
@@ -857,11 +856,11 @@ public class SamplingAgent {
 				.getInstance(Utils.getConfProperty(DEFAULTS, "com.jkoolcloud.tnt4j.stream.jmx.sampler.factory"));
 
 		if (platformJmx == null) {
-			synchronized (STREAM_AGENTS) {
+			synchronized (STREAM_SAMPLERS) {
 				// create new sampler with default MBeanServer instance
 				platformJmx = mbSrvConn == null ? sFactory.newInstance() : sFactory.newInstance(mbSrvConn);
 				// schedule sample with a given filter and sampling period
-				scheduleSampler(incFilter, excFilter, initDelay, period, tUnit, sFactory, platformJmx, STREAM_AGENTS);
+				scheduleSampler(incFilter, excFilter, initDelay, period, tUnit, sFactory, platformJmx, STREAM_SAMPLERS);
 			}
 		}
 
@@ -1212,6 +1211,9 @@ public class SamplingAgent {
 		return returnList;
 	}
 
+	/**
+	 * Releases sampler lock.
+	 */
 	protected void stopSampler() {
 		LOGGER.log(OpLevel.INFO, "SamplingAgent.stopSampler: releasing sampler lock...");
 
@@ -1317,7 +1319,7 @@ public class SamplingAgent {
 		LOGGER.log(OpLevel.INFO,
 				"SamplingAgent.startSampler: include.filter={0}, exclude.filter={1}, sample.ms={2}, initDelay.ms={3}, listener.properties={4}, tnt4j.config={5}, jmx.sample.list={6}",
 				incFilter, excFilter, period, initDelay, LISTENER_PROPERTIES,
-				System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY), STREAM_AGENTS);
+				System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY), STREAM_SAMPLERS);
 
 	}
 
@@ -1328,7 +1330,7 @@ public class SamplingAgent {
 	 */
 	public Map<MBeanServerConnection, Sampler> getSamplers() {
 		HashMap<MBeanServerConnection, Sampler> copy = new HashMap<MBeanServerConnection, Sampler>(89);
-		copy.putAll(STREAM_AGENTS);
+		copy.putAll(STREAM_SAMPLERS);
 		return copy;
 	}
 
@@ -1337,10 +1339,10 @@ public class SamplingAgent {
 	 * instances.
 	 */
 	public void cancel() {
-		for (Sampler sampler : STREAM_AGENTS.values()) {
+		for (Sampler sampler : STREAM_SAMPLERS.values()) {
 			sampler.cancel();
 		}
-		STREAM_AGENTS.clear();
+		STREAM_SAMPLERS.clear();
 	}
 
 	/**
@@ -1350,7 +1352,7 @@ public class SamplingAgent {
 	 *            MBeanServerConnection instance
 	 */
 	public void cancel(MBeanServerConnection mServerConn) {
-		Sampler sampler = STREAM_AGENTS.remove(mServerConn);
+		Sampler sampler = STREAM_SAMPLERS.remove(mServerConn);
 		if (sampler != null) {
 			sampler.cancel();
 		}
@@ -1363,12 +1365,13 @@ public class SamplingAgent {
 	 * @see #cancel()
 	 */
 	public static void destroy() {
-		for (SamplingAgent agent : agents.values()) {
-			synchronized (agent.STREAM_AGENTS) {
+		for (SamplingAgent agent : ALL_AGENTS.values()) {
+			synchronized (agent.STREAM_SAMPLERS) {
 				agent.stopSampler();
 				agent.shutdownSamplers();
 			}
 		}
+		ALL_AGENTS.clear();
 		DefaultEventSinkFactory.shutdownAll();
 	}
 

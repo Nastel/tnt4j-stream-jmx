@@ -15,6 +15,8 @@
  */
 package com.jkoolcloud.tnt4j.stream.jmx;
 
+import java.util.Map;
+
 /**
  * Monitored JVM JMX sampling agent runner thread.
  *
@@ -24,28 +26,50 @@ public class SamplingAgentThread extends Thread {
 	private String vmSourceFQN;
 	private SamplingAgent samplingAgent;
 
+	private final Runnable agentRunner;
+
 	/**
 	 * Constructs a new SamplingAgentThread.
 	 *
-	 * @param samplingRunnable
-	 *            runnable running JMX sampling
-	 * @param samplingAgent
-	 *            sampling agent instance
-	 * @param vmSourceFQN
-	 *            VM source FQN addition
+	 * @param cp
+	 *            VM connection parameters
+	 * @param connParams
+	 *            map of JMX connection parameters, defined by {@link javax.naming.Context}
+	 * @param cri
+	 *            connect reattempt interval value in seconds, {@code -1} - do not retry
 	 * 
 	 */
-	public SamplingAgentThread(Runnable samplingRunnable, SamplingAgent samplingAgent, String vmSourceFQN) {
-		super(samplingRunnable);
+	public SamplingAgentThread(final SamplingAgent.ConnectionParams cp, final Map<String, ?> connParams,
+			final long cri) {
+		super();
 
-		this.samplingAgent = samplingAgent;
-		this.vmSourceFQN = vmSourceFQN;
+		agentRunner = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					samplingAgent = SamplingAgent.newSamplingAgent();
+					samplingAgent.connect(cp.serviceURL, cp.user, cp.pass, cp.agentOptions, connParams, cri);
+					samplingAgent.stopSampler();
+				} catch (Exception ex) {
+					throw new RuntimeException(ex);
+				}
+			}
+		};
+
+		this.vmSourceFQN = cp.additionalSourceFQN;
 
 		setName("SamplerAgentThread-" + getId());
 	}
 
+	@Override
+	public void run() {
+		if (agentRunner != null) {
+			agentRunner.run();
+		}
+	}
+
 	/**
-	 * Returns monitored JVM JMX sampling agent.
+	 * Returns JMX sampling agent instance run by this thread.
 	 *
 	 * @return sampling agent instance run by this thread
 	 */

@@ -76,7 +76,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	MBeanServerNotificationFilter MBeanFilter;
 	List<ObjectName> iFilters = new ArrayList<ObjectName>(5), eFilters = new ArrayList<ObjectName>(5);
 	Map<AttributeCondition, AttributeAction> conditions = new LinkedHashMap<AttributeCondition, AttributeAction>(89);
-	ConcurrentHashMap<ObjectName, MBeanInfo> mbeans = new ConcurrentHashMap<ObjectName, MBeanInfo>(89);
+	Map<ObjectName, MBeanInfo> mbeans = new ConcurrentHashMap<ObjectName, MBeanInfo>(89);
 
 	final List<SampleListener> listeners = new ArrayList<SampleListener>(5);
 
