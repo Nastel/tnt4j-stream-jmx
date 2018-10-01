@@ -313,11 +313,55 @@ and having VMs configured this way:
  service:jmx:rmi:///jndi/rmi://192.168.1.1:9998/jmxrmi 		*:*!!30000 			admin 				admin		   SERVICE=@bean:kafka.server:type=app-info/?id 
 ##############################################################################################################################################################
 ```
-may make make such 'SourceFQN's for VMs:
+may build such 'SourceFQN's for VMs:
 * `localhost` - `SERVICE=ID:PC-NAME-52295-1538060220413-0:1#SERVER=2453@PC-NAME#DATACENTER=HQDC
 * `192.168.1.1` - `SERVICE=3SERVER=2457@boxName#DATACENTER=HQDC
 
 **NOTE:** VM additional `SourceFQN` path must be defined fallowing same rules as in TNT4J config - `SourceType1=value1#SourceType2=value2#...#SourceTypeN=valueN`.
+
+##### How to migrate Source definitions from single to multi VM sampling
+
+When you where sampling JMX running as many instances of Stream-JMX as there where monitored JVMs, you where defining complete `SourceFQN` 
+within `source.factory.RootFQN` property of Stream-JMX TNT4J configuration.
+
+When monitoring multiple JVMs running single instance of Stream-JMX, `source.factory.RootFQN` property should define only part of 
+`SourceFQN` common for all monitored JVMs. Remaining (JVM unique) part of `SourceFQN` shall be defined in external JVM connections 
+configuration file (i.e. `config/connections.cfg`). But this also implies that if `SourceFQN` tokens refers unique values resolved from JMX 
+data (e.g, over `@bean:` reference), it is enough to have only `source.factory.RootFQN` property of Stream-JMX TNT4J configuration to 
+uniquely distinguish JVMs.
+
+Consider this Stream-JMX run scenario to monitor 3 instances of service runner VMs:
+* One Stream-JMX instance per monitored VM
+    * you've been having such TNT4J source configuration:
+    ```properties
+        source.factory.SERVICE: $sjmx.serviceId
+        source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?
+    ```
+    * running 3 instances of Stream-JMX
+    ```bash
+      ./bin/stream-jmx-connect.sh service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi -ul:admin -up:admin -sp:sjmx.serviceId=Broker-0
+      ./bin/stream-jmx-connect.sh service:jmx:rmi:///jndi/rmi://localhost:9998/jmxrmi -ul:admin -up:admin -sp:sjmx.serviceId=Broker-1
+      ./bin/stream-jmx-connect.sh service:jmx:rmi:///jndi/rmi://localhost:9997/jmxrmi -ul:admin -up:admin -sp:sjmx.serviceId=Broker-2
+    ```
+* One Stream-JMX instance per 3 monitored VMs
+    * you've been having such TNT4J source configuration:
+    ```properties
+       source.factory.RootFQN: SERVER=?#DATACENTER=?
+    ```
+    * configuring VM connections in `connections.cfg` file
+    ```
+    ##############################################################################################################################################################
+    #            VM connection string                      #    Agent options   #  User name    #    Password       #                Source addition             #
+    ##############################################################################################################################################################
+     service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi 		*:*!!60000 			admin 				admin		   SERVICE=Broker-0
+     service:jmx:rmi:///jndi/rmi://localhost:9998/jmxrmi 		*:*!!60000 			admin 				admin		   SERVICE=Broker-1 
+     service:jmx:rmi:///jndi/rmi://localhost:9997/jmxrmi 		*:*!!60000 			admin 				admin		   SERVICE=Broker-2
+    ##############################################################################################################################################################
+    ```
+    * running Stream-JMX
+    ```bash
+      ./bin/stream-jmx-connect-file-config.sh connections.cfg
+    ```
 
 #### Connecting remote WebSphere Application Server (WAS)
 
@@ -625,7 +669,7 @@ Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.compositeDelimiter=.`
 * `com.jkoolcloud.tnt4j.stream.jmx.agent.useObjectNameProperties` - defines whether to copy MBean `ObjectName` contained properties into 
 sample snapshot properties. Default value - `true`.
 Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.useObjectNameProperties=false`
-* `sjmx.serviceId` - defines `stream-jmx` service identifier used by TNT4J source FQN to distinguish monitored application instance.
+* `sjmx.serviceId` - defines `stream-jmx` service identifier used by TNT4J `SourceFQN` to distinguish monitored application instance.
 Example: `-Dsjmx.serviceId=broker-0` or `-sp:sjmx.serviceId=broker-0`.
 * `com.jkoolcloud.tnt4j.stream.jmx.sampler.factory`- defines class name of `SamplerFactory` class to be used by stream. Default value -
 `com.jkoolcloud.tnt4j.stream.jmx.factory.DefaultSamplerFactory`. 
