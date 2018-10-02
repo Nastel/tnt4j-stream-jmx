@@ -261,9 +261,9 @@ syntax for that file is:
 ##############################################################################################################################################################
 #            VM connection string                      #    Agent options   #  User name    #    Password       #                Source addition             #
 ##############################################################################################################################################################
- service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi 		*:*!!60000 			admin 				admin		   SERVICE=@bean:java.lang:type=Runtime/?Name
- service:jmx:rmi:///jndi/rmi://192.168.1.1:9999/jmxrmi 		*:*!!30000 			admin 				admin		   SERVICE=@bean:java.lang:type=Runtime/?Name
- service:jmx:rmi:///jndi/rmi://192.168.1.2:9999/jmxrmi 		*:*!!45000 			admin 				admin		   SERVICE=@bean:java.lang:type=Runtime/?Name
+ service:jmx:rmi:///jndi/rmi://localhost:9995/jmxrmi 		*:*!!60000 			admin 				admin		   SERVICE=@bean:org.apache.ZooKeeperService:name0=*/?ClientPort#SERVER=@bean:java.lang:type=Runtime/?Name
+ service:jmx:rmi:///jndi/rmi://localhost:9996/jmxrmi 		*:*!!60000 			admin 				admin		   SERVICE=@bean:java.lang:type=Runtime/?Name#SERVER=@bean:kafka.server:id=?,type=app-info#DATACENTER=@bean:kafka.server:type=KafkaServer,name=ClusterId/?Value
+ service:jmx:rmi:///jndi/rmi://localhost:9997/jmxrmi 		*:*!!60000 			admin 				admin		   SERVICE=@bean:java.lang:type=Runtime/?Name#SERVER=@bean:kafka.server:type=app-info,id=?#DATACENTER=@bean:kafka.server:type=KafkaServer,name=ClusterId/?Value
 ##############################################################################################################################################################
 ```
 To run JMX samples streaming for multiple VM's define in external configuration file use `stream-jmx-connect-file-config.bat/.sh` files, e.g.:
