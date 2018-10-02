@@ -16,12 +16,13 @@
 
 package com.jkoolcloud.tnt4j.stream.jmx.source;
 
+import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
-import javax.management.MBeanServerConnection;
-import javax.management.ObjectName;
+import javax.management.*;
 
 import com.jkoolcloud.tnt4j.core.OpLevel;
 import com.jkoolcloud.tnt4j.sink.DefaultEventSinkFactory;
@@ -62,25 +63,12 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 	protected String getNameFromType(String name, SourceType type) {
 		if (name.startsWith(MBEAN_PREFIX)) {
 			try {
-				String[] paths = name.substring(MBEAN_PREFIX.length()).split(Pattern.quote(MBEAN_ATTR_DELIM));
-				if (paths.length != 2) {
-					throw new IllegalArgumentException(Utils.format(
-							"MBean attribute descriptor ''{0}'' should contain valid MBean object name and attribute name delimited by ''{1}'', e.g.: {0}JMImplementation:type=MBeanServerDelegate{1}MBeanServerId",
-							MBEAN_PREFIX, MBEAN_ATTR_DELIM));
+				if (itsAnAttributePath(name)) {
+					return getAttributeValue(name.substring(MBEAN_PREFIX.length()));
+				} else {
+					return queryForObjectName(name.substring(MBEAN_PREFIX.length()));
 				}
-				String objectNamePart = paths[0];
-				String attributeNamePart = paths[1];
 
-				Thread thread = Thread.currentThread();
-				if (thread instanceof SamplingAgentThread) {
-					Map<MBeanServerConnection, Sampler> samplers = ((SamplingAgentThread) thread).getSamplingAgent()
-							.getSamplers();
-					if (!Utils.isEmpty(samplers)) {
-						MBeanServerConnection mBeanServer = samplers.entrySet().iterator().next().getKey();
-						return Utils
-								.toString(mBeanServer.getAttribute(new ObjectName(objectNamePart), attributeNamePart));
-					}
-				}
 			} catch (Exception e) {
 				LOGGER.log(OpLevel.ERROR, "Failed to resolve MBean attribute ''{0}'' value for source field {1}", name,
 						type, e);
@@ -90,6 +78,65 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 		}
 
 		return super.getNameFromType(name, type);
+	}
+
+	private boolean itsAnAttributePath(String name) {
+		String[] split = name.split(Pattern.quote(MBEAN_ATTR_DELIM));
+		return split.length == 2;
+	}
+
+	private String getAttributeValue(String name) throws MBeanException, AttributeNotFoundException,
+			InstanceNotFoundException, ReflectionException, IOException, MalformedObjectNameException {
+		String[] paths = name.split(Pattern.quote(MBEAN_ATTR_DELIM));
+		if (paths.length != 2) {
+			throw new IllegalArgumentException(Utils.format(
+					"MBean attribute descriptor ''{0}'' should contain valid MBean object name and attribute name delimited by ''{1}'', e.g.: {0}JMImplementation:type=MBeanServerDelegate{1}MBeanServerId",
+					MBEAN_PREFIX, MBEAN_ATTR_DELIM));
+		}
+		String objectNamePart = paths[0];
+		String attributeNamePart = paths[1];
+
+		MBeanServerConnection mBeanServer = null;
+
+		mBeanServer = getmBeanServerConnection();
+
+		Set<ObjectInstance> objects = mBeanServer.queryMBeans(new ObjectName(objectNamePart), null);
+		ObjectName objectName = mBeanServer.queryMBeans(new ObjectName(objectNamePart), null).iterator().next()
+				.getObjectName();
+		Object attribute = mBeanServer.getAttribute(objectName, attributeNamePart);
+		return Utils.toString(attribute);
+	}
+
+	private MBeanServerConnection getmBeanServerConnection() {
+		MBeanServerConnection mBeanServer = null;
+		Thread thread = Thread.currentThread();
+		if (thread instanceof SamplingAgentThread) {
+			Map<MBeanServerConnection, Sampler> samplers = ((SamplingAgentThread) thread).getSamplingAgent()
+					.getSamplers();
+			if (!Utils.isEmpty(samplers)) {
+				mBeanServer = samplers.entrySet().iterator().next().getKey();
+
+			}
+		}
+		if (mBeanServer == null) {
+			throw new IllegalStateException("Illegal state mbeanserver not found");
+		}
+		return mBeanServer;
+	}
+
+	private String queryForObjectName(String name) throws MalformedObjectNameException, IOException {
+		MBeanServerConnection mBeanServerConnection = getmBeanServerConnection();
+		String queryName = name.replace("?", "*");
+		ObjectName oName = new ObjectName(queryName);
+		Set<ObjectInstance> objectInstances = mBeanServerConnection.queryMBeans(oName, null);
+		ObjectInstance first = objectInstances.iterator().next();
+		for (Map.Entry<String, String> a : oName.getKeyPropertyList().entrySet()) {
+			String key = a.getKey();
+			if (oName.isPropertyValuePattern(key)) {
+				return first.getObjectName().getKeyProperty(a.getKey());
+			}
+		}
+		throw new IllegalStateException(name + "Not found");
 	}
 
 	@Override
