@@ -38,6 +38,7 @@
                         </includes>
                         <excludes>
                             <exclude>*-classes.jar</exclude>
+                            <exclude>original-*.jar</exclude>
                         </excludes>
                     </fileSet>
                     <!-- configuration -->
