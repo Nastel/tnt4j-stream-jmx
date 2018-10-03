@@ -310,7 +310,7 @@ and having VMs configured this way:
 #            VM connection string                      #    Agent options   #  User name    #    Password       #                Source addition             #
 ##############################################################################################################################################################
  service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi 		*:*!!60000 			admin 				admin		   SERVICE=@bean:org.apache.activemq:type=Broker,brokerName=localhost/?BrokerId
- service:jmx:rmi:///jndi/rmi://192.168.1.1:9998/jmxrmi 		*:*!!30000 			admin 				admin		   SERVICE=@bean:kafka.server:type=app-info/?id 
+ service:jmx:rmi:///jndi/rmi://192.168.1.1:9998/jmxrmi 		*:*!!30000 			admin 				admin		   SERVICE=@bean:kafka.server:id=?,type=app-info 
 ##############################################################################################################################################################
 ```
 may build such 'SourceFQN's for VMs:
@@ -736,9 +736,14 @@ In this case `tnt4j.properties` configuration would be like this:
 2. Can resolve values for `source` fields from JMX MBean attributes. Two items are required to use in `tnt4j.properties` configuration to 
 enable this feature:
     1. Set `source.factory` to `com.jkoolcloud.tnt4j.stream.jmx.source.JMXSourceFactoryImpl`
-    2. Put MBean attribute descriptor as `source` field value. Mbean descriptor pattern is `"@bean:MBean_ObjectName/AttributeName`.
+    2. Put MBean attribute descriptor as `source` field value. There are two types of MBean attribute descriptors:
+        * **Mbean attribute value** descriptor pattern is `"@bean:MBean_ObjectName/?AttributeName`. It also allows use of wildcard symbols 
+        `*`, e.g.: `@bean:org.apache.ZooKeeperService:name0=*/?ClientPort` resolving `ClientPort` value for first available (if more than 
+        one is running on same JVM, but usually it should be only one) ZooKeeper service instance. 
+        * **MBean key property** descriptor pattern is `@bean:MBean_ObjectName:PropertyKey=?(,OtherProperties)` (part within `()` is optional), 
+        e.g.: `@bean:kafka.server:id=?,type=app-info`.
 
-    putting all together, `tnt4j.properties` configuration will be like this:
+    then putting all together, `tnt4j.properties` configuration will be like this:
     ```properties
     ...
     source.factory: com.jkoolcloud.tnt4j.stream.jmx.source.JMXSourceFactoryImpl

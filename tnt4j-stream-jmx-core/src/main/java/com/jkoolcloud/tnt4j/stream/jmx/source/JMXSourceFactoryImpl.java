@@ -37,8 +37,19 @@ import com.jkoolcloud.tnt4j.utils.Utils;
 
 /**
  * This class extends default implementation of {@link com.jkoolcloud.tnt4j.source.SourceFactoryImpl} by adding
- * possibility to fill in source field values from JMX MBean attributes. To map define source field to MBean attribute
- * use pattern {@code "@bean:MBean_ObjectName/?AttributeName"}, e.g.:
+ * possibility to fill in source field values from JMX MBean attributes and properties.
+ * <p>
+ * This factory can resolve two types of MBean provided values:
+ * <ul>
+ * <li>Mbean attribute value - descriptor pattern is {@code "@bean:MBean_ObjectName/?AttributeName"}. It also allows use
+ * of wildcard symbols {@code *}, e.g.: {@code "@bean:org.apache.ZooKeeperService:name0=#&002A;/?ClientPort"} resolving
+ * {@code ClientPort} value for first available (if more than one is running on same JVM, but usually it should be only
+ * one) ZooKeeper service instance.</li>
+ * <li>MBean key property - descriptor pattern is {@code "@bean:MBean_ObjectName:PropertyKey=?(,OtherProperties)"} (part
+ * within {@code ()} is optional), e.g.: {@code "@bean:kafka.server:id=?,type=app-info"}.</li>
+ * </ul>
+ * <p>
+ * TNT4J source factory configuration using this source factory implementation would be like this:
  *
  * <pre>
  * {@code
@@ -51,7 +62,7 @@ import com.jkoolcloud.tnt4j.utils.Utils;
  * }
  * </pre>
  *
- * @version $Revision: 1 $
+ * @version $Revision: 2 $
  */
 public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 	private static final EventSink LOGGER = DefaultEventSinkFactory.defaultEventSink(JMXSourceFactoryImpl.class);
@@ -62,13 +73,14 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 	@Override
 	protected String getNameFromType(String name, SourceType type) {
 		if (name.startsWith(MBEAN_PREFIX)) {
-			try {
-				if (itsAnAttributePath(name)) {
-					return getAttributeValue(name.substring(MBEAN_PREFIX.length()));
-				} else {
-					return queryForObjectName(name.substring(MBEAN_PREFIX.length()));
-				}
+			String beanAttrName = name.substring(MBEAN_PREFIX.length());
 
+			try {
+				if (isAttributeNamePattern(beanAttrName)) {
+					return getAttributeValue(beanAttrName);
+				} else {
+					return getKeyPropertyValue(beanAttrName);
+				}
 			} catch (Exception e) {
 				LOGGER.log(OpLevel.ERROR, "Failed to resolve MBean attribute ''{0}'' value for source field {1}", name,
 						type, e);
@@ -80,63 +92,58 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 		return super.getNameFromType(name, type);
 	}
 
-	private boolean itsAnAttributePath(String name) {
-		String[] split = name.split(Pattern.quote(MBEAN_ATTR_DELIM));
+	private static boolean isAttributeNamePattern(String oNameStr) {
+		String[] split = oNameStr.split(Pattern.quote(MBEAN_ATTR_DELIM));
 		return split.length == 2;
 	}
 
-	private String getAttributeValue(String name) throws MBeanException, AttributeNotFoundException,
+	private static String getAttributeValue(String oNameStr) throws MBeanException, AttributeNotFoundException,
 			InstanceNotFoundException, ReflectionException, IOException, MalformedObjectNameException {
-		String[] paths = name.split(Pattern.quote(MBEAN_ATTR_DELIM));
+		String[] paths = oNameStr.split(Pattern.quote(MBEAN_ATTR_DELIM));
 		if (paths.length != 2) {
 			throw new IllegalArgumentException(Utils.format(
-					"MBean attribute descriptor ''{0}'' should contain valid MBean object name and attribute name delimited by ''{1}'', e.g.: {0}JMImplementation:type=MBeanServerDelegate{1}MBeanServerId",
-					MBEAN_PREFIX, MBEAN_ATTR_DELIM));
+					"MBean attribute descriptor ''{2}'' should contain valid MBean object name and attribute name delimited by ''{1}'', e.g.: {0}JMImplementation:type=MBeanServerDelegate{1}MBeanServerId",
+					MBEAN_PREFIX, MBEAN_ATTR_DELIM, oNameStr));
 		}
 		String objectNamePart = paths[0];
 		String attributeNamePart = paths[1];
 
-		MBeanServerConnection mBeanServer = null;
+		MBeanServerConnection mBeanServerConn = getMBeanServerConnection();
 
-		mBeanServer = getmBeanServerConnection();
-
-		Set<ObjectInstance> objects = mBeanServer.queryMBeans(new ObjectName(objectNamePart), null);
-		ObjectName objectName = mBeanServer.queryMBeans(new ObjectName(objectNamePart), null).iterator().next()
-				.getObjectName();
-		Object attribute = mBeanServer.getAttribute(objectName, attributeNamePart);
+		Set<ObjectInstance> objects = mBeanServerConn.queryMBeans(new ObjectName(objectNamePart), null);
+		ObjectName objectName = objects.iterator().next().getObjectName();
+		Object attribute = mBeanServerConn.getAttribute(objectName, attributeNamePart);
 		return Utils.toString(attribute);
 	}
 
-	private MBeanServerConnection getmBeanServerConnection() {
-		MBeanServerConnection mBeanServer = null;
+	private static MBeanServerConnection getMBeanServerConnection() {
 		Thread thread = Thread.currentThread();
+
 		if (thread instanceof SamplingAgentThread) {
 			Map<MBeanServerConnection, Sampler> samplers = ((SamplingAgentThread) thread).getSamplingAgent()
 					.getSamplers();
 			if (!Utils.isEmpty(samplers)) {
-				mBeanServer = samplers.entrySet().iterator().next().getKey();
-
+				return samplers.entrySet().iterator().next().getKey();
 			}
 		}
-		if (mBeanServer == null) {
-			throw new IllegalStateException("Illegal state mbeanserver not found");
-		}
-		return mBeanServer;
+
+		throw new IllegalStateException("MBean server connection not found");
 	}
 
-	private String queryForObjectName(String name) throws MalformedObjectNameException, IOException {
-		MBeanServerConnection mBeanServerConnection = getmBeanServerConnection();
-		String queryName = name.replace("?", "*");
+	private static String getKeyPropertyValue(String oNameStr) throws MalformedObjectNameException, IOException {
+		String queryName = oNameStr.replace("?", "*");
 		ObjectName oName = new ObjectName(queryName);
-		Set<ObjectInstance> objectInstances = mBeanServerConnection.queryMBeans(oName, null);
-		ObjectInstance first = objectInstances.iterator().next();
+		Set<ObjectInstance> objects = getMBeanServerConnection().queryMBeans(oName, null);
+		ObjectInstance first = objects.iterator().next();
+
 		for (Map.Entry<String, String> a : oName.getKeyPropertyList().entrySet()) {
 			String key = a.getKey();
 			if (oName.isPropertyValuePattern(key)) {
-				return first.getObjectName().getKeyProperty(a.getKey());
+				return first.getObjectName().getKeyProperty(key);
 			}
 		}
-		throw new IllegalStateException(name + "Not found");
+
+		throw new IllegalStateException("MBean key property not found for " + oNameStr);
 	}
 
 	@Override
@@ -152,6 +159,7 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 	private Source createFromFQN(String fqn, Source parent) {
 		StringTokenizer tk = new StringTokenizer(fqn, "#");
 		DefaultSource child = null, root = null;
+
 		while (tk.hasMoreTokens()) {
 			String sName = tk.nextToken();
 			int firstEqSign = sName.indexOf("=");
@@ -168,10 +176,11 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 			}
 			child = source;
 		}
+
 		if (child != null) {
 			child.setSource(parent);
 		}
+
 		return root;
 	}
-
 }
