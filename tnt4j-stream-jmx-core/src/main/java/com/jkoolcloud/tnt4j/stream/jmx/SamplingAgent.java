@@ -28,7 +28,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import javax.management.*;
-import javax.management.remote.JMXAddressable;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
@@ -65,9 +64,6 @@ import com.jkoolcloud.tnt4j.stream.jmx.utils.VMUtils;
  */
 public class SamplingAgent {
 	private static final EventSink LOGGER = DefaultEventSinkFactory.defaultEventSink(SamplingAgent.class);
-	public static final String SOURCE_SERVER_ADDRESS = "sjmx.serverAddress";
-	public static final String SOURCE_SERVER_NAME = "sjmx.serverName";
-	public static final String SOURCE_SERVICE_ID = "sjmx.serviceId";
 
 	protected Sampler platformJmx;
 	protected final Map<MBeanServerConnection, Sampler> STREAM_SAMPLERS = new ConcurrentHashMap<MBeanServerConnection, Sampler>(
@@ -133,6 +129,7 @@ public class SamplingAgent {
 	}
 
 	private boolean stopSampling = false;
+	private JMXConnector connector;
 
 	private SamplingAgent() {
 	}
@@ -493,22 +490,6 @@ public class SamplingAgent {
 		}
 	}
 
-	private static void resolveServer(String host) {
-		String serverAddress;
-		String serverName;
-
-		if (StringUtils.isEmpty(host)) {
-			serverAddress = Utils.getLocalHostAddress();
-			serverName = Utils.getLocalHostName();
-		} else {
-			serverAddress = Utils.resolveHostNameToAddress(host);
-			serverName = Utils.resolveAddressToHostName(host);
-		}
-
-		System.setProperty(SOURCE_SERVER_ADDRESS, serverAddress);
-		System.setProperty(SOURCE_SERVER_NAME, serverName);
-	}
-
 	private static boolean parseArgs(Properties props, String... args) {
 		LOGGER.log(OpLevel.INFO, "SamplingAgent.parseArgs(): args={0}", Arrays.toString(args));
 		boolean ac = StringUtils.equalsAnyIgnoreCase(args[0], AGENT_MODE_ATTACH, AGENT_MODE_CONNECT);
@@ -771,7 +752,6 @@ public class SamplingAgent {
 	 */
 	public void sample(String incFilter, String excFilter, long initDelay, long period, TimeUnit tUnit)
 			throws IOException {
-		resolveServer(null);
 		SamplerFactory sFactory = initPlatformJMX(incFilter, excFilter, initDelay, period, tUnit, null);
 
 		// find other registered MBean servers and initiate sampling for all
@@ -840,11 +820,6 @@ public class SamplingAgent {
 	 */
 	public void sample(String incFilter, String excFilter, long initDelay, long period, TimeUnit tUnit,
 			JMXConnector conn) throws IOException {
-		// get MBeanServerConnection from JMX RMI connector
-		if (conn instanceof JMXAddressable) {
-			JMXServiceURL url = ((JMXAddressable) conn).getAddress();
-			resolveServer(url == null ? null : url.getHost());
-		}
 		MBeanServerConnection mbSrvConn = conn.getMBeanServerConnection();
 		initPlatformJMX(incFilter, excFilter, initDelay, period, tUnit, mbSrvConn);
 	}
@@ -1149,7 +1124,7 @@ public class SamplingAgent {
 		do {
 			try {
 				LOGGER.log(OpLevel.INFO, "SamplingAgent.connect: connecting JMX service using URL={0}", url);
-				JMXConnector connector = JMXConnectorFactory.connect(url, params);
+				connector = JMXConnectorFactory.connect(url, params);
 
 				try {
 					NotificationListener cnl = new NotificationListener() {
@@ -1187,6 +1162,15 @@ public class SamplingAgent {
 				}
 			}
 		} while (!stopSampling);
+	}
+
+	/**
+	 * Returns JMX connector instance used by this sampler.
+	 *
+	 * @return jmx connector instance used by this sampler
+	 */
+	public JMXConnector getConnector() {
+		return connector;
 	}
 
 	private static List<JMXServiceURL> getJmxServiceURLs(String vmDescr) throws IOException {

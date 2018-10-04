@@ -23,6 +23,11 @@ import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
 import javax.management.*;
+import javax.management.remote.JMXAddressable;
+import javax.management.remote.JMXConnector;
+import javax.management.remote.JMXServiceURL;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.jkoolcloud.tnt4j.core.OpLevel;
 import com.jkoolcloud.tnt4j.sink.DefaultEventSinkFactory;
@@ -42,15 +47,24 @@ import com.jkoolcloud.tnt4j.utils.Utils;
  * This factory can resolve two types of MBean provided values:
  * <ul>
  * <li>Mbean attribute value - descriptor pattern is {@code "@bean:MBean_ObjectName/?AttributeName"}. It also allows use
- * of wildcard symbols {@code *}, e.g.: {@code "@bean:org.apache.ZooKeeperService:name0=#&002A;/?ClientPort"} resolving
- * {@code ClientPort} value for first available (if more than one is running on same JVM, but usually it should be only
- * one) ZooKeeper service instance.</li>
+ * of wildcard symbols {@code *}, e.g.: <code>"@bean:org.apache.ZooKeeperService:name0=*&#47;?ClientPort"</code>
+ * resolving {@code ClientPort} value for first available (if more than one is running on same JVM, but usually it
+ * should be only one) ZooKeeper service instance.</li>
  * <li>MBean key property - descriptor pattern is {@code "@bean:MBean_ObjectName:PropertyKey=?(,OtherProperties)"} (part
  * within {@code ()} is optional), e.g.: {@code "@bean:kafka.server:id=?,type=app-info"}.</li>
  * </ul>
  * <p>
+ * Also this factory resolves {@link javax.management.remote.JMXAddressable} provided address host name or IP using
+ * source value placeholders:
+ * <ul>
+ * <li>{@code @sjmx.serverAddress} - JMX server IP address</li>
+ * <li>{@code @sjmx.serverName} - JMX server host name</li>
+ * </ul>
+ * <p>
  * TNT4J source factory configuration using this source factory implementation would be like this:
  *
+ * for MBean value descriptor:
+ * 
  * <pre>
  * {@code
  *  source: com.jkoolcloud.tnt4j.stream.jmx
@@ -62,13 +76,35 @@ import com.jkoolcloud.tnt4j.utils.Utils;
  * }
  * </pre>
  *
+ * for MBean value descriptor:
+ * 
+ * <pre>
+ * {@code
+ *  source: com.jkoolcloud.tnt4j.stream.jmx
+ *  source.factory: com.jkoolcloud.tnt4j.stream.jmx.source.JMXSourceFactoryImpl
+ *  source.factory.DATACENTER: HQDC
+ *  source.factory.SERVER: @sjmx.serverName
+ *  source.factory.SERVICE: @bean:org.apache.activemq:type=Broker,brokerName=localhost/?BrokerId
+ *  source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?
+ * }
+ * </pre>
+ *
  * @version $Revision: 2 $
  */
 public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 	private static final EventSink LOGGER = DefaultEventSinkFactory.defaultEventSink(JMXSourceFactoryImpl.class);
 
+	public static final String SOURCE_SERVER_ADDRESS = "sjmx.serverAddress";
+	public static final String SOURCE_SERVER_NAME = "sjmx.serverName";
+	public static final String SOURCE_SERVICE_ID = "sjmx.serviceId";
+
+	private static final String SJMX_PROP_PREFIX = "@sjmx.";
 	private static final String MBEAN_PREFIX = "@bean:";
 	private static final String MBEAN_ATTR_DELIM = "/?";
+
+	public JMXSourceFactoryImpl() {
+		super();
+	}
 
 	@Override
 	protected String getNameFromType(String name, SourceType type) {
@@ -87,6 +123,8 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 			}
 
 			return Utils.resolve(name, UNKNOWN_SOURCE);
+		} else if (name.startsWith(SJMX_PROP_PREFIX)) {
+			return resolveSJMXPropValue(name.substring(1));
 		}
 
 		return super.getNameFromType(name, type);
@@ -143,7 +181,32 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 			}
 		}
 
-		throw new IllegalStateException("MBean key property not found for " + oNameStr);
+		throw new IllegalArgumentException("MBean key property not found for " + oNameStr);
+	}
+
+	private static String resolveSJMXPropValue(String propName) {
+		if (SOURCE_SERVER_ADDRESS.equals(propName) || SOURCE_SERVER_NAME.equals(propName)) {
+			Thread thread = Thread.currentThread();
+			String host = null;
+
+			if (thread instanceof SamplingAgentThread) {
+				JMXConnector jmxConn = ((SamplingAgentThread) thread).getSamplingAgent().getConnector();
+
+				// get MBeanServerConnection from JMX RMI connector
+				if (jmxConn instanceof JMXAddressable) {
+					JMXServiceURL url = ((JMXAddressable) jmxConn).getAddress();
+					host = url == null ? null : url.getHost();
+				}
+			}
+
+			if (SOURCE_SERVER_ADDRESS.equals(propName)) {
+				return StringUtils.isEmpty(host) ? Utils.getLocalHostAddress() : Utils.resolveHostNameToAddress(host);
+			} else if (SOURCE_SERVER_NAME.equals(propName)) {
+				return StringUtils.isEmpty(host) ? Utils.getLocalHostName() : Utils.resolveAddressToHostName(host);
+			}
+		}
+
+		return UNKNOWN_SOURCE;
 	}
 
 	@Override

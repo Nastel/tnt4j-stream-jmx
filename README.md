@@ -713,15 +713,15 @@ Default sampling agent options value is: `*:*!!30000`
 
 Stream-JMS has couple additional features in comparison with basic `TNT4J` when building Source `RootFQN` value:
 
-1. Has two dedicated System properties `sjmx.serverAddress` and `sjmx.serverName` to resolve remotely sampled machine IP address and host 
-name. To map these System properties values into `source` field, put `$` symbol before System property name in `source` field definition. 
-In this case `tnt4j.properties` configuration would be like this:
+1. Has two dedicated value placeholders `sjmx.serverAddress` and `sjmx.serverName` to resolve remotely sampled machine IP address and host 
+name. To map these sampled machine IP/host name values into `source` field, put `@` symbol before placeholder name in `source` field 
+definition. In this case `tnt4j.properties` configuration would be like this:
     ```properties
-    ; Remote machine Address
+    ; Remote machine IP address
     ...
     source.factory.DATACENTER: HQDC
     source.factory.SERVICE: broker-01
-    source.factory.SERVER: $sjmx.serverAddress
+    source.factory.SERVER: @sjmx.serverAddress
     source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?
     ...
 
@@ -729,14 +729,14 @@ In this case `tnt4j.properties` configuration would be like this:
     ...
     source.factory.DATACENTER: HQDC
     source.factory.SERVICE: broker-01
-    source.factory.SERVER: $sjmx.serverName
+    source.factory.SERVER: @sjmx.serverName
     source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?
     ...
     ```
 2. Can resolve values for `source` fields from JMX MBean attributes. Two items are required to use in `tnt4j.properties` configuration to 
 enable this feature:
     1. Set `source.factory` to `com.jkoolcloud.tnt4j.stream.jmx.source.JMXSourceFactoryImpl`
-    2. Put MBean attribute descriptor as `source` field value. There are two types of MBean attribute descriptors:
+    2. Put MBean attribute descriptor having prefix `@bean:` as `source` field value. There are two types of MBean attribute descriptors:
         * **Mbean attribute value** descriptor pattern is `"@bean:MBean_ObjectName/?AttributeName`. It also allows use of wildcard symbols 
         `*`, e.g.: `@bean:org.apache.ZooKeeperService:name0=*/?ClientPort` resolving `ClientPort` value for first available (if more than 
         one is running on same JVM, but usually it should be only one) ZooKeeper service instance. 
