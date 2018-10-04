@@ -101,7 +101,7 @@ System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [S
 * `-vm:activemq` - is JVM descriptor. In this case it is running JVM name fragment `activemq`. But it also may be JVM process identifier - 
 PID. Mandatory argument.
 * `-ap:tnt4j-stream-jmx-core-all.jar` - is agent library name. If it is class path - then only name should be sufficient. In any other case 
-define full or relative path, e.g., `..\build\tnt4j-stream-jmx\tnt4j-stream-jmx-0.8\lib\tnt4j-stream-jmx-core-all.jar`. Mandatory 
+define full or relative path, e.g., `..\build\tnt4j-stream-jmx\tnt4j-stream-jmx-0.8.1\lib\tnt4j-stream-jmx-core-all.jar`. Mandatory 
 argument.
 * `-ao:*:*!10000` - is JMX sampler options stating to include all MBeans and schedule sampling every 10 seconds. Sampler options are 
 optional - default value is `*:*!30000`. Initial sampler delay can be configured by adding numeric parameter `*:*!30000!1000` defining 
@@ -552,7 +552,7 @@ There is a simple Liberty `server.xml` configuration required to run Stream-JMX 
         <user>Admin</user>
     </administrator-role>
 
-    <application contextRoot="tnt-jmx" location="tnt4j-stream-jmx-liberty-war-0.8.war" type="war" id="tnt-jmx" name="tnt-jmx">
+    <application contextRoot="tnt-jmx" location="tnt4j-stream-jmx-liberty-war-0.8.1.war" type="war" id="tnt-jmx" name="tnt-jmx">
         <application-bnd>
             <security-role name="StreamJmxManager">
                 <user name="JMXManager" />
