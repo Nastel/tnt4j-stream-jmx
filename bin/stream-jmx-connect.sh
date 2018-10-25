@@ -69,7 +69,7 @@ TNT4JOPTS="$TNT4JOPTS -Dlog4j.configuration=file:$LOG4J_PROPERTIES"
 ### -------------------
 
 # NOTE: Double exclamation mark in bash has a special meaning (previous command)
-# to pass arguments correctly you need escape both. I.E. "stream-jmx-connect.sh tomcat *:*\!\!13000"
+# to pass arguments correctly you need escape both, e.g.: "stream-jmx-connect.sh tomcat *:*\!\!13000"
 ### ---- Agent sampler options ----
 AGENT_OPTIONS="*:*!!60000"
 ## jmx options from environment

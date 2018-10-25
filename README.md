@@ -326,7 +326,7 @@ within `source.factory.RootFQN` property of Stream-JMX TNT4J configuration.
 
 When monitoring multiple JVMs running single instance of Stream-JMX, `source.factory.RootFQN` property should define only part of 
 `SourceFQN` common for all monitored JVMs. Remaining (JVM unique) part of `SourceFQN` shall be defined in external JVM connections 
-configuration file (i.e. `config/connections.cfg`). But this also implies that if `SourceFQN` tokens refers unique values resolved from JMX 
+configuration file (e.g. `config/connections.cfg`). But this also implies that if `SourceFQN` tokens refers unique values resolved from JMX 
 data (e.g, over `@bean:` reference), it is enough to have only `source.factory.RootFQN` property of Stream-JMX TNT4J configuration to 
 uniquely distinguish JVMs.
 
@@ -1385,7 +1385,7 @@ All optional modules (extensions) depends to `core` module and can't be build an
 **NOTE:** `Distribution` module performs `maven post build` release assemblies delivery to `../build/tnt4j-stream-jmx` directory.
 
 ## Requirements
-* JDK 1.6+
+* JDK 1.7+
 * [Apache Maven 3](https://maven.apache.org/)
 * [TNT4J](https://nastel.github.io/TNT4J)
 * [JESL](https://nastel.github.io/JESL)
