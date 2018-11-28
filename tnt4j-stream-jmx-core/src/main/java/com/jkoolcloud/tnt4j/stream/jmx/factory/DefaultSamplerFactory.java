@@ -18,9 +18,9 @@ package com.jkoolcloud.tnt4j.stream.jmx.factory;
 import org.apache.commons.lang3.StringUtils;
 
 import com.jkoolcloud.tnt4j.core.OpLevel;
-import com.jkoolcloud.tnt4j.sink.DefaultEventSinkFactory;
 import com.jkoolcloud.tnt4j.sink.EventSink;
 import com.jkoolcloud.tnt4j.stream.jmx.impl.PlatformSamplerFactory;
+import com.jkoolcloud.tnt4j.stream.jmx.utils.LoggerUtils;
 
 /**
  * <p>
@@ -32,7 +32,7 @@ import com.jkoolcloud.tnt4j.stream.jmx.impl.PlatformSamplerFactory;
  * @see SamplerFactory
  */
 public class DefaultSamplerFactory {
-	private static final EventSink LOGGER = DefaultEventSinkFactory.defaultEventSink(DefaultSamplerFactory.class);
+	private static final EventSink LOGGER = LoggerUtils.getLoggerSink(DefaultSamplerFactory.class);
 
 	public static final String DEFAULT_SAMPLER_FACTORY = "com.jkoolcloud.tnt4j.stream.jmx.impl.PlatformSamplerFactory";
 	private static SamplerFactory defaultFactory;

@@ -670,10 +670,14 @@ Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.compositeDelimiter=.`
 sample snapshot properties. Default value - `true`.
 Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.useObjectNameProperties=false`
 * `sjmx.serviceId` - defines `stream-jmx` service identifier used by TNT4J `SourceFQN` to distinguish monitored application instance.
-Example: `-Dsjmx.serviceId=broker-0` or `-sp:sjmx.serviceId=broker-0`.
+Example: `-Dsjmx.serviceId=broker-0` or `-sp:sjmx.serviceId=broker-0`
 * `com.jkoolcloud.tnt4j.stream.jmx.sampler.factory`- defines class name of `SamplerFactory` class to be used by stream. Default value -
 `com.jkoolcloud.tnt4j.stream.jmx.factory.DefaultSamplerFactory`. 
-Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.sampler.factory=com.jkoolcloud.tnt4j.stream.jmx.impl.WASSamplerFactory`.
+Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.sampler.factory=com.jkoolcloud.tnt4j.stream.jmx.impl.WASSamplerFactory`
+* `tnt4j.stream.log.filename` - defines name of stream log file. Default value - `./logs/tnt4j-stream-jmx.log`.
+Example: `-Dtnt4j.stream.log.filename=./logs/tnt4j-stream-jmx_broker0.log`
+* `tnt4j.activities.log.filename` - defines name of streamed activities log file. Default value - `./logs/tnt4j-stream-jmx_samples.log`.
+Example: `-Dtnt4j.activities.log.filename=./logs/tnt4j-stream-jmx_broker0_samples.log`
 
 Used by **`tnt4j-stream-jmx-was`** module:
 * `com.jkoolcloud.tnt4j.stream.jmx.sampler.redirectJULToStreamLog` - defines whether to redirect WAS API used JUL logging output to 
@@ -688,6 +692,14 @@ logger log level, by setting it to `DEBUG` value, e.g:
 ```properties
 log4j.logger.com.jkoolcloud.tnt4j.stream.jmx=DEBUG
 ```
+
+**NOTE:** when running multiple parallel instances of `stream-jmx` (e.g. collecting Kafka broker metrics using dedicated stream instance), 
+it is recommended to define different log file names (using system properties `tnt4j.stream.log.filename` and 
+`tnt4j.activities.log.filename`) for every `stream-jmx` ran JVM.
+Using same log file on different VMs may arise logging conflicts when VM ran logger holds different *last log line references*, resulting 
+log entries to be written in random order.
+When monitoring multiple VM's over single `stream-jmx` instance, only one logger instance is ran (as there is one JVM running), and no 
+logging conflicts shall occur.
 
 ### Program arguments used
 

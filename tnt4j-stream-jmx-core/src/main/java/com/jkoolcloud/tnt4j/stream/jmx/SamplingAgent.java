@@ -48,6 +48,7 @@ import com.jkoolcloud.tnt4j.stream.jmx.core.PropertyNameBuilder;
 import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
 import com.jkoolcloud.tnt4j.stream.jmx.factory.DefaultSamplerFactory;
 import com.jkoolcloud.tnt4j.stream.jmx.factory.SamplerFactory;
+import com.jkoolcloud.tnt4j.stream.jmx.utils.LoggerUtils;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.Utils;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.VMUtils;
 
@@ -63,7 +64,7 @@ import com.jkoolcloud.tnt4j.stream.jmx.utils.VMUtils;
  * @see SamplerFactory
  */
 public class SamplingAgent {
-	private static final EventSink LOGGER = DefaultEventSinkFactory.defaultEventSink(SamplingAgent.class);
+	private static final EventSink LOGGER = LoggerUtils.getLoggerSink(SamplingAgent.class);
 
 	protected Sampler platformJmx;
 	protected final Map<MBeanServerConnection, Sampler> STREAM_SAMPLERS = new ConcurrentHashMap<MBeanServerConnection, Sampler>(

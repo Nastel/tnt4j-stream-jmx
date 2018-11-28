@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.List;
 
 import com.jkoolcloud.tnt4j.core.OpLevel;
-import com.jkoolcloud.tnt4j.sink.DefaultEventSinkFactory;
 import com.jkoolcloud.tnt4j.sink.EventSink;
 import com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent;
 import com.sun.tools.attach.VirtualMachine;
@@ -35,7 +34,7 @@ import com.sun.tools.attach.VirtualMachineDescriptor;
  * @version $Revision: 1 $
  */
 public class VMUtils {
-	private static final EventSink LOGGER = DefaultEventSinkFactory.defaultEventSink(VMUtils.class);
+	private static final EventSink LOGGER = LoggerUtils.getLoggerSink(VMUtils.class);
 
 	private static final String CONNECTOR_ADDRESS = "com.sun.management.jmxremote.localConnectorAddress";
 

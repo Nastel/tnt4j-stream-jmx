@@ -37,10 +37,10 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.jkoolcloud.tnt4j.config.TrackerConfigStore;
 import com.jkoolcloud.tnt4j.core.OpLevel;
-import com.jkoolcloud.tnt4j.sink.DefaultEventSinkFactory;
 import com.jkoolcloud.tnt4j.sink.EventSink;
 import com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.ConsoleOutputCaptor;
+import com.jkoolcloud.tnt4j.stream.jmx.utils.LoggerUtils;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.TextAreaLogAppender;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.Utils;
 
@@ -61,7 +61,7 @@ import com.jkoolcloud.tnt4j.stream.jmx.utils.Utils;
  */
 public abstract class StreamJMXServlet extends HttpServlet {
 	private static final long serialVersionUID = 6290613044594221667L;
-	private static final EventSink LOGGER = DefaultEventSinkFactory.defaultEventSink(StreamJMXServlet.class);
+	private static final EventSink LOGGER = LoggerUtils.getLoggerSink(StreamJMXServlet.class);
 
 	public static final String SYSTEM_OUT_ERR_NAME = "System.out/err";
 	public static final String TNT4J_LOGGER_OUTPUT = "tnt4j_logger_output";
@@ -90,7 +90,6 @@ public abstract class StreamJMXServlet extends HttpServlet {
 	}
 
 	protected void initSubject() {
-
 	}
 
 	@Override

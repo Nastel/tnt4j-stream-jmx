@@ -22,9 +22,9 @@ import javax.management.MBeanServer;
 import javax.management.MBeanServerConnection;
 
 import com.jkoolcloud.tnt4j.core.OpLevel;
-import com.jkoolcloud.tnt4j.sink.DefaultEventSinkFactory;
 import com.jkoolcloud.tnt4j.sink.EventSink;
 import com.jkoolcloud.tnt4j.stream.jmx.factory.SamplerFactory;
+import com.jkoolcloud.tnt4j.stream.jmx.utils.LoggerUtils;
 import com.jkoolcloud.tnt4j.utils.Utils;
 
 /**
@@ -38,7 +38,7 @@ import com.jkoolcloud.tnt4j.utils.Utils;
  * @see PlatformJmxSampler
  */
 public class WASJmxSampler extends PlatformJmxSampler {
-	private static final EventSink LOGGER = DefaultEventSinkFactory.defaultEventSink(WASJmxSampler.class);
+	private static final EventSink LOGGER = LoggerUtils.getLoggerSink(WASJmxSampler.class);
 
 	public static final String WAS_JMX_ADMIN_CLASS = "com.ibm.websphere.management.AdminServiceFactory";
 

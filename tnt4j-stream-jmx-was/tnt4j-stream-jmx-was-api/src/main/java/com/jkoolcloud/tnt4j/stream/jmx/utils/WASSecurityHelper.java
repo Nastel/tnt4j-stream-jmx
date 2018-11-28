@@ -35,7 +35,6 @@ import com.ibm.websphere.security.auth.WSSubject;
 import com.ibm.websphere.security.auth.callback.WSCallbackHandlerImpl;
 import com.ibm.websphere.security.cred.WSCredential;
 import com.jkoolcloud.tnt4j.core.OpLevel;
-import com.jkoolcloud.tnt4j.sink.DefaultEventSinkFactory;
 import com.jkoolcloud.tnt4j.sink.EventSink;
 
 /**
@@ -47,7 +46,7 @@ import com.jkoolcloud.tnt4j.sink.EventSink;
  * @version $Revision: 1 $
  */
 public class WASSecurityHelper {
-	private static final EventSink LOGGER = DefaultEventSinkFactory.defaultEventSink(WASSecurityHelper.class);
+	private static final EventSink LOGGER = LoggerUtils.getLoggerSink(WASSecurityHelper.class);
 
 	private static final String REALM_NAME = "default";
 

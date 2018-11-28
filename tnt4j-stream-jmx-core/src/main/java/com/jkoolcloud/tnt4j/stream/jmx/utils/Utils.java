@@ -180,5 +180,4 @@ public class Utils extends com.jkoolcloud.tnt4j.utils.Utils {
 		Object sPropValue = sProperties.get(sKey);
 		tProperties.put(tKey, sPropValue == null ? defValue : sPropValue);
 	}
-
 }

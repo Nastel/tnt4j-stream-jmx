@@ -31,9 +31,9 @@ import javax.management.openmbean.TabularData;
 import org.apache.commons.lang3.StringUtils;
 
 import com.jkoolcloud.tnt4j.core.*;
-import com.jkoolcloud.tnt4j.sink.DefaultEventSinkFactory;
 import com.jkoolcloud.tnt4j.sink.EventSink;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeSample;
+import com.jkoolcloud.tnt4j.stream.jmx.utils.LoggerUtils;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.Utils;
 
 /**
@@ -46,7 +46,7 @@ import com.jkoolcloud.tnt4j.stream.jmx.utils.Utils;
  * @see SampleListener
  */
 public class DefaultSampleListener implements SampleListener {
-	private static final EventSink LOGGER = DefaultEventSinkFactory.defaultEventSink(DefaultSampleListener.class);
+	private static final EventSink LOGGER = LoggerUtils.getLoggerSink(DefaultSampleListener.class);
 
 	private static final String AGENT_PROP_PREFIX = "com.jkoolcloud.tnt4j.stream.jmx.agent.";
 

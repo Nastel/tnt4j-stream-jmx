@@ -27,8 +27,8 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import com.jkoolcloud.tnt4j.config.TrackerConfigStore;
 import com.jkoolcloud.tnt4j.core.OpLevel;
-import com.jkoolcloud.tnt4j.sink.DefaultEventSinkFactory;
 import com.jkoolcloud.tnt4j.sink.EventSink;
+import com.jkoolcloud.tnt4j.stream.jmx.utils.LoggerUtils;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.Utils;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.WASSecurityHelper;
 
@@ -41,7 +41,7 @@ import com.jkoolcloud.tnt4j.stream.jmx.utils.WASSecurityHelper;
  */
 public class WASStreamJMXServlet extends StreamJMXServlet {
 	private static final long serialVersionUID = -8291650473147748942L;
-	private static final EventSink LOGGER = DefaultEventSinkFactory.defaultEventSink(WASStreamJMXServlet.class);
+	private static final EventSink LOGGER = LoggerUtils.getLoggerSink(WASStreamJMXServlet.class);
 
 	/**
 	 * WAS specific properties values enumeration.

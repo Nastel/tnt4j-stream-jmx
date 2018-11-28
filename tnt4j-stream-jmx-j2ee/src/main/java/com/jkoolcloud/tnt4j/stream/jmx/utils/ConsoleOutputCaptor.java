@@ -27,7 +27,6 @@ import java.util.Date;
 import org.apache.commons.lang3.StringUtils;
 
 import com.jkoolcloud.tnt4j.core.OpLevel;
-import com.jkoolcloud.tnt4j.sink.DefaultEventSinkFactory;
 import com.jkoolcloud.tnt4j.sink.EventSink;
 import com.jkoolcloud.tnt4j.utils.Utils;
 
@@ -37,7 +36,7 @@ import com.jkoolcloud.tnt4j.utils.Utils;
  * @version $Revision: 1 $
  */
 public class ConsoleOutputCaptor {
-	private static final EventSink LOGGER = DefaultEventSinkFactory.defaultEventSink(ConsoleOutputCaptor.class);
+	private static final EventSink LOGGER = LoggerUtils.getLoggerSink(ConsoleOutputCaptor.class);
 
 	private CaptorPrintStream outStream;
 	private CaptorPrintStream errStream;

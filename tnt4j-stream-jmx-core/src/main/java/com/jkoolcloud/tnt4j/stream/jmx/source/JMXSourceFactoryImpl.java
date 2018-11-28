@@ -30,7 +30,6 @@ import javax.management.remote.JMXServiceURL;
 import org.apache.commons.lang3.StringUtils;
 
 import com.jkoolcloud.tnt4j.core.OpLevel;
-import com.jkoolcloud.tnt4j.sink.DefaultEventSinkFactory;
 import com.jkoolcloud.tnt4j.sink.EventSink;
 import com.jkoolcloud.tnt4j.source.DefaultSource;
 import com.jkoolcloud.tnt4j.source.Source;
@@ -38,6 +37,7 @@ import com.jkoolcloud.tnt4j.source.SourceFactoryImpl;
 import com.jkoolcloud.tnt4j.source.SourceType;
 import com.jkoolcloud.tnt4j.stream.jmx.SamplingAgentThread;
 import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
+import com.jkoolcloud.tnt4j.stream.jmx.utils.LoggerUtils;
 import com.jkoolcloud.tnt4j.utils.Utils;
 
 /**
@@ -92,7 +92,7 @@ import com.jkoolcloud.tnt4j.utils.Utils;
  * @version $Revision: 2 $
  */
 public class JMXSourceFactoryImpl extends SourceFactoryImpl {
-	private static final EventSink LOGGER = DefaultEventSinkFactory.defaultEventSink(JMXSourceFactoryImpl.class);
+	private static final EventSink LOGGER = LoggerUtils.getLoggerSink(JMXSourceFactoryImpl.class);
 
 	public static final String SOURCE_SERVER_ADDRESS = "sjmx.serverAddress";
 	public static final String SOURCE_SERVER_NAME = "sjmx.serverName";
