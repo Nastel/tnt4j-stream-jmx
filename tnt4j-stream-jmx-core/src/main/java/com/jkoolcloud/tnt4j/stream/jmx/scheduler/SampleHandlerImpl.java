@@ -188,7 +188,6 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 				}
 			}
 		} catch (Exception ex) {
-			lastError = ex;
 			doError(ex);
 		}
 	}
@@ -610,7 +609,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	public void handleNotification(Notification notification, Object handback) {
 		if (notification instanceof MBeanServerNotification) {
 			MBeanServerNotification mbeanEvent = (MBeanServerNotification) notification;
-			if (mbeanEvent.getType().equalsIgnoreCase(MBeanServerNotification.REGISTRATION_NOTIFICATION)) {
+			if (notification.getType().equalsIgnoreCase(MBeanServerNotification.REGISTRATION_NOTIFICATION)) {
 				try {
 					if (isFilterIncluded(mbeanEvent.getMBeanName())) {
 						mbeans.put(mbeanEvent.getMBeanName(), mbeanServer.getMBeanInfo(mbeanEvent.getMBeanName()));
@@ -619,7 +618,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 				} catch (Throwable ex) {
 					doError(ex);
 				}
-			} else if (mbeanEvent.getType().equalsIgnoreCase(MBeanServerNotification.UNREGISTRATION_NOTIFICATION)) {
+			} else if (notification.getType().equalsIgnoreCase(MBeanServerNotification.UNREGISTRATION_NOTIFICATION)) {
 				mbeans.remove(mbeanEvent.getMBeanName());
 				runUnRegister(mbeanEvent.getMBeanName());
 			}

@@ -89,7 +89,7 @@ public class TextAreaLogAppender implements SinkLogEventListener {
 	public String getCaptured() {
 		if (outStream != null) {
 			try {
-				return outStream.toString(com.jkoolcloud.tnt4j.utils.Utils.UTF8);
+				return outStream.toString(Utils.UTF8);
 			} catch (UnsupportedEncodingException exc) {
 				return outStream.toString();
 			}
