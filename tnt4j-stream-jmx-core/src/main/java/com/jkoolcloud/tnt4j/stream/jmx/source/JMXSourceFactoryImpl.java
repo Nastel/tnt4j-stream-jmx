@@ -17,6 +17,7 @@
 package com.jkoolcloud.tnt4j.stream.jmx.source;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -147,11 +148,15 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 		String attributeNamePart = paths[1];
 
 		MBeanServerConnection mBeanServerConn = getMBeanServerConnection();
-
 		Set<ObjectInstance> objects = mBeanServerConn.queryMBeans(new ObjectName(objectNamePart), null);
-		ObjectName objectName = objects.iterator().next().getObjectName();
-		Object attribute = mBeanServerConn.getAttribute(objectName, attributeNamePart);
-		return Utils.toString(attribute);
+
+		if (Utils.isEmpty(objects)) {
+			return UNKNOWN_SOURCE;
+		} else {
+			ObjectName objectName = objects.iterator().next().getObjectName();
+			Object attribute = mBeanServerConn.getAttribute(objectName, attributeNamePart);
+			return Utils.toString(attribute);
+		}
 	}
 
 	private static MBeanServerConnection getMBeanServerConnection() {
@@ -161,23 +166,28 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 			Map<MBeanServerConnection, Sampler> samplers = ((SamplingAgentThread) thread).getSamplingAgent()
 					.getSamplers();
 			if (!Utils.isEmpty(samplers)) {
-				return samplers.entrySet().iterator().next().getKey();
+				Set<Map.Entry<MBeanServerConnection, Sampler>> samplersSet = samplers.entrySet();
+				Iterator<Map.Entry<MBeanServerConnection, Sampler>> samplersIter = samplersSet.iterator();
+				return samplersIter.next().getKey();
 			}
 		}
 
-		throw new IllegalStateException("MBean server connection not found");
+		throw new IllegalStateException("MBean server connection not found for thread " + thread);
 	}
 
 	private static String getKeyPropertyValue(String oNameStr) throws MalformedObjectNameException, IOException {
 		String queryName = oNameStr.replace("?", "*");
 		ObjectName oName = new ObjectName(queryName);
 		Set<ObjectInstance> objects = getMBeanServerConnection().queryMBeans(oName, null);
-		ObjectInstance first = objects.iterator().next();
 
-		for (Map.Entry<String, String> a : oName.getKeyPropertyList().entrySet()) {
-			String key = a.getKey();
-			if (oName.isPropertyValuePattern(key)) {
-				return first.getObjectName().getKeyProperty(key);
+		if (!Utils.isEmpty(objects)) {
+			ObjectInstance first = objects.iterator().next();
+
+			for (Map.Entry<String, String> kProp : oName.getKeyPropertyList().entrySet()) {
+				String key = kProp.getKey();
+				if (oName.isPropertyValuePattern(key)) {
+					return first.getObjectName().getKeyProperty(key);
+				}
 			}
 		}
 
