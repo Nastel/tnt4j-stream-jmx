@@ -56,7 +56,7 @@
         <product.copyright.html>
             <![CDATA[<font size="-1">Copyright &#169; 2015-2018 ${project.organization.name}. All Rights Reserved.</font>]]></product.copyright.html>
 
-        <project.java.version>1.7</project.java.version>
+        <project.java.version>1.8</project.java.version>
         <java.source.version>${project.java.version}</java.source.version>
         <java.target.version>${project.java.version}</java.target.version>
         <java.compiler.version>${project.java.version}</java.compiler.version>
