@@ -180,4 +180,62 @@ public class Utils extends com.jkoolcloud.tnt4j.utils.Utils {
 		Object sPropValue = sProperties.get(sKey);
 		tProperties.put(tKey, sPropValue == null ? defValue : sPropValue);
 	}
+
+	/**
+	 * Returns top cause of exception.
+	 *
+	 * @param exc
+	 *            exception instance to get top cause
+	 * @return top cause of exception
+	 */
+	public static Throwable getTopCause(Throwable exc) {
+		if (exc == null) {
+			return exc;
+		}
+
+		while (exc.getCause() != null) {
+			exc = exc.getCause();
+		}
+
+		return exc;
+	}
+
+	/**
+	 * Generates a string representing exception and all exception root cause messages.
+	 *
+	 * @param ex
+	 *            exception to process
+	 * @return exception messages string
+	 */
+	public static String getAllExceptionMessages(Throwable ex) {
+		StringBuilder msgsSb = new StringBuilder(ex == null ? "" : ex.toString());
+		if (ex != null) {
+			while (ex.getCause() != null) {
+				ex = ex.getCause();
+				msgsSb.append("\n\t caused by: ").append(ex.toString());
+			}
+		}
+
+		return msgsSb.toString();
+	}
+
+	/**
+	 * Generates a string representing exception message.
+	 *
+	 * @param ex
+	 *            exception to process
+	 * @return exception message string
+	 */
+	public static String getExceptionMessage(Throwable ex) {
+		if (ex == null) {
+			return "";
+		}
+
+		String msg = ex.getMessage();
+		if (StringUtils.isEmpty(msg)) {
+			return ex.getClass().getName();
+		}
+
+		return msg;
+	}
 }

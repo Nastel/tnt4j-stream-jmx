@@ -42,7 +42,7 @@ TNT4JOPTS="$TNT4JOPTS -Dlog4j.configuration=file:$LOG4J_PROPERTIES"
 ### -------------------
 
 ### ---- adding WAS specific JMX sampler options ----
-TNT4JOPTS="$TNT4JOPTS -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.forceObjectName=true -Dcom.jkoolcloud.tnt4j.stream.jmx.sampler.factory=com.jkoolcloud.tnt4j.stream.jmx.impl.WASSamplerFactory"
+TNT4JOPTS="$TNT4JOPTS -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.forceObjectName=true -Dcom.jkoolcloud.tnt4j.stream.jmx.sampler.factory=com.jkoolcloud.tnt4j.stream.jmx.impl.WASSamplerFactory -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.excludeOnError=true"
 ### -------------------------------------------------
 
 # NOTE: Double exclamation mark in bash has a special meaning (previous command)

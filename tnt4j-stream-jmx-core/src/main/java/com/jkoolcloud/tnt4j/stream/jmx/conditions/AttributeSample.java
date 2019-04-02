@@ -19,7 +19,7 @@ import javax.management.*;
 
 import com.jkoolcloud.tnt4j.core.Activity;
 import com.jkoolcloud.tnt4j.core.PropertySnapshot;
-import com.jkoolcloud.tnt4j.utils.Utils;
+import com.jkoolcloud.tnt4j.stream.jmx.utils.Utils;
 
 /**
  * <p>
@@ -117,7 +117,7 @@ public class AttributeSample {
 		}
 
 		if (exc instanceof MBeanException) {
-			ct = getTopCause(exc);
+			ct = Utils.getTopCause(exc);
 		}
 		eName = ct.getClass().getSimpleName();
 
@@ -131,18 +131,6 @@ public class AttributeSample {
 			// throw exc;
 			return "<" + eName + ">";
 		}
-	}
-
-	private static Throwable getTopCause(Throwable exc) {
-		if (exc == null) {
-			return exc;
-		}
-
-		while (exc.getCause() != null) {
-			exc = exc.getCause();
-		}
-
-		return exc;
 	}
 
 	/**

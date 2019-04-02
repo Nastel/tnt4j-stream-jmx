@@ -22,9 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
-import javax.management.MBeanAttributeInfo;
-import javax.management.MBeanInfo;
-import javax.management.ObjectName;
+import javax.management.*;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 
@@ -52,13 +50,15 @@ public class DefaultSampleListener implements SampleListener {
 
 	public static final String STAT_FORCE_OBJECT_NAME_MODE = "listener.forceObjectName.mode";
 	public static final String STAT_COMPOSITE_DELIMITER = "listener.compositeProperty.delimiter";
-	public static final String STAT_USE_OBJ_NAME_PROPS = "listener.useObjectNameProperties.mode";
+	public static final String STAT_USE_OBJ_NAME_PROPS_MODE = "listener.useObjectNameProperties.mode";
+	public static final String STAT_EXCLUDE_ON_ERROR_MODE = "listener.excludeOnError.mode";
 	public static final String STAT_EXCLUDE_SET_COUNT = "listener.exclude.set.count";
 	public static final String STAT_SILENCE_SET_COUNT = "listener.silence.set.count";
 
 	boolean forceObjectName = false;
 	String compositeDelimiter = null;
 	boolean useObjectNameProperties = true;
+	boolean excludeOnError = false;
 
 	Collection<MBeanAttributeInfo> excAttrs = new HashSet<MBeanAttributeInfo>(89);
 	Collection<MBeanAttributeInfo> silenceAttrs = new HashSet<MBeanAttributeInfo>(89);
@@ -81,6 +81,7 @@ public class DefaultSampleListener implements SampleListener {
 				compositeDelimiter);
 		this.useObjectNameProperties = Utils.getBoolean(ListenerProperties.USE_OBJECT_NAME_PROPERTIES.pName(),
 				properties, useObjectNameProperties);
+		this.excludeOnError = Utils.getBoolean(ListenerProperties.EXCLUDE_ON_ERROR.pName, properties, excludeOnError);
 	}
 
 	/**
@@ -219,11 +220,13 @@ public class DefaultSampleListener implements SampleListener {
 
 	@Override
 	public void error(SampleContext context, AttributeSample sample, OpLevel level) {
-		sample.excludeNext(isFatalError(level == null ? OpLevel.ERROR : level));
+		sample.excludeNext(isFatalError(sample.getError(), level == null ? OpLevel.ERROR : level));
 		sample.silence(true);
-		LOGGER.log(OpLevel.DEBUG, "Failed to sample:\n ojbName={0},\n info={1},\n exclude={2}\n ex={3}",
-				sample.getObjectName(), sample.getAttributeInfo(), sample.excludeNext(), sample.getError().getMessage(),
-				sample.getError());
+		LOGGER.log(OpLevel.DEBUG, "Failed to sample:\n ojbName={0},\n info={1},\n exclude={2}\n silence={3}\n ex={4}",
+				sample.getObjectName(), sample.getAttributeInfo(), sample.excludeNext(), sample.isSilence(),
+				LOGGER.isSet(OpLevel.TRACE) ? Utils.getExceptionMessage(sample.getError())
+						: Utils.getAllExceptionMessages(sample.getError()),
+				LOGGER.isSet(OpLevel.TRACE) ? sample.getError() : null);
 		if (sample.excludeNext()) {
 			exclude(sample.getAttributeInfo());
 		}
@@ -232,15 +235,49 @@ public class DefaultSampleListener implements SampleListener {
 		}
 	}
 
-	private static boolean isFatalError(OpLevel level) {
-		return level.ordinal() >= OpLevel.ERROR.ordinal();
+	private boolean isFatalError(Throwable exc, OpLevel level) {
+		boolean fatal = level.ordinal() >= OpLevel.ERROR.ordinal();
+
+		if (fatal) {
+			return true;
+		}
+
+		if (excludeOnError) {
+			Throwable ct = exc;
+			if (exc instanceof RuntimeMBeanException) {
+				ct = exc.getCause();
+			}
+			String eName = ct.getClass().getSimpleName();
+
+			if (eName.contains("Unsupported")) {
+				return true;
+			} else if (eName.contains("NotFound")) {
+				return true;
+			}
+
+			if (exc instanceof MBeanException) {
+				ct = Utils.getTopCause(exc);
+			}
+			eName = ct.getClass().getSimpleName();
+
+			if (eName.contains("NoSuch")) {
+				return true;
+			} else if (eName.contains("Illegal")) {
+				return true;
+			} else if (eName.contains("NotRunning")) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	@Override
 	public void getStats(SampleContext context, Map<String, Object> stats) {
 		stats.put(STAT_FORCE_OBJECT_NAME_MODE, forceObjectName);
 		stats.put(STAT_COMPOSITE_DELIMITER, compositeDelimiter);
-		stats.put(STAT_USE_OBJ_NAME_PROPS, useObjectNameProperties);
+		stats.put(STAT_USE_OBJ_NAME_PROPS_MODE, useObjectNameProperties);
+		stats.put(STAT_EXCLUDE_ON_ERROR_MODE, excludeOnError);
 		stats.put(STAT_EXCLUDE_SET_COUNT, excAttrs.size());
 		stats.put(STAT_SILENCE_SET_COUNT, silenceAttrs.size());
 	}
@@ -357,7 +394,11 @@ public class DefaultSampleListener implements SampleListener {
 		 * Flag indicating to copy MBean {@link javax.management.ObjectName} contained properties into sample snapshot
 		 * properties.
 		 */
-		USE_OBJECT_NAME_PROPERTIES("useObjectNameProperties");
+		USE_OBJECT_NAME_PROPERTIES("useObjectNameProperties"),
+		/**
+		 * Flag indicating to auto-exclude failed to sample attributes.
+		 */
+		EXCLUDE_ON_ERROR("excludeOnError");
 
 		private String pName;
 		private String apName;

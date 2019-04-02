@@ -646,7 +646,9 @@ value **after**.
 JMX sampler configuration properties are:
 * `forceObjectName` - flag indicating to forcibly add `objectName` attribute if such is not present for a MBean. Default value - `false`.
 * `compositeDelimiter` - delimiter used to tokenize composite/tabular type MBean properties keys. Default value - `\`;
-* `useObjectNameProperties` - flag indicating to copy MBean `ObjectName` contained properties into sample snapshot properties.
+* `useObjectNameProperties` - flag indicating to copy MBean `ObjectName` contained properties into sample snapshot properties. Default 
+value - `true`.
+* `excludeOnError` - flag indicating to auto-exclude failed to sample attributes. Default value - `false`.
 
 See [System properties used](#system-properties-used) how to configure Stream-JMX using system properties.
 See [Program arguments used](#program-arguments-used) how to configure Stream-JMX using program arguments.
@@ -671,6 +673,9 @@ sample snapshot properties. Default value - `true`.
 Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.useObjectNameProperties=false`
 * `sjmx.serviceId` - defines `stream-jmx` service identifier used by TNT4J `SourceFQN` to distinguish monitored application instance.
 Example: `-Dsjmx.serviceId=broker-0` or `-sp:sjmx.serviceId=broker-0`
+* `com.jkoolcloud.tnt4j.stream.jmx.agent.excludeOnError` - defines whether to auto-exclude failed to sample attributes. Default value - 
+`false`. 
+Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.excludeOnError=true`
 * `com.jkoolcloud.tnt4j.stream.jmx.sampler.factory`- defines class name of `SamplerFactory` class to be used by stream. Default value -
 `com.jkoolcloud.tnt4j.stream.jmx.factory.DefaultSamplerFactory`. 
 Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.sampler.factory=com.jkoolcloud.tnt4j.stream.jmx.impl.WASSamplerFactory`
@@ -709,6 +714,7 @@ properties use as many argument definitions as there are required properties. Fo
 -slp:forceObjectName=true
 -slp:compositeDelimiter=.
 -slp:useObjectNameProperties=false
+-slp:excludeOnError=true
 ```
 
 ### JMX Sampling Agent sampler options

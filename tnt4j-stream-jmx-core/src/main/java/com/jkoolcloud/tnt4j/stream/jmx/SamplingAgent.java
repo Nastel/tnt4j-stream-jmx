@@ -123,10 +123,12 @@ public class SamplingAgent {
 		copyProperty(COMPOSITE_DELIMITER, DEFAULTS, LISTENER_PROPERTIES,
 				PropertyNameBuilder.DEFAULT_COMPOSITE_DELIMITER);
 		copyProperty(USE_OBJECT_NAME_PROPERTIES, DEFAULTS, LISTENER_PROPERTIES, true);
+		copyProperty(EXCLUDE_ON_ERROR, DEFAULTS, LISTENER_PROPERTIES, false);
 
 		copyProperty(FORCE_OBJECT_NAME, System.getProperties(), LISTENER_PROPERTIES);
 		copyProperty(COMPOSITE_DELIMITER, System.getProperties(), LISTENER_PROPERTIES);
 		copyProperty(USE_OBJECT_NAME_PROPERTIES, System.getProperties(), LISTENER_PROPERTIES);
+		copyProperty(EXCLUDE_ON_ERROR, System.getProperties(), LISTENER_PROPERTIES);
 	}
 
 	private boolean stopSampling = false;
@@ -240,6 +242,11 @@ public class SamplingAgent {
 					String[] prop = arg.split("=", 2);
 					if (prop.length > 1) {
 						LISTENER_PROPERTIES.put(USE_OBJECT_NAME_PROPERTIES.pName(), prop[1]);
+					}
+				} else if (arg.startsWith(EXCLUDE_ON_ERROR.pName() + "=")) {
+					String[] prop = arg.split("=", 2);
+					if (prop.length > 1) {
+						LISTENER_PROPERTIES.put(EXCLUDE_ON_ERROR.pName(), prop[1]);
 					}
 				} else {
 					agentParams += agentParams.isEmpty() ? arg : "!" + arg;
@@ -380,6 +387,7 @@ public class SamplingAgent {
 					+ "       forceObjectName - flag indicating to forcibly add 'objectName' attribute if such is not present for a MBean. Default value - 'false'\n"
 					+ "       compositeDelimiter - delimiter used to tokenize composite/tabular type MBean properties keys. Default value - '\\'\n"
 					+ "       useObjectNameProperties - flag indicating to copy MBean ObjectName contained properties into sample snapshot properties. Default value - 'true'\n"
+					+ "       excludeOnError - flag indicating to auto-exclude failed to sample attributes. Default value - 'false'\n"
 					+ "   -sp: - sampler system property string using '=' symbol as delimiter. Defines only one system property, to define more than one use this argument multiple times. Argument format: -sp:key=value";
 
 			System.out.println(usageStr);
@@ -1238,7 +1246,7 @@ public class SamplingAgent {
 	private void startSamplerAndWait(String options, JMXConnector connector) throws Exception {
 		startSampler(options, connector);
 
-		final Thread mainThread = Thread.currentThread(); // Reference to the current thread.
+		Thread mainThread = Thread.currentThread(); // Reference to the current thread.
 		Thread shutdownHook = new Thread(new Runnable() {
 			@Override
 			public void run() {

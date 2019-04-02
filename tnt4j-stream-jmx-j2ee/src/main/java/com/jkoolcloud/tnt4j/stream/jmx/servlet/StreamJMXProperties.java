@@ -77,9 +77,13 @@ public enum StreamJMXProperties implements StreamJMXProperty {
 	 */
 	COMPOSITE_DELIMITER("com.jkoolcloud.tnt4j.stream.jmx.agent.compositeDelimiter", PropertyNameBuilder.DEFAULT_COMPOSITE_DELIMITER, EDITABLE, SYSTEM),
 	/**
-	 * Agent force object name flag.
+	 * Agent resolve ObjectName properties flag.
 	 */
 	USE_OBJ_NAME_PROPERTIES("com.jkoolcloud.tnt4j.stream.jmx.agent.useObjectNameProperties", "true", EDITABLE, SYSTEM),
+	/**
+	 * Agent exclude attributes on error flag.
+	 */
+	EXCLUDE_ON_ERROR("com.jkoolcloud.tnt4j.stream.jmx.agent.excludeOnError", "true", EDITABLE, SYSTEM),
 	/**
 	 * User login mame.
 	 */
