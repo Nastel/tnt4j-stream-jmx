@@ -18,7 +18,6 @@ package com.jkoolcloud.tnt4j.stream.jmx.servlet;
 
 import static com.jkoolcloud.tnt4j.stream.jmx.servlet.StreamJMXProperty.Display.*;
 import static com.jkoolcloud.tnt4j.stream.jmx.servlet.StreamJMXProperty.Scope.*;
-import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
 
 import java.io.*;
 import java.net.URL;
@@ -34,13 +33,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 
 import com.jkoolcloud.tnt4j.config.TrackerConfigStore;
 import com.jkoolcloud.tnt4j.core.OpLevel;
 import com.jkoolcloud.tnt4j.sink.EventSink;
 import com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent;
-import com.jkoolcloud.tnt4j.stream.jmx.utils.ConsoleOutputCaptor;
-import com.jkoolcloud.tnt4j.stream.jmx.utils.LoggerUtils;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.TextAreaLogAppender;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.Utils;
 
@@ -61,13 +59,10 @@ import com.jkoolcloud.tnt4j.stream.jmx.utils.Utils;
  */
 public abstract class StreamJMXServlet extends HttpServlet {
 	private static final long serialVersionUID = 6290613044594221667L;
-	private static final EventSink LOGGER = LoggerUtils.getLoggerSink(StreamJMXServlet.class);
 
-	public static final String SYSTEM_OUT_ERR_NAME = "System.out/err";
 	public static final String TNT4J_LOGGER_OUTPUT = "tnt4j_logger_output";
 
 	static {
-		ConsoleOutputCaptor.getInstance().start();
 		TextAreaLogAppender.getInstance().start();
 	}
 
@@ -84,6 +79,8 @@ public abstract class StreamJMXServlet extends HttpServlet {
 
 		super.init(config);
 	}
+
+	protected abstract EventSink logger();
 
 	protected StreamJMXProperty[] initProperties() {
 		return StreamJMXProperties.values();
@@ -174,7 +171,6 @@ public abstract class StreamJMXServlet extends HttpServlet {
 			String propertyValue = req.getParameter(property.key());
 			if (propertyValue != null) {
 				changed |= setProperty(property, propertyValue);
-				LOGGER.log(OpLevel.INFO, "==> Setting property: {0}={1}", property.key(), propertyValue);
 			}
 		}
 
@@ -188,7 +184,7 @@ public abstract class StreamJMXServlet extends HttpServlet {
 					tnt4jProperties.write(tnt4jConfigContents.getBytes());
 					changed = true;
 				} catch (Exception e) {
-					LOGGER.log(OpLevel.ERROR, "!!!!   Failed writing to file: {0}   !!!!", fileName, e);
+					logger().log(OpLevel.ERROR, "!!!!   Failed writing to file: {0}   !!!!", fileName, e);
 				} finally {
 					Utils.close(tnt4jProperties);
 				}
@@ -205,7 +201,7 @@ public abstract class StreamJMXServlet extends HttpServlet {
 
 	@Override
 	public void destroy() {
-		LOGGER.log(OpLevel.INFO,
+		logger().log(OpLevel.INFO,
 				"######################     Stopping TNT4J-stream-JMX as Servlet   ######################");
 		samplerDestroy();
 
@@ -213,7 +209,6 @@ public abstract class StreamJMXServlet extends HttpServlet {
 
 		postDestroy();
 
-		ConsoleOutputCaptor.getInstance().stop();
 		TextAreaLogAppender.getInstance().stop();
 	}
 
@@ -228,13 +223,13 @@ public abstract class StreamJMXServlet extends HttpServlet {
 
 		String editableStr = editable ? "" : "readonly disabled";
 		String inputType = password ? "password" : "text";
-		String text = escapeHtml4(getProperty(propertyKey, ""));
+		String text = StringEscapeUtils.escapeHtml4(getProperty(propertyKey, ""));
 		if (password) {
 			text = text.replaceAll(".", "*");
 		}
 
 		out.println("<td><input type=\"" + inputType + "\" name=\"" + propertyKey + "\" value=\"" + text + "\" "
-				+ editableStr + " size=\"60\"></td>");
+				+ editableStr + " size=\"70\"></td>");
 		out.println("<td> ");
 
 		if (property.isInScope(SYSTEM)) {
@@ -263,9 +258,6 @@ public abstract class StreamJMXServlet extends HttpServlet {
 			out.println("<button class=\"tablinks\" onclick=\"openTab(event, '" + property.key() + "')\"> "
 					+ property.defaultValue() + "</button>");
 		}
-		out.println("<button class=\"tablinks\" onclick=\"openTab(event, 'SystemErrTab')\"> " + SYSTEM_OUT_ERR_NAME
-				+ "</button>");
-
 		out.println("</div>");
 		for (StreamJMXProperty property : feProperties) {
 			out.println("<div id=\"" + property.key() + "\" class=\"tabcontent\">");
@@ -279,7 +271,7 @@ public abstract class StreamJMXServlet extends HttpServlet {
 				out.println(configString);
 			} catch (Exception e) {
 				out.println("No " + property.key() + " found.");
-				LOGGER.log(OpLevel.ERROR, "No property found using key: {0}", property.key(), e);
+				logger().log(OpLevel.ERROR, "No property found using key: {0}", property.key(), e);
 			}
 			out.println("</textarea>");
 
@@ -289,37 +281,18 @@ public abstract class StreamJMXServlet extends HttpServlet {
 			out.println("</form>");
 			out.println("</div>");
 		}
-
-		out.println("<div id=\"" + "SystemErrTab" + "\" class=\"tabcontent\">");
-		outputConsole(out);
-		out.println("</div>");
 	}
 
-	private static void outputConsole(PrintWriter out) throws IOException {
-		out.println("<H3>" + SYSTEM_OUT_ERR_NAME + "</H3>");
-		out.println("<textarea id=\"tnt4j_jmx_output\" name=\"tnt4j_jmx_output\" cols=\"140\" rows=\"55\">");
-		try {
-			out.println(ConsoleOutputCaptor.getInstance().getCaptured());
-		} catch (Exception e) {
-			out.println("!!! NO captured console output available !!!");
-			e.printStackTrace(out);
-			LOGGER.log(OpLevel.ERROR, "Could not fill console output!..", e);
-		}
-		out.println("</textarea>");
-		out.println("<br>");
-		out.println("<br>");
-	}
-
-	private static void outputLogger(PrintWriter out) throws IOException {
+	private void outputLogger(PrintWriter out) throws IOException {
 		out.println("<H3>Stream-SJMX Output</H3>");
-		out.println(
-				"<textarea id=\"" + TNT4J_LOGGER_OUTPUT + "\" name=\"tnt4j_logger_output\" cols=\"140\" rows=\"55\">");
+		out.println("<textarea id=\"" + TNT4J_LOGGER_OUTPUT + "\" name=\"" + TNT4J_LOGGER_OUTPUT
+				+ "\" cols=\"140\" rows=\"55\">");
 		try {
 			out.println(TextAreaLogAppender.getInstance().getCaptured());
 		} catch (Exception e) {
 			out.println("!!! NO captured logger output available !!!");
 			e.printStackTrace(out);
-			LOGGER.log(OpLevel.ERROR, "Could not fill logger output!..", e);
+			logger().log(OpLevel.ERROR, "Could not fill logger output!..", e);
 		}
 		out.println("</textarea>");
 		out.println("<br>");
@@ -363,19 +336,19 @@ public abstract class StreamJMXServlet extends HttpServlet {
 	}
 
 	private void getPropertiesFromContext(ServletConfig servletConfig) {
-		LOGGER.log(OpLevel.INFO, ">>>>>> Servlet context initial parameters: start");
+		logger().log(OpLevel.DEBUG, ">>>>>> Servlet context initial parameters: start");
 
 		inAppCfgProperties.putAll(SamplingAgent.DEFAULTS);
 
 		for (Map.Entry<?, ?> prop : inAppCfgProperties.entrySet()) {
-			LOGGER.log(OpLevel.INFO, "==> API default property found: {0}={1}", prop.getKey(), prop.getValue());
+			logger().log(OpLevel.DEBUG, "==> API default property found: {0}={1}", prop.getKey(), prop.getValue());
 		}
 
 		@SuppressWarnings("unchecked")
 		Enumeration<String> initParameterNames = (Enumeration<String>) servletConfig.getInitParameterNames();
 		while (initParameterNames.hasMoreElements()) {
 			String initParamName = (String) initParameterNames.nextElement();
-			LOGGER.log(OpLevel.INFO, "==> Servlet init parameter found: {0}={1}", initParamName,
+			logger().log(OpLevel.DEBUG, "==> Servlet init parameter found: {0}={1}", initParamName,
 					servletConfig.getInitParameter(initParamName));
 		}
 		for (StreamJMXProperty prop : servletProperties) {
@@ -386,31 +359,30 @@ public abstract class StreamJMXServlet extends HttpServlet {
 
 			if (initParameter != null) {
 				setProperty(prop, initParameter);
-				LOGGER.log(OpLevel.INFO, "==> Setting property: {0}={1}", prop.key(), initParameter);
 			}
 		}
 
-		LOGGER.log(OpLevel.INFO, "<<<<<< Servlet context initial parameters: end");
+		logger().log(OpLevel.DEBUG, "<<<<<< Servlet context initial parameters: end");
 	}
 
 	private void initStream() {
-		LOGGER.log(OpLevel.INFO,
+		logger().log(OpLevel.INFO,
 				"######################     Starting TNT4J-stream-JMX as Servlet   ######################");
 		try {
-			LOGGER.log(OpLevel.INFO,
+			logger().log(OpLevel.INFO,
 					">>>>>>>>>>>>>>>>>>    TNT4J-stream-JMX environment check start   >>>>>>>>>>>>>>>>>>");
 			envCheck();
-			LOGGER.log(OpLevel.INFO,
+			logger().log(OpLevel.INFO,
 					"<<<<<<<<<<<<<<<<<<<    TNT4J-stream-JMX environment check end   <<<<<<<<<<<<<<<<<<<");
 
 			samplerStart();
 		} catch (Exception e) {
-			LOGGER.log(OpLevel.ERROR, "!!!!   Failed to start TNT4J-stream-JMX   !!!!", e);
+			logger().log(OpLevel.ERROR, "!!!!   Failed to start TNT4J-stream-JMX   !!!!", e);
 		}
 	}
 
 	protected void envCheck() {
-		LOGGER.log(OpLevel.INFO, "==> J2EE: {0}", getClassLocation("javax.management.j2ee.statistics.Statistic"));
+		logger().log(OpLevel.DEBUG, "==> J2EE: {0}", getClassLocation("javax.management.j2ee.statistics.Statistic"));
 	}
 
 	protected static URL getClassLocation(Class<?> clazz) {
@@ -427,20 +399,22 @@ public abstract class StreamJMXServlet extends HttpServlet {
 			@Override
 			public void run() {
 				try {
-					LOGGER.log(OpLevel.INFO,
+					logger().log(OpLevel.INFO,
 							"---------------------     Connecting Sampler Agent     ---------------------");
 					String vm = getProperty(StreamJMXProperties.VM);
 					String ao = getProperty(StreamJMXProperties.AO);
 
+					SamplingAgent.initListenerProperties();
+
 					if (StringUtils.isEmpty(vm)) {
-						LOGGER.log(OpLevel.INFO, "==> Sampling from local process runner JVM: options={0}", ao);
+						logger().log(OpLevel.INFO, "==> Sampling from local process runner JVM: options={0}", ao);
 						SamplingAgent.sampleLocalVM(ao, true);
 					} else {
-						LOGGER.log(OpLevel.INFO, "==> Connecting to remote JVM: vm={0}, options={1}", vm, ao);
+						logger().log(OpLevel.INFO, "==> Connecting to remote JVM: vm={0}, options={1}", vm, ao);
 						SamplingAgent.newSamplingAgent().connect(vm, ao);
 					}
 				} catch (Exception e) {
-					LOGGER.log(OpLevel.ERROR, "!!!!   Failed to connect Sampler Agent   !!!!", e);
+					logger().log(OpLevel.ERROR, "!!!!   Failed to connect Sampler Agent   !!!!", e);
 				}
 			}
 		}, "Stream-JMX_servlet_sampler_thread");
@@ -492,7 +466,7 @@ public abstract class StreamJMXServlet extends HttpServlet {
 					try {
 						return System.getProperty(property.key(), defValue);
 					} catch (SecurityException e) {
-						LOGGER.log(OpLevel.ERROR, "!!!!   Failed to get property {0}: {1}  !!!!", key,
+						logger().log(OpLevel.ERROR, "!!!!   Failed to get property {0}: {1}  !!!!", key,
 								Utils.getExceptionMessages(e));
 
 						return defValue;
@@ -511,7 +485,7 @@ public abstract class StreamJMXServlet extends HttpServlet {
 			try {
 				return System.getProperty(property.key(), property.defaultValue());
 			} catch (SecurityException e) {
-				LOGGER.log(OpLevel.ERROR, "!!!!   Failed to get property {0}: {1}  !!!!", property.key(),
+				logger().log(OpLevel.ERROR, "!!!!   Failed to get property {0}: {1}  !!!!", property.key(),
 						Utils.getExceptionMessages(e));
 				return property.defaultValue();
 			}
@@ -524,7 +498,8 @@ public abstract class StreamJMXServlet extends HttpServlet {
 	}
 
 	private void samplerDestroy() {
-		LOGGER.log(OpLevel.INFO, "------------------------     Destroying Sampler Agent     ------------------------");
+		logger().log(OpLevel.INFO,
+				"------------------------     Destroying Sampler Agent     ------------------------");
 		SamplingAgent.destroy();
 		try {
 			sampler.join(TimeUnit.SECONDS.toMillis(2));
@@ -533,6 +508,8 @@ public abstract class StreamJMXServlet extends HttpServlet {
 	}
 
 	private boolean setProperty(StreamJMXProperty property, String value) {
+		logger().log(OpLevel.DEBUG, "==> Setting property: {0}={1}", property.key(), value);
+
 		Object last = null;
 		if (property.isInScope(LOCAL)) {
 			last = inAppCfgProperties.setProperty(property.key(), value);

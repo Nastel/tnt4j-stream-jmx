@@ -26,9 +26,11 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.jkoolcloud.tnt4j.config.TrackerConfigStore;
 import com.jkoolcloud.tnt4j.stream.jmx.core.PropertyNameBuilder;
+import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
 
 /**
  * Common Stream-JMX servlet used properties enumeration.
@@ -39,7 +41,7 @@ public enum StreamJMXProperties implements StreamJMXProperty {
 	/**
 	 * Agent options sampling {@link javax.management.ObjectName}s include filter.
 	 */
-	AO_INCLUDE("com.jkoolcloud.tnt4j.stream.jmx.agent.options.include", "*:*", EDITABLE, INTERIM, LOCAL),
+	AO_INCLUDE("com.jkoolcloud.tnt4j.stream.jmx.agent.options.include", Sampler.JMX_FILTER_ALL, EDITABLE, INTERIM, LOCAL),
 	/**
 	 * Agent options sampling {@link javax.management.ObjectName}s exclude filter.
 	 */
@@ -47,7 +49,8 @@ public enum StreamJMXProperties implements StreamJMXProperty {
 	/**
 	 * Agent options sampling period value.
 	 */
-	AO_PERIOD("com.jkoolcloud.tnt4j.stream.jmx.agent.options.period", TimeUnit.SECONDS.toMillis(60), EDITABLE, INTERIM, LOCAL),
+	AO_PERIOD("com.jkoolcloud.tnt4j.stream.jmx.agent.options.period", TimeUnit.SECONDS.toMillis(60), EDITABLE, INTERIM,
+			LOCAL),
 	/**
 	 * Agent options initial delay value.
 	 */
@@ -56,6 +59,11 @@ public enum StreamJMXProperties implements StreamJMXProperty {
 	 * JVM descriptor to collect JMX samples.
 	 */
 	VM("com.jkoolcloud.tnt4j.stream.jmx.agent.vm", "", HIDDEN, LOCAL),
+	/**
+	 * Agent list of user chosen attribute names (may have wildcards {@code '*'} and {@code '?'}) to exclude, pattern:
+	 * {@code "attr1,attr2,...,attrN@MBean1_ObjectName;...;attr1,attr2,...,attrN@MBeanN_ObjectName"}
+	 */
+	USER_EXCLUDED_ATTRIBUTES("com.jkoolcloud.tnt4j.stream.jmx.agent.excludedAttributes", "", EDITABLE, SYSTEM),
 	/**
 	 * TNT4J properties editor title.
 	 */
@@ -157,7 +165,7 @@ public enum StreamJMXProperties implements StreamJMXProperty {
 	 * @return array of properties having <tt>filters</tt> defined display values
 	 */
 	public static StreamJMXProperty[] values(StreamJMXProperty[] pValues, Display... filters) {
-		List<StreamJMXProperty> result = new ArrayList<StreamJMXProperty>(pValues.length);
+		List<StreamJMXProperty> result = new ArrayList<>(pValues.length);
 		for (Display filter : filters) {
 			for (StreamJMXProperty property : pValues) {
 				if (property.display().equals(filter)) {
@@ -176,8 +184,9 @@ public enum StreamJMXProperties implements StreamJMXProperty {
 	 *
 	 * @return concatenated properties values array
 	 */
+	@SafeVarargs
 	public static StreamJMXProperty[] allValues(Class<? extends StreamJMXProperty>... enumClasses) {
-		Map<String, StreamJMXProperty> result = new LinkedHashMap<String, StreamJMXProperty>();
+		Map<String, StreamJMXProperty> result = new LinkedHashMap<>();
 		for (Class<? extends StreamJMXProperty> enumClass : enumClasses) {
 			for (StreamJMXProperty sp : enumClass.getEnumConstants()) {
 				result.put(sp.key(), sp);
@@ -208,19 +217,23 @@ public enum StreamJMXProperties implements StreamJMXProperty {
 	}
 
 	/**
-	 * Removes name <tt>propName</tt> identified property from <tt>pValues</tt> array.
+	 * Removes <tt>propNames</tt> identified properties from <tt>pValues</tt> array.
 	 *
 	 * @param pValues
 	 *            properties values array
-	 * @param propName
-	 *            property name to remove
+	 * @param propNames
+	 *            property names to remove
 	 *
 	 * @return properties values array without name <tt>propName</tt> identified property
 	 */
-	public static StreamJMXProperty[] remove(StreamJMXProperty[] pValues, String propName) {
-		List<StreamJMXProperty> values = new ArrayList<StreamJMXProperty>(pValues.length);
+	public static StreamJMXProperty[] remove(StreamJMXProperty[] pValues, String... propNames) {
+		if (ArrayUtils.isEmpty(propNames)) {
+			return pValues;
+		}
+
+		List<StreamJMXProperty> values = new ArrayList<>(pValues.length);
 		for (StreamJMXProperty property : pValues) {
-			if (!property.key().equals(propName)) {
+			if (!StringUtils.equalsAny(property.key(), propNames)) {
 				values.add(property);
 			}
 		}

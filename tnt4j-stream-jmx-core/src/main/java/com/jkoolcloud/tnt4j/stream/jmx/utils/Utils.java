@@ -238,4 +238,42 @@ public class Utils extends com.jkoolcloud.tnt4j.utils.Utils {
 
 		return msg;
 	}
+
+	/**
+	 * Checks if provided string contains wildcard characters.
+	 *
+	 * @param str
+	 *            string to check if it contains wildcard characters
+	 * @return {@code true} if string contains wildcard characters
+	 */
+	public static boolean isWildcardString(String str) {
+		if (StringUtils.isNotEmpty(str)) {
+			return str.contains("*") || str.contains("?"); // NON-NLS
+		}
+		return false;
+	}
+
+	/**
+	 * Transforms wildcard mask string to regex ready string.
+	 *
+	 * @param str
+	 *            wildcard string
+	 * @return regex ready string
+	 */
+	public static String wildcardToRegex(String str) {
+		return StringUtils.isEmpty(str) ? str : str.replace("?", ".?").replace("*", ".*?"); // NON-NLS
+	}
+
+	/**
+	 * Checks if string is wildcard mask string and if {@code true} then transforms it to regex ready string.
+	 *
+	 * @param str
+	 *            string to check and transform
+	 * @return regex ready string
+	 *
+	 * @see #wildcardToRegex(String)
+	 */
+	public static String wildcardToRegex2(String str) {
+		return isWildcardString(str) ? wildcardToRegex(str) : str;
+	}
 }

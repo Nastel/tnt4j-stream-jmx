@@ -119,16 +119,7 @@ public class SamplingAgent {
 	static {
 		initDefaults(DEFAULTS);
 
-		copyProperty(FORCE_OBJECT_NAME, DEFAULTS, LISTENER_PROPERTIES, false);
-		copyProperty(COMPOSITE_DELIMITER, DEFAULTS, LISTENER_PROPERTIES,
-				PropertyNameBuilder.DEFAULT_COMPOSITE_DELIMITER);
-		copyProperty(USE_OBJECT_NAME_PROPERTIES, DEFAULTS, LISTENER_PROPERTIES, true);
-		copyProperty(EXCLUDE_ON_ERROR, DEFAULTS, LISTENER_PROPERTIES, false);
-
-		copyProperty(FORCE_OBJECT_NAME, System.getProperties(), LISTENER_PROPERTIES);
-		copyProperty(COMPOSITE_DELIMITER, System.getProperties(), LISTENER_PROPERTIES);
-		copyProperty(USE_OBJECT_NAME_PROPERTIES, System.getProperties(), LISTENER_PROPERTIES);
-		copyProperty(EXCLUDE_ON_ERROR, System.getProperties(), LISTENER_PROPERTIES);
+		initListenerProperties();
 	}
 
 	private boolean stopSampling = false;
@@ -185,6 +176,26 @@ public class SamplingAgent {
 				"SamplingAgent.premain: include.filter={0}, exclude.filter={1}, sample.ms={2}, initDelay.ms={3}, listener.properties={4}, tnt4j.config={5}, jmx.sample.list={6}",
 				incFilter, excFilter, period, initDelay, LISTENER_PROPERTIES,
 				System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY), agent.STREAM_SAMPLERS);
+	}
+
+	/**
+	 * Initializes listener properties picking values from defaults and System properties.
+	 */
+	public static void initListenerProperties() {
+		LISTENER_PROPERTIES.clear();
+
+		copyProperty(FORCE_OBJECT_NAME, DEFAULTS, LISTENER_PROPERTIES, false);
+		copyProperty(COMPOSITE_DELIMITER, DEFAULTS, LISTENER_PROPERTIES,
+				PropertyNameBuilder.DEFAULT_COMPOSITE_DELIMITER);
+		copyProperty(USE_OBJECT_NAME_PROPERTIES, DEFAULTS, LISTENER_PROPERTIES, true);
+		copyProperty(EXCLUDE_ON_ERROR, DEFAULTS, LISTENER_PROPERTIES, false);
+		copyProperty(USER_EXCLUDED_ATTRIBUTES, DEFAULTS, LISTENER_PROPERTIES, "");
+
+		copyProperty(FORCE_OBJECT_NAME, System.getProperties(), LISTENER_PROPERTIES);
+		copyProperty(COMPOSITE_DELIMITER, System.getProperties(), LISTENER_PROPERTIES);
+		copyProperty(USE_OBJECT_NAME_PROPERTIES, System.getProperties(), LISTENER_PROPERTIES);
+		copyProperty(EXCLUDE_ON_ERROR, System.getProperties(), LISTENER_PROPERTIES);
+		copyProperty(USER_EXCLUDED_ATTRIBUTES, System.getProperties(), LISTENER_PROPERTIES);
 	}
 
 	/**
@@ -247,6 +258,11 @@ public class SamplingAgent {
 					String[] prop = arg.split("=", 2);
 					if (prop.length > 1) {
 						LISTENER_PROPERTIES.put(EXCLUDE_ON_ERROR.pName(), prop[1]);
+					}
+				} else if (arg.startsWith(USER_EXCLUDED_ATTRIBUTES.pName() + "=")) {
+					String[] prop = arg.split("=", 2);
+					if (prop.length > 1) {
+						LISTENER_PROPERTIES.put(USER_EXCLUDED_ATTRIBUTES.pName(), prop[1]);
 					}
 				} else {
 					agentParams += agentParams.isEmpty() ? arg : "!" + arg;
@@ -388,6 +404,7 @@ public class SamplingAgent {
 					+ "       compositeDelimiter - delimiter used to tokenize composite/tabular type MBean properties keys. Default value - '\\'\n"
 					+ "       useObjectNameProperties - flag indicating to copy MBean ObjectName contained properties into sample snapshot properties. Default value - 'true'\n"
 					+ "       excludeOnError - flag indicating to auto-exclude failed to sample attributes. Default value - 'false'\n"
+					+ "       excludedAttributes - list of user chosen attribute names (may have wildcards '*' and '?') to exclude, pattern: 'attr1,attr2,...,attrN@MBean1_ObjectName;...;attr1,attr2,...,attrN@MBeanN_ObjectName'. Default value - ''\n"
 					+ "   -sp: - sampler system property string using '=' symbol as delimiter. Defines only one system property, to define more than one use this argument multiple times. Argument format: -sp:key=value";
 
 			System.out.println(usageStr);

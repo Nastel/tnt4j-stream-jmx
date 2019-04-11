@@ -16,14 +16,15 @@
 
 package com.jkoolcloud.tnt4j.stream.jmx.servlet;
 
-import static com.jkoolcloud.tnt4j.stream.jmx.servlet.StreamJMXProperty.Display.EDITABLE;
-import static com.jkoolcloud.tnt4j.stream.jmx.servlet.StreamJMXProperty.Display.READ_ONLY;
+import static com.jkoolcloud.tnt4j.stream.jmx.servlet.StreamJMXProperty.Display.*;
 import static com.jkoolcloud.tnt4j.stream.jmx.servlet.StreamJMXProperty.Scope.LOCAL;
 import static com.jkoolcloud.tnt4j.stream.jmx.servlet.StreamJMXProperty.Scope.SYSTEM;
 
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.jkoolcloud.tnt4j.config.TrackerConfigStore;
+import com.jkoolcloud.tnt4j.sink.EventSink;
+import com.jkoolcloud.tnt4j.stream.jmx.utils.LoggerUtils;
 
 /**
  * Stream-JMX servlet implementation for IBM WebSphere Liberty server.
@@ -34,6 +35,7 @@ import com.jkoolcloud.tnt4j.config.TrackerConfigStore;
  */
 public class LibertyStreamJMXServlet extends StreamJMXServlet {
 	private static final long serialVersionUID = -5801839005330837514L;
+	private static final EventSink LOGGER = LoggerUtils.getLoggerSink(LibertyStreamJMXServlet.class);
 
 	/**
 	 * Liberty specific properties values enumeration.
@@ -51,11 +53,15 @@ public class LibertyStreamJMXServlet extends StreamJMXServlet {
 		/**
 		 * TNT4J configuration file used to stream Liberty JMX samples.
 		 */
-		TNT4J_CONFIG(TrackerConfigStore.TNT4J_PROPERTIES_KEY, "file:./tnt4j_liberty.properties", READ_ONLY, SYSTEM, LOCAL),
+		TNT4J_CONFIG(TrackerConfigStore.TNT4J_PROPERTIES_KEY, "tnt4j_liberty.properties", READ_ONLY, SYSTEM, LOCAL);
 		/**
 		 * LOG4J configuration file used by Liberty JMX sampler.
 		 */
-		LOG4J_CONFIG("log4j.configuration", "file:./log4j_liberty.properties", READ_ONLY, SYSTEM, LOCAL);
+		// LOG4J_CONFIG("log4j.configuration", "log4j_liberty.properties", HIDDEN, SYSTEM, LOCAL),
+		/**
+		 * JUL configuration file used by Liberty JMX sampler.
+		 */
+		// LOGGER_CONFIG("jul.configuration", "logging_liberty.properties", HIDDEN, SYSTEM, LOCAL);
 
 		private String key;
 		private String defaultValue;
@@ -95,10 +101,16 @@ public class LibertyStreamJMXServlet extends StreamJMXServlet {
 	}
 
 	@Override
+	protected EventSink logger() {
+		return LOGGER;
+	}
+
+	@Override
 	@SuppressWarnings("unchecked")
 	protected StreamJMXProperty[] initProperties() {
 		StreamJMXProperty[] allProps = StreamJMXProperties.allValues(StreamJMXProperties.class,
 				LibertyStreamJMXProperties.class);
+		allProps = StreamJMXProperties.remove(allProps, StreamJMXProperties.LOG4J_CONFIG.key());
 
 		return allProps;
 	}

@@ -146,38 +146,38 @@ public class WASSecurityHelper {
 	 * Prints RunAs subject credentials to logger INFO level.
 	 */
 	public static void printCurrentCredentials() {
-		LOGGER.log(OpLevel.INFO, "=-=-=-=-=-=-= CREDENTIALS START =-=-=-=-=-=-=");
+		LOGGER.log(OpLevel.DEBUG, "=-=-=-=-=-=-= CREDENTIALS START =-=-=-=-=-=-=");
 		try {
 			Subject runAsSubject = WSSubject.getRunAsSubject();
 			if (runAsSubject != null) {
 				Iterator<Principal> iterator = runAsSubject.getPrincipals().iterator();
-				LOGGER.log(OpLevel.INFO, "Running as: ");
+				LOGGER.log(OpLevel.DEBUG, "Running as: ");
 				while (iterator.hasNext()) {
-					LOGGER.log(OpLevel.INFO, iterator.next().getName() + ", ");
+					LOGGER.log(OpLevel.DEBUG, iterator.next().getName() + ", ");
 				}
 			} else {
-				LOGGER.log(OpLevel.INFO, "!!!!   Security failure - no subject!..   !!!!");
-				LOGGER.log(OpLevel.INFO, "=-=-=-=-=-=-=- CREDENTIALS END -=-=-=-=-=-=-=");
+				LOGGER.log(OpLevel.DEBUG, "!!!!   Security failure - no subject!..   !!!!");
+				LOGGER.log(OpLevel.DEBUG, "=-=-=-=-=-=-=- CREDENTIALS END -=-=-=-=-=-=-=");
 				return;
 			}
 
 			Set<WSCredential> credentials = runAsSubject.getPublicCredentials(WSCredential.class);
 
 			for (WSCredential cred : credentials) {
-				LOGGER.log(OpLevel.INFO, "getSecurityName: {0}", cred.getSecurityName());
-				LOGGER.log(OpLevel.INFO, "getUniqueSecurityName: {0}", cred.getUniqueSecurityName());
-				LOGGER.log(OpLevel.INFO, "getRealmName: {0}", cred.getRealmName());
-				LOGGER.log(OpLevel.INFO, "getRealmSecurityName: {0}", cred.getRealmSecurityName());
-				LOGGER.log(OpLevel.INFO, "getRealmUniqueSecurityName: {0}", cred.getRealmUniqueSecurityName());
+				LOGGER.log(OpLevel.DEBUG, "getSecurityName: {0}", cred.getSecurityName());
+				LOGGER.log(OpLevel.DEBUG, "getUniqueSecurityName: {0}", cred.getUniqueSecurityName());
+				LOGGER.log(OpLevel.DEBUG, "getRealmName: {0}", cred.getRealmName());
+				LOGGER.log(OpLevel.DEBUG, "getRealmSecurityName: {0}", cred.getRealmSecurityName());
+				LOGGER.log(OpLevel.DEBUG, "getRealmUniqueSecurityName: {0}", cred.getRealmUniqueSecurityName());
 				// always return null
-				LOGGER.log(OpLevel.INFO, "getRoles: {0}", cred.getRoles());
+				LOGGER.log(OpLevel.DEBUG, "getRoles: {0}", cred.getRoles());
 				ArrayList<?> groupIds = cred.getGroupIds();
-				LOGGER.log(OpLevel.INFO, "getGroupIds: {0}", groupIds);
+				LOGGER.log(OpLevel.DEBUG, "getGroupIds: {0}", groupIds);
 			}
 		} catch (Exception e) {
-			LOGGER.log(OpLevel.INFO, "!!!!   Security access failure!..   !!!!", e);
+			LOGGER.log(OpLevel.DEBUG, "!!!!   Security access failure!..   !!!!", e);
 		}
-		LOGGER.log(OpLevel.INFO, "=-=-=-=-=-=-=- CREDENTIALS END -=-=-=-=-=-=-=");
+		LOGGER.log(OpLevel.DEBUG, "=-=-=-=-=-=-=- CREDENTIALS END -=-=-=-=-=-=-=");
 	}
 
 	/**

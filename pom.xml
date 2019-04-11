@@ -65,6 +65,8 @@
 
         <skipTests>true</skipTests>
         <gpg.skip.sign>true</gpg.skip.sign>
+
+        <org.slf4j.version>1.7.26</org.slf4j.version>
     </properties>
 
     <profiles>

@@ -510,6 +510,14 @@ By default Stream-JMX connects to local WAS runner JVM using `com.ibm.websphere.
 Navigate to `http://localhost:9080/YOUR_CHOOSEN_CONTEXT_PATH/`. TNT4J-Stream-JMX configuration/monitoring page should be displayed.
 See [Generic servlet page features](#generic-servlet-page-features) on what is available there.
 
+Stream-JMX logging on WAS can be performed by WAS Admin console: 
+
+ 1. `Troubleshooting` -> `[your server instance]` -> `Change log detail levels` -> select `Configuration`/`Runtime` tab -> `Components and 
+ Groups` -> `Components` -> expand `All components` ->  expand `com.jkoolcloud.tnt4j.*` -> select `com.jkoolcloud.tnt4j.stream.jmx*` node 
+ -> scroll to the tree bottom and select level you would like to use.
+ 2. `Troubleshooting` -> `[your server instance]` -> `Change log detail levels` -> select `Configuration`/`Runtime` tab -> into text area 
+ paste `: com.jkoolcloud.tnt4j.stream.jmx.*=finer` (change `finer` to the level you would like to use).
+
 See [Generic servlet page features](#generic-servlet-page-features).
 
 ### WebSphere Liberty Server
@@ -551,6 +559,9 @@ There is a simple Liberty `server.xml` configuration required to run Stream-JMX 
     <administrator-role>
         <user>Admin</user>
     </administrator-role>
+    
+    <!-- Configure Stream-JMX logging level, e.g. to get DEBUG entries -->
+    <logging traceSpecification="*=info:com.jkoolcloud.tnt4j.stream.jmx.*=finer" />
 
     <application contextRoot="tnt-jmx" location="tnt4j-stream-jmx-liberty-war-0.8.2.war" type="war" id="tnt-jmx" name="tnt-jmx">
         <application-bnd>
@@ -649,6 +660,8 @@ JMX sampler configuration properties are:
 * `useObjectNameProperties` - flag indicating to copy MBean `ObjectName` contained properties into sample snapshot properties. Default 
 value - `true`.
 * `excludeOnError` - flag indicating to auto-exclude failed to sample attributes. Default value - `false`.
+* `excludedAttributes` - list of user chosen attribute names (may have wildcards `*` and `?`) to exclude, pattern: 
+`attr1,attr2,...,attrN@MBean1_ObjectName;...;attr1,attr2,...,attrN@MBeanN_ObjectName`. Default value - ``.
 
 See [System properties used](#system-properties-used) how to configure Stream-JMX using system properties.
 See [Program arguments used](#program-arguments-used) how to configure Stream-JMX using program arguments.
@@ -676,6 +689,9 @@ Example: `-Dsjmx.serviceId=broker-0` or `-sp:sjmx.serviceId=broker-0`
 * `com.jkoolcloud.tnt4j.stream.jmx.agent.excludeOnError` - defines whether to auto-exclude failed to sample attributes. Default value - 
 `false`. 
 Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.excludeOnError=true`
+* `com.jkoolcloud.tnt4j.stream.jmx.agent.excludedAttributes` - defines list of user chosen attribute names (may have wildcards `*` and `?`) 
+to exclude, pattern: `attr1,attr2,...,attrN@MBean1_ObjectName;...;attr1,attr2,...,attrN@MBeanN_ObjectName`. Default value - ``. 
+Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.excludedAttributes=javaVersion,javaVendor@WebSphere:mbeanIdentifier=cells*,*`
 * `com.jkoolcloud.tnt4j.stream.jmx.sampler.factory`- defines class name of `SamplerFactory` class to be used by stream. Default value -
 `com.jkoolcloud.tnt4j.stream.jmx.factory.DefaultSamplerFactory`. 
 Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.sampler.factory=com.jkoolcloud.tnt4j.stream.jmx.impl.WASSamplerFactory`
@@ -683,11 +699,6 @@ Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.sampler.factory=com.jkoolcloud.tnt4j
 Example: `-Dtnt4j.stream.log.filename=./logs/tnt4j-stream-jmx_broker0.log`
 * `tnt4j.activities.log.filename` - defines name of streamed activities log file. Default value - `./logs/tnt4j-stream-jmx_samples.log`.
 Example: `-Dtnt4j.activities.log.filename=./logs/tnt4j-stream-jmx_broker0_samples.log`
-
-Used by **`tnt4j-stream-jmx-was`** module:
-* `com.jkoolcloud.tnt4j.stream.jmx.sampler.redirectJULToStreamLog` - defines whether to redirect WAS API used JUL logging output to 
-stream-jmx log. Default value - `false`.
-Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.sampler.redirectJULToStreamLog=true`
 
 **Changes between versions:**
 * Prior to version `0.7` `stream-jmx` was writing logging messages to `System.out/err` print streams. Since version `0.7` logging is 
@@ -715,6 +726,7 @@ properties use as many argument definitions as there are required properties. Fo
 -slp:compositeDelimiter=.
 -slp:useObjectNameProperties=false
 -slp:excludeOnError=true
+-slp:excludedAttributes=java*@WebSphere:mbeanIdentifier=cells*,*
 ```
 
 ### JMX Sampling Agent sampler options

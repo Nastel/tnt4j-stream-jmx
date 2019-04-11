@@ -16,7 +16,6 @@
     <properties>
         <tnt4j.version>2.11-SNAPSHOT</tnt4j.version>
         <jesl.version>0.9-SNAPSHOT</jesl.version>
-        <org.slf4j.version>1.7.25</org.slf4j.version>
     </properties>
 
     <build>
@@ -124,24 +123,16 @@
     <dependencies>
         <dependency>
             <groupId>com.jkoolcloud</groupId>
-            <artifactId>tnt4j</artifactId>
-            <version>${tnt4j.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-simple</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.jkoolcloud</groupId>
             <artifactId>jesl</artifactId>
             <version>${jesl.version}</version>
-            <scope>runtime</scope>
             <exclusions>
                 <exclusion>
                     <groupId>com.jkoolcloud.jesl.net</groupId>
                     <artifactId>tnt4j-syslogd</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-simple</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

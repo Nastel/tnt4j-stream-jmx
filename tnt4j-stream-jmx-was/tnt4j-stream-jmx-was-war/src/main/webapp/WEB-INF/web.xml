@@ -24,6 +24,13 @@
             </description>
         </init-param>
         <init-param>
+            <param-name>com.jkoolcloud.tnt4j.stream.jmx.agent.excludedAttributes</param-name>
+            <param-value>javaVersion,javaVendor@WebSphere:mbeanIdentifier=cells*,*</param-value>
+            <description>Sampler list of user chosen attribute names (may have wildcards '*' and '?') to exclude, pattern:
+                "attr1,attr2,...,attrN@MBean1_ObjectName;...;attr1,attr2,...,attrN@MBeanN_ObjectName"
+            </description>
+        </init-param>
+        <init-param>
             <param-name>com.jkoolcloud.tnt4j.stream.jmx.tnt4j.out.host</param-name>
             <param-value>localhost</param-value>
             <description>Sampler tracking logger socket event sink host</description>
@@ -42,6 +49,11 @@
             <param-name>com.jkoolcloud.tnt4j.stream.jmx.agent.pass</param-name>
             <param-value></param-value>
             <description>Secure JMX password</description>
+        </init-param>
+        <init-param>
+            <param-name>com.jkoolcloud.tnt4j.stream.jmx.agent.excludeOnError</param-name>
+            <param-value>true</param-value>
+            <description>Sampler flag indicating whether to auto-exclude failed to sample attributes</description>
         </init-param>
         <run-as>
             <role-name>StreamJmxManager</role-name>

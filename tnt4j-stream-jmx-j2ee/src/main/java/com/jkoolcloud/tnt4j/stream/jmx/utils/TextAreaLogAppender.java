@@ -32,18 +32,18 @@ import com.jkoolcloud.tnt4j.sink.*;
  * @version $Revision: 1 $
  */
 public class TextAreaLogAppender implements SinkLogEventListener {
+	private static final EventSink LOGGER = LoggerUtils.getLoggerSink(TextAreaLogAppender.class);
 
 	private static TextAreaLogAppender instance;
 	private PrintWriter writer;
-	private final DefaultFormatter formatter = new SimpleFormatter();// new DefaultFormatter();
+	private final DefaultFormatter formatter = new SimpleFormatter("{0} | {1} | {2}");
 	private ByteArrayOutputStream outStream;
 
 	private TextAreaLogAppender() {
 	}
 
 	public void start() {
-		final EventSinkFactory delegate = DefaultEventSinkFactory.getInstance();
-		final SinkLogEventListener logToConsoleEvenSinkListener = this;
+		EventSinkFactory delegate = DefaultEventSinkFactory.getInstance();
 		DefaultEventSinkFactory.setDefaultEventSinkFactory(new EventSinkFactory() {
 			@Override
 			public EventSink getEventSink(String name) {
@@ -72,7 +72,7 @@ public class TextAreaLogAppender implements SinkLogEventListener {
 
 			private EventSink configure(EventSink eventSink) {
 				eventSink.filterOnLog(false);
-				eventSink.addSinkLogEventListener(logToConsoleEvenSinkListener);
+				eventSink.addSinkLogEventListener(TextAreaLogAppender.this);
 
 				return eventSink;
 			}
@@ -100,8 +100,10 @@ public class TextAreaLogAppender implements SinkLogEventListener {
 
 	@Override
 	public void sinkLogEvent(SinkLogEvent ev) {
-		writer.println(formatter.format(ev.getTTL(), ev.getEventSource(), ev.getSeverity(),
-				ev.getSinkObject().toString(), ev.getArguments()));
+		if (LOGGER.isSet(ev.getSeverity())) {
+			writer.println(formatter.format(ev.getTTL(), ev.getEventSource(), ev.getSeverity(),
+					ev.getSinkObject().toString(), ev.getArguments()));
+		}
 	}
 
 	public static synchronized TextAreaLogAppender getInstance() {

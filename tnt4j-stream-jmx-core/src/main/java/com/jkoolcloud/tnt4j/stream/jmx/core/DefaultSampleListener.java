@@ -16,16 +16,16 @@
 package com.jkoolcloud.tnt4j.stream.jmx.core;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.management.*;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.jkoolcloud.tnt4j.core.*;
@@ -54,6 +54,7 @@ public class DefaultSampleListener implements SampleListener {
 	public static final String STAT_EXCLUDE_ON_ERROR_MODE = "listener.excludeOnError.mode";
 	public static final String STAT_EXCLUDE_SET_COUNT = "listener.exclude.set.count";
 	public static final String STAT_SILENCE_SET_COUNT = "listener.silence.set.count";
+	public static final String STAT_USER_EXCLUDED_ATTRS_COUNT = "listener.user.excluded.attrs.count";
 
 	boolean forceObjectName = false;
 	String compositeDelimiter = null;
@@ -62,6 +63,7 @@ public class DefaultSampleListener implements SampleListener {
 
 	Collection<MBeanAttributeInfo> excAttrs = new HashSet<MBeanAttributeInfo>(89);
 	Collection<MBeanAttributeInfo> silenceAttrs = new HashSet<MBeanAttributeInfo>(89);
+	Map<ObjectName, Pattern> userExcAttrs = new HashMap<>(5);
 
 	private PropertyNameBuilder pnb;
 	protected final ReentrantLock buildLock = new ReentrantLock();
@@ -81,18 +83,79 @@ public class DefaultSampleListener implements SampleListener {
 				compositeDelimiter);
 		this.useObjectNameProperties = Utils.getBoolean(ListenerProperties.USE_OBJECT_NAME_PROPERTIES.pName(),
 				properties, useObjectNameProperties);
-		this.excludeOnError = Utils.getBoolean(ListenerProperties.EXCLUDE_ON_ERROR.pName, properties, excludeOnError);
+		this.excludeOnError = Utils.getBoolean(ListenerProperties.EXCLUDE_ON_ERROR.pName(), properties, excludeOnError);
+
+		String attrExcludes = Utils.getString(ListenerProperties.USER_EXCLUDED_ATTRIBUTES.pName(), properties, "");
+		fillUserExcludedAttributes(attrExcludes);
+	}
+
+	/**
+	 * Fills user excluded attributes map with entries parser from property value.
+	 *
+	 * @param attrExcludes
+	 *            user exclude attributes property string value to parse
+	 */
+	protected void fillUserExcludedAttributes(String attrExcludes) {
+		if (StringUtils.isEmpty(attrExcludes)) {
+			return;
+		}
+
+		String FILTER_TOKENS_DELIM = ";";
+		String MBEAN_DELIM = "@";
+		String ATTRS_DELIM = ",";
+		String WILDCARD = "*";
+		String RE_WB = "\\b";
+		String RE_DWB = "\\b\\b";
+		String RE_ANJ = "\\b|\\b";
+
+		StringTokenizer itk = new StringTokenizer(attrExcludes, FILTER_TOKENS_DELIM);
+		while (itk.hasMoreTokens()) {
+			String attrsFilter = itk.nextToken().trim();
+			if (StringUtils.isNotEmpty(attrsFilter)) {
+				String[] filterTokens = attrsFilter.split(MBEAN_DELIM);
+
+				String attrsList = ArrayUtils.getLength(filterTokens) > 0 ? filterTokens[0].trim() : "";
+				String mBean = ArrayUtils.getLength(filterTokens) > 1 ? filterTokens[1].trim() : "";
+
+				if (StringUtils.isEmpty(attrsList)) {
+					attrsList = WILDCARD;
+				}
+				if (StringUtils.isEmpty(mBean)) {
+					mBean = WILDCARD;
+				}
+
+				try {
+					ObjectName mBeanName = WILDCARD.equals(mBean) ? ObjectName.WILDCARD : new ObjectName(mBean);
+					attrsList = RE_WB + attrsList.replace(ATTRS_DELIM, RE_ANJ) + RE_WB;
+
+					Pattern attrNamePattern = userExcAttrs.get(mBeanName);
+					if (attrNamePattern != null) {
+						attrsList = attrNamePattern.pattern() + RE_ANJ + attrsList;
+						attrsList = attrsList.replace(RE_DWB, RE_WB);
+					}
+
+					attrNamePattern = Pattern.compile(Utils.wildcardToRegex2(attrsList));
+					userExcAttrs.put(mBeanName, attrNamePattern);
+				} catch (MalformedObjectNameException exc) {
+					LOGGER.log(OpLevel.WARNING,
+							"Init: Failed to construct ObjectName from attribute exclude filter definition: attrFilter={1}, objName={1}",
+							attrsFilter, mBean);
+				}
+			}
+		}
+
+		LOGGER.log(OpLevel.DEBUG, "Init: User MBean attribute exclusions map: {0}", userExcAttrs);
 	}
 
 	/**
 	 * Determine if a given attribute to be excluded from sampling.
 	 *
-	 * @param attr
-	 *            MBean attribute info
-	 * @return true when attribute should be excluded, false otherwise
+	 * @param sample
+	 *            current attribute sample
+	 * @return {@code true} when attribute should be excluded, {@code false} - otherwise
 	 */
-	protected boolean isExcluded(MBeanAttributeInfo attr) {
-		return isInCollection(excAttrs, attr);
+	protected boolean isExcluded(AttributeSample sample) {
+		return isInCollection(excAttrs, sample.getAttributeInfo()) || isExcludedByUser(userExcAttrs, sample);
 	}
 
 	/**
@@ -105,10 +168,23 @@ public class DefaultSampleListener implements SampleListener {
 		addToCollection(excAttrs, attr);
 	}
 
+	/**
+	 * Determine if a given attribute is silenced and no sampling failure message shall be posted.
+	 *
+	 * @param attr
+	 *            attribute instance to check
+	 * @return {@code true} if attribute is included in silenced attributes list, {@code false} - otherwise
+	 */
 	protected boolean isSilenced(MBeanAttributeInfo attr) {
 		return isInCollection(silenceAttrs, attr);
 	}
 
+	/**
+	 * Mark a given attribute to be silenced and no sampling failure messages shall be posted.
+	 *
+	 * @param attr
+	 *            attribute instance to add
+	 */
 	protected void silence(MBeanAttributeInfo attr) {
 		addToCollection(silenceAttrs, attr);
 	}
@@ -128,18 +204,49 @@ public class DefaultSampleListener implements SampleListener {
 		}
 	}
 
+	/**
+	 * Determine if a given attribute is excluded by user and such attribute shall not be sampled.
+	 *
+	 * @param userExcAttrs
+	 *            user excluded attributes map
+	 * @param sample
+	 *            current attribute sample
+	 * @return {@code true} is attribute is excluded by user defined list, {@code false} - otherwise
+	 */
+	protected boolean isExcludedByUser(Map<ObjectName, Pattern> userExcAttrs, AttributeSample sample) {
+		if (!Utils.isEmpty(userExcAttrs)) {
+			for (Map.Entry<ObjectName, Pattern> ueae : userExcAttrs.entrySet()) {
+				boolean apply = ueae.getKey().apply(sample.getObjectName());
+
+				if (apply) {
+					Pattern attributeNamePattern = ueae.getValue();
+					Matcher fMatcher = attributeNamePattern.matcher(sample.getAttributeInfo().getName());
+					if (fMatcher.matches()) {
+						LOGGER.log(OpLevel.DEBUG, "UserExclude: Excluding user defined MBean attribute: {1}@{0}",
+								sample.getObjectName(), sample.getAttributeInfo().getName());
+						exclude(sample.getAttributeInfo());
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
+	}
+
 	@Override
 	public void pre(SampleContext context, Activity activity) {
 		LOGGER.log(OpLevel.DEBUG,
-				"Pre: {0}: sample.count={1}, mbean.count={2}, sample.mbeans.count={3}, exclude.attr.set={4}, silence.attr.set={5}, total.noop.count={6}, total.exclude.count={7}, total.error.count={8}, tracking.id={9}, mbean.server={10}",
+				"Pre: {0}: sample.count={1}, mbean.count={2}, sample.mbeans.count={3}, exclude.user.attr.set={4}, exclude.attr.set={5}, silence.attr.set={6}, total.noop.count={7}, total.exclude.count={8}, total.error.count={9}, tracking.id={10}, mbean.server={11}",
 				activity.getName(), context.getSampleCount(), getMBeanCount(context), context.getMBeanCount(),
-				excAttrs.size(), silenceAttrs.size(), context.getTotalNoopCount(), context.getExcludeAttrCount(),
-				context.getTotalErrorCount(), activity.getTrackingId(), context.getMBeanServer());
+				userExcAttrs.size(), excAttrs.size(), silenceAttrs.size(), context.getTotalNoopCount(),
+				context.getExcludeAttrCount(), context.getTotalErrorCount(), activity.getTrackingId(),
+				context.getMBeanServer());
 	}
 
 	@Override
 	public void pre(SampleContext context, AttributeSample sample) {
-		sample.excludeNext(!sample.getAttributeInfo().isReadable() || isExcluded(sample.getAttributeInfo()));
+		sample.excludeNext(!sample.getAttributeInfo().isReadable() || isExcluded(sample));
 		sample.silence(isSilenced(sample.getAttributeInfo()));
 	}
 
@@ -202,12 +309,12 @@ public class DefaultSampleListener implements SampleListener {
 	@Override
 	public void post(SampleContext context, Activity activity) {
 		LOGGER.log(OpLevel.DEBUG,
-				"Post: {0}: sample.count={1}, mbean.count={2}, elapsed.usec={3}, snap.count={4}, id.count={5}, sample.mbeans.count={6}, sample.metric.count={7}, sample.time.usec={8}, exclude.attr.set={9}, silence.attr.set={10}, total.noop.count={11}, total.exclude.count={12}, total.error.count={13}, tracking.id={14}, mbean.server={15}",
+				"Post: {0}: sample.count={1}, mbean.count={2}, elapsed.usec={3}, snap.count={4}, id.count={5}, sample.mbeans.count={6}, sample.metric.count={7}, sample.time.usec={8}, exclude.user.attr.set={9}, exclude.attr.set={10}, silence.attr.set={11}, total.noop.count={12}, total.exclude.count={13}, total.error.count={14}, tracking.id={15}, mbean.server={16}",
 				activity.getName(), context.getSampleCount(), getMBeanCount(context), activity.getElapsedTimeUsec(),
 				activity.getSnapshotCount(), activity.getIdCount(), context.getMBeanCount(),
-				context.getLastMetricCount(), context.getLastSampleUsec(), excAttrs.size(), silenceAttrs.size(),
-				context.getTotalNoopCount(), context.getExcludeAttrCount(), context.getTotalErrorCount(),
-				activity.getTrackingId(), context.getMBeanServer());
+				context.getLastMetricCount(), context.getLastSampleUsec(), userExcAttrs.size(), excAttrs.size(),
+				silenceAttrs.size(), context.getTotalNoopCount(), context.getExcludeAttrCount(),
+				context.getTotalErrorCount(), activity.getTrackingId(), context.getMBeanServer());
 	}
 
 	private static String getMBeanCount(SampleContext context) {
@@ -222,7 +329,8 @@ public class DefaultSampleListener implements SampleListener {
 	public void error(SampleContext context, AttributeSample sample, OpLevel level) {
 		sample.excludeNext(isFatalError(sample.getError(), level == null ? OpLevel.ERROR : level));
 		sample.silence(true);
-		LOGGER.log(OpLevel.DEBUG, "Failed to sample:\n ojbName={0},\n info={1},\n exclude={2}\n silence={3}\n ex={4}",
+		LOGGER.log(OpLevel.DEBUG,
+				"Error: Failed to sample:\n ojbName={0},\n info={1},\n exclude={2}\n silence={3}\n ex={4}",
 				sample.getObjectName(), sample.getAttributeInfo(), sample.excludeNext(), sample.isSilence(),
 				LOGGER.isSet(OpLevel.TRACE) ? Utils.getExceptionMessage(sample.getError())
 						: Utils.getAllExceptionMessages(sample.getError()),
@@ -280,21 +388,23 @@ public class DefaultSampleListener implements SampleListener {
 		stats.put(STAT_EXCLUDE_ON_ERROR_MODE, excludeOnError);
 		stats.put(STAT_EXCLUDE_SET_COUNT, excAttrs.size());
 		stats.put(STAT_SILENCE_SET_COUNT, silenceAttrs.size());
+		stats.put(STAT_USER_EXCLUDED_ATTRS_COUNT, userExcAttrs.size());
 	}
 
 	@Override
 	public void register(SampleContext context, ObjectName oName) {
-		LOGGER.log(OpLevel.DEBUG, "Register mbean: {0}, mbean.server={1}", oName, context.getMBeanServer());
+		LOGGER.log(OpLevel.DEBUG, "Register MBean: {0}, mbean.server={1}", oName, context.getMBeanServer());
 	}
 
 	@Override
 	public void unregister(SampleContext context, ObjectName oName) {
-		LOGGER.log(OpLevel.DEBUG, "Un-register mbean: {0}, mbean.server={1}", oName, context.getMBeanServer());
+		LOGGER.log(OpLevel.DEBUG, "Un-register MBean: {0}, mbean.server={1}", oName, context.getMBeanServer());
 	}
 
 	@Override
 	public void error(SampleContext context, Throwable ex) {
-		LOGGER.log(OpLevel.ERROR, "Unexpected error when sampling mbean.server={0}", context.getMBeanServer(), ex);
+		LOGGER.log(OpLevel.ERROR, "Error: Unexpected error when sampling mbean.server={0}", context.getMBeanServer(),
+				ex);
 	}
 
 	/**
@@ -398,7 +508,12 @@ public class DefaultSampleListener implements SampleListener {
 		/**
 		 * Flag indicating to auto-exclude failed to sample attributes.
 		 */
-		EXCLUDE_ON_ERROR("excludeOnError");
+		EXCLUDE_ON_ERROR("excludeOnError"),
+		/**
+		 * List of user chosen attribute names (may have wildcards {@code '*'} and {@code '?'}) to exclude, pattern:
+		 * {@code "attr1,attr2,...,attrN@MBean1_ObjectName;...;attr1,attr2,...,attrN@MBeanN_ObjectName"}
+		 */
+		USER_EXCLUDED_ATTRIBUTES("excludedAttributes");
 
 		private String pName;
 		private String apName;
