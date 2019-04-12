@@ -75,6 +75,7 @@
                             <Implementation-Version>${project.version}-${maven.build.timestamp}</Implementation-Version>
                         </manifestEntries>
                     </archive>
+                    <packagingExcludes>%regex[WEB-INF/lib/.*[^-all].jar]</packagingExcludes>
                 </configuration>
                 <executions>
                     <execution>
@@ -92,6 +93,7 @@
             <groupId>com.jkoolcloud.tnt4j.stream</groupId>
             <artifactId>tnt4j-stream-jmx-liberty-api</artifactId>
             <version>${project.version}</version>
+            <classifier>all</classifier>
         </dependency>
     </dependencies>
 

@@ -59,19 +59,14 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>3.2.1</version>
                 <configuration>
                     <shadedArtifactAttached>true</shadedArtifactAttached>
                     <shadedClassifierName>all</shadedClassifierName>
                     <transformers>
                         <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                             <manifestEntries>
-                                <Implementation-Vendor>${product.vendor}</Implementation-Vendor>
-                                <Implementation-Title>${project.name}</Implementation-Title>
-                                <Implementation-Version>${project.version}-${maven.build.timestamp}</Implementation-Version>
-                                <Premain-Class>com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent</Premain-Class>
-                                <Main-Class>com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent</Main-Class>
-                                <Agent-Class>com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent</Agent-Class>
+                                <Class-Path>.</Class-Path>
                             </manifestEntries>
                         </transformer>
                     </transformers>
