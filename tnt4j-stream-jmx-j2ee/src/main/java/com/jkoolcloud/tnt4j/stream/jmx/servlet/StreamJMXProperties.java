@@ -112,11 +112,11 @@ public enum StreamJMXProperties implements StreamJMXProperty {
 	/**
 	 * TNT4J configuration file.
 	 */
-	TNT4J_CONFIG(TrackerConfigStore.TNT4J_PROPERTIES_KEY, "file:./tnt4j.properties", READ_ONLY, SYSTEM, LOCAL),
+	TNT4J_CONFIG(TrackerConfigStore.TNT4J_PROPERTIES_KEY, "file:./tnt4j.properties", EDITABLE, SYSTEM, LOCAL),
 	/**
 	 * LOG4J configuration file.
 	 */
-	LOG4J_CONFIG("log4j.configuration", "file:./log4j.properties", READ_ONLY, SYSTEM, LOCAL);
+	LOG4J_CONFIG("log4j.configuration", "file:./log4j.properties", EDITABLE, SYSTEM, LOCAL);
 
 	private String key;
 	private String defaultValue;

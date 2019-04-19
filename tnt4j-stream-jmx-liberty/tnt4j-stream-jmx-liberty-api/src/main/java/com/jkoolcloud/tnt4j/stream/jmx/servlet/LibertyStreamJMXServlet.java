@@ -16,7 +16,8 @@
 
 package com.jkoolcloud.tnt4j.stream.jmx.servlet;
 
-import static com.jkoolcloud.tnt4j.stream.jmx.servlet.StreamJMXProperty.Display.*;
+import static com.jkoolcloud.tnt4j.stream.jmx.servlet.StreamJMXProperty.Display.EDITABLE;
+import static com.jkoolcloud.tnt4j.stream.jmx.servlet.StreamJMXProperty.Display.READ_ONLY;
 import static com.jkoolcloud.tnt4j.stream.jmx.servlet.StreamJMXProperty.Scope.LOCAL;
 import static com.jkoolcloud.tnt4j.stream.jmx.servlet.StreamJMXProperty.Scope.SYSTEM;
 
@@ -53,7 +54,7 @@ public class LibertyStreamJMXServlet extends StreamJMXServlet {
 		/**
 		 * TNT4J configuration file used to stream Liberty JMX samples.
 		 */
-		TNT4J_CONFIG(TrackerConfigStore.TNT4J_PROPERTIES_KEY, "tnt4j_liberty.properties", READ_ONLY, SYSTEM, LOCAL);
+		TNT4J_CONFIG(TrackerConfigStore.TNT4J_PROPERTIES_KEY, "tnt4j_liberty.properties", EDITABLE, SYSTEM, LOCAL);
 		/**
 		 * LOG4J configuration file used by Liberty JMX sampler.
 		 */

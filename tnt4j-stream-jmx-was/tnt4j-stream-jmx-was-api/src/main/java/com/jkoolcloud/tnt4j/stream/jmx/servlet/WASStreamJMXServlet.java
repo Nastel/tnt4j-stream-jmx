@@ -66,7 +66,7 @@ public class WASStreamJMXServlet extends StreamJMXServlet {
 		/**
 		 * TNT4J configuration file used to stream WAS JMX samples.
 		 */
-		TNT4J_CONFIG(TrackerConfigStore.TNT4J_PROPERTIES_KEY, "tnt4j_was.properties", READ_ONLY, SYSTEM, LOCAL);
+		TNT4J_CONFIG(TrackerConfigStore.TNT4J_PROPERTIES_KEY, "tnt4j_was.properties", EDITABLE, SYSTEM, LOCAL);
 		/**
 		 * LOG4J configuration file used by WAS JMX sampler.
 		 */
@@ -154,7 +154,12 @@ public class WASStreamJMXServlet extends StreamJMXServlet {
 	@Override
 	protected void postDestroy() {
 		Exception last = null;
+
 		for (StreamJMXProperty prop : servletProperties) {
+			if (prop.display() == HIDDEN || prop.display() == FILE_EDITOR) {
+				continue;
+			}
+
 			String propertyValue = getProperty(prop.key(), null);
 
 			try {
@@ -168,6 +173,7 @@ public class WASStreamJMXServlet extends StreamJMXServlet {
 				last = e;
 			}
 		}
+
 		if (last != null && !(last instanceof IllegalStateException)) {
 			logger().log(OpLevel.WARNING, "Last exception caught: ", last.getCause());
 		}
