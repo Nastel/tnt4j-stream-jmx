@@ -57,12 +57,17 @@ public class LoggerUtils {
 	}
 
 	private static void initLoggerProperties() {
-		String fn = System.getProperty(SYS_PROP_STREAM_LOG_FILE_NAME);
-		if (StringUtils.isEmpty(fn)) {
+		String lProp = System.getProperty(DefaultEventSinkFactory.DEFAULT_EVENT_FACTORY_KEY);
+		if (StringUtils.isEmpty(lProp)) {
+			System.setProperty(DefaultEventSinkFactory.DEFAULT_EVENT_FACTORY_KEY,
+					"com.jkoolcloud.tnt4j.sink.impl.slf4j.SLF4JEventSinkFactory");
+		}
+		lProp = System.getProperty(SYS_PROP_STREAM_LOG_FILE_NAME);
+		if (StringUtils.isEmpty(lProp)) {
 			System.setProperty(SYS_PROP_STREAM_LOG_FILE_NAME, DEFAULT_STREAM_LOG_FILE_NAME);
 		}
-		fn = System.getProperty(SYS_PROP_ACTIVITIES_LOG_FILE_NAME);
-		if (StringUtils.isEmpty(fn)) {
+		lProp = System.getProperty(SYS_PROP_ACTIVITIES_LOG_FILE_NAME);
+		if (StringUtils.isEmpty(lProp)) {
 			System.setProperty(SYS_PROP_ACTIVITIES_LOG_FILE_NAME, DEFAULT_ACTIVITIES_LOG_FILE_NAME);
 		}
 	}
