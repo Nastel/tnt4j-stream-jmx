@@ -384,12 +384,38 @@ Additions needed to run `SamplingAgent` connected to remote WAS machine can be f
     -cp:java.naming.provider.url=corbaloc:iiop:localhost:2809/WsnAdminNameService
 ```
 
-#### Connecting remote WebLogic server instance
+#### Connecting remote WebLogic (version 12c) server instance
 
 Additions needed to run `SamplingAgent` connected to remote WebLogic machine can be found in executable OS shell run script files 
 `bin/stream-jmx-conenct.bat` or `bin/stream-jmx-conenct.sh`. It contains these major configuration additions:
-* WebLogic environment setup configuration
-* appending `LIBPATH` variable with WebLogic client lib from `${WL_INSTALL_DIR}/inventory/wlserver/server/lib/wlclient.jar`
+* WebLogic environment setup configuration in `setDomainEnv.sh/setDomainEnv.cmd` file, exposing JMX access port and security options like:
+    * .cmd
+    ```cmd
+    set JAVA_OPTIONS=%JAVA_OPTIONS% -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=8788 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false
+    ```
+    * .sh
+    ```bash
+    JAVA_OPTIONS="${JAVA_OPTIONS} -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=8788 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
+    export JAVA_OPTIONS
+    ```
+* appending `LIBPATH` variable with WebLogic client libs from `${WL_INSTALL_DIR}/wlserver/server/lib/`:
+    * `wlclient.jar`
+    * `wljmxclient.jar`
+    * `javax.javaee-api.jar`
+
+    For example:
+    * .bat
+    ```cmd
+    set WL_HOME=C:\Oracle\Middleware\Oracle_Home
+    set WL_CLINET_LIBS=%WL_HOME%\wlserver\server\lib\wlclient.jar;%WL_HOME%\wlserver\server\lib\wljmxclient.jar;%WL_HOME%\wlserver\server\lib\javax.javaee-api.jar
+    set LIBPATH=%LIBPATH%;%RUNDIR%..\lib\*;%WL_CLINET_LIBS%
+    ```
+    * .sh
+    ```bash
+    WL_HOME="/opt/Oracle/Middleware/Oracle_Home"
+    WL_CLINET_LIBS="$WL_HOME/wlserver/server/lib/wlclient.jar:$WL_HOME/wlserver/server/lib/wljmxclient.jar:$WL_HOME/wlserver/server/lib/javax.javaee-api.jar"
+    LIBPATH="$LIBPATH:$SCRIPTPATH/../lib/*:$WL_CLINET_LIBS"
+    ```
 * enable `j2ee` module use:
     * .bat 
     ```cmd
@@ -401,15 +427,44 @@ Additions needed to run `SamplingAgent` connected to remote WebLogic machine can
     ```
 * Add additional `SamplingAgent` arguments:
 ```properties
-    -cp:java.naming.factory.initial=weblogic.jndi.WLInitialContextFactory
-    -cp:java.naming.provider.url=t3://localhost:7001
+    -cp:jmx.remote.protocol.provider.pkgs=weblogic.management.remote
     # Add user credentials if needed
     -cp:java.naming.security.principal=user
     -cp:java.naming.security.credentials=password
+    # Optional naming parameters
+    #-cp:java.naming.factory.initial=weblogic.jndi.WLInitialContextFactory
+    #-cp:java.naming.provider.url=t3://localhost:7001
 ```
 
-For more see [Programming WebLogic JNDI](https://docs.oracle.com/cd/E13222_01/wls/docs81/jndi/jndi.html) and 
-[WebLogic API Environment class documentation](https://docs.oracle.com/cd/E68505_01/wls/WLAPI/weblogic/jndi/Environment.html).
+WebLogic 12c provides these JNDI Names for WebLogic MBean Servers:
+ * `weblogic.management.mbeanservers.domainruntime` - Domain Runtime MBean Server
+ * `weblogic.management.mbeanservers.runtime` - Runtime MBean Server
+ * `weblogic.management.mbeanservers.edit` - Edit MBean Server
+
+You can find your WebLogic server exposed JMX Connectors in console output:
+ ```
+ <May 10, 2019, 10:57:11,147 AM EEST> <Warning> <JMX> <BEA-149512> <JMX Connector Server started at service:jmx:iiop://172.16.6.56:7001/jndi/weblogic.management.mbeanservers.runtime.>
+ <May 10, 2019, 10:57:11,823 AM EEST> <Warning> <JMX> <BEA-149512> <JMX Connector Server started at service:jmx:iiop://172.16.6.56:7001/jndi/weblogic.management.mbeanservers.domainruntime.>
+ <May 10, 2019, 10:57:11,853 AM EEST> <Warning> <JMX> <BEA-149512> <JMX Connector Server started at service:jmx:iiop://172.16.6.56:7001/jndi/weblogic.management.mbeanservers.edit.>
+ ```
+
+JMX Service connection URL for WebLogic is like this:
+ ```
+ service:jmx:iiop://172.16.6.56:7001/jndi/weblogic.management.mbeanservers.runtime
+ ```
+And complete set of `stream-jmx` program arguments:
+ ```
+ -connect
+ -vm:service:jmx:iiop://172.16.6.56:7001/jndi/weblogic.management.mbeanservers.edit
+ -ao:*:*!!10000
+ -cp:jmx.remote.protocol.provider.pkgs=weblogic.management.remote
+ -cp:java.naming.security.principal=weblogic
+ -cp:java.naming.security.credentials=password
+ ```
+
+For more information, see [Programming WebLogic JNDI](https://docs.oracle.com/middleware/12212/wls/WJNDI/jndi.htm#WJNDI118), 
+[WebLogic API Environment class documentation](https://docs.oracle.com/middleware/12212/wls/WLAPI/weblogic/jndi/Environment.html) and 
+[Accessing WebLogic Server MBeans with JMX](https://docs.oracle.com/cd/E24329_01/web.1211/e24415/accesswls.htm#JMXCU144).
 
 ### Coding into API
 You can connect `SamplingAgent` to JVM from your custom API by calling [SamplingAgent.connect(String,String)](./tnt4j-stream-jmx-core/src/main/java/com/jkoolcloud/tnt4j/stream/jmx/SamplingAgent.java#L757) method.
@@ -510,8 +565,7 @@ By default Stream-JMX connects to local WAS runner JVM using `com.ibm.websphere.
 Navigate to `http://localhost:9080/YOUR_CHOOSEN_CONTEXT_PATH/`. TNT4J-Stream-JMX configuration/monitoring page should be displayed.
 See [Generic servlet page features](#generic-servlet-page-features) on what is available there.
 
-Stream-JMX logging on WAS can be performed by WAS Admin console: 
-
+Stream-JMX logging on WAS can be performed by WAS Admin console:
  1. `Troubleshooting` -> `[your server instance]` -> `Change log detail levels` -> select `Configuration`/`Runtime` tab -> `Components and 
  Groups` -> `Components` -> expand `All components` ->  expand `com.jkoolcloud.tnt4j.*` -> select `com.jkoolcloud.tnt4j.stream.jmx*` node 
  -> scroll to the tree bottom and select level you would like to use.
@@ -559,7 +613,7 @@ There is a simple Liberty `server.xml` configuration required to run Stream-JMX 
     <administrator-role>
         <user>Admin</user>
     </administrator-role>
-    
+
     <!-- Configure Stream-JMX logging level, e.g. to get DEBUG entries -->
     <logging traceSpecification="*=info:com.jkoolcloud.tnt4j.stream.jmx.*=finer" />
 

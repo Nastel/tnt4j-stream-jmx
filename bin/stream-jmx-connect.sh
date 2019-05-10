@@ -51,6 +51,11 @@ do
 done
 echo "$LIBPATH"
 
+### --- Additional libraries for WebLogic ---
+# WL_HOME="/opt/Oracle/Middleware/Oracle_Home"
+# WL_CLINET_LIBS="$WL_HOME/wlserver/server/lib/wlclient.jar:$WL_HOME/wlserver/server/lib/wljmxclient.jar:$WL_HOME/wlserver/server/lib/javax.javaee-api.jar"
+# TOOLS_PATH="$TOOLS_PATH:$WL_CLINET_LIBS"
+### -----------------------------------------
 
 LIBPATH="$LIBPATH:$SCRIPTPATH/../lib/*:$TOOLS_PATH"
 TNT4JOPTS="-Dtnt4j.dump.on.vm.shutdown=true -Dtnt4j.dump.on.exception=true -Dtnt4j.dump.provider.default=true"

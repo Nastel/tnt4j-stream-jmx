@@ -437,7 +437,6 @@ public class SamplingAgent {
 
 			// vm
 			if (!(split.length == 5 || split.length == 1)) {
-
 				LOGGER.log(OpLevel.WARNING, "JVM connections configuration file line {0} has invalid syntax: {1}",
 						reader.getLineNumber(), line);
 				continue;
