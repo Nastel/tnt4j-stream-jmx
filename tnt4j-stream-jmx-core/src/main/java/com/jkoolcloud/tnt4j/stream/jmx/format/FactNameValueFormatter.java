@@ -218,7 +218,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	 * @return collection of snapshot properties
 	 */
 	protected Collection<Property> getProperties(Snapshot snap) {
-		return snap.getSnapshot();
+		return snap.getProperties();
 	}
 
 	/**
