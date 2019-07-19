@@ -14,7 +14,7 @@
     <artifactId>tnt4j-stream-jmx-core</artifactId>
 
     <properties>
-        <jesl.version>0.9-SNAPSHOT</jesl.version>
+        <jesl.version>0.10-SNAPSHOT</jesl.version>
     </properties>
 
     <build>
