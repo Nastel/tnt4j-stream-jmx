@@ -261,9 +261,9 @@ syntax for that file is:
 ##############################################################################################################################################################
 #            VM connection string                      #    Agent options   #  User name    #    Password       #                Source addition             #
 ##############################################################################################################################################################
- service:jmx:rmi:///jndi/rmi://localhost:9995/jmxrmi 		*:*!!60000 			admin 				admin		   SERVICE=@bean:org.apache.ZooKeeperService:name0=*/?ClientPort#SERVER=@bean:java.lang:type=Runtime/?Name
- service:jmx:rmi:///jndi/rmi://localhost:9996/jmxrmi 		*:*!!60000 			admin 				admin		   SERVICE=@bean:java.lang:type=Runtime/?Name#SERVER=@bean:kafka.server:id=?,type=app-info#DATACENTER=@bean:kafka.server:type=KafkaServer,name=ClusterId/?Value
- service:jmx:rmi:///jndi/rmi://localhost:9997/jmxrmi 		*:*!!60000 			admin 				admin		   SERVICE=@bean:java.lang:type=Runtime/?Name#SERVER=@bean:kafka.server:type=app-info,id=?#DATACENTER=@bean:kafka.server:type=KafkaServer,name=ClusterId/?Value
+ service:jmx:rmi:///jndi/rmi://localhost:9995/jmxrmi       *:*!!60000           admin             admin           SERVICE=@bean:org.apache.ZooKeeperService:name0=*/?ClientPort#SERVER=@bean:java.lang:type=Runtime/?Name
+ service:jmx:rmi:///jndi/rmi://localhost:9996/jmxrmi       *:*!!60000           admin             admin           SERVICE=@bean:java.lang:type=Runtime/?Name#SERVER=@bean:kafka.server:id=?,type=app-info#DATACENTER=@bean:kafka.server:type=KafkaServer,name=ClusterId/?Value
+ service:jmx:rmi:///jndi/rmi://localhost:9997/jmxrmi       *:*!!60000           admin             admin           SERVICE=@bean:java.lang:type=Runtime/?Name#SERVER=@bean:kafka.server:type=app-info,id=?#DATACENTER=@bean:kafka.server:type=KafkaServer,name=ClusterId/?Value
 ##############################################################################################################################################################
 ```
 To run JMX samples streaming for multiple VM's define in external configuration file use `stream-jmx-connect-file-config.bat/.sh` files, e.g.:
@@ -309,8 +309,8 @@ and having VMs configured this way:
 ##############################################################################################################################################################
 #            VM connection string                      #    Agent options   #  User name    #    Password       #                Source addition             #
 ##############################################################################################################################################################
- service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi 		*:*!!60000 			admin 				admin		   SERVICE=@bean:org.apache.activemq:type=Broker,brokerName=localhost/?BrokerId
- service:jmx:rmi:///jndi/rmi://192.168.1.1:9998/jmxrmi 		*:*!!30000 			admin 				admin		   SERVICE=@bean:kafka.server:id=?,type=app-info 
+ service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi        *:*!!60000          admin           admin              SERVICE=@bean:org.apache.activemq:type=Broker,brokerName=localhost/?BrokerId
+ service:jmx:rmi:///jndi/rmi://192.168.1.1:9998/jmxrmi      *:*!!30000          admin           admin              SERVICE=@bean:kafka.server:id=?,type=app-info 
 ##############################################################################################################################################################
 ```
 may build such 'SourceFQN's for VMs:
@@ -318,6 +318,43 @@ may build such 'SourceFQN's for VMs:
 * `192.168.1.1` - `SERVICE=3SERVER=2457@boxName#DATACENTER=HQDC
 
 **NOTE:** VM additional `SourceFQN` path must be defined fallowing same rules as in TNT4J config - `SourceType1=value1#SourceType2=value2#...#SourceTypeN=valueN`.
+
+##### ZooKeeper orchestrated VMs access
+
+Stream-JMX has ability to resolve JMX service connections for VMs orchestrated by ZooKeeper. In this case you'll need:
+1. Use `tnt4j-stream-jmx-zk` module dependency (for development) or use built jar of this module in your JVM classpath (for deployment). 
+Also see `bin/stream-jmx-connect.bat` (`.sh`) files for commented out variable `MODULE_SET` definition combinations. 
+2. Use predefined VM descriptor prefixes to initiate VMs JMX connection resolution over running ZooKeeper service instance: 
+    * `kafka:zk://[ip]:[port]` - for `Apache Kafka` VMs access. Stream-JMX will monitor `/broker/ids` node for registered brokers and will 
+connect to all JMX enabled (exposing JMX port not equal `-1`) brokers.
+    * `solr:zk://[ip]:[port]` - for `Apache Solr` VMs access. Stream-JMX will monitor `/live_nodes` node for registered Solr node instances. 
+    **NOTE:** Solr does not expose JMX port, so you need to specify JMX port number as `Other options` column value `port=[port number]`.
+
+**NOTE:** ZooKeeper service instance JMX sampling does not start automatically defining VM descriptors for `Apache Kafka` or `Apache Solr`. 
+In case you want to sample JMX of referred ZooKeeper instance, you have to define ZooKeeper runner VM dedicated JMX service URL.
+
+**NOTE:** When Stream-JMX binds to ZooKeeper node, it monitors for changes under that node. So if new brokers gets registered/unregistered, 
+Stream-JMX connects/disconnects JMX services of these brokers on runtime.
+
+Sample configuration: 
+```
+############################################################################################################################################################################################################################################
+#            VM connection string                         #    Agent options        #  User name    #    Password       #                Source addition                                                        #      Other options       #
+############################################################################################################################################################################################################################################
+ service:jmx:rmi:///jndi/rmi://localhost:9995/jmxrmi        *:*!!60000                 admin            admin              SERVICE=@bean:org.apache.ZooKeeperService:name0=*/?ClientPort#SERVER=@bean:java.lang:type=Runtime/?Name
+ kafka:zk://127.0.0.1:2181                                  *:*!!60000                 .                .                  SERVICE=@bean:java.lang:type=Runtime/?Name#SERVER=@bean:kafka.server:id=?,type=app-info#DATACENTER=@bean:kafka.server:type=KafkaServer,name=ClusterId/?Value
+ solr:zk://172.16.6.208:2181                                java.lang:*!!5000          .                .                  SERVER=@bean:solr:dom1=core,dom2=?,dom3=*,reporter=*,category=*,scope=core,name=*         port=18983
+############################################################################################################################################################################################################################################
+```
+Having first line we define that we want to sample JMX of ZooKeeper VM where Kafka brokers registers.
+
+Second line we initiate Stream-JMX use ZooKeeper instance to collect JMX service connections for all registered Kafka brokers.
+
+In third line we initiate Stream-JMX use ZooKeeper instance to collect JMX service connections for all registered Solar node instances. 
+Note, we also define Solr JMX connection port there - `port=18983`.
+
+**NOTE:** if some configuration token needs to be omitted (like some `user names` or `passwords` in our configuration), you can use `.` 
+symbol as configuration token placeholder. New stanzas based connections configuration will come soon.
 
 ##### How to migrate Source definitions from single to multi VM sampling
 
@@ -353,9 +390,9 @@ Consider this Stream-JMX run scenario to monitor 3 instances of service runner V
     ##############################################################################################################################################################
     #            VM connection string                      #    Agent options   #  User name    #    Password       #                Source addition             #
     ##############################################################################################################################################################
-     service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi 		*:*!!60000 			admin 				admin		   SERVICE=Broker-0
-     service:jmx:rmi:///jndi/rmi://localhost:9998/jmxrmi 		*:*!!60000 			admin 				admin		   SERVICE=Broker-1 
-     service:jmx:rmi:///jndi/rmi://localhost:9997/jmxrmi 		*:*!!60000 			admin 				admin		   SERVICE=Broker-2
+     service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi        *:*!!60000          admin             admin             SERVICE=Broker-0
+     service:jmx:rmi:///jndi/rmi://localhost:9998/jmxrmi        *:*!!60000          admin             admin             SERVICE=Broker-1 
+     service:jmx:rmi:///jndi/rmi://localhost:9997/jmxrmi        *:*!!60000          admin             admin             SERVICE=Broker-2
     ##############################################################################################################################################################
     ```
     * running Stream-JMX
@@ -1462,6 +1499,7 @@ Modules list:
    * `Liberty` (O, requires `J2EE`)  - IBM WebSphere Liberty root module.
         * `Api` (O) - builds specific API used to sample Liberty JMX (jar).
         * `War` (O) - builds Liberty compliant web application package (war).
+   * `ZK` (O) - JVMs access over ZooKeeper instance.
    * `Distribution` (OU) - build distribution packages, see `../build/tnt4j-stream-jmx` directory.
 
 All optional modules (extensions) depends to `core` module and can't be build and run without it.

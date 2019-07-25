@@ -221,6 +221,7 @@
         <module>tnt4j-stream-jmx-j2ee</module>
         <module>tnt4j-stream-jmx-was</module>
         <module>tnt4j-stream-jmx-liberty</module>
+        <module>tnt4j-stream-jmx-zk</module>
         <module>tnt4j-stream-jmx--distribution</module>
     </modules>
 </project>

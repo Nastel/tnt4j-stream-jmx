@@ -29,6 +29,8 @@ TOOLS_PATH="$JAVA_HOME/lib/tools.jar"
 
 ### --- When connecting application instance having basic JMX implementation, e.g. ordinary Java app, Tomcat, Kafka
 MODULE_SET=("core")
+### --- Uncomment when intended to collect monitored VMs (e.g. Kafka, Solr) from ZooKeeper registry
+# MODULE_SET=("core" "zk")
 ### --- Uncomment when connecting some J2EE implementing application instance JMX
 # MODULE_SET=("core" "j2ee")
 ### --- Uncomment when connecting IBM Websphere Application Server (WAS) instance JMX

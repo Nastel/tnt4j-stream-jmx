@@ -1,11 +1,11 @@
 /*
- * Copyright 2015-2018 JKOOL, LLC.
+ * Copyright 2015-2019 JKOOL, LLC.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,6 +16,10 @@
 package com.jkoolcloud.tnt4j.stream.jmx;
 
 import java.util.Map;
+
+import javax.management.remote.JMXServiceURL;
+
+import com.jkoolcloud.tnt4j.stream.jmx.vm.VMParams;
 
 /**
  * Monitored JVM JMX sampling agent runner thread.
@@ -37,10 +41,8 @@ public class SamplingAgentThread extends Thread {
 	 *            map of JMX connection parameters, defined by {@link javax.naming.Context}
 	 * @param cri
 	 *            connect reattempt interval value in seconds, {@code -1} - do not retry
-	 * 
 	 */
-	public SamplingAgentThread(final SamplingAgent.ConnectionParams cp, final Map<String, ?> connParams,
-			final long cri) {
+	public SamplingAgentThread(VMParams<JMXServiceURL> cp, Map<String, ?> connParams, long cri) {
 		super();
 
 		agentRunner = new Runnable() {
@@ -48,7 +50,7 @@ public class SamplingAgentThread extends Thread {
 			public void run() {
 				try {
 					samplingAgent = SamplingAgent.newSamplingAgent();
-					samplingAgent.connect(cp.serviceURL, cp.user, cp.pass, cp.agentOptions, connParams, cri);
+					samplingAgent.connect(cp, connParams, cri);
 					samplingAgent.stopSampler();
 				} catch (Exception ex) {
 					throw new RuntimeException(ex);
@@ -56,7 +58,7 @@ public class SamplingAgentThread extends Thread {
 			}
 		};
 
-		this.vmSourceFQN = cp.additionalSourceFQN;
+		vmSourceFQN = cp.getAdditionalSourceFQN();
 
 		setName("SamplerAgentThread-" + getId());
 	}

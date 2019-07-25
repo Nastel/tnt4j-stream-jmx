@@ -1,11 +1,11 @@
 /*
- * Copyright 2015-2018 JKOOL, LLC.
+ * Copyright 2015-2019 JKOOL, LLC.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -176,16 +176,18 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 	}
 
 	private static String getKeyPropertyValue(String oNameStr) throws MalformedObjectNameException, IOException {
-		String queryName = oNameStr.replace("?", "*");
+		String queryName = oNameStr.replace("?", "*"); // NON-NLS
 		ObjectName oName = new ObjectName(queryName);
 		Set<ObjectInstance> objects = getMBeanServerConnection().queryMBeans(oName, null);
 
 		if (!Utils.isEmpty(objects)) {
 			ObjectInstance first = objects.iterator().next();
+			Map<String, String> oNameProps = new ObjectName(oNameStr).getKeyPropertyList();
 
-			for (Map.Entry<String, String> kProp : oName.getKeyPropertyList().entrySet()) {
+			for (Map.Entry<String, String> kProp : oNameProps.entrySet()) {
 				String key = kProp.getKey();
-				if (oName.isPropertyValuePattern(key)) {
+				String value = kProp.getValue();
+				if ("?".equals(value) && oName.isPropertyValuePattern(key)) { // NON-NLS
 					return first.getObjectName().getKeyProperty(key);
 				}
 			}
