@@ -7,6 +7,7 @@
             <binaries>
                 <outputDirectory></outputDirectory>
                 <unpack>false</unpack>
+                <!--outputFileNameMapping>${module.artifactId}.${module.extension}</outputFileNameMapping-->
                 <dependencySets>
                     <dependencySet>
                         <useProjectArtifact>false</useProjectArtifact>
@@ -48,6 +49,7 @@
                         <includes>
                             <include>**/*.*</include>
                         </includes>
+                        <lineEnding>unix</lineEnding>
                     </fileSet>
                 </fileSets>
             </sources>
@@ -59,18 +61,19 @@
         <fileSet>
             <directory>../bin</directory>
             <includes>
-                <include>*.*</include>
+                <include>**/*.*</include>
             </includes>
             <excludes>
-                <exclude>*.bat</exclude>
-                <exclude>*.sh</exclude>
+                <exclude>**/*.bat</exclude>
+                <exclude>**/*.sh</exclude>
             </excludes>
             <outputDirectory>bin</outputDirectory>
+            <lineEnding>unix</lineEnding>
         </fileSet>
         <fileSet>
             <directory>../bin</directory>
             <includes>
-                <include>*.bat</include>
+                <include>**/*.bat</include>
             </includes>
             <outputDirectory>bin</outputDirectory>
             <lineEnding>crlf</lineEnding>
@@ -78,7 +81,7 @@
         <fileSet>
             <directory>../bin</directory>
             <includes>
-                <include>*.sh</include>
+                <include>**/*.sh</include>
             </includes>
             <outputDirectory>bin</outputDirectory>
             <fileMode>0777</fileMode>
@@ -91,6 +94,7 @@
                 <include>**/*.*</include>
             </includes>
             <outputDirectory>config</outputDirectory>
+            <lineEnding>unix</lineEnding>
         </fileSet>
         <!-- static content -->
         <fileSet>
@@ -101,6 +105,7 @@
                 <include>NOTICE*</include>
             </includes>
             <outputDirectory></outputDirectory>
+            <lineEnding>unix</lineEnding>
         </fileSet>
 
         <!-- JavaDocs -->
@@ -110,6 +115,7 @@
         <!--<include>*-javadoc.*</include>-->
         <!--</includes>-->
         <!--<outputDirectory>docs</outputDirectory>-->
+        <!--<lineEnding>unix</lineEnding>-->
         <!--</fileSet>-->
     </fileSets>
 </component>

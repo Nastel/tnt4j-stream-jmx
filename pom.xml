@@ -54,7 +54,7 @@
         <product.name>${project.name}</product.name>
         <product.name.hr>TNT4J Stream JMX</product.name.hr>
         <product.copyright.html>
-            <![CDATA[<font size="-1">Copyright &#169; 2015-2018 ${project.organization.name}. All Rights Reserved.</font>]]></product.copyright.html>
+            <![CDATA[<font size="-1">Copyright &#169; 2015-2019 ${project.organization.name}. All Rights Reserved.</font>]]></product.copyright.html>
 
         <project.java.version>1.8</project.java.version>
         <java.source.version>${project.java.version}</java.source.version>
@@ -63,11 +63,31 @@
         <java.compiler.debuglevel>source,lines,vars</java.compiler.debuglevel>
         <java.compiler.verbose>false</java.compiler.verbose>
 
-        <skipTests>true</skipTests>
-        <gpg.skip.sign>true</gpg.skip.sign>
+        <skip.source.pack>true</skip.source.pack>
+        <skip.javadoc.pack>true</skip.javadoc.pack>
+        <skip.assembly.pack>true</skip.assembly.pack>
+        <skip.tests>true</skip.tests>
+        <skip.gpg.sign>true</skip.gpg.sign>
 
         <org.slf4j.version>1.7.26</org.slf4j.version>
     </properties>
+
+    <profiles>
+        <profile>
+            <id>pack-bin</id>
+            <properties>
+                <skip.assembly.pack>false</skip.assembly.pack>
+            </properties>
+        </profile>
+        <profile>
+            <id>pack-all</id>
+            <properties>
+                <skip.source.pack>false</skip.source.pack>
+                <skip.javadoc.pack>false</skip.javadoc.pack>
+                <skip.assembly.pack>false</skip.assembly.pack>
+            </properties>
+        </profile>
+    </profiles>
 
     <build>
         <defaultGoal>clean install</defaultGoal>
@@ -75,7 +95,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.0</version>
+                <version>3.8.1</version>
                 <configuration>
                     <verbose>${java.compiler.verbose}</verbose>
                     <compilerVersion>${java.compiler.version}</compilerVersion>
@@ -95,7 +115,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.0.1</version>
                 <configuration>
                     <doctitle>${product.name.hr}</doctitle>
                     <windowtitle>${product.name.hr}</windowtitle>
@@ -113,6 +133,7 @@
                     <nodeprecated>false</nodeprecated>
                     <failOnError>false</failOnError>
                     <doclint>all</doclint>
+                    <skip>${skip.javadoc.pack}</skip>
                 </configuration>
                 <executions>
                     <execution>
@@ -126,10 +147,10 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.22.1</version>
+                <version>2.22.2</version>
                 <inherited>true</inherited>
                 <configuration>
-                    <skipTests>${skipTests}</skipTests>
+                    <skipTests>${skip.tests}</skipTests>
                     <systemProperties>
                         <property>
                             <name>tnt4j.config</name>
@@ -146,6 +167,9 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-gpg-plugin</artifactId>
                 <version>1.6</version>
+                <configuration>
+                    <skip>${skip.gpg.sign}</skip>
+                </configuration>
                 <executions>
                     <execution>
                         <id>sign-artifacts</id>
@@ -153,9 +177,6 @@
                         <goals>
                             <goal>sign</goal>
                         </goals>
-                        <configuration>
-                            <skip>${gpg.skip.sign}</skip>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
