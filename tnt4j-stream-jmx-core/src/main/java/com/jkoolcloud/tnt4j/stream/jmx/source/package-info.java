@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2018 JKOOL, LLC.
+ * Copyright 2015-2019 JKOOL, LLC.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,5 +21,4 @@
  * @author akausinis
  * @version 1.0
  */
-
 package com.jkoolcloud.tnt4j.stream.jmx.source;

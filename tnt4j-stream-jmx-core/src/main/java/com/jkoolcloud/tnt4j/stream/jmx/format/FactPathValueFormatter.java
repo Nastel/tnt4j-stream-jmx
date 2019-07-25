@@ -1,11 +1,11 @@
 /*
- * Copyright 2015-2018 JKOOL, LLC.
+ * Copyright 2015-2019 JKOOL, LLC.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -206,7 +206,7 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 	}
 
 	protected Map<String, String> getKeyPropertyList(ObjectName objName) {
-		Map<String, String> objNameProps = new LinkedHashMap<String, String>(5);
+		Map<String, String> objNameProps = new LinkedHashMap<>(5);
 		objNameProps.put("domain", objName.getDomain());
 
 		String objNamePropsStr = objName.getKeyPropertyListString();
@@ -304,7 +304,7 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 	}
 
 	private void initPathLevelAttrKeys(String levelsStr) {
-		List<List<String>> levelList = new ArrayList<List<String>>();
+		List<List<String>> levelList = new ArrayList<>();
 		List<String> attrsList;
 
 		String[] levels = levelsStr.split(";");
@@ -314,7 +314,7 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 
 			if (!level.isEmpty()) {
 				String[] levelAttrs = level.split(",");
-				attrsList = new ArrayList<String>(levelAttrs.length);
+				attrsList = new ArrayList<>(levelAttrs.length);
 
 				for (String lAttr : levelAttrs) {
 					lAttr = lAttr.trim();
