@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2019 JKOOL, LLC.
+ * Copyright 2014-2019 JKOOL, LLC.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,25 +17,19 @@
 package com.jkoolcloud.tnt4j.stream.jmx.vm;
 
 /**
- * JMX runner JVM descriptor and sampling context parameters package.
+ * JVM JMX connections/VM descriptors resolution API constants.
  *
  * @version $Revision: 1 $
  */
-public class VMDescriptorParams extends VMParams<String> {
+public interface VMConstants {
 
 	/**
-	 * Constructs a new instance of VM descriptor parameters.
+	 * VM descriptor additional options delimiter.
 	 */
-	VMDescriptorParams() {
-	}
+	static final String OTHER_OPTIONS_DELIM = ";"; // NON-NLS
 
 	/**
-	 * Constructs a new instance of VM descriptor parameters.
-	 *
-	 * @param vmDescriptor
-	 *            JMX service runner VM descriptor string
+	 * VM descriptor additional option key-value delimiter.
 	 */
-	public VMDescriptorParams(String vmDescriptor) {
-		super(vmDescriptor);
-	}
+	static final String OTHER_OPTIONS_KV_DELIM = "="; // NON-NLS
 }

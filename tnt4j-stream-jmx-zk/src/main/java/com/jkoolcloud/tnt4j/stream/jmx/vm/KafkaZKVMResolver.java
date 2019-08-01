@@ -75,7 +75,7 @@ public class KafkaZKVMResolver extends ZKVMResolver {
 			logger().log(OpLevel.DEBUG, "KafkaZKVMResolver.nodeToConnection: found exposed JMX: {0}:{1}", host, port);
 
 			String serviceName = path.substring(path.lastIndexOf("/") + 1);
-			String serviceURL = MessageFormat.format(DEFAULT_RMI_URL, host, port);
+			String serviceURL = MessageFormat.format(getURLPattern(), host, port);
 
 			return buildURLConnectionParams(serviceName, serviceURL);
 		}

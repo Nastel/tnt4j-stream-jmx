@@ -212,6 +212,24 @@ public abstract class VMParams<T> {
 	}
 
 	/**
+	 * Adds VM descriptor additional option to additional options list.
+	 * 
+	 * @param key
+	 *            additional option key
+	 * @param value
+	 *            additional option value
+	 */
+	public void addAdditionalOption(String key, String value) {
+		if (additionalOptions == null) {
+			additionalOptions = "";
+		} else {
+			additionalOptions += VMConstants.OTHER_OPTIONS_DELIM;
+		}
+
+		additionalOptions += key + VMConstants.OTHER_OPTIONS_KV_DELIM + value;
+	}
+
+	/**
 	 * Propagates VM descriptor attributes from base VM descriptor properties into this VM descriptor instance.
 	 *
 	 * @param bvmp
@@ -220,12 +238,14 @@ public abstract class VMParams<T> {
 	 * @return instance of this VM descriptor parameters package
 	 */
 	protected VMParams<T> setBaseVMParams(VMParams<?> bvmp) {
-		this.user = bvmp.user;
-		this.pass = bvmp.pass;
-		this.agentOptions = bvmp.agentOptions;
-		this.additionalSourceFQN = bvmp.additionalSourceFQN;
-		this.reconnectRule = bvmp.reconnectRule;
-		this.additionalOptions = bvmp.additionalOptions;
+		if (bvmp != null) {
+			this.user = bvmp.user;
+			this.pass = bvmp.pass;
+			this.agentOptions = bvmp.agentOptions;
+			this.additionalSourceFQN = bvmp.additionalSourceFQN;
+			this.reconnectRule = bvmp.reconnectRule;
+			this.additionalOptions = bvmp.additionalOptions;
+		}
 
 		return this;
 	}

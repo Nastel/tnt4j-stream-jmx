@@ -278,6 +278,59 @@ MS Windows
 \bin\stream-jmx-connect-file-config.bat \config\connections.cfg
 ```
 
+###### Connections configuration using stanza divided properties file
+
+When connections configuration gets too complex to be defined using tokenized lines, there is possibility to define connections using 
+properties divided into stanzas. One stanza defines one VM descriptor (connection) properties, like this:
+```properties
+##############################################################################################################################################################
+{
+    zk.vm:             service:jmx:rmi:///jndi/rmi://localhost:9995/jmxrmi
+    zk.vm.user:        admin
+    zk.vm.pass:        admin
+    zk.vm.reconnect:   true
+    zk.agent.options:  java.lang:*!!60000
+    zk.source.fqn:     SERVICE=@bean:org.apache.ZooKeeperService:name0=*/?ClientPort#SERVER=@bean:java.lang:type=Runtime/?Name
+}
+##############################################################################################################################################################
+{
+    kafka.vm:               kafka:zk://127.0.0.1:2181
+    kafka.vm.user:          admin
+    kafka.vm.pass:          admin
+    kafka.vm.reconnect:     true
+    kafka.agent.options:    java.lang:*!!60000
+    kafka.source.fqn:       SERVICE=@bean:java.lang:type=Runtime/?Name#SERVER=@bean:kafka.server:id=?,type=app-info#DATACENTER=@bean:kafka.server:type=KafkaServer,name=ClusterId/?Value
+}
+##############################################################################################################################################################
+{
+    solr.vm:                solr:zk://172.16.6.208:2181
+    solr.vm.user:           admin
+    solr.vm.pass:           admin
+    solr.vm.reconnect:      true
+    solr.agent.options:     java.lang:*!!5000
+    solr.source.fqn:        SERVER=@bean:solr:dom1=core,dom2=?,dom3=*,reporter=*,category=*,scope=core,name=*
+    solr.other.urlPattern:  service:jmx:rmi:///jndi/rmi://{0}:{1,number,######}/jmxrmi
+    solr.other.port:        18983
+}
+##############################################################################################################################################################
+```
+There are three VM descriptors defined - `zk`, `kafka` and `solr`. As you see first property key token (delimited using `.`) means VM 
+descriptor name. You can name it freely, like `solrGroup1`, `myZooKeeeper` or `kafkaCluster1`. Rest is used to define particular VM 
+descriptor properties:
+* `vm` or `vm.url` - defines VM or (VM orchestrator instance) URL.
+* `vm.user` - defines VM connection used user name.
+* `vm.pass` or `vm.password` - defines VM connection used user password.
+* `vm.reconnect` - defines flag (`true` or `false`), indicating whether to reconnect VM if connection gets interrupted.
+* `agent.options` - defines agent sampling options.
+* `source.fqn` - defines TNT4J Source FQN values mapping used by VM descriptor.
+* `other` - defines group of additional custom VM descriptor properties:
+    * `urlPattern` - defines JMX service URL pattern to be filled in by ZooKeeper orchestrated VMs resolver. Default value - 
+    `service:jmx:rmi:///jndi/rmi://{0}:{1,number,######}/jmxrmi`, where `{0}` is replaced with JMX service runner machine host name/IP and 
+    `{1}` is replaced with JMX service runner machine port number.
+    * `port` - defines JMX service port number to be used by ZooKeeper orchestrated VMs resolver. Some services (like Apache Solr) does not 
+    provide JMX service port to ZooKeeper, so it is needed to define it manually. Apache Kafka for instance - does provide JMX connection 
+    port, so there is no need to define it additionally - it is picked automatically from ZooKeeper node provided data.
+
 ##### Multiple VM's monitoring notes for Source
 
 See [TNT4J Source fields configuration](#tnt4j-source-fields-configuration) as base Source fields configuration reference.
@@ -354,7 +407,7 @@ In third line we initiate Stream-JMX use ZooKeeper instance to collect JMX servi
 Note, we also define Solr JMX connection port there - `port=18983`.
 
 **NOTE:** if some configuration token needs to be omitted (like some `user names` or `passwords` in our configuration), you can use `.` 
-symbol as configuration token placeholder. New stanzas based connections configuration will come soon.
+symbol as configuration token placeholder.
 
 ##### How to migrate Source definitions from single to multi VM sampling
 
@@ -1499,7 +1552,7 @@ Modules list:
    * `Liberty` (O, requires `J2EE`)  - IBM WebSphere Liberty root module.
         * `Api` (O) - builds specific API used to sample Liberty JMX (jar).
         * `War` (O) - builds Liberty compliant web application package (war).
-   * `ZK` (O) - JVMs access over ZooKeeper instance.
+   * `ZK` (O) - JMX connections resolution for VMs orchestrated by ZooKeeper.
    * `Distribution` (OU) - build distribution packages, see `../build/tnt4j-stream-jmx` directory.
 
 All optional modules (extensions) depends to `core` module and can't be build and run without it.

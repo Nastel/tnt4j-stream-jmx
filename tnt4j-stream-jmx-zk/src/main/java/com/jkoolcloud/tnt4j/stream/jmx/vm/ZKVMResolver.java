@@ -74,6 +74,8 @@ public abstract class ZKVMResolver implements VMResolver<JMXServiceURL>, Closeab
 	 */
 	protected static final String EMPTY = "."; // NON-NLS
 
+	private static final String OO_URL_PATTERN = "urlPattern"; // NON-NLS
+
 	private static HashMap<String, VMParams<JMXServiceURL>> connectionRegistry = new HashMap<>();
 
 	private Map<String, String> additionalOptions = null;
@@ -275,6 +277,16 @@ public abstract class ZKVMResolver implements VMResolver<JMXServiceURL>, Closeab
 	}
 
 	/**
+	 * Returns VM URL pattern to be filled in with host and port.
+	 * 
+	 * @return VM URL pattern
+	 */
+	protected String getURLPattern() {
+		String urlPattern = getAdditionalOption(OO_URL_PATTERN);
+		return Utils.isEmpty(urlPattern) ? DEFAULT_RMI_URL : urlPattern;
+	}
+
+	/**
 	 * Gets VM descriptor additional option value.
 	 *
 	 * @param optKey
@@ -289,9 +301,9 @@ public abstract class ZKVMResolver implements VMResolver<JMXServiceURL>, Closeab
 				if (otherOptions != null) {
 					additionalOptions = new HashMap<>();
 
-					String[] opts = otherOptions.split(","); // NON-NLS
+					String[] opts = otherOptions.split(VMConstants.OTHER_OPTIONS_DELIM);
 					for (String opt : opts) {
-						String[] optionTokens = opt.split("="); // NON-NLS
+						String[] optionTokens = opt.split(VMConstants.OTHER_OPTIONS_KV_DELIM);
 
 						if (optionTokens.length == 2) {
 							additionalOptions.put(optionTokens[0], optionTokens[1]);

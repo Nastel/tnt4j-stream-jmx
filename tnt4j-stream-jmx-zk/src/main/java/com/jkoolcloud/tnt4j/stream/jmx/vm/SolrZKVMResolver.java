@@ -78,7 +78,7 @@ public class SolrZKVMResolver extends ZKVMResolver {
 			}
 
 			Integer port = Integer.parseInt(portProp);
-			String serviceURL = MessageFormat.format(DEFAULT_RMI_URL, host, port);
+			String serviceURL = MessageFormat.format(getURLPattern(), host, port);
 
 			return buildURLConnectionParams(path, serviceURL);
 		}
