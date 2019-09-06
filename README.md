@@ -61,14 +61,41 @@ Failed to sample:
  exclude=false,
  ex=javax.management.RuntimeMBeanException: java.lang.UnsupportedOperationException: Usage threshold is not supported
 javax.management.RuntimeMBeanException: java.lang.UnsupportedOperationException: Usage threshold is not supported
-	... 25 more
-Caused by: java.lang.UnsupportedOperationException: Usage threshold is not supported	
-	... 27 more
+    ... 25 more
+Caused by: java.lang.UnsupportedOperationException: Usage threshold is not supported
+    ... 27 more
 ```
 It is OK, since some MBeans do not provide some attributes depending on Operating System or other run environment setup. If you would run 
 `JConsole` you'll get values `Unavailable` for such attributes painted in red (e.g. see `java.lang -> MemoryPool -> PS Eden Space` 
 attribute `UsageThresholdExceeded`). These `Unsupported` exceptions are shown on first iteration of sampling for user to know that all 
 MBean attributes where accessed.
+
+## Common command line arguments
+
+Arguments definition:
+* `-vm:` - virtual machine descriptor. It can be `PID` or `JVM process name fragment`. `*` value is wildcard to pick all found VMs, running 
+on local machine.
+* `-ao:` - agent options string using `!` symbol as delimiter. Options format: `mbean-filter!exclude-filter!sample-ms!init-delay-ms`
+    * `mbean-filter` - MBean include name filter defined using object name pattern: `domainName:keysSet`.
+    * `exclude-filter` - MBean exclude name filter defined using object name pattern: `domainName:keysSet`.
+    * `sample-ms` - MBeans sampling rate in milliseconds.
+    * `init-delay-ms` - MBeans sampling initial delay in milliseconds. Optional, by default it is equal to `sample-ms` value.
+* `-cp:` - JMX connection parameter string using `=` symbol as delimiter. Defines only one parameter, to define more than one use this 
+argument multiple times. Argument format: `-cp:key=value`. 
+See [Java SE monitoring and management documentation](https://docs.oracle.com/javase/7/docs/technotes/guides/management/agent.html) for more 
+details.
+* `-slp:` - sampler parameter string using `=` symbol as delimiter. Defines only one parameter, to define more than one use this argument 
+multiple times. Argument format: `-slp:key=value`
+    * `trace` - flag indicating whether the sample listener should print trace entries to print stream. Default value - `false`.
+    * `forceObjectName` - flag indicating to forcibly add `objectName` attribute if such is not present for a MBean. Default value - `false`.
+    * `compositeDelimiter` - delimiter used to tokenize composite/tabular type MBean properties keys. Default value - `\`.
+    * `useObjectNameProperties` - flag indicating to copy MBean ObjectName contained properties into sample snapshot properties. Default 
+    value - `true`.
+    * `excludeOnError` - flag indicating to auto-exclude failed to sample attributes. Default value - `false`.
+    * `excludedAttributes` - list of user chosen attribute names (may have wildcards `*` and `?`) to exclude, pattern: 
+    `attr1,attr2,...,attrN@MBean1_ObjectName;...;attr1,attr2,...,attrN@MBeanN_ObjectName`.
+* `-sp:` - sampler system property string using `=` symbol as delimiter. Defines only one system property, to define more than one use this 
+argument multiple times. Argument format: `-sp:key=value`
 
 ## Running Stream-JMX as `-javaagent`
 
@@ -285,19 +312,19 @@ properties divided into stanzas. One stanza defines one VM descriptor (connectio
 ```properties
 ##############################################################################################################################################################
 {
-    zk.vm:             service:jmx:rmi:///jndi/rmi://localhost:9995/jmxrmi
-    zk.vm.user:        admin
-    zk.vm.pass:        admin
-    zk.vm.reconnect:   true
-    zk.agent.options:  java.lang:*!!60000
-    zk.source.fqn:     SERVICE=@bean:org.apache.ZooKeeperService:name0=*/?ClientPort#SERVER=@bean:java.lang:type=Runtime/?Name
+    zk.vm:                  service:jmx:rmi:///jndi/rmi://localhost:9995/jmxrmi
+    zk.vm.user:             admin
+    zk.vm.pass:             admin
+    zk.vm.reconnect.sec:    10
+    zk.agent.options:       java.lang:*!!60000
+    zk.source.fqn:          SERVICE=@bean:org.apache.ZooKeeperService:name0=*/?ClientPort#SERVER=@bean:java.lang:type=Runtime/?Name
 }
 ##############################################################################################################################################################
 {
     kafka.vm:               kafka:zk://127.0.0.1:2181
     kafka.vm.user:          admin
     kafka.vm.pass:          admin
-    kafka.vm.reconnect:     true
+    kafka.vm.reconnect.sec: 10
     kafka.agent.options:    java.lang:*!!60000
     kafka.source.fqn:       SERVICE=@bean:java.lang:type=Runtime/?Name#SERVER=@bean:kafka.server:id=?,type=app-info#DATACENTER=@bean:kafka.server:type=KafkaServer,name=ClusterId/?Value
 }
@@ -306,7 +333,7 @@ properties divided into stanzas. One stanza defines one VM descriptor (connectio
     solr.vm:                solr:zk://172.16.6.208:2181
     solr.vm.user:           admin
     solr.vm.pass:           admin
-    solr.vm.reconnect:      true
+    solr.vm.reconnect.sec:  10
     solr.agent.options:     java.lang:*!!5000
     solr.source.fqn:        SERVER=@bean:solr:dom1=core,dom2=?,dom3=*,reporter=*,category=*,scope=core,name=*
     solr.other.urlPattern:  service:jmx:rmi:///jndi/rmi://{0}:{1,number,######}/jmxrmi
@@ -320,7 +347,8 @@ descriptor properties:
 * `vm` or `vm.url` - defines VM or (VM orchestrator instance) URL.
 * `vm.user` - defines VM connection used user name.
 * `vm.pass` or `vm.password` - defines VM connection used user password.
-* `vm.reconnect` - defines flag (`true` or `false`), indicating whether to reconnect VM if connection gets interrupted.
+* `vm.reconnect.sec` - defines period in seconds to reconnect if VM connection gets interrupted. Negative value means do not try to 
+reconnect.
 * `agent.options` - defines agent sampling options.
 * `source.fqn` - defines TNT4J Source FQN values mapping used by VM descriptor.
 * `other` - defines group of additional custom VM descriptor properties:
@@ -354,7 +382,7 @@ same machine), every service identifies itself over different MBean property. In
 For example, when `tnt4j.properties` defines `RootFQN` as:
 ```properties
     source.factory.DATACENTER: HQDC
-	source.factory.SERVER: @bean:java.lang:type=Runtime/?Name
+    source.factory.SERVER: @bean:java.lang:type=Runtime/?Name
     source.factory.RootFQN: SERVER=?#DATACENTER=?
 ```
 and having VMs configured this way:
@@ -366,7 +394,7 @@ and having VMs configured this way:
  service:jmx:rmi:///jndi/rmi://192.168.1.1:9998/jmxrmi      *:*!!30000          admin           admin              SERVICE=@bean:kafka.server:id=?,type=app-info 
 ##############################################################################################################################################################
 ```
-may build such 'SourceFQN's for VMs:
+may build such SourceFQNs for VMs:
 * `localhost` - `SERVICE=ID:PC-NAME-52295-1538060220413-0:1#SERVER=2453@PC-NAME#DATACENTER=HQDC
 * `192.168.1.1` - `SERVICE=3SERVER=2457@boxName#DATACENTER=HQDC
 
@@ -691,7 +719,7 @@ There is a simple Liberty `server.xml` configuration required to run Stream-JMX 
     <!-- Automatically expand WAR files and EAR files -->
     <applicationManager autoExpand="true"/>
 
-	<webContainer deferServletLoad="false"/>
+    <webContainer deferServletLoad="false"/>
 
     <auth-method>BASIC</auth-method>
 
@@ -711,7 +739,7 @@ There is a simple Liberty `server.xml` configuration required to run Stream-JMX 
         <application-bnd>
             <security-role name="StreamJmxManager">
                 <user name="JMXManager" />
-				<run-as userid="JMXManager" />
+                <run-as userid="JMXManager" />
             </security-role>
         </application-bnd>
     </application>
@@ -1281,7 +1309,7 @@ Below is an example of TNT4J stream configuration writing collected JMX samples 
 ```properties
 ;Stanza used for Stream-JMX sources
 {
-	source: com.jkoolcloud.tnt4j.stream.jmx
+    source: com.jkoolcloud.tnt4j.stream.jmx
     source.factory: com.jkoolcloud.tnt4j.stream.jmx.source.JMXSourceFactoryImpl
     source.factory.GEOADDR: New York
     source.factory.DATACENTER: YourDC
@@ -1441,65 +1469,65 @@ is reported/logged. See example below:
 Below is a sample of what `MySampleListener` may look like:
 ```java
 class MySampleListener implements SampleListener {
-	@Override
+    @Override
     public void getStats(SampleContext context, Map<String, Object> stats) {
-		// add your own stats to the map
-	}
-
-	@Override
-    public void register(SampleContext context, ObjectName oname) {
-		System.out.println("Register mbean: " + oname + ", mbean.server=" + context.getMBeanServer());
-	}
-
-	@Override
-    public void unregister(SampleContext context, ObjectName oname) {
-		System.out.println("Unregister mbean: " + oname + ", mbean.server=" + context.getMBeanServer());
+        // add your own stats to the map
     }
 
-	@Override
-	public void pre(SampleContext context, Activity activity) {
-		// called once per sample, beginning of each sample
-		// set activity to NOOP to disable further sampling
-		// no other attribute will be sampled during current sample
-		if (some-condition) {
-			activity.setType(OpType.NOOP);
-		}
-	}
+    @Override
+    public void register(SampleContext context, ObjectName oname) {
+        System.out.println("Register mbean: " + oname + ", mbean.server=" + context.getMBeanServer());
+    }
 
-	@Override
-	public void pre(SampleContext context, AttributeSample sample) {
-		// called once before attribute is sampled
-		// set exclude to true to skip sampling this attribute
-		sample.excludeNext(sample.getAttributeInfo().isReadable());
-	}
+    @Override
+    public void unregister(SampleContext context, ObjectName oname) {
+        System.out.println("Unregister mbean: " + oname + ", mbean.server=" + context.getMBeanServer());
+    }
 
-	@Override
-	public void post(SampleContext context, AttributeSample sample) {
-		// called once after attribute is sampled
-		Object value = sample.get();
-	}
+    @Override
+    public void pre(SampleContext context, Activity activity) {
+        // called once per sample, beginning of each sample
+        // set activity to NOOP to disable further sampling
+        // no other attribute will be sampled during current sample
+        if (some-condition) {
+            activity.setType(OpType.NOOP);
+        }
+    }
 
-	@Override
-	public void post(SampleContext context, Activity activity) {
-		// called once per sample, end of each sample
-		// set activity to NOOP to disable sampling reporting
-		if (some-condition) {
-			activity.setType(OpType.NOOP);
-		}
-	}
+    @Override
+    public void pre(SampleContext context, AttributeSample sample) {
+        // called once before attribute is sampled
+        // set exclude to true to skip sampling this attribute
+        sample.excludeNext(sample.getAttributeInfo().isReadable());
+    }
 
-	@Override
-	public void error(SampleContext context, Throwable ex) {
-		// called once for every exception that occurs not associated with a sample
-		ex.printStackTrace();
-	}
+    @Override
+    public void post(SampleContext context, AttributeSample sample) {
+        // called once after attribute is sampled
+        Object value = sample.get();
+    }
 
-	@Override
-	public void error(SampleContext context, AttributeSample sample) {
-		// called once for every exception that occurs during each sample
-		Throwable ex = sample.getError();
-		ex.printStackTrace();
-	}	
+    @Override
+    public void post(SampleContext context, Activity activity) {
+        // called once per sample, end of each sample
+        // set activity to NOOP to disable sampling reporting
+        if (some-condition) {
+            activity.setType(OpType.NOOP);
+        }
+    }
+
+    @Override
+    public void error(SampleContext context, Throwable ex) {
+        // called once for every exception that occurs not associated with a sample
+        ex.printStackTrace();
+    }
+
+    @Override
+    public void error(SampleContext context, AttributeSample sample) {
+        // called once for every exception that occurs during each sample
+        Throwable ex = sample.getError();
+        ex.printStackTrace();
+    }
 }
 ```
 ## Conditions and Actions
@@ -1521,16 +1549,16 @@ evaluated to `true`. See example below:
 Below is a sample of what `MyAttributeAction` may look like:
 ```java
 public class MyAttributeAction implements AttributeAction {
-	@Override
-	public Object action(SampleContext context, AttributeCondition cond, AttributeSample sample) {
-		Activity activity = sample.getActivity();
-		// obtain a collection of all sampled metrics
-		Collection<Snapshot> metrics = activity.getSnapshots();
-		System.out.println("MyAction called with value=" + sample.get()
-			+ ", age.usec=" + sample.ageUsec()
-			+ ", count=" + metrics.size());
-		return null;
-	}
+    @Override
+    public Object action(SampleContext context, AttributeCondition cond, AttributeSample sample) {
+        Activity activity = sample.getActivity();
+        // obtain a collection of all sampled metrics
+        Collection<Snapshot> metrics = activity.getSnapshots();
+        System.out.println("MyAction called with value=" + sample.get()
+            + ", age.usec=" + sample.ageUsec()
+            + ", count=" + metrics.size());
+        return null;
+    }
 }
 ```
 

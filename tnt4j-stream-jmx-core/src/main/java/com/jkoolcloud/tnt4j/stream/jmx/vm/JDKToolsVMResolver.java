@@ -40,6 +40,11 @@ public class JDKToolsVMResolver implements VMResolver<String> {
 	private static final String CONNECTOR_ADDRESS = "com.sun.management.jmxremote.localConnectorAddress"; // NON-NLS
 
 	/**
+	 * Constant defining wildcard VM descriptor to pick all found running VMs: {@value}.
+	 */
+	public static final String JVM_DESCR_WILDCARD = "*"; // NON-NLS
+
+	/**
 	 * Constant defining VM descriptor prefix specific for this VM resolver: {@value}.
 	 */
 	public static final String PREFIX = "";
@@ -69,8 +74,9 @@ public class JDKToolsVMResolver implements VMResolver<String> {
 	 * @param vmDescrParams
 	 *            connection parameters defining JVM descriptor: display name fragment or pid
 	 * @return collection of resolved JVM connection address strings
-	 * 
+	 *
 	 * @see #findVMs(String)
+	 * @see com.sun.tools.attach.VirtualMachine#getAgentProperties()
 	 */
 	@Override
 	public List<VMParams<String>> getVMConnAddresses(VMParams<String> vmDescrParams) {
@@ -126,6 +132,7 @@ public class JDKToolsVMResolver implements VMResolver<String> {
 	 *             if any exception occurs while attaching to JVM
 	 *
 	 * @see #findVMs(String)
+	 * @see com.sun.tools.attach.VirtualMachine#attach(String)
 	 */
 	public static void attachVM(String vmDescr, String agentPath, String agentOptions) throws Exception {
 		Collection<VirtualMachineDescriptor> descriptors = findVMs(vmDescr);
@@ -165,15 +172,15 @@ public class JDKToolsVMResolver implements VMResolver<String> {
 	 * @return list of found JVM descriptors
 	 * @throws RuntimeException
 	 *             if no running JVM found
+	 *
+	 * @see com.sun.tools.attach.VirtualMachine#list()
 	 */
 	public static List<VirtualMachineDescriptor> findVMs(String vmDescr) {
 		List<VirtualMachineDescriptor> runningVMsList = VirtualMachine.list();
 
 		List<VirtualMachineDescriptor> descriptors = new ArrayList<>(5);
 		for (VirtualMachineDescriptor rVM : runningVMsList) {
-			if ((rVM.displayName().contains(vmDescr)
-					&& !rVM.displayName().contains(SamplingAgent.class.getSimpleName()))
-					|| rVM.id().equalsIgnoreCase(vmDescr)) {
+			if (matchesDescriptor(rVM, vmDescr) && !isSamplingAgent(rVM)) {
 				descriptors.add(rVM);
 			}
 		}
@@ -189,5 +196,15 @@ public class JDKToolsVMResolver implements VMResolver<String> {
 		}
 
 		return descriptors;
+	}
+
+	private static boolean matchesDescriptor(VirtualMachineDescriptor vm, String vmDescr) {
+		return vm.displayName().contains(vmDescr) //
+				|| vm.id().equalsIgnoreCase(vmDescr) //
+				|| JVM_DESCR_WILDCARD.equals(vmDescr);
+	}
+
+	private static boolean isSamplingAgent(VirtualMachineDescriptor vm) {
+		return vm.displayName().contains(SamplingAgent.class.getSimpleName());
 	}
 }

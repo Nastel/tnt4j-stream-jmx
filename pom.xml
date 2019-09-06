@@ -12,7 +12,7 @@
     <!--</prerequisites>-->
 
     <name>tnt4j-stream-jmx</name>
-    <url>${project.organization.url}</url>
+    <url>https://github.com/Nastel/tnt4j-stream-jmx</url>
     <description>JMX Collection and Streaming over TNT4J</description>
     <licenses>
         <license>

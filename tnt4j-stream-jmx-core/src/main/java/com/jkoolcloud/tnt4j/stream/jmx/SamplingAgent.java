@@ -73,8 +73,6 @@ public class SamplingAgent {
 
 	private static final Map<Thread, SamplingAgent> ALL_AGENTS = new ConcurrentHashMap<>(5);
 
-	protected static final long CONN_RETRY_INTERVAL = 10;
-
 	private static final String LOG4J_PROPERTIES_KEY = "log4j.configuration";
 	private static final String SYS_PROP_LOG4J_CFG = "-D" + LOG4J_PROPERTIES_KEY;
 	private static final String SYS_PROP_TNT4J_CFG = "-D" + TrackerConfigStore.TNT4J_PROPERTIES_KEY;
@@ -395,7 +393,7 @@ public class SamplingAgent {
 					+ "   or: -local -ao:agentOptions (e.g -local -ao:*:*!!10000\n"
 					+ "                                                         \n"
 					+ "Arguments definition:                                    \n"
-					+ "   -vm: - virtual machine descriptor. It can be PID or JVM process name fragment.\n"
+					+ "   -vm: - virtual machine descriptor. It can be PID or JVM process name fragment. '*' value is wildcard to pick all found VMs, running on local machine.\n"
 					+ "   -ao: - agent options string using '!' symbol as delimiter. Options format: mbean-filter!exclude-filter!sample-ms!init-delay-ms\n"
 					+ "       mbean-filter - MBean include name filter defined using object name pattern: domainName:keysSet\n"
 					+ "       exclude-filter - MBean exclude name filter defined using object name pattern: domainName:keysSet\n"
@@ -404,12 +402,12 @@ public class SamplingAgent {
 					+ "   -cp: - JMX connection parameter string using '=' symbol as delimiter. Defines only one parameter, to define more than one use this argument multiple times. Argument format: -cp:key=value\n"
 					+ "       see https://docs.oracle.com/javase/7/docs/technotes/guides/management/agent.html for more details\n"
 					+ "  -slp: - sampler parameter string using '=' symbol as delimiter. Defines only one parameter, to define more than one use this argument multiple times. Argument format: -slp:key=value\n"
-					+ "       trace - flag indicating whether the sample listener should print trace entries to print stream. Default value - 'false'\n"
-					+ "       forceObjectName - flag indicating to forcibly add 'objectName' attribute if such is not present for a MBean. Default value - 'false'\n"
-					+ "       compositeDelimiter - delimiter used to tokenize composite/tabular type MBean properties keys. Default value - '\\'\n"
-					+ "       useObjectNameProperties - flag indicating to copy MBean ObjectName contained properties into sample snapshot properties. Default value - 'true'\n"
-					+ "       excludeOnError - flag indicating to auto-exclude failed to sample attributes. Default value - 'false'\n"
-					+ "       excludedAttributes - list of user chosen attribute names (may have wildcards '*' and '?') to exclude, pattern: 'attr1,attr2,...,attrN@MBean1_ObjectName;...;attr1,attr2,...,attrN@MBeanN_ObjectName'. Default value - ''\n"
+					+ "       trace - flag indicating whether the sample listener should print trace entries to print stream. Default value - 'false'.\n"
+					+ "       forceObjectName - flag indicating to forcibly add 'objectName' attribute if such is not present for a MBean. Default value - 'false'.\n"
+					+ "       compositeDelimiter - delimiter used to tokenize composite/tabular type MBean properties keys. Default value - '\\'.\n"
+					+ "       useObjectNameProperties - flag indicating to copy MBean ObjectName contained properties into sample snapshot properties. Default value - 'true'.\n"
+					+ "       excludeOnError - flag indicating to auto-exclude failed to sample attributes. Default value - 'false'.\n"
+					+ "       excludedAttributes - list of user chosen attribute names (may have wildcards '*' and '?') to exclude, pattern: 'attr1,attr2,...,attrN@MBean1_ObjectName;...;attr1,attr2,...,attrN@MBeanN_ObjectName'.\n"
 					+ "   -sp: - sampler system property string using '=' symbol as delimiter. Defines only one system property, to define more than one use this argument multiple times. Argument format: -sp:key=value";
 
 			System.out.println(usageStr);
@@ -430,9 +428,12 @@ public class SamplingAgent {
 	 *             if resolution of Java VM JMX server connection URLs fails
 	 */
 	protected static List<VMParams<JMXServiceURL>> getAllVMs(Properties props) throws Exception {
+		String criProp = props.getProperty(AGENT_ARG_CONN_RETRY_INTERVAL, String.valueOf(VMParams.CONN_RETRY_INTERVAL));
+		long cri = Long.parseLong(criProp);
+
 		VMParams<String> vmdp = new VMDescriptorParams(props.getProperty(AGENT_ARG_VM))
 				.setUser(props.getProperty(AGENT_ARG_USER)).setPass(props.getProperty(AGENT_ARG_PASS))
-				.setAgentOptions(props.getProperty(AGENT_ARG_OPTIONS, DEFAULT_AGENT_OPTIONS));
+				.setAgentOptions(props.getProperty(AGENT_ARG_OPTIONS, DEFAULT_AGENT_OPTIONS)).setReconnectInterval(cri);
 
 		return vmResolverFactory.getJmxServiceURLs(vmdp);
 	}
@@ -458,14 +459,12 @@ public class SamplingAgent {
 
 		@SuppressWarnings("unchecked")
 		Map<String, ?> connParams = (Map<String, ?>) props.get(AGENT_CONN_PARAMS);
-		long cri = Long
-				.parseLong(props.getProperty(AGENT_ARG_CONN_RETRY_INTERVAL, String.valueOf(CONN_RETRY_INTERVAL)));
 
 		for (VMParams<JMXServiceURL> cp : allVMs) {
 			if (cp.equals(JMXURLConnectionParams.ASYNC_CONN)) {
 				// Asynchronous connections will be handled by VM resolver
 			} else {
-				SamplingAgentThread sat = new SamplingAgentThread(cp, connParams, cri);
+				SamplingAgentThread sat = new SamplingAgentThread(cp, connParams);
 				sat.start();
 			}
 		}
@@ -956,21 +955,18 @@ public class SamplingAgent {
 	 *            JMX service connection parameters
 	 * @param connParams
 	 *            map of additional JMX connection parameters, defined by {@link javax.naming.Context}
-	 * @param connRetryInterval
-	 *            connect reattempt interval value in seconds, {@code -1} - do not retry
 	 * @throws Exception
 	 *             if any exception occurs while connecting to JVM
 	 *
 	 * @see JMXConnectorFactory#connect(javax.management.remote.JMXServiceURL, java.util.Map)
 	 * @see javax.naming.Context
 	 */
-	public void connect(VMParams<JMXServiceURL> connectionParams, Map<String, ?> connParams, long connRetryInterval)
-			throws Exception {
+	public void connect(VMParams<JMXServiceURL> connectionParams, Map<String, ?> connParams) throws Exception {
 		LOGGER.log(OpLevel.INFO,
 				"SamplingAgent.connect(): url={0}, user={1}, pass={2}, options={3}, connParams={4}, connRetryInterval={5}",
 				connectionParams.getVMRef(), connectionParams.getUser(),
 				Utils.hideEnd(connectionParams.getPass(), "x", 0), connectionParams.getAgentOptions(), connParams,
-				connRetryInterval);
+				connectionParams.getReconnectInterval());
 
 		if (connectionParams.getVMRef() == null) {
 			throw new RuntimeException("JMX service URL is null!..");
@@ -990,6 +986,10 @@ public class SamplingAgent {
 		}
 
 		do {
+			VMParams.ReconnectRule reconnectRule = connectionParams.getReconnectRule();
+			long connRetryInterval = connectionParams.getReconnectInterval();
+			stopSampling = reconnectRule.shouldStopSampling() || connRetryInterval < 0;
+
 			try {
 				LOGGER.log(OpLevel.INFO, "SamplingAgent.connect: connecting JMX service using URL={0}",
 						connectionParams.getVMRef());
@@ -1017,11 +1017,9 @@ public class SamplingAgent {
 					Utils.close(connector);
 				}
 			} catch (IOException exc) {
-				VMParams.ReconnectRule reconnectRule = connectionParams.getReconnectRule();
 				LOGGER.log(OpLevel.ERROR, "SamplingAgent.connect: failed to connect JMX service");
 				LOGGER.log(OpLevel.ERROR, "            Exception: {0}", Utils.getExceptionMessages(exc));
 				LOGGER.log(OpLevel.ERROR, "            Reconnect rule: {0}", reconnectRule);
-				stopSampling = reconnectRule.shouldStopSampling() || connRetryInterval < 0;
 
 				if (!stopSampling && connRetryInterval > 0) {
 					LOGGER.log(OpLevel.INFO, "SamplingAgent.connect: will retry connect attempt in {0} seconds...",
@@ -1045,9 +1043,9 @@ public class SamplingAgent {
 	 * Releases sampler lock.
 	 */
 	protected void stopSampler() {
-		LOGGER.log(OpLevel.INFO, "SamplingAgent.stopSampler: releasing sampler lock...");
-
 		if (platformJmx != null) {
+			LOGGER.log(OpLevel.INFO, "SamplingAgent.stopSampler: releasing sampler lock: {0}...", platformJmx);
+
 			synchronized (platformJmx) {
 				platformJmx.notifyAll();
 			}
@@ -1106,8 +1104,9 @@ public class SamplingAgent {
 		});
 		Runtime.getRuntime().addShutdownHook(shutdownHook);
 
-		LOGGER.log(OpLevel.INFO, "SamplingAgent.startSamplerAndWait: locking on sampler: {0}...", platformJmx);
 		if (platformJmx != null) {
+			LOGGER.log(OpLevel.INFO, "SamplingAgent.startSamplerAndWait: locking on sampler: {0}...", platformJmx);
+
 			synchronized (platformJmx) {
 				platformJmx.wait();
 			}

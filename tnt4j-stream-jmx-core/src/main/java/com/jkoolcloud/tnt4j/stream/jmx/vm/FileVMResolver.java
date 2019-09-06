@@ -198,6 +198,10 @@ public class FileVMResolver implements VMResolver<String> {
 						boolean reconnect = Boolean.parseBoolean(pe.getValue());
 						params.setReconnectRule(reconnect ? VMParams.RECONNECT : VMParams.DONT_RECONNECT);
 						break;
+					case "vm.reconnect.sec": // NON-NLS
+						long cri = Long.parseLong(pe.getValue());
+						params.setReconnectInterval(cri);
+						break;
 					default:
 						String aok = pe.getKey();
 						if (aok.startsWith(OTHER_OPTIONS_PTREFIX)) {

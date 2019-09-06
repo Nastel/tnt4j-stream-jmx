@@ -39,10 +39,8 @@ public class SamplingAgentThread extends Thread {
 	 *            VM connection parameters
 	 * @param connParams
 	 *            map of JMX connection parameters, defined by {@link javax.naming.Context}
-	 * @param cri
-	 *            connect reattempt interval value in seconds, {@code -1} - do not retry
 	 */
-	public SamplingAgentThread(VMParams<JMXServiceURL> cp, Map<String, ?> connParams, long cri) {
+	public SamplingAgentThread(VMParams<JMXServiceURL> cp, Map<String, ?> connParams) {
 		super();
 
 		agentRunner = new Runnable() {
@@ -50,7 +48,7 @@ public class SamplingAgentThread extends Thread {
 			public void run() {
 				try {
 					samplingAgent = SamplingAgent.newSamplingAgent();
-					samplingAgent.connect(cp, connParams, cri);
+					samplingAgent.connect(cp, connParams);
 					samplingAgent.stopSampler();
 				} catch (Exception ex) {
 					throw new RuntimeException(ex);

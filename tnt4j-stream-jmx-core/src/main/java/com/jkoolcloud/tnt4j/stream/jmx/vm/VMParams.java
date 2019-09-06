@@ -31,6 +31,11 @@ import java.util.StringJoiner;
  */
 public abstract class VMParams<T> {
 
+	/**
+	 * Constant defining default VM reconnect interval in seconds: {@value}.
+	 */
+	public static final long CONN_RETRY_INTERVAL = 10;
+
 	private T vmRef;
 
 	private String user;
@@ -38,6 +43,7 @@ public abstract class VMParams<T> {
 	private String agentOptions;
 	private String additionalSourceFQN;
 	private ReconnectRule reconnectRule = RECONNECT;
+	private long reconnectInterval = CONN_RETRY_INTERVAL;
 
 	private String additionalOptions;
 
@@ -190,6 +196,30 @@ public abstract class VMParams<T> {
 	}
 
 	/**
+	 * Sets JMX service reconnect interval in seconds.
+	 *
+	 * @param reconnectInterval
+	 *            JMX service reconnect interval in seconds
+	 *
+	 * @return instance of this VM descriptor parameters package
+	 */
+	public VMParams<T> setReconnectInterval(long reconnectInterval) {
+		this.reconnectInterval = reconnectInterval;
+		this.reconnectRule = reconnectInterval < 0 ? DONT_RECONNECT : RECONNECT;
+
+		return this;
+	}
+
+	/**
+	 * Returns JMX service reconnect interval in seconds.
+	 *
+	 * @return the JMX service reconnect interval in seconds
+	 */
+	public long getReconnectInterval() {
+		return reconnectInterval;
+	}
+
+	/**
 	 * Sets VM descriptor additional options.
 	 *
 	 * @param additionalOptions
@@ -244,6 +274,7 @@ public abstract class VMParams<T> {
 			this.agentOptions = bvmp.agentOptions;
 			this.additionalSourceFQN = bvmp.additionalSourceFQN;
 			this.reconnectRule = bvmp.reconnectRule;
+			this.reconnectInterval = bvmp.reconnectInterval;
 			this.additionalOptions = bvmp.additionalOptions;
 		}
 
@@ -259,6 +290,7 @@ public abstract class VMParams<T> {
 				.add("agentOptions='" + agentOptions + "'") // NON-NLS
 				.add("additionalSourceFQN='" + additionalSourceFQN + "'") // NON-NLS
 				.add("reconnectRule=" + reconnectRule) // NON-NLS
+				.add("reconnectInterval=" + reconnectInterval) // NON-NLS
 				.add("additionalOptions='" + additionalOptions + "'") // NON-NLS
 				.toString();
 	}
