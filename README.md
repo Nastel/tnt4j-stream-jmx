@@ -48,10 +48,23 @@ It is simple, do one of the following:
 remote JMX service over RMI connection can be invoked without changing your application code.
 
 **NOTE:** When you want to sample JMX inter-process communication way (providing `-connect` or `-attach` mode `-vm` parameter value as 
-PID/process name), then `Stream-JMX` and sampled process **MUST be** running JVM built by same provider (e.g. `IBM`, `Oracle`, `OpenJDK`) 
-and same architecture (`x86`, `x64`). Also check which JDK `tools.jar` you have referring over `LIBPATH` variable, it also must match 
-runner JVM. If JVM provider or architecture differs, then only way to collect JMX samples is using `-connect` mode defining `JMXConnector` 
-(over `RMI`) URL.
+PID/process name), then `Stream-JMX` runner and sampled process VMs **MUST be**:
+* built by same vendor (e.g. `IBM`, `Oracle`, `OpenJDK`)
+* of same architecture (`x86`, `x64`) 
+* `Stream-JMX` runner VM version higher or equal compared to sampled VMs version - e.g. trying to sample JVM 10+ using JVM 8 may produce 
+exceptions like this:
+```
+java.io.IOException: Non-numeric value found - int expected
+    at sun.tools.attach.HotSpotVirtualMachine.readInt(HotSpotVirtualMachine.java:299)
+    at sun.tools.attach.HotSpotVirtualMachine.loadAgentLibrary(HotSpotVirtualMachine.java:63)
+    at sun.tools.attach.HotSpotVirtualMachine.loadAgentLibrary(HotSpotVirtualMachine.java:79)
+    at sun.tools.attach.HotSpotVirtualMachine.loadAgent(HotSpotVirtualMachine.java:103)
+    at com.sun.tools.attach.VirtualMachine.loadAgent(VirtualMachine.java:540)
+``` 
+* check which JDK `tools.jar` is referred over `LIBPATH` variable, it also must match runner JVM
+
+If JVM vendors, architecture or versions does not match conditions above - then only way to collect JMX samples is using `-connect` mode 
+defining `JMXConnector` (over `RMI`) URL.
 
 **NOTE:** when running `stream-jmx` sometimes it may appear some `Unsupported` type exceptions in console/log, e.g.:
 ```text
