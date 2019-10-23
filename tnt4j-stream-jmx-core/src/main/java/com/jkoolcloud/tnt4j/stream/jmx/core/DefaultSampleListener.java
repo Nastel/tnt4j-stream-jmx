@@ -61,8 +61,8 @@ public class DefaultSampleListener implements SampleListener {
 	boolean useObjectNameProperties = true;
 	boolean excludeOnError = false;
 
-	Collection<MBeanAttributeInfo> excAttrs = new HashSet<MBeanAttributeInfo>(89);
-	Collection<MBeanAttributeInfo> silenceAttrs = new HashSet<MBeanAttributeInfo>(89);
+	Collection<MBeanAttributeInfo> excAttrs = new HashSet<>(89);
+	Collection<MBeanAttributeInfo> silenceAttrs = new HashSet<>(89);
 	Map<ObjectName, Pattern> userExcAttrs = new HashMap<>(5);
 
 	private PropertyNameBuilder pnb;
@@ -422,7 +422,27 @@ public class DefaultSampleListener implements SampleListener {
 	 */
 	protected PropertySnapshot processAttrValue(PropertySnapshot snapshot, MBeanAttributeInfo mbAttrInfo,
 			PropertyNameBuilder propName, Object value) {
-		if (value instanceof CompositeData) {
+		if (value instanceof CompositeData[]) {
+			CompositeData[] cdArray = (CompositeData[]) value;
+
+			for (int i = 0; i < cdArray.length; i++) {
+				CompositeData cdata = cdArray[i];
+
+				processAttrValue(snapshot, mbAttrInfo, propName.append(padNumber(i + 1)), cdata);
+				propName.popLevel();
+			}
+			propName.popLevel();
+		} else if (value instanceof TabularData[]) {
+			TabularData[] tdArray = (TabularData[]) value;
+
+			for (int i = 0; i < tdArray.length; i++) {
+				TabularData tdata = tdArray[i];
+
+				processAttrValue(snapshot, mbAttrInfo, propName.append(padNumber(i + 1)), tdata);
+				propName.popLevel();
+			}
+			propName.popLevel();
+		} else if (value instanceof CompositeData) {
 			CompositeData cdata = (CompositeData) value;
 			Set<String> keys = cdata.getCompositeType().keySet();
 			boolean isKVSet = keys.contains("key") && keys.contains("value"); // NON-NLS
