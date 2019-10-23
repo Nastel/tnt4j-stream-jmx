@@ -69,7 +69,7 @@
         <skip.tests>true</skip.tests>
         <skip.gpg.sign>true</skip.gpg.sign>
 
-        <org.slf4j.version>1.7.26</org.slf4j.version>
+        <org.slf4j.version>1.7.28</org.slf4j.version>
     </properties>
 
     <profiles>

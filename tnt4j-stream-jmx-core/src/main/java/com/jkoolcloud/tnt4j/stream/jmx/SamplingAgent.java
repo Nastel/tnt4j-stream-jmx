@@ -25,6 +25,8 @@ import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.security.GeneralSecurityException;
+import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -33,6 +35,7 @@ import javax.management.*;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
+import javax.net.ssl.*;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -88,6 +91,7 @@ public class SamplingAgent {
 	private static final String PARAM_AGENT_LISTENER_PARAM = "-slp:";
 	private static final String PARAM_AGENT_SYSTEM_PROPERTY = "-sp:";
 	private static final String PARAM_AGENT_CONNECTIONS_CONFIG_FILE = "-f:";
+	private static final String PARAM_AGENT_DISABLE_SSL_VALIDATION = "-ssl";
 
 	private static final String AGENT_MODE_AGENT = "-agent";
 	private static final String AGENT_MODE_ATTACH = "-attach";
@@ -106,6 +110,7 @@ public class SamplingAgent {
 	private static final String AGENT_ARG_S_TIME = "agent.sample.time";
 	private static final String AGENT_ARG_D_TIME = "agent.sample.delay.time";
 	private static final String AGENT_ARG_W_TIME = "agent.wait.time";
+	private static final String AGENT_ARG_DISABLE_SSL = "ssl.disable";
 
 	private static final String AGENT_CONN_PARAMS = "agent.connection.params";
 
@@ -338,6 +343,11 @@ public class SamplingAgent {
 			SamplerFactory sFactory = DefaultSamplerFactory
 					.getInstance(Utils.getConfProperty(DEFAULTS, "com.jkoolcloud.tnt4j.stream.jmx.sampler.factory"));
 			sFactory.initialize();
+
+			String disableSSL = clProps.getProperty(AGENT_ARG_DISABLE_SSL);
+			if (StringUtils.equalsIgnoreCase("true", disableSSL)) {
+				disableSslVerification();
+			}
 
 			String am = clProps.getProperty(AGENT_ARG_MODE);
 			if (AGENT_MODE_CONNECT.equalsIgnoreCase(am)) {
@@ -594,6 +604,8 @@ public class SamplingAgent {
 						external = true;
 						setProperty(props, arg, PARAM_AGENT_CONNECTIONS_CONFIG_FILE, AGENT_ARG_VM,
 								FileVMResolver.PREFIX);
+					} else if (arg.equalsIgnoreCase(PARAM_AGENT_DISABLE_SSL_VALIDATION)) {
+						props.setProperty(AGENT_ARG_DISABLE_SSL, "true");
 					} else {
 						LOGGER.log(OpLevel.WARNING, "SamplingAgent.parseArgs: invalid argument [{0}]", arg);
 						return false;
@@ -1153,7 +1165,6 @@ public class SamplingAgent {
 				"SamplingAgent.startSampler: include.filter={0}, exclude.filter={1}, sample.ms={2}, initDelay.ms={3}, listener.properties={4}, tnt4j.config={5}, jmx.sample.list={6}",
 				incFilter, excFilter, period, initDelay, LISTENER_PROPERTIES,
 				System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY), STREAM_SAMPLERS);
-
 	}
 
 	/**
@@ -1285,6 +1296,47 @@ public class SamplingAgent {
 		public boolean accept(File dir, String name) {
 			String nfn = name.toLowerCase();
 			return nfn.endsWith(".jar") || nfn.endsWith(".zip");
+		}
+	}
+
+	/**
+	 * Disables SSL context verification.
+	 */
+	protected static void disableSslVerification() {
+		try {
+			// Create a trust manager that does not validate certificate chains
+			TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+				@Override
+				public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+					return null;
+				}
+
+				@Override
+				public void checkClientTrusted(X509Certificate[] certs, String authType) {
+				}
+
+				@Override
+				public void checkServerTrusted(X509Certificate[] certs, String authType) {
+				}
+			} };
+
+			// Install the all-trusting trust manager
+			SSLContext sc = SSLContext.getInstance("SSL"); // NON-NLS
+			sc.init(null, trustAllCerts, new java.security.SecureRandom());
+			HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+
+			// Create all-trusting host name verifier
+			HostnameVerifier allHostsValid = new HostnameVerifier() {
+				@Override
+				public boolean verify(String hostname, SSLSession session) {
+					return true;
+				}
+			};
+
+			// Install the all-trusting host verifier
+			HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
+		} catch (GeneralSecurityException exc) {
+			LOGGER.log(OpLevel.WARNING, "Failed to disable SSL verification: {0}", exc);
 		}
 	}
 }
