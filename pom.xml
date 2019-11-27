@@ -4,7 +4,7 @@
 
     <groupId>com.jkoolcloud.tnt4j.stream</groupId>
     <artifactId>tnt4j-stream-jmx</artifactId>
-    <version>0.10-SNAPSHOT</version>
+    <version>0.10</version>
     <packaging>pom</packaging>
 
     <!--<prerequisites>-->

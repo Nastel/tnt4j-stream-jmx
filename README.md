@@ -108,7 +108,9 @@ multiple times. Argument format: `-slp:key=value`
     * `excludedAttributes` - list of user chosen attribute names (may have wildcards `*` and `?`) to exclude, pattern: 
     `attr1,attr2,...,attrN@MBean1_ObjectName;...;attr1,attr2,...,attrN@MBeanN_ObjectName`.
 * `-sp:` - sampler system property string using `=` symbol as delimiter. Defines only one system property, to define more than one use this 
-argument multiple times. Argument format: `-sp:key=value`
+argument multiple times. Argument format: `-sp:key=value`.
+* `-ssl` - flag indicating to disable SSL verification in case SSL is misconfigured: expired, self-signed, or domain mismatching 
+certificate.
 
 ## Running Stream-JMX as `-javaagent`
 
@@ -141,7 +143,7 @@ System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [S
 * `-vm:activemq` - is JVM descriptor. In this case it is running JVM name fragment `activemq`. But it also may be JVM process identifier - 
 PID. Mandatory argument.
 * `-ap:tnt4j-stream-jmx-core-all.jar` - is agent library name. If it is class path - then only name should be sufficient. In any other case 
-define full or relative path, e.g., `..\build\tnt4j-stream-jmx\tnt4j-stream-jmx-0.9\lib\tnt4j-stream-jmx-core-all.jar`. Mandatory 
+define full or relative path, e.g., `..\build\tnt4j-stream-jmx\tnt4j-stream-jmx-0.10\lib\tnt4j-stream-jmx-core-all.jar`. Mandatory 
 argument.
 * `-ao:*:*!10000` - is JMX sampler options stating to include all MBeans and schedule sampling every 10 seconds. Sampler options are 
 optional - default value is `*:*!30000`. Initial sampler delay can be configured by adding numeric parameter `*:*!30000!1000` defining 
@@ -294,6 +296,9 @@ If sampling agent finds multiple VM's matching provided JVM descriptor, it will 
 sampler will collect JMX beans for all local machine running VM's containing `kafka` token within VM process name.
 
 ##### Multiple VM's monitoring configuration using external file
+
+Dedicated `SamplingAgent` arguments:
+* `-f:` - defines path for external configuration file, containing set of VM connection definitions.
 
 You can configure multiple VM's connections using external configuration file. Sample configuration file is `./config/connections.cfg`. The 
 syntax for that file is:
@@ -748,7 +753,7 @@ There is a simple Liberty `server.xml` configuration required to run Stream-JMX 
     <!-- Configure Stream-JMX logging level, e.g. to get DEBUG entries -->
     <logging traceSpecification="*=info:com.jkoolcloud.tnt4j.stream.jmx.*=finer" />
 
-    <application contextRoot="tnt-jmx" location="tnt4j-stream-jmx-liberty-war-0.9.war" type="war" id="tnt-jmx" name="tnt-jmx">
+    <application contextRoot="tnt-jmx" location="tnt4j-stream-jmx-liberty-war-0.10.war" type="war" id="tnt-jmx" name="tnt-jmx">
         <application-bnd>
             <security-role name="StreamJmxManager">
                 <user name="JMXManager" />
@@ -1390,7 +1395,7 @@ Below is an example of TNT4J stream configuration writing collected JMX samples 
     event.sink.factory.PooledLoggerFactory: com.jkoolcloud.tnt4j.sink.impl.PooledLoggerFactoryImpl
 
     event.sink.factory.EventSinkFactory: com.jkoolcloud.tnt4j.sink.impl.FileEventSinkFactory
-    event.sink.factory.EventSinkFactory.FileName: MyStream.log
+    event.sink.factory.EventSinkFactory.FileName: ./MyStream.log
     ; NOTE: DO NOT define "event.formatter" property value if have no need for custom formatter.
     ;       SamplerFactory will take care to set appropriate one for a context.
     #event.formatter: com.jkoolcloud.tnt4j.format.JSONFormatter

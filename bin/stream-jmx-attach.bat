@@ -42,4 +42,4 @@ if not "%2"=="" if not "%2"=="." set TNT4J_AGENT_ARGS=%2 %3 %4 %5 %6 %7 %8 %9
 rem -------------------------
 
 @echo on
-"%JAVA_HOME%\bin\java" %TNT4JOPTS% -classpath "%LIBPATH%" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -attach -vm:%1 -ap:%RUNDIR%..\tnt4j-stream-jmx-core-0.9-all.jar -ao:%TNT4J_AGENT_OPTIONS% %TNT4J_AGENT_ARGS%
+"%JAVA_HOME%\bin\java" %TNT4JOPTS% -classpath "%LIBPATH%" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -attach -vm:%1 -ap:%RUNDIR%..\tnt4j-stream-jmx-core-0.10-all.jar -ao:%TNT4J_AGENT_OPTIONS% %TNT4J_AGENT_ARGS%
