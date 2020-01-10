@@ -153,6 +153,7 @@ initial sampler delay as 1 second. Default sampler delay value is equal to sampl
 * `-sp:` - any system property used by sampler. See [System properties used](#system-properties-used) for details.
 
 **NOTE:** arguments and properties defined running `SamplingAgent.main` is forwarded to `SamplingAgent` agent attached to JVM process.
+
 **NOTE:** if you get exception `com.sun.tools.attach.AgentInitializationException: Agent JAR loaded but agent failed to initialize` while 
 running `stream-jmx` in `-attach` mode it is most likely that some `stream-jmx` used classes are not resolved in attach JVM class path. Pay 
 attention to use `tnt4j-stream-jmx-core-[VERSION]-all.jar` as agent lib to have all dependent classes available within one jar. If you 
