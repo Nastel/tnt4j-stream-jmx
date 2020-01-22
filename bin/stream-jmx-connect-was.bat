@@ -46,7 +46,7 @@ rem ---- AppServer identifies source ----
 if "%TNT4J_APPSERVER%"=="" set TNT4J_APPSERVER=Default
 if not "%2"=="" if not "%2"=="." set TNT4J_APPSERVER=%2
 shift /2
-set TNT4JOPTS=%TNT4JOPTS% "-Dsjmx.serviceId=%TNT4J_APPSERVER%"
+set TNT4JOPTS=%TNT4JOPTS% "-Dfile.encoding=UTF-8 -Dsjmx.serviceId=%TNT4J_APPSERVER%"
 rem -------------------------------------
 
 rem ---- Agent arguments ----
@@ -62,6 +62,12 @@ rem --- Uncomment if WAS and IBM JVM requires connection authentication or getti
 rem --- also do not forget to alter sas.client.props file to disable basic authentication ---
 rem set CONN_OPTIONS=-connect -vm:service:jmx:iiop://localhost:2809/jndi/JMXConnector -ul:Admin -up:admin -cp:java.naming.factory.initial=com.ibm.websphere.naming.WsnInitialContextFactory -cp:java.naming.factory.url.pkgs=com.ibm.ws.naming -cp:java.naming.provider.url=corbaloc:iiop:localhost:2809/WsnAdminNameService
 rem ------------------------------------------------------------------------------------------------------------
+
+IF ["%JAVA_HOME%"] EQU [""] (
+  echo "JAVA_HOME" env. variable is not defined!..
+) else (
+  echo Will use java from: "%JAVA_HOME%"
+)
 
 @echo on
 rem --- using JAVA_HOME java and setting WAS specific options ---

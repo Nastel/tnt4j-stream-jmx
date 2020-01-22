@@ -54,7 +54,7 @@ rem ---- AppServer identifies source ----
 if "%TNT4J_APPSERVER%"=="" set TNT4J_APPSERVER=Default
 if not "%2"=="" if not "%2"=="." set TNT4J_APPSERVER=%2
 shift /2
-set TNT4JOPTS=%TNT4JOPTS% "-Dsjmx.serviceId=%TNT4J_APPSERVER%"
+set TNT4JOPTS=%TNT4JOPTS% "-Dfile.encoding=UTF-8 -Dsjmx.serviceId=%TNT4J_APPSERVER%"
 rem -------------------------------------
 
 rem ---- Agent arguments ----
@@ -64,6 +64,12 @@ rem use this when streaming to jKool
 if "%TNT4J_AGENT_ARGS%"=="" set TNT4J_AGENT_ARGS=-slp:compositeDelimiter=_
 if not "%2"=="" if not "%2"=="." set TNT4J_AGENT_ARGS=%2 %3 %4 %5 %6 %7 %8 %9
 rem -------------------------
+
+IF ["%JAVA_HOME%"] EQU [""] (
+  echo "JAVA_HOME" env. variable is not defined!..
+) else (
+  echo Will use java from: "%JAVA_HOME%"
+)
 
 @echo on
 "%JAVA_HOME%\bin\java" %TNT4JOPTS% -classpath "%LIBPATH%" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -vm:%1 -ao:%TNT4J_AGENT_OPTIONS% %TNT4J_AGENT_ARGS%

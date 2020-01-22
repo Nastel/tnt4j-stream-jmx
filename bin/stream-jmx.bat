@@ -18,8 +18,14 @@ set TNT4JOPTS=%TNT4JOPTS% "-Dlog4j.configuration=file:///%LOG4J_PROPERTIES%"
 rem ---- AppServer identifies source ----
 if "%TNT4J_APPSERVER%"=="" set TNT4J_APPSERVER=Default
 if not "%1"=="" if not "%1"=="." set TNT4J_APPSERVER=%1
-set TNT4JOPTS=%TNT4JOPTS% "-Dsjmx.serviceId=%TNT4J_APPSERVER%"
+set TNT4JOPTS=%TNT4JOPTS% "-Dfile.encoding=UTF-8 -Dsjmx.serviceId=%TNT4J_APPSERVER%"
 rem -------------------------------------
+
+IF ["%JAVA_HOME%"] EQU [""] (
+  echo "JAVA_HOME" env. variable is not defined!..
+) else (
+  echo Will use java from: "%JAVA_HOME%"
+)
 
 @echo on
 "%JAVA_HOME%\bin\java" %TNT4JOPTS% -classpath "%LIBPATH%" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent "*:*" "" 10000 60000

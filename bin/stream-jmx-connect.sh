@@ -96,7 +96,7 @@ fi
 if [ "x$3" != "x" ] && [ "x$3" != "x." ]; then
     TNT4J_APPSERVER="$3"
 fi
-TNT4JOPTS="$TNT4JOPTS -Dsjmx.serviceId=$TNT4J_APPSERVER"
+TNT4JOPTS="$TNT4JOPTS -Dfile.encoding=UTF-8 -Dsjmx.serviceId=$TNT4J_APPSERVER"
 ### -------------------------------------
 
 ### ---- Agent arguments ----
@@ -110,5 +110,11 @@ if [ "x$4" != "x" ] && [ "x$4" != "x." ]; then
     TNT4J_AGENT_ARGS="$4"
 fi
 ### -------------------------
+
+if [ "$JAVA_HOME" == "" ]; then
+  echo '"JAVA_HOME" env. variable is not defined!..'
+else
+  echo 'Will use java from: "$JAVA_HOME"'
+fi
 
 "$JAVA_HOME/bin/java" $TNT4JOPTS -classpath "$LIBPATH" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -vm:$1  -ao:$TNT4J_AGENT_OPTIONS $TNT4J_AGENT_ARGS
