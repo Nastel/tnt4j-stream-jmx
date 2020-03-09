@@ -143,7 +143,7 @@ System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [S
 * `-vm:activemq` - is JVM descriptor. In this case it is running JVM name fragment `activemq`. But it also may be JVM process identifier - 
 PID. Mandatory argument.
 * `-ap:tnt4j-stream-jmx-core-all.jar` - is agent library name. If it is class path - then only name should be sufficient. In any other case 
-define full or relative path, e.g., `..\build\tnt4j-stream-jmx\tnt4j-stream-jmx-0.10\lib\tnt4j-stream-jmx-core-all.jar`. Mandatory 
+define full or relative path, e.g., `..\build\tnt4j-stream-jmx\tnt4j-stream-jmx-0.10\tnt4j-stream-jmx-core-all.jar`. Mandatory 
 argument.
 * `-ao:*:*!10000` - is JMX sampler options stating to include all MBeans and schedule sampling every 10 seconds. Sampler options are 
 optional - default value is `*:*!30000`. Initial sampler delay can be configured by adding numeric parameter `*:*!30000!1000` defining 
@@ -1146,7 +1146,7 @@ the following format:
     **NOTE:** Entries are sorted by key alphanumeric ordering and key representation is more common to be used for, e.g., tree model 
     construction to represent JMX structure more like `JConsole` does.
 
-* FactJSONFormatter - this class provides JSON formatting for tnt4j activities, events and snapshots. Difference from 
+* LevelingJSONFormatter - this class provides JSON formatting for tnt4j activities, events and snapshots. Difference from 
 `com.jkoolcloud.tnt4j.format.JSONFormatter` is only facts payload is present in produced JSON without major part of TNT4J metadata. 
     Sample output:
     ```json
