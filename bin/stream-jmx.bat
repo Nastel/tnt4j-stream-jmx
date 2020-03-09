@@ -19,6 +19,10 @@ rem ---- AppServer identifies source ----
 if "%TNT4J_APPSERVER%"=="" set TNT4J_APPSERVER=Default
 if not "%1"=="" if not "%1"=="." set TNT4J_APPSERVER=%1
 set TNT4JOPTS=%TNT4JOPTS% "-Dfile.encoding=UTF-8 -Dsjmx.serviceId=%TNT4J_APPSERVER%"
+rem --- stream log file name ---
+rem TNT4JOPTS="%TNT4JOPTS% -Dtnt4j.stream.log.filename=%RUNDIR%..\logs\tnt4j-stream-jmx.log"
+rem --- streamed activities log file name ---
+rem TNT4JOPTS="%TNT4JOPTS% -Dtnt4j.activities.log.filename=%RUNDIR%..\logs\tnt4j-stream-jmx_samples.log"
 rem -------------------------------------
 
 IF ["%JAVA_HOME%"] EQU [""] (
