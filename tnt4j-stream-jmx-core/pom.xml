@@ -122,16 +122,6 @@
             <groupId>com.jkoolcloud</groupId>
             <artifactId>jesl</artifactId>
             <version>${jesl.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.jkoolcloud.jesl.net</groupId>
-                    <artifactId>tnt4j-syslogd</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-simple</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.sun</groupId>
