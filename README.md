@@ -977,7 +977,7 @@ enable this feature:
 
 ## Stream-JMX event data formatters
 
-* FactNameValueFormatter - this class provides key/value formatting for tnt4j activities, events and snapshots. The output format follows 
+* `FactNameValueFormatter` - this class provides key/value formatting for tnt4j activities, events and snapshots. The output format follows 
 the following format:
     ```
     "OBJ:name-value-prefix1\name1=value1,name-value-prefix1\name2=value2,....,name-value-prefixN\nameN=valueN"
@@ -1052,7 +1052,7 @@ the following format:
     **NOTE:** Entries are not sorted, sequence is same as returned by activity contained snapshots map entries and snapshot properties 
     iterators.
 
-* FactPathValueFormatter - this class provides key/value formatting for tnt4j activities, events and snapshots. The output format follows 
+* `FactPathValueFormatter` - this class provides key/value formatting for tnt4j activities, events and snapshots. The output format follows 
 the following format:
     ```
     "OBJ:object-path1\name1=value1,object-path1\name2=value2,....,object-pathN\nameN=valueN""
@@ -1146,7 +1146,7 @@ the following format:
     **NOTE:** Entries are sorted by key alphanumeric ordering and key representation is more common to be used for, e.g., tree model 
     construction to represent JMX structure more like `JConsole` does.
 
-* LevelingJSONFormatter - this class provides JSON formatting for tnt4j activities, events and snapshots. Difference from 
+* `LevelingJSONFormatter` - this class provides JSON formatting for tnt4j activities, events and snapshots. Difference from 
 `com.jkoolcloud.tnt4j.format.JSONFormatter` is only facts payload is present in produced JSON without major part of TNT4J metadata. 
     Sample output:
     ```json
@@ -1434,6 +1434,54 @@ your application. TNT4J comes with a set of built-in event sink implementations 
 * `com.jkoolcloud.tnt4j.sink.impl.FileEventSinkFactory` - standard log file
 * `com.jkoolcloud.tnt4j.sink.impl.SocketEventSinkFactory` -- socket (tcp/ip)
 * `com.jkoolcloud.tnt4j.sink.impl.NullEventSinkFactory` -- null (empty)
+
+### Streaming to multiple endpoints
+Consider one of most common cases when Stream-JMX produced samples shall appear on both AutoPilot and jKool at same time. To achieve that, 
+`BroadcastingEventSinkFactory` shall be used and have two sinks bound: for AutoPilot endpoint - `ap` (`SocketEventSinkFactory`) and 
+for jKool endpoint - `jkool` (`JKCloudEventSinkFactory`). This way same JMX sample will be sent to AutoPilot over configured socket 
+having sample data formatted by `FactNameValueFormatter` and to jKool repo defined by access token having sample data formatted by 
+`JSONFormatter`.
+```properties
+;Stanza used for Stream-JMX sources
+{
+    source: com.jkoolcloud.tnt4j.stream.jmx
+    source.factory: com.jkoolcloud.tnt4j.stream.jmx.source.JMXSourceFactoryImpl
+    source.factory.GEOADDR: New York
+    source.factory.DATACENTER: YourDC
+    source.factory.SERVICE: $sjmx.serviceId
+    source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?#GEOADDR=?
+    source.factory.RootSSN: tnt4j-stream-jmx
+
+    tracker.factory: com.jkoolcloud.tnt4j.tracker.DefaultTrackerFactory
+    dump.sink.factory: com.jkoolcloud.tnt4j.dump.DefaultDumpSinkFactory
+    event.sink.factory: com.jkoolcloud.tnt4j.sink.impl.BroadcastingEventSinkFactory
+    event.sink.factory.BroadcastSequence: ap,jkool
+
+    event.sink.factory.EventSinkFactory.ap: com.jkoolcloud.tnt4j.sink.impl.SocketEventSinkFactory
+    ; If socket sent data should no be logged anywhere else
+    event.sink.factory.EventSinkFactory.ap.LogSink: null
+    ; If socket sent data should be logged to file
+    #event.sink.factory.EventSinkFactory.ap.LogSink: file:./logs/tnt4j-stream-jmx_samples_socket.log
+    event.sink.factory.EventSinkFactory.ap.Host: localhost
+    event.sink.factory.EventSinkFactory.ap.Port: 6060
+    event.sink.factory.EventSinkFactory.ap.Formatter: com.jkoolcloud.tnt4j.stream.jmx.format.FactNameValueFormatter
+    event.sink.factory.EventSinkFactory.ap.Formatter.KeyReplacements: " "->"_" "\""->"'" "/"->"%" "="->"\\" ","->"!'" "\\\\"->"\\"
+    event.sink.factory.EventSinkFactory.ap.Formatter.ValueReplacements: "\r"->"\\r" "\n"->"\\n" ";"->"&" ","->"&" "["->"{(" "]"->")}" "\""->"'"
+
+    event.sink.factory.EventSinkFactory.jkool: com.jkoolcloud.jesl.tnt4j.sink.JKCloudEventSinkFactory
+    event.sink.factory.EventSinkFactory.jkool.LogSink: file:./logs/stream-jmx_activities.json
+    event.sink.factory.EventSinkFactory.jkool.Url: https://data.jkoolcloud.com
+    event.sink.factory.EventSinkFactory.jkool.Token: YOUR-ACCESS-TOKEN
+    event.sink.factory.EventSinkFactory.jkool.Formatter: com.jkoolcloud.tnt4j.format.JSONFormatter
+
+    ; Configure default sink filter based on level and time (elapsed/wait)
+    event.sink.factory.Filter: com.jkoolcloud.tnt4j.filters.EventLevelTimeFilter
+    event.sink.factory.Filter.Level: TRACE
+
+    tracking.selector: com.jkoolcloud.tnt4j.selector.DefaultTrackingSelector
+    tracking.selector.Repository: com.jkoolcloud.tnt4j.repository.FileTokenRepository
+}
+```
 
 ## Auto-generating application state dump
 Stream-JMX is utilizing TNT4J state dump capability to generate application state dumps
