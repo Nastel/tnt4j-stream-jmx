@@ -63,11 +63,13 @@
         <java.compiler.debuglevel>source,lines,vars</java.compiler.debuglevel>
         <java.compiler.verbose>false</java.compiler.verbose>
 
-        <skip.source.pack>true</skip.source.pack>
-        <skip.javadoc.pack>true</skip.javadoc.pack>
-        <skip.assembly.pack>true</skip.assembly.pack>
-        <skip.tests>true</skip.tests>
-        <skip.gpg.sign>true</skip.gpg.sign>
+        <maven.source.skip>true</maven.source.skip>
+        <maven.javadoc.skip>true</maven.javadoc.skip>
+        <assembly.skipAssembly>true</assembly.skipAssembly>
+        <skipTests>true</skipTests>
+        <!--<maven.test.skip>true</maven.test.skip>-->
+        <gpg.skip>true</gpg.skip>
+        <maven.deploy.skip>false</maven.deploy.skip>
 
         <org.slf4j.version>1.7.30</org.slf4j.version>
         <log4j.version>1.2.17</log4j.version>
@@ -77,21 +79,21 @@
         <profile>
             <id>pack-bin</id>
             <properties>
-                <skip.assembly.pack>false</skip.assembly.pack>
+                <assembly.skipAssembly>false</assembly.skipAssembly>
             </properties>
         </profile>
         <profile>
             <id>pack-all</id>
             <properties>
-                <skip.source.pack>false</skip.source.pack>
-                <skip.javadoc.pack>false</skip.javadoc.pack>
-                <skip.assembly.pack>false</skip.assembly.pack>
+                <maven.source.skip>false</maven.source.skip>
+                <maven.javadoc.skip>false</maven.javadoc.skip>
+                <assembly.skipAssembly>false</assembly.skipAssembly>
             </properties>
         </profile>
         <profile>
             <id>run-tests</id>
             <properties>
-                <skip.tests>false</skip.tests>
+                <skipTests>false</skipTests>
             </properties>
         </profile>
     </profiles>
@@ -140,7 +142,6 @@
                     <nodeprecated>false</nodeprecated>
                     <failOnError>false</failOnError>
                     <doclint>all</doclint>
-                    <skip>${skip.javadoc.pack}</skip>
                 </configuration>
                 <executions>
                     <execution>
@@ -157,7 +158,6 @@
                 <version>2.22.2</version>
                 <inherited>true</inherited>
                 <configuration>
-                    <skipTests>${skip.tests}</skipTests>
                     <systemProperties>
                         <property>
                             <name>tnt4j.config</name>
@@ -174,9 +174,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-gpg-plugin</artifactId>
                 <version>1.6</version>
-                <configuration>
-                    <skip>${skip.gpg.sign}</skip>
-                </configuration>
                 <executions>
                     <execution>
                         <id>sign-artifacts</id>
