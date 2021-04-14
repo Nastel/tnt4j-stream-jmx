@@ -35,10 +35,13 @@
     </scm>
     <distributionManagement>
         <repository>
-            <id>bintray-amavashev2-jkoolcloud</id>
-            <name>amavashev2-jkoolcloud</name>
-            <url>https://api.bintray.com/maven/amavashev2/jkoolcloud/tnt4j-stream-jmx/;publish=1;override=1</url>
+            <id>oss.sonatype.org</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
+        <snapshotRepository>
+            <id>oss.sonatype.org</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
     </distributionManagement>
 
     <properties>
@@ -65,7 +68,6 @@
         <skipTests>true</skipTests>
         <!--<maven.test.skip>true</maven.test.skip>-->
         <gpg.skip>true</gpg.skip>
-        <maven.deploy.skip>false</maven.deploy.skip>
 
         <org.slf4j.version>1.7.30</org.slf4j.version>
         <log4j.version>1.2.17</log4j.version>
@@ -87,12 +89,40 @@
             </properties>
         </profile>
         <profile>
+            <id>pack-maven</id>
+            <properties>
+                <maven.source.skip>false</maven.source.skip>
+                <maven.javadoc.skip>false</maven.javadoc.skip>
+            </properties>
+        </profile>
+        <profile>
+            <id>maven-release</id>
+            <properties>
+                <maven.source.skip>false</maven.source.skip>
+                <maven.javadoc.skip>false</maven.javadoc.skip>
+                <gpg.skip>false</gpg.skip>
+            </properties>
+        </profile>
+        <profile>
             <id>run-tests</id>
             <properties>
                 <skipTests>false</skipTests>
             </properties>
         </profile>
     </profiles>
+
+    <repositories>
+        <repository>
+            <id>oss.sonatype.org-snapshot</id>
+            <url>http://oss.sonatype.org/content/repositories/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
     <build>
         <defaultGoal>clean install</defaultGoal>
@@ -170,6 +200,14 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-gpg-plugin</artifactId>
                 <version>1.6</version>
+                <configuration>
+                    <gpgArguments>
+                        <arg>--pinentry-mode</arg>
+                        <arg>loopback</arg>
+                    </gpgArguments>
+                    <keyname>${gpg.keyname}</keyname>
+                    <passphraseServerId>${gpg.keyname}</passphraseServerId>
+                </configuration>
                 <executions>
                     <execution>
                         <id>sign-artifacts</id>
@@ -184,7 +222,49 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
                 <version>2.8.2</version>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.8</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>oss.sonatype.org</serverId>
+                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>deploy-to-sonatype</id>
+                        <phase>deploy</phase>
+                        <goals>
+                            <goal>deploy</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>2.8.1</version>
+                <configuration>
+                    <generateBackupPoms>false</generateBackupPoms>
+                </configuration>
+            </plugin>
+            <!--<plugin>-->
+            <!--<groupId>org.apache.maven.plugins</groupId>-->
+            <!--<artifactId>maven-release-plugin</artifactId>-->
+            <!--<version>2.5.3</version>-->
+            <!--<configuration>-->
+            <!--<autoVersionSubmodules>true</autoVersionSubmodules>-->
+            <!--<useReleaseProfile>false</useReleaseProfile>-->
+            <!--<releaseProfiles>release</releaseProfiles>-->
+            <!--<goals>deploy</goals>-->
+            <!--</configuration>-->
+            <!--</plugin>-->
         </plugins>
     </build>
 

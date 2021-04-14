@@ -42,7 +42,14 @@ It is simple, do one of the following:
  * run Stream-JMX as a `-javaagent`
  * attach Stream-JMX as agent to running JVM
  * connect Stream-JMX over JMXConnector to locally running JVM or remote JMX service
- * embed Stream-JMX code into your application
+ * embed Stream-JMX code into your application, by using this maven dependency:
+ ```xml
+    <dependency>
+        <groupId>com.jkoolcloud.tnt4j.stream</groupId>
+        <artifactId>tnt4j-stream-jmx-core</artifactId>
+        <version>0.12.1</version>
+    </dependency>
+ ```
 
 **NOTE:** Running Stream-JMX as `-javaagent`, attaching agent to running JVM or connecting over JMXConnector to locally running JVM or 
 remote JMX service over RMI connection can be invoked without changing your application code.
@@ -1124,7 +1131,7 @@ and snapshots. The output format follows the following format:
 
 * `com.jkoolcloud.tnt4j.format.LevelingJSONFormatter` - this class provides JSON formatting for tnt4j activities, events and snapshots. 
 Difference from `com.jkoolcloud.tnt4j.format.JSONFormatter` is only facts payload is present in produced JSON without major part of TNT4J 
-metadata. 
+metadata.
 
     Sample output:
     ```json
@@ -1617,16 +1624,80 @@ How to Build TNT4J-Stream-JMX
 
 Modules list:
    * `Core` (M) - implements core JMX sampling, processing and dissemination features.
+     Maven dependency:
+     ```xml
+        <dependency>
+            <groupId>com.jkoolcloud.tnt4j.stream</groupId>
+            <artifactId>tnt4j-stream-jmx-core</artifactId>
+            <version>0.12.1</version>
+        </dependency>
+     ``` 
    * `J2EE` (O) - J2EE API addition to handle J2EE API defined attributes and implements abstract Stream-JMX servlet API.
+     Maven dependency:
+     ```xml
+        <dependency>
+            <groupId>com.jkoolcloud.tnt4j.stream</groupId>
+            <artifactId>tnt4j-stream-jmx-j2ee</artifactId>
+            <version>0.12.1</version>
+        </dependency>
+     ```
    * `WAS` (O, requires `J2EE`) - IBM WebSphere Application Server (WAS) root module.
         * `Api` (O) - builds specific API used to sample WAS JMX (jar).
+          Maven dependency:
+          ```xml
+             <dependency>
+                 <groupId>com.jkoolcloud.tnt4j.stream</groupId>
+                 <artifactId>tnt4j-stream-jmx-was-api</artifactId>
+                 <version>0.12.1</version>
+              </dependency>
+          ```
         * `War` (O) - builds WAS compliant web application package (war).
+          Maven dependency:
+          ```xml
+             <dependency>
+                 <groupId>com.jkoolcloud.tnt4j.stream</groupId>
+                 <artifactId>tnt4j-stream-jmx-was-war</artifactId>
+                 <version>0.12.1</version>
+              </dependency>
+          ```
         * `Ear` (O) - builds WAS compliant enterprise application package (ear).
+          Maven dependency:
+          ```xml
+             <dependency>
+                 <groupId>com.jkoolcloud.tnt4j.stream</groupId>
+                 <artifactId>tnt4j-stream-jmx-was-ear</artifactId>
+                 <version>0.12.1</version>
+              </dependency>
+          ```
    * `Liberty` (O, requires `J2EE`)  - IBM WebSphere Liberty root module.
         * `Api` (O) - builds specific API used to sample Liberty JMX (jar).
+          Maven dependency:
+          ```xml
+             <dependency>
+                 <groupId>com.jkoolcloud.tnt4j.stream</groupId>
+                 <artifactId>tnt4j-stream-jmx-liberty-api</artifactId>
+                 <version>0.12.1</version>
+              </dependency>
+          ```
         * `War` (O) - builds Liberty compliant web application package (war).
+          Maven dependency:
+          ```xml
+             <dependency>
+                 <groupId>com.jkoolcloud.tnt4j.stream</groupId>
+                 <artifactId>tnt4j-stream-jmx-liberty-war</artifactId>
+                 <version>0.12.1</version>
+              </dependency>
+          ```
    * `ZK` (O) - JMX connections resolution for VMs orchestrated by ZooKeeper.
-   * `Distribution` (OU) - build distribution packages, see `build/` directory.
+     Maven dependency:
+     ```xml
+        <dependency>
+            <groupId>com.jkoolcloud.tnt4j.stream</groupId>
+            <artifactId>tnt4j-stream-jmx-zk</artifactId>
+            <version>0.12.1</version>
+         </dependency>
+     ```
+   * `Distribution` (OU) - build distribution packages. After running, see `build/` directory.
 
 All optional modules (extensions) depends to `core` module and can't be build and run without it.
 
@@ -1707,8 +1778,10 @@ directory.
 * To build the project, run maven goals `clean package`
 * To build the project and install to local repo, run maven goals `clean install`
 * To make distributable release assemblies use one of profiles: `pack-bin` or `pack-all`:
-    * containing only binary distribution: run `mvn -P pack-bin`
-    * containing binary, source and javadoc distribution: run `mvn -P pack-all`
+    * containing only binary (including `test` package) distribution: run `mvn -P pack-bin`
+    * containing binary (including `test` package), `source` and `javadoc` distribution: run `mvn -P pack-all`
+* To make maven required `source` and `javadoc` packages, use profile `pack-maven`
+* To make maven central compliant release having `source`, `javadoc` and all signed packages, use `maven-release` profile
 
 By default maven will build all modules defined in `tnt4j-stream-jmx/pom.xml` file.
 
