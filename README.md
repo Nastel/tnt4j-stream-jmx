@@ -84,7 +84,6 @@ attribute `UsageThresholdExceeded`). These `Unsupported` exceptions are shown on
 MBean attributes where accessed.
 
 ## Common command line arguments
-
 Arguments definition:
 * `-vm:` - virtual machine descriptor. It can be `PID` or `JVM process name fragment`. `*` value is wildcard to pick all found VMs, running 
 on local machine.
@@ -115,7 +114,6 @@ certificate.
 ## Running Stream-JMX as `-javaagent`
 
 ### Command line to run
-
 Executable OS shell run script files `bin/stream-jmx.bat` or `bin/stream-jmx.sh` are dedicated to do the job.
 
 Command line to run `stream-jmx` as JVM agent looks like this:
@@ -129,7 +127,6 @@ details.
 ## Attaching Stream-JMX to running JVM
 
 ### Command line to run
-
 Executable OS shell run script files `bin/stream-jmx-attach.bat` or `bin/stream-jmx-attach.sh` are dedicated to do the job.
 
 Command line to attach local JVM process JMX looks like this:
@@ -161,7 +158,7 @@ are trying to attach application implementing J2EE API, use `tnt4j-stream-jmx-j2
 when attaching WAS and Liberty instances - use `-all.jar` for matching product API.
 
 ### Coding into API
-You can attach `SamplingAgent` to JVM from your custom API by calling [SamplingAgent.attach(String,String,String)](./tnt4j-stream-jmx-core/src/main/java/com/jkoolcloud/tnt4j/stream/jmx/SamplingAgent.java#L684) method.
+You can attach `SamplingAgent` to JVM from your custom API by calling [SamplingAgent.attach(String,String,String)](./tnt4j-stream-jmx-core/src/main/java/com/jkoolcloud/tnt4j/stream/jmx/SamplingAgent.java#L882) method.
 
 Sample `attach` call:
 ```java
@@ -175,7 +172,6 @@ try {
 ## Connecting Stream-JMX to local or remote JMX service
 
 ### Command line to run
-
 Executable OS shell run script files `bin/stream-jmx-conenct.bat` or `bin/stream-jmx-conenct.sh` are dedicated to do the job:
 
 `stream-jmx-connect` script has 4 parameters:
@@ -209,7 +205,6 @@ rem using pid
 ```
 
 #### To connect to local JVM process
-
 Command line to connect local JVM process JMX looks like this:
 ```cmd
 java -Dtnt4j.config=.\config\tnt4j.properties -Dlog4j.configuration=file:.\config\log4j.properties -classpath "tnt4j-stream-jmx-core.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -vm:activemq -ao:*:*!*:dummy!10000
@@ -229,7 +224,6 @@ seconds. Sampler options are optional - default value is `*:*!30000`. Initial sa
 * `-sp:` - any system property used by sampler. See [System properties used](#system-properties-used) for details.
 
 #### To connect to JMX service over URL
-
 Command line to connect remote JMX service looks like this:
 ```cmd
 java -Dtnt4j.config=.\config\tnt4j.properties -Dlog4j.configuration=file:.\config\log4j.properties -classpath "tnt4j-stream-jmx-core.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -vm:service:jmx:<JMX_URL> -ul:admin -up:admin -ao:*:*!!10000 -cri:30 -cp:java.naming.security.authentication=simple -cp:java.naming.factory.initial=com.sun.jndi.ldap.LdapCtxFactory
@@ -289,7 +283,6 @@ metrics over JMX. Executable OS shell run script files uses only `core` as `MODU
 #### Multiple VMs monitoring over single stream run
 
 ##### Multiple local JVM processes monitoring
-
 If sampling agent finds multiple VM's matching provided JVM descriptor, it will bind and sample JMX beans from all these VM's, e.g.:
 ```bash
 ./bin/stream-jmx-connect.sh kafka
@@ -297,7 +290,6 @@ If sampling agent finds multiple VM's matching provided JVM descriptor, it will 
 sampler will collect JMX beans for all local machine running VM's containing `kafka` token within VM process name.
 
 ##### Multiple VM's monitoring configuration using external file
-
 Dedicated `SamplingAgent` arguments:
 * `-f:` - defines path for external configuration file, containing set of VM connection definitions.
 
@@ -325,7 +317,6 @@ MS Windows
 ```
 
 ###### Connections configuration using stanza divided properties file
-
 When connections configuration gets too complex to be defined using tokenized lines, there is possibility to define connections using 
 properties divided into stanzas. One stanza defines one VM descriptor (connection) properties, like this:
 ```properties
@@ -379,7 +370,6 @@ reconnect.
     port, so there is no need to define it additionally - it is picked automatically from ZooKeeper node provided data.
 
 ##### Multiple VM's monitoring notes for Source
-
 See [TNT4J Source fields configuration](#tnt4j-source-fields-configuration) as base Source fields configuration reference.
 
 Multiple VM's monitoring requires additional data Source configuration when you want to distinguish where JMX data came from.
@@ -420,7 +410,6 @@ may build such SourceFQNs for VMs:
 **NOTE:** VM additional `SourceFQN` path must be defined fallowing same rules as in TNT4J config - `SourceType1=value1#SourceType2=value2#...#SourceTypeN=valueN`.
 
 ##### ZooKeeper orchestrated VMs access
-
 Stream-JMX has ability to resolve JMX service connections for VMs orchestrated by ZooKeeper. In this case you'll need:
 1. Use `tnt4j-stream-jmx-zk` module dependency (for development) or use built jar of this module in your JVM classpath (for deployment). 
 Also see `bin/stream-jmx-connect.bat` (`.sh`) files for commented out variable `MODULE_SET` definition combinations. 
@@ -457,7 +446,6 @@ Note, we also define Solr JMX connection port there - `port=18983`.
 symbol as configuration token placeholder.
 
 ##### How to migrate Source definitions from single to multi VM sampling
-
 When you where sampling JMX running as many instances of Stream-JMX as there where monitored JVMs, you where defining complete `SourceFQN` 
 within `source.factory.RootFQN` property of Stream-JMX TNT4J configuration.
 
@@ -501,7 +489,6 @@ Consider this Stream-JMX run scenario to monitor 3 instances of service runner V
     ```
 
 #### Connecting remote WebSphere Application Server (WAS)
-
 Additions needed to run `SamplingAgent` connected to remote WAS machine can be found in executable OS shell run script files 
 `bin/stream-jmx-conenct-was.bat` or `bin/stream-jmx-conenct-was.sh`. It contains these major configuration additions:
 * WAS environment setup configuration
@@ -522,7 +509,6 @@ Additions needed to run `SamplingAgent` connected to remote WAS machine can be f
 ```
 
 #### Connecting remote WebLogic (version 12c) server instance
-
 Additions needed to run `SamplingAgent` connected to remote WebLogic machine can be found in executable OS shell run script files 
 `bin/stream-jmx-conenct.bat` or `bin/stream-jmx-conenct.sh`. It contains these major configuration additions:
 * WebLogic environment setup configuration in `setDomainEnv.sh/setDomainEnv.cmd` file, exposing JMX access port and security options like:
@@ -604,7 +590,7 @@ For more information, see [Programming WebLogic JNDI](https://docs.oracle.com/mi
 [Accessing WebLogic Server MBeans with JMX](https://docs.oracle.com/cd/E24329_01/web.1211/e24415/accesswls.htm#JMXCU144).
 
 ### Coding into API
-You can connect `SamplingAgent` to JVM from your custom API by calling [SamplingAgent.connect(String,String)](./tnt4j-stream-jmx-core/src/main/java/com/jkoolcloud/tnt4j/stream/jmx/SamplingAgent.java#L757) method.
+You can connect `SamplingAgent` to JVM from your custom API by calling [SamplingAgent.connect(String,String)](./tnt4j-stream-jmx-core/src/main/java/com/jkoolcloud/tnt4j/stream/jmx/SamplingAgent.java#L955) method.
 
 Sample `connect` call for local JVM:
 ```java
@@ -663,7 +649,7 @@ seconds. Sampler options are optional - default value is `*:*!30000`. Initial sa
 * `-sp:` - any system property used by sampler. See [System properties used](#system-properties-used) for details.
 
 ### Coding into API
-You can run `SamplingAgent` for local process runner JVM from your custom API by calling [SamplingAgent.sampleLocalVM(String,boolean)](./tnt4j-stream-jmx-core/src/main/java/com/jkoolcloud/tnt4j/stream/jmx/SamplingAgent.java#L991) method.
+You can run `SamplingAgent` for local process runner JVM from your custom API by calling [SamplingAgent.sampleLocalVM(String,boolean)](./tnt4j-stream-jmx-core/src/main/java/com/jkoolcloud/tnt4j/stream/jmx/SamplingAgent.java#L1078) method.
 
 Sample `sampleLocalVM` call for a local process runner JVM:
 ```java
@@ -677,7 +663,6 @@ try {
 ## Running Stream-JMX as servlet
 
 ### Generic servlet page features
-
 Top of the page is dedicated to list Stream-JMX used properties.
 
 Change properties as you like in input field and press `Sumbit` button to apply changes. JMX sampler service will restart and changes will 
@@ -689,7 +674,6 @@ service will restart.
 Bellow you can see Stream-JMX console output. Refresh page or click `Update` button to update console contents.
 
 ### WebSphere Application Server (WAS)
-
 Build Stream-JMX and find tnt4j-stream-jmx-was-*.ear in distribution build directory or archives produced.
 
 Login to WebSphere Integrated Solutions Console and install TNT4J-Stream-JMX ear you've built:
@@ -712,7 +696,6 @@ Stream-JMX logging on WAS can be performed by WAS Admin console:
 See [Generic servlet page features](#generic-servlet-page-features).
 
 ### WebSphere Liberty Server
-
 Build Stream-JMX and find tnt4j-stream-jmx-liberty-war-*.war in distribution build directory or archives produced.
 
 There is a simple Liberty `server.xml` configuration required to run Stream-JMX servlet:
@@ -773,7 +756,6 @@ See [Generic servlet page features](#generic-servlet-page-features) on what is a
 ## Embed Stream-JMX code into your application
 
 ### Coding
-
 ```java
     // obtain SamplerFactory instance
     SamplerFactory factory = DefaultSamplerFactory.getInstance();
@@ -839,7 +821,6 @@ java -Dlog4j.configuration=file:.\config\log4j.properties -classpath "*;lib/*" c
 ```
 
 ## Stream-JMX configuration
-
 Stream-JMX has configuration properties allowing to configure JMX sampler. It is possible to configure same stream JMX sampler parameter 
 using `System property` or `program argument`. Depending on sampling environment used, in some cases it is easier to configure it using one 
 approach or another. When both definitions available **first** `System property` defined value is assigned and then `program argument` 
@@ -858,7 +839,6 @@ See [System properties used](#system-properties-used) how to configure Stream-JM
 See [Program arguments used](#program-arguments-used) how to configure Stream-JMX using program arguments.
 
 ### System properties used
-
 To define system property for application you can use common JVM argument `-Dkey=value` or `SamplingAgent` program argument `-sp:key=value`.
 
 General use:
@@ -909,7 +889,6 @@ When monitoring multiple VM's over single `stream-jmx` instance, only one logger
 logging conflicts shall occur.
 
 ### Program arguments used
-
 To define stream JMX sampler configuration property use program argument`-slp:`. One argument defines one property. To define multiple 
 properties use as many argument definitions as there are required properties. For example:
 ```cmd
@@ -921,7 +900,6 @@ properties use as many argument definitions as there are required properties. Fo
 ```
 
 ### JMX Sampling Agent sampler options
-
 Agent options are defined using format: `mbean-filter!exclude-filter!sample-ms!init-delay-ms`
 * `mbean-filter` - MBean include name filter defined using object name pattern: `domainName:keysSet`
 * `exclude-filter` - MBean exclude name filter defined using object name pattern: `domainName:keysSet`
@@ -931,7 +909,6 @@ Agent options are defined using format: `mbean-filter!exclude-filter!sample-ms!i
 Default sampling agent options value is: `*:*!!30000`
 
 ### TNT4J Source fields configuration
-
 Stream-JMS has couple additional features in comparison with basic `TNT4J` when building Source `RootFQN` value:
 
 1. Has two dedicated value placeholders `sjmx.serverAddress` and `sjmx.serverName` to resolve remotely sampled machine IP address and host 
@@ -976,9 +953,8 @@ enable this feature:
     ```
 
 ## Stream-JMX event data formatters
-
-* `FactNameValueFormatter` - this class provides key/value formatting for tnt4j activities, events and snapshots. The output format follows 
-the following format:
+* `com.jkoolcloud.tnt4j.streams.format.FactNameValueFormatter` - this class provides key/value formatting for tnt4j activities, events and 
+snapshots. The output format follows the following format:
     ```
     "OBJ:name-value-prefix1\name1=value1,name-value-prefix1\name2=value2,....,name-value-prefixN\nameN=valueN"
     ```
@@ -1052,8 +1028,8 @@ the following format:
     **NOTE:** Entries are not sorted, sequence is same as returned by activity contained snapshots map entries and snapshot properties 
     iterators.
 
-* `FactPathValueFormatter` - this class provides key/value formatting for tnt4j activities, events and snapshots. The output format follows 
-the following format:
+* `com.jkoolcloud.tnt4j.stream.jmx.format.FactPathValueFormatter` - this class provides key/value formatting for tnt4j activities, events 
+and snapshots. The output format follows the following format:
     ```
     "OBJ:object-path1\name1=value1,object-path1\name2=value2,....,object-pathN\nameN=valueN""
     ```
@@ -1146,8 +1122,10 @@ the following format:
     **NOTE:** Entries are sorted by key alphanumeric ordering and key representation is more common to be used for, e.g., tree model 
     construction to represent JMX structure more like `JConsole` does.
 
-* `LevelingJSONFormatter` - this class provides JSON formatting for tnt4j activities, events and snapshots. Difference from 
-`com.jkoolcloud.tnt4j.format.JSONFormatter` is only facts payload is present in produced JSON without major part of TNT4J metadata. 
+* `com.jkoolcloud.tnt4j.format.LevelingJSONFormatter` - this class provides JSON formatting for tnt4j activities, events and snapshots. 
+Difference from `com.jkoolcloud.tnt4j.format.JSONFormatter` is only facts payload is present in produced JSON without major part of TNT4J 
+metadata. 
+
     Sample output:
     ```json
     {
@@ -1648,11 +1626,11 @@ Modules list:
         * `Api` (O) - builds specific API used to sample Liberty JMX (jar).
         * `War` (O) - builds Liberty compliant web application package (war).
    * `ZK` (O) - JMX connections resolution for VMs orchestrated by ZooKeeper.
-   * `Distribution` (OU) - build distribution packages, see `../build/tnt4j-stream-jmx` directory.
+   * `Distribution` (OU) - build distribution packages, see `build/` directory.
 
 All optional modules (extensions) depends to `core` module and can't be build and run without it.
 
-**NOTE:** `Distribution` module performs `maven post build` release assemblies delivery to `../build/tnt4j-stream-jmx` directory.
+**NOTE:** `Distribution` module performs `maven post build` release assemblies delivery to `build/` directory.
 
 ## Requirements
 * JDK 1.8+
@@ -1670,7 +1648,6 @@ running maven script `lib/pom.xml` with `install` goal. For example see [`tnt4j-
 how to do this.
 
 #### `Core` module
-
 This module does not require manually downloaded dependencies, but depends on **JDK** contained instrumentation library `tools.jar`.
 Dependency is defined in:
 * Maven POM script by
@@ -1693,7 +1670,6 @@ TOOLS_PATH="$JAVA_HOME/lib/tools.jar"
 **NOTE:** you may need to change paths if these do not match your environment.
 
 #### `WAS` module
-
 **NOTE:** Because this module requires manually downloaded libraries, it is commented out in main project pom file `tnt4j-stream-jmx/pom.xml` 
 by default. If you want to use it uncomment this line of `pom.xml` file. But `WAS` module will be ready to build only when manually 
 downloaded libraries will be installed to local maven repository.
@@ -1751,14 +1727,13 @@ mvn --projects tnt4j-stream-jmx-core,tnt4j-stream-jmx--distribution --also-make 
 
 Issuing these commands, maven will build only `tnt4j-stream-jmx-core` and `tnt4j-stream-jmx--distribution` modules.
 
-Release assemblies are built to `../build/tnt4j-stream-jmx` directory.
+Release assemblies are built to `build/` directory.
 
 **NOTE:** sometimes maven fails to correctly handle dependencies. If dependency configuration looks fine, but maven still complains about 
 missing dependencies try to delete local maven repository by hand: e.g., on MS Windows delete contents of `c:\Users\[username]\.m2\repository` 
 directory.
 
 ## Running samples
-
 See [Using Stream-JMX](#using-stream-jmx) section.
 
 # Related Projects
