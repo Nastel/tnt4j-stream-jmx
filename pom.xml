@@ -7,10 +7,6 @@
     <version>0.13-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <!--<prerequisites>-->
-    <!--<maven>3.0.0</maven>-->
-    <!--</prerequisites>-->
-
     <name>tnt4j-stream-jmx</name>
     <url>https://github.com/Nastel/tnt4j-stream-jmx</url>
     <description>JMX Collection and Streaming over TNT4J</description>
@@ -116,7 +112,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.2.0</version>
                 <configuration>
                     <encoding>${project.resources.encoding}</encoding>
                 </configuration>
