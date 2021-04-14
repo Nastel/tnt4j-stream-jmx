@@ -57,8 +57,8 @@ public class FactNameValueFormatter extends DefaultFormatter {
 
 	private static final String SNAP_NAME_PROP = "JMX_SNAP_NAME";
 
-	protected Map<String, String> keyReplacements = new HashMap<String, String>();
-	protected Map<String, String> valueReplacements = new HashMap<String, String>();
+	protected Map<String, String> keyReplacements = new HashMap<>();
+	protected Map<String, String> valueReplacements = new HashMap<>();
 
 	public FactNameValueFormatter() {
 		super("time.stamp={2},level={1},source={3},msg=\"{0}\"");
