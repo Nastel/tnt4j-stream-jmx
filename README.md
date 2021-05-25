@@ -42,14 +42,14 @@ It is simple, do one of the following:
  * run Stream-JMX as a `-javaagent`
  * attach Stream-JMX as agent to running JVM
  * connect Stream-JMX over JMXConnector to locally running JVM or remote JMX service
- * embed Stream-JMX code into your application, by using this maven dependency:
- ```xml
-    <dependency>
-        <groupId>com.jkoolcloud.tnt4j.stream</groupId>
-        <artifactId>tnt4j-stream-jmx-core</artifactId>
-        <version>0.12.1</version>
-    </dependency>
- ```
+ * embed Stream-JMX code into your application, by using this Maven dependency:
+   ```xml
+       <dependency>
+           <groupId>com.jkoolcloud.tnt4j.stream</groupId>
+           <artifactId>tnt4j-stream-jmx-core</artifactId>
+           <version>0.12.1</version>
+       </dependency>
+   ```
 
 **NOTE:** Running Stream-JMX as `-javaagent`, attaching agent to running JVM or connecting over JMXConnector to locally running JVM or 
 remote JMX service over RMI connection can be invoked without changing your application code.
@@ -1701,7 +1701,7 @@ Modules list:
 
 All optional modules (extensions) depends to `core` module and can't be build and run without it.
 
-**NOTE:** `Distribution` module performs `maven post build` release assemblies delivery to `build/` directory.
+**NOTE:** `Distribution` module performs Maven post-build release assemblies delivery to `build/` directory.
 
 ## Requirements
 * JDK 1.8+
@@ -1709,28 +1709,28 @@ All optional modules (extensions) depends to `core` module and can't be build an
 * [TNT4J](https://nastel.github.io/TNT4J)
 * [JESL](https://nastel.github.io/JESL)
 
-All other required dependencies are defined in project modules `pom.xml` files. If maven is running online mode it should download these 
+All other required dependencies are defined in project modules `pom.xml` files. If Maven is running online mode it should download these 
 defined dependencies automatically.
 
 ### Manually installed dependencies
 Some of required and optional dependencies may be not available in public [Maven Repository](http://repo.maven.apache.org/maven2/). In this 
-case we would recommend to download those dependencies manually into module's `lib` directory and install into local maven repository by 
-running maven script `lib/pom.xml` with `install` goal. For example see [`tnt4j-stream-jmx/tnt4j-stream-jmx-was/tnt4j-stream-jmx-was-api/lib/pom.xml`](./tnt4j-stream-jmx-was/tnt4j-stream-jmx-was-api/lib/pom.xml) 
+case we would recommend to download those dependencies manually into module's `lib` directory and install into local Maven repository by 
+running Maven script `lib/pom.xml` with `install` goal. For example see [`tnt4j-stream-jmx/tnt4j-stream-jmx-was/tnt4j-stream-jmx-was-api/lib/pom.xml`](./tnt4j-stream-jmx-was/tnt4j-stream-jmx-was-api/lib/pom.xml) 
 how to do this.
 
 #### `Core` module
 This module does not require manually downloaded dependencies, but depends on **JDK** contained instrumentation library `tools.jar`.
 Dependency is defined in:
 * Maven POM script by
-```xml
-<dependency>
-  <groupId>com.sun</groupId>
-  <artifactId>tools</artifactId>
-  <version>${project.java.version}</version>
-  <scope>system</scope>
-  <systemPath>${java.home}/../lib/tools.jar</systemPath>
-</dependency>
-```
+  ```xml
+      <dependency>
+          <groupId>com.sun</groupId>
+          <artifactId>tools</artifactId>
+          <version>${project.java.version}</version>
+          <scope>system</scope>
+          <systemPath>${java.home}/../lib/tools.jar</systemPath>
+      </dependency>
+  ```
 * System executables `bin/stream-jmx*.bat` or `bin/stream-jmx*.sh` by environment variable `TOOLS_PATH`
 ```cmd
 set TOOLS_PATH="%JAVA_HOME%\lib\tools.jar"
@@ -1743,7 +1743,7 @@ TOOLS_PATH="$JAVA_HOME/lib/tools.jar"
 #### `WAS` module
 **NOTE:** Because this module requires manually downloaded libraries, it is commented out in main project pom file `tnt4j-stream-jmx/pom.xml` 
 by default. If you want to use it uncomment this line of `pom.xml` file. But `WAS` module will be ready to build only when manually 
-downloaded libraries will be installed to local maven repository.
+downloaded libraries will be installed to local Maven repository.
 
 What to download manually or copy from your existing IBM MQ installation:
 * IBM WAS (e.g., version 8.5) client libs
@@ -1775,17 +1775,17 @@ If you don't have actual `WAS` installation, `WAS_PATH` may also refer to jars l
 directory.
 
 ## Building
-* To build the project, run maven goals `clean package`
-* To build the project and install to local repo, run maven goals `clean install`
+* To build the project, run Maven goals `clean package`
+* To build the project and install to local repo, run Maven goals `clean install`
 * To make distributable release assemblies use one of profiles: `pack-bin` or `pack-all`:
     * containing only binary (including `test` package) distribution: run `mvn -P pack-bin`
     * containing binary (including `test` package), `source` and `javadoc` distribution: run `mvn -P pack-all`
-* To make maven required `source` and `javadoc` packages, use profile `pack-maven`
-* To make maven central compliant release having `source`, `javadoc` and all signed packages, use `maven-release` profile
+* To make Maven required `source` and `javadoc` packages, use profile `pack-maven`
+* To make Maven central compliant release having `source`, `javadoc` and all signed packages, use `maven-release` profile
 
-By default maven will build all modules defined in `tnt4j-stream-jmx/pom.xml` file.
+By default Maven will build all modules defined in `tnt4j-stream-jmx/pom.xml` file.
 
-If you do not want to build some of optional modules, comment those out like `WAS` module is. Or you can define maven to build your 
+If you do not want to build some of optional modules, comment those out like `WAS` module is. Or you can define Maven to build your 
 preferred set of modules using `-pl, --projects` argument (comma separated modules list) together with `-am, --also-make` argument, e.g.:
 
 ```cmd
@@ -1798,12 +1798,12 @@ mvn --projects tnt4j-stream-jmx-core,tnt4j-stream-jmx--distribution --also-make 
 
 **NOTE:** modules list should be without spaces after comma!
 
-Issuing these commands, maven will build only `tnt4j-stream-jmx-core` and `tnt4j-stream-jmx--distribution` modules.
+Issuing these commands, Maven will build only `tnt4j-stream-jmx-core` and `tnt4j-stream-jmx--distribution` modules.
 
 Release assemblies are built to `build/` directory.
 
-**NOTE:** sometimes maven fails to correctly handle dependencies. If dependency configuration looks fine, but maven still complains about 
-missing dependencies try to delete local maven repository by hand: e.g., on MS Windows delete contents of `c:\Users\[username]\.m2\repository` 
+**NOTE:** sometimes Maven fails to correctly handle dependencies. If dependency configuration looks fine, but Maven still complains about 
+missing dependencies try to delete local Maven repository by hand: e.g., on MS Windows delete contents of `c:\Users\[username]\.m2\repository` 
 directory.
 
 ## Running samples
