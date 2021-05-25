@@ -114,18 +114,42 @@
         </plugins>
     </build>
 
+    <profiles>
+        <profile>
+            <id>java9-plus</id>
+            <activation>
+                <jdk>[9.0,)</jdk>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>com.github.olivergondza</groupId>
+                    <artifactId>maven-jdk-tools-wrapper</artifactId>
+                    <version>0.1</version>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>up-to-java9</id>
+            <activation>
+                <jdk>(,9.0)</jdk>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>com.sun</groupId>
+                    <artifactId>tools</artifactId>
+                    <version>${project.java.version}</version>
+                    <scope>system</scope>
+                    <systemPath>${java.home}/../lib/tools.jar</systemPath>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+
     <dependencies>
         <dependency>
             <groupId>com.jkoolcloud</groupId>
             <artifactId>jesl</artifactId>
             <version>${jesl.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.sun</groupId>
-            <artifactId>tools</artifactId>
-            <version>${project.java.version}</version>
-            <scope>system</scope>
-            <systemPath>${java.home}/../lib/tools.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
