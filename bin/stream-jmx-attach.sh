@@ -14,18 +14,27 @@ else
     SCRIPTPATH=$( cd "$(dirname "$0")" ; pwd -P )
 fi
 
-TOOLS_PATH="$JAVA_HOME/lib/tools.jar"
-LIBPATH="$SCRIPTPATH/../*:$SCRIPTPATH/../lib/*:$TOOLS_PATH"
-TNT4JOPTS="-Dtnt4j.dump.on.vm.shutdown=true -Dtnt4j.dump.on.exception=true -Dtnt4j.dump.provider.default=true"
+LIBPATH="$SCRIPTPATH/../*:$SCRIPTPATH/../lib/*"
+
+jver=$("$JAVA_HOME/bin/java" -fullversion 2>&1 | sed -n ';s/.* version "\(.*\)\.\(.*\)\..*"/\1\2/p;')
+
+if [[ $jver -gt 18 ]]; then
+  TNT4JOPTS="--add-exports=jdk.attach/sun.tools.attach=ALL-UNNAMED --add-opens=jdk.attach/sun.tools.attach=ALL-UNNAMED"
+else
+  TOOLS_PATH="$JAVA_HOME/lib/tools.jar"
+  LIBPATH="$LIBPATH:$TOOLS_PATH"
+fi
+
+TNT4JOPTS="$TNT4JOPTS -Dtnt4j.dump.on.vm.shutdown=true -Dtnt4j.dump.on.exception=true -Dtnt4j.dump.provider.default=true"
 
 ### --- tnt4j file ----
-if [ -z "$TNT4J_PROPERTIES" ]; then
+if [[ -z "$TNT4J_PROPERTIES" ]]; then
   TNT4J_PROPERTIES="$SCRIPTPATH/../config/tnt4j.properties"
 fi
 TNT4JOPTS="$TNT4JOPTS -Dtnt4j.config=$TNT4J_PROPERTIES"
 ### -------------------
 ### --- log4j file ----
-if [ -z "$LOG4J_PROPERTIES" ]; then
+if [[ -z "$LOG4J_PROPERTIES" ]]; then
   LOG4J_PROPERTIES="$SCRIPTPATH/../config/log4j.properties"
 fi
 TNT4JOPTS="$TNT4JOPTS -Dlog4j.configuration=file:$LOG4J_PROPERTIES"
@@ -36,41 +45,41 @@ TNT4JOPTS="$TNT4JOPTS -Dlog4j.configuration=file:$LOG4J_PROPERTIES"
 ### ---- Agent sampler options ----
 AGENT_OPTIONS="*:*!!60000"
 ## jmx options from environment
-if [ -z "$TNT4J_AGENT_OPTIONS" ]; then
+if [[ -z "$TNT4J_AGENT_OPTIONS" ]]; then
     TNT4J_AGENT_OPTIONS="$AGENT_OPTIONS"
 fi
 ## jmx options from command line overrides
-if [ "x$2" != "x" ] && [ "x$2" != "x." ]; then
+if [[ "x$2" != "x" ]] && [[ "x$2" != "x." ]]; then
     TNT4J_AGENT_OPTIONS="$2"
 fi
 ### -------------------------------
 
 ### ---- AppServer identifies source ----
-if [ -z "$TNT4J_APPSERVER" ]; then
+if [[ -z "$TNT4J_APPSERVER" ]]; then
     TNT4J_APPSERVER="Default"
 fi
-if [ "x$3" != "x" ] && [ "x$3" != "x." ]; then
+if [[ "x$3" != "x" ]] && [[ "x$3" != "x." ]]; then
     TNT4J_APPSERVER="$3"
 fi
 TNT4JOPTS="$TNT4JOPTS -Dfile.encoding=UTF-8 -Dsjmx.serviceId=$TNT4J_APPSERVER"
 ### -------------------------------------
 
 ### ---- Agent arguments ----
-if [ -z "$TNT4J_AGENT_ARGS" ]; then
+if [[ -z "$TNT4J_AGENT_ARGS" ]]; then
 ### use this when streaming to AutoPilot
 #    TNT4J_AGENT_ARGS="-slp:compositeDelimiter=\\"
 ### use this when streaming to jKool
     TNT4J_AGENT_ARGS="-slp:compositeDelimiter=_"
 fi
-if [ "x$4" != "x" ] && [ "x$4" != "x." ]; then
+if [[ "x$4" != "x" ]] && [[ "x$4" != "x." ]]; then
     TNT4J_AGENT_ARGS="$4"
 fi
 ### -------------------------
 
-if [ "$JAVA_HOME" == "" ]; then
+if [[ "$JAVA_HOME" == "" ]]; then
   echo '"JAVA_HOME" env. variable is not defined!..'
 else
-  echo 'Will use java from: "$JAVA_HOME"'
+  echo 'Will use java from:' "$JAVA_HOME"
 fi
 
 "$JAVA_HOME/bin/java" $TNT4JOPTS -classpath "$LIBPATH" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -attach -vm:$1 -ap:"$SCRIPTPATH/../tnt4j-stream-jmx-core-0.13-SNAPSHOT-all.jar" -ao:$TNT4J_AGENT_OPTIONS $TNT4J_AGENT_ARGS
