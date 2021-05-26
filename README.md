@@ -67,8 +67,13 @@ java.io.IOException: Non-numeric value found - int expected
     at sun.tools.attach.HotSpotVirtualMachine.loadAgentLibrary(HotSpotVirtualMachine.java:79)
     at sun.tools.attach.HotSpotVirtualMachine.loadAgent(HotSpotVirtualMachine.java:103)
     at com.sun.tools.attach.VirtualMachine.loadAgent(VirtualMachine.java:540)
-``` 
-* check which JDK `tools.jar` is referred over `LIBPATH` variable, it also must match runner JVM
+```
+* check if JDK attach tooling is enabled and bound: 
+    * for Java versions prior **`9`**, check which JDK `tools.jar` is referred over `LIBPATH` variable, it also must match runner JVM
+    * for Java versions **`9+`**, check if `jdk.attach` module is enabled over `--add-opens` and `--add-exports` arguments:
+    ```cmd
+    java --add-exports=jdk.attach/sun.tools.attach=ALL-UNNAMED --add-opens=jdk.attach/sun.tools.attach=ALL-UNNAMED ...
+    ```
 
 If JVM vendors, architecture or versions does not match conditions above - then only way to collect JMX samples is using `-connect` mode 
 defining `JMXConnector` (over `RMI`) URL.
@@ -311,7 +316,7 @@ syntax for that file is:
  service:jmx:rmi:///jndi/rmi://localhost:9997/jmxrmi       *:*!!60000           admin             admin           SERVICE=@bean:java.lang:type=Runtime/?Name#SERVER=@bean:kafka.server:type=app-info,id=?#DATACENTER=@bean:kafka.server:type=KafkaServer,name=ClusterId/?Value
 ##############################################################################################################################################################
 ```
-To run JMX samples streaming for multiple VM's define in external configuration file use `stream-jmx-connect-file-config.bat/.sh` files, e.g.:
+To run JMX samples streaming for multiple VM's define in external configuration file use `stream-jmx-connect-file-config.bat (.sh)` files, e.g.:
 
 *nix
 ```bash
@@ -519,7 +524,7 @@ Additions needed to run `SamplingAgent` connected to remote WAS machine can be f
 Additions needed to run `SamplingAgent` connected to remote WebLogic machine can be found in executable OS shell run script files 
 `bin/stream-jmx-conenct.bat` or `bin/stream-jmx-conenct.sh`. It contains these major configuration additions:
 * WebLogic environment setup configuration in `setDomainEnv.sh/setDomainEnv.cmd` file, exposing JMX access port and security options like:
-    * .cmd
+    * .bat/cmd
     ```cmd
     set JAVA_OPTIONS=%JAVA_OPTIONS% -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=8788 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false
     ```
@@ -534,7 +539,7 @@ Additions needed to run `SamplingAgent` connected to remote WebLogic machine can
     * `javax.javaee-api.jar`
 
     For example:
-    * .bat
+    * .bat/cmd
     ```cmd
     set WL_HOME=C:\Oracle\Middleware\Oracle_Home
     set WL_CLINET_LIBS=%WL_HOME%\wlserver\server\lib\wlclient.jar;%WL_HOME%\wlserver\server\lib\wljmxclient.jar;%WL_HOME%\wlserver\server\lib\javax.javaee-api.jar
@@ -547,7 +552,7 @@ Additions needed to run `SamplingAgent` connected to remote WebLogic machine can
     LIBPATH="$LIBPATH:$SCRIPTPATH/../lib/*:$WL_CLINET_LIBS"
     ```
 * enable `j2ee` module use:
-    * .bat 
+    * .bat/cmd 
     ```cmd
     set MODULE_SET=core j2ee
     ```
@@ -1719,10 +1724,10 @@ running Maven script `lib/pom.xml` with `install` goal. For example see [`tnt4j-
 how to do this.
 
 #### `Core` module
-This module does not require manually downloaded dependencies, but depends on **JDK** contained instrumentation library `tools.jar`.
-Dependency is defined in:
-* Maven POM script by
-  ```xml
+This module does not require manually downloaded dependencies, but depends on **JDK** contained attach instrumentation library.
+* For Java versions prior **`9`**, dependency is defined in:
+    * Maven POM script by
+    ```xml
       <dependency>
           <groupId>com.sun</groupId>
           <artifactId>tools</artifactId>
@@ -1730,14 +1735,33 @@ Dependency is defined in:
           <scope>system</scope>
           <systemPath>${java.home}/../lib/tools.jar</systemPath>
       </dependency>
-  ```
-* System executables `bin/stream-jmx*.bat` or `bin/stream-jmx*.sh` by environment variable `TOOLS_PATH`
-```cmd
-set TOOLS_PATH="%JAVA_HOME%\lib\tools.jar"
-```
-```bash
-TOOLS_PATH="$JAVA_HOME/lib/tools.jar"
-```
+    ```
+    * System executables `bin/stream-jmx*.bat` or `bin/stream-jmx*.sh` by variable `TOOLS_PATH`
+        * .bat/cmd
+        ```cmd
+        set TOOLS_PATH="%JAVA_HOME%\lib\tools.jar"
+        ```
+        * .sh
+        ```bash
+        TOOLS_PATH="$JAVA_HOME/lib/tools.jar"
+        ```
+* For Java versions **`9+`**, `jdk.attach` module is enabled in:
+    * Maven POM script by adding `maven-compiler-plugin` plugin configuration
+    ```xml
+      <compilerArgs>
+          <arg>--add-exports=jdk.attach/sun.tools.attach=ALL-UNNAMED</arg>
+          <arg>--add-opens=jdk.attach/sun.tools.attach=ALL-UNNAMED</arg>
+      </compilerArgs>
+    ```
+    * System executables `bin/stream-jmx*.bat` or `bin/stream-jmx*.sh` by variable `TNT4JOPTS`
+        * .bat/cmd
+        ```cmd
+        TNT4JOPTS="--add-exports=jdk.attach/sun.tools.attach=ALL-UNNAMED" "--add-opens=jdk.attach/sun.tools.attach=ALL-UNNAMED"
+        ```
+        * .sh
+        ```bash
+        TNT4JOPTS="--add-exports=jdk.attach/sun.tools.attach=ALL-UNNAMED --add-opens=jdk.attach/sun.tools.attach=ALL-UNNAMED"
+        ```
 **NOTE:** you may need to change paths if these do not match your environment.
 
 #### `WAS` module
@@ -1760,15 +1784,17 @@ Download the above libraries and place into the `tnt4j-stream-jmx/tnt4j-stream-j
 (O) marked libraries are optional
 
 Additionally alter system executables `bin/stream-jmx*.bat` or `bin/stream-jmx*.sh` by extending environment variable `LIBPATH` value:
+* MS Windows
 ```cmd
 set WAS_HOME=C:\IBM\WebSphere\AppServer
 set WAS_PATH=%WAS_HOME%\runtimes\*;%WAS_HOME%\lib\webadmin\management.jar;%WAS_HOME%\plugins\com.ibm.ws.runtime.jar
-set LIBPATH=%RUNDIR%..\*;%RUNDIR%..\lib\*;%TOOLS_PATH%;%WAS_PATH%
+set LIBPATH=%RUNDIR%..\*;%RUNDIR%..\lib\*;%WAS_PATH%
 ```
+* *nix
 ```bash
 WAS_HOME="/opt/IBM/WebSphere/AppServer"
 WAS_PATH="$WAS_HOME/runtimes/*:$WAS_HOME/lib/webadmin/management.jar:$WAS_HOME/plugins/com.ibm.ws.runtime.jar"
-LIBPATH="$SCRIPTPATH/../*:$SCRIPTPATH/../lib/*:$TOOLS_PATH:$WAS_PATH"
+LIBPATH="$SCRIPTPATH/../*:$SCRIPTPATH/../lib/*:$WAS_PATH"
 ```
 
 If you don't have actual `WAS` installation, `WAS_PATH` may also refer to jars located in `tnt4j-stream-jmx/tnt4j-stream-jmx-was/lib/*` 
