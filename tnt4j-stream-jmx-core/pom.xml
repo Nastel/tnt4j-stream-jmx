@@ -120,13 +120,32 @@
             <activation>
                 <jdk>[9.0,)</jdk>
             </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>com.github.olivergondza</groupId>
-                    <artifactId>maven-jdk-tools-wrapper</artifactId>
-                    <version>0.1</version>
-                </dependency>
-            </dependencies>
+            <properties>
+                <project.java.version>${java.specification.version}</project.java.version>
+                <java.source.version>${project.java.version}</java.source.version>
+                <java.target.version>${project.java.version}</java.target.version>
+                <java.compiler.version>${project.java.version}</java.compiler.version>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <version>3.8.1</version>
+                        <configuration>
+                            <verbose>${java.compiler.verbose}</verbose>
+                            <compilerVersion>${java.compiler.version}</compilerVersion>
+                            <source>${java.source.version}</source>
+                            <target>${java.target.version}</target>
+                            <debuglevel>${java.compiler.debuglevel}</debuglevel>
+                            <compilerArgs>
+                                <arg>--add-exports=jdk.attach/sun.tools.attach=ALL-UNNAMED</arg>
+                                <arg>--add-opens=jdk.attach/sun.tools.attach=ALL-UNNAMED</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
         <profile>
             <id>up-to-java9</id>
