@@ -68,8 +68,8 @@ java.io.IOException: Non-numeric value found - int expected
     at sun.tools.attach.HotSpotVirtualMachine.loadAgent(HotSpotVirtualMachine.java:103)
     at com.sun.tools.attach.VirtualMachine.loadAgent(VirtualMachine.java:540)
 ```
-* check if JDK attach tooling is enabled and bound: 
-    * for Java versions prior **`9`**, check which JDK `tools.jar` is referred over `LIBPATH` variable, it also must match runner JVM
+* check if **JDK** `attach` tooling is enabled and bound: 
+    * for Java versions prior **`9`**, check which **JDK** `tools.jar` is referred over `LIBPATH` variable, it also must match runner JVM
     * for Java versions **`9+`**, check if `jdk.attach` module is enabled over `--add-opens` and `--add-exports` arguments:
     ```cmd
     java --add-exports=jdk.attach/sun.tools.attach=ALL-UNNAMED --add-opens=jdk.attach/sun.tools.attach=ALL-UNNAMED ...
@@ -1724,7 +1724,7 @@ running Maven script `lib/pom.xml` with `install` goal. For example see [`tnt4j-
 how to do this.
 
 #### `Core` module
-This module does not require manually downloaded dependencies, but depends on **JDK** contained attach instrumentation library.
+This module does not require manually downloaded dependencies, but depends on **JDK** contained `attach` instrumentation library.
 * For Java versions prior **`9`**, dependency is defined in:
     * Maven POM script by
     ```xml
