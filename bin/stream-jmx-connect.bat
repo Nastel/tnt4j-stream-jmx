@@ -37,7 +37,9 @@ rem -----------------------------------------
 
 set LIBPATH=%LIBPATH%;%RUNDIR%..\lib\*
 
-for /f tokens^=2-5^ delims^=.-_^" %%j in ('%JAVA_HOME%\bin\java -fullversion 2^>^&1') do set "jver=%%j%%k"
+for /f tokens^=2-5^ delims^=.+-_^" %%j in ('%JAVA_HOME%\bin\java -fullversion 2^>^&1') do set "jver=%%j%%k"
+rem for early access versions replace "ea" part with "00" to get comparable number
+set jver=%jver:ea=00%
 
 IF %jver% GTR 18 set TNT4JOPTS="--add-exports=jdk.attach/sun.tools.attach=ALL-UNNAMED" "--add-opens=jdk.attach/sun.tools.attach=ALL-UNNAMED"
 IF %jver% LEQ 18 set LIBPATH=%LIBPATH%;%JAVA_HOME%\lib\tools.jar
