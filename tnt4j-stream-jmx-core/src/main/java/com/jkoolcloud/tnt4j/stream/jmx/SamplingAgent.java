@@ -21,10 +21,10 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.security.GeneralSecurityException;
 import java.security.cert.X509Certificate;
 import java.util.*;
@@ -314,8 +314,16 @@ public class SamplingAgent {
 	 *             if exception occurs while extending system class loader's classpath
 	 */
 	private static void extendClasspath(URL... classPathEntriesURL) throws Exception {
-		URLClassLoader classLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
-		Method method = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
+		ClassLoader classLoader = ClassLoader.getSystemClassLoader();
+		if (classLoader == null) {
+			return;
+		}
+
+		Class<?> clCls = classLoader.getClass();
+		Field ucpField = clCls.getDeclaredField("ucp");
+		ucpField.setAccessible(true);
+		Object ucp = ucpField.get(classLoader);
+		Method method = ucp.getClass().getDeclaredMethod("addURL", URL.class);
 		method.setAccessible(true);
 		for (URL classPathEntryURL : classPathEntriesURL) {
 			try {

@@ -136,6 +136,11 @@ The options are `-javaagent:tnt4j-stream-jmx-core-all.jar="mbean-filter!sample-t
 as locations of log4j and tnt4j configuration files. See [JMX Sampling Agent sampler options](#jmx-sampling-agent-sampler-options) for 
 details.
 
+**NOTE:** in case your Java runtime is version **`9+`**, add these Java command line arguments:
+```cmd
+--add-exports=java.base/jdk.internal.loader=ALL-UNNAMED --add-opens=java.base/jdk.internal.loader=ALL-UNNAMED
+```
+
 ## Attaching Stream-JMX to running JVM
 
 ### Command line to run
