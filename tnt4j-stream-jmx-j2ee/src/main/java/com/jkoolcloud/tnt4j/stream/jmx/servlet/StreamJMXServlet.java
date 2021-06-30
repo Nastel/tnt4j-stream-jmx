@@ -91,77 +91,80 @@ public abstract class StreamJMXServlet extends HttpServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		if (req.getRequestURI().endsWith("/js/tntJmx.js")) {
-			resp.setContentType("application/javascript");
-			resp.getWriter()
-					.write(getString(Utils.getResourceAsStream(StreamJMXServlet.class, "/static/js/tntJmx.js")));
-			return;
+		try (PrintWriter out = resp.getWriter()) {
+			if (req.getRequestURI().endsWith("/js/tntJmx.js")) {
+				resp.setContentType("application/javascript");
+				out.write(getString(Utils.getResourceAsStream(StreamJMXServlet.class, "/static/js/tntJmx.js")));
+				out.flush();
+				return;
+			}
+
+			if (req.getRequestURI().endsWith("/css/tntJmx.css")) {
+				resp.setContentType("text/css");
+				out.write(getString(Utils.getResourceAsStream(StreamJMXServlet.class, "/static/css/tntJmx.css")));
+				out.flush();
+				return;
+			}
+
+			out.println("<html>");
+			out.println("<head>");
+			outputStyle(out, req.getContextPath());
+			outputScript(out, req.getContextPath());
+			out.println("</head>");
+			out.println("<body>");
+			out.println("<h1>TNT4J-Stream-JMX</h1>");
+
+			out.println("<form action=\"" + req.getServletPath() + "\" method=\"post\">");
+			out.println("<table>");
+
+			out.println("<tr>");
+			out.println("<th>Property</th>");
+			out.println("<th>Value</th>");
+			out.println("<th>Permission</th>");
+			out.println("</tr>");
+			for (StreamJMXProperty property : StreamJMXProperties.values(servletProperties, EDITABLE)) {
+				printTableLine(out, property, true, false);
+			}
+			for (StreamJMXProperty property : StreamJMXProperties.values(servletProperties, EDITABLE_PW)) {
+				printTableLine(out, property, true, true);
+			}
+			printTableSplitLine(out);
+			for (StreamJMXProperty property : StreamJMXProperties.values(servletProperties, READ_ONLY)) {
+				printTableLine(out, property, false, false);
+			}
+
+			SecurityManager securityManager = System.getSecurityManager();
+			boolean permittedChangeIO;
+			try {
+				securityManager.checkPermission(new RuntimePermission("setIO"));
+				permittedChangeIO = true;
+			} catch (SecurityException e) {
+				permittedChangeIO = false;
+			} catch (NullPointerException e) {
+				permittedChangeIO = true;
+			}
+
+			out.println("<tr><td>Permission SetIO </td> <td></td>");
+			out.println("<td>" + permittedChangeIO + " </td>");
+			out.println("</tr>");
+
+			out.println("</table><br>");
+
+			out.println("<br>");
+			out.println("<input type=\"submit\" value=\"Submit\"><br>");
+			out.println("</form>");
+			out.println("<br>");
+
+			outputTabs(out, req.getServletPath());
+
+			outputLogger(out);
+
+			out.println("<input type=\"button\" value=\"Refresh log\" onClick=\"window.location.reload(true)\">");
+			out.println("</body>");
+			out.println("</html>");
+
+			out.flush();
 		}
-
-		if (req.getRequestURI().endsWith("/css/tntJmx.css")) {
-			resp.setContentType("text/css");
-			resp.getWriter()
-					.write(getString(Utils.getResourceAsStream(StreamJMXServlet.class, "/static/css/tntJmx.css")));
-			return;
-		}
-
-		PrintWriter out = resp.getWriter();
-		out.println("<html>");
-		out.println("<head>");
-		outputStyle(out, req.getContextPath());
-		outputScript(out, req.getContextPath());
-		out.println("</head>");
-		out.println("<body>");
-		out.println("<h1>TNT4J-Stream-JMX</h1>");
-
-		out.println("<form action=\"" + req.getServletPath() + "\" method=\"post\">");
-		out.println("<table>");
-
-		out.println("<tr>");
-		out.println("<th>Property</th>");
-		out.println("<th>Value</th>");
-		out.println("<th>Permission</th>");
-		out.println("</tr>");
-		for (StreamJMXProperty property : StreamJMXProperties.values(servletProperties, EDITABLE)) {
-			printTableLine(out, property, true, false);
-		}
-		for (StreamJMXProperty property : StreamJMXProperties.values(servletProperties, EDITABLE_PW)) {
-			printTableLine(out, property, true, true);
-		}
-		printTableSplitLine(out);
-		for (StreamJMXProperty property : StreamJMXProperties.values(servletProperties, READ_ONLY)) {
-			printTableLine(out, property, false, false);
-		}
-
-		SecurityManager securityManager = System.getSecurityManager();
-		boolean permittedChangeIO;
-		try {
-			securityManager.checkPermission(new RuntimePermission("setIO"));
-			permittedChangeIO = true;
-		} catch (SecurityException e) {
-			permittedChangeIO = false;
-		} catch (NullPointerException e) {
-			permittedChangeIO = true;
-		}
-
-		out.println("<tr><td>Permission SetIO </td> <td></td>");
-		out.println("<td>" + permittedChangeIO + " </td>");
-		out.println("</tr>");
-
-		out.println("</table><br>");
-
-		out.println("<br>");
-		out.println("<input type=\"submit\" value=\"Submit\"><br>");
-		out.println("</form>");
-		out.println("<br>");
-
-		outputTabs(out, req.getServletPath());
-
-		outputLogger(out);
-
-		out.println("<input type=\"button\" value=\"Refresh log\" onClick=\"window.location.reload(true)\">");
-		out.println("</body>");
-		out.println("</html>");
 	}
 
 	@Override
@@ -213,7 +216,6 @@ public abstract class StreamJMXServlet extends HttpServlet {
 	}
 
 	protected void postDestroy() {
-
 	}
 
 	private void printTableLine(PrintWriter out, StreamJMXProperty property, boolean editable, boolean password) {
