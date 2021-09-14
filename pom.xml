@@ -69,7 +69,7 @@
         <!--<maven.test.skip>true</maven.test.skip>-->
         <gpg.skip>true</gpg.skip>
 
-        <org.slf4j.version>1.7.30</org.slf4j.version>
+        <org.slf4j.version>1.7.32</org.slf4j.version>
         <log4j.version>1.2.17</log4j.version>
     </properties>
 
@@ -127,6 +127,11 @@
     <build>
         <defaultGoal>clean install</defaultGoal>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.1.0</version>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
