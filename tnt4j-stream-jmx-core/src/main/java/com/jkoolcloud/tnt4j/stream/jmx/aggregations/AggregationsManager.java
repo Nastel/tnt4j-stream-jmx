@@ -17,6 +17,7 @@
 package com.jkoolcloud.tnt4j.stream.jmx.aggregations;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.Reader;
 import java.util.ArrayList;
@@ -84,11 +85,22 @@ public class AggregationsManager {
 	@SuppressWarnings("unchecked")
 	protected static void loadConfig(String cfgPath) {
 		Collection<Map<String, ?>> cfg = new ArrayList<>();
-		Gson gson = new Gson();
-		try (Reader cfgReader = new BufferedReader(new FileReader(cfgPath))) {
-			cfg = gson.fromJson(cfgReader, cfg.getClass());
-		} catch (Exception exc) {
-			LOGGER.log(OpLevel.ERROR, "Failed to load aggregations configuration file ''{0}''", cfgPath, exc);
+		if (new File(cfgPath).exists()) {
+			Gson gson = new Gson();
+			try (Reader cfgReader = new BufferedReader(new FileReader(cfgPath))) {
+				cfg = gson.fromJson(cfgReader, cfg.getClass());
+			} catch (Exception exc) {
+				LOGGER.log(OpLevel.ERROR, "Failed to load aggregations configuration file ''{0}''", cfgPath, exc);
+			}
+		} else {
+			String cfgProp = System.getProperty(SYS_PROP_AGGREGATIONS_CONFIG);
+			if (cfgProp != null) {
+				LOGGER.log(OpLevel.WARNING,
+						"System property ''{0}'' defined aggregations configuration file ''{1}'' not found!",
+						SYS_PROP_AGGREGATIONS_CONFIG, cfgPath);
+			} else {
+				LOGGER.log(OpLevel.DEBUG, "Default aggregations configuration ''{0}'' not found!", cfgPath);
+			}
 		}
 
 		int idx = 0;
