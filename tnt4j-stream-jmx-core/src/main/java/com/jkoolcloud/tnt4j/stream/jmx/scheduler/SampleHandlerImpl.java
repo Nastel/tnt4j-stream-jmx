@@ -74,11 +74,11 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	Throwable lastError;
 
 	MBeanServerNotificationFilter MBeanFilter;
-	List<ObjectName> iFilters = new ArrayList<ObjectName>(5), eFilters = new ArrayList<ObjectName>(5);
-	Map<AttributeCondition, AttributeAction> conditions = new LinkedHashMap<AttributeCondition, AttributeAction>(89);
-	Map<ObjectName, MBeanInfo> mbeans = new ConcurrentHashMap<ObjectName, MBeanInfo>(89);
+	List<ObjectName> iFilters = new ArrayList<>(5), eFilters = new ArrayList<>(5);
+	Map<AttributeCondition, AttributeAction> conditions = new LinkedHashMap<>(89);
+	Map<ObjectName, MBeanInfo> mbeans = new ConcurrentHashMap<>(89);
 
-	final List<SampleListener> listeners = new ArrayList<SampleListener>(5);
+	final List<SampleListener> listeners = new ArrayList<>(5);
 
 	/**
 	 * Create new instance of {@code SampleHandlerImpl} with a given MBean server and a set of filters.
@@ -317,7 +317,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 		snapshot.add(STAT_SAMPLE_TIME_USEC, lastSampleTimeUsec);
 
 		// get custom statistics
-		Map<String, Object> stats = new HashMap<String, Object>();
+		Map<String, Object> stats = new HashMap<>();
 		doStats(stats);
 		snapshot.addAll(stats);
 
