@@ -29,6 +29,7 @@ import com.jkoolcloud.tnt4j.core.OpLevel;
 import com.jkoolcloud.tnt4j.core.PropertySnapshot;
 import com.jkoolcloud.tnt4j.core.Snapshot;
 import com.jkoolcloud.tnt4j.source.Source;
+import com.jkoolcloud.tnt4j.stream.jmx.aggregations.AggregationsManager;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.*;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleContext;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
@@ -303,6 +304,8 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	 * @return snapshot instance containing metrics at the end of each sample
 	 */
 	private PropertySnapshot finish(Activity activity) {
+		AggregationsManager.aggregate(activity);
+
 		PropertySnapshot snapshot = new PropertySnapshot(activity.getName(), "SampleContext");
 		snapshot.add(STAT_NOOP_COUNT, noopCount);
 		snapshot.add(STAT_SAMPLE_COUNT, sampleCount);
