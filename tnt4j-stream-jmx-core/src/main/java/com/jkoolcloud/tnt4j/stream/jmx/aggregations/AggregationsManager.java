@@ -37,10 +37,10 @@ import com.jkoolcloud.tnt4j.utils.Utils;
  * This class is aggregations facade. It is responsible to load aggregations configuration and perform provided activity
  * aggregations using configuration provided aggregators. Aggregations configuration definition format is JSON.
  * <p>
- * System property to define aggregations configuration path is
+ * System property to define aggregations configuration file path is
  * {@code "com.jkoolcloud.tnt4j.stream.jmx.aggregations.config"}.
  * <p>
- * Default aggregations configuration path is {@code "config/aggregations.json"}
+ * Default aggregations configuration file path is {@code "config/aggregations.json"}
  * <p>
  * Aggregations configuration JSON file is like this:
  * 

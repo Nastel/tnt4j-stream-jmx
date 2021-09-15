@@ -24,7 +24,10 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import com.jkoolcloud.tnt4j.core.*;
+import com.jkoolcloud.tnt4j.core.Activity;
+import com.jkoolcloud.tnt4j.core.OpLevel;
+import com.jkoolcloud.tnt4j.core.PropertySnapshot;
+import com.jkoolcloud.tnt4j.core.Snapshot;
 import com.jkoolcloud.tnt4j.sink.EventSink;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.LoggerUtils;
 
@@ -44,7 +47,7 @@ import com.jkoolcloud.tnt4j.stream.jmx.utils.LoggerUtils;
  *                 "name": "KafkaStatsML",
  *                 "category": "kafka.aggregated",
  *                 "enabled": true,
- *                 "fields": [
+ *                 "properties": [
  *                     {
  *                         "beanId": "kafka.server:name=UnderReplicatedPartitions,type=ReplicaManager",
  *                         "attribute": "Value",
@@ -151,16 +154,16 @@ public class SnapshotAggregator implements ActivityAggregator {
 			SnapshotAggregation snapshotAggregation = new SnapshotAggregation(sName, sCategory);
 			snapshotAggregation.setEnabled(sEnabled == null || sEnabled);
 
-			Collection<Map<String, ?>> fields = (Collection<Map<String, ?>>) snapshot.get("fields");
+			Collection<Map<String, ?>> properties = (Collection<Map<String, ?>>) snapshot.get("properties");
 
-			for (Map<String, ?> field : fields) {
-				String fName = (String) field.get("name");
-				String fBeanId = (String) field.get("beanId");
-				String fBeanAttribute = (String) field.get("attribute");
+			for (Map<String, ?> property : properties) {
+				String pName = (String) property.get("name");
+				String pBeanId = (String) property.get("beanId");
+				String pBeanAttribute = (String) property.get("attribute");
 
-				Field f = snapshotAggregation.addField(fName, fBeanId, fBeanAttribute);
+				Property f = snapshotAggregation.addProperty(pName, pBeanId, pBeanAttribute);
 
-				Map<String, ?> fWhereMap = (Map<String, ?>) field.get("where");
+				Map<String, ?> fWhereMap = (Map<String, ?>) property.get("where");
 				if (fWhereMap != null) {
 					for (Map.Entry<String, ?> where : fWhereMap.entrySet()) {
 						f.addWhere(where.getKey(), (String) where.getValue());
@@ -209,53 +212,54 @@ public class SnapshotAggregator implements ActivityAggregator {
 					activity.addSnapshot(aSnapshot);
 				}
 
-				for (Field field : aggregation.getFields()) {
-					String beanId = field.getFullBeanId();
-					String attribute = field.getAttribute();
-					String fieldName = field.getName();
+				for (Property property : aggregation.getProperties()) {
+					String beanId = property.getFullBeanId();
+					String attribute = property.getAttribute();
+					String propertyName = property.getName();
 
-					Set<Pair<String, String>> aFields = new HashSet<>();
+					Set<Pair<String, String>> aProperties = new HashSet<>();
 
-					if (!field.isWhereEmpty()) {
-						Where where = field.getWhere();
+					if (!property.isWhereEmpty()) {
+						Where where = property.getWhere();
 
 						for (Map.Entry<String, String[]> var : where.getVarValuesMap().entrySet()) {
 							String varName = var.getKey();
 							String[] varValues = var.getValue();
 
-							String beanIdVarToken = "," + varName + "=?";
+							String beanIdVarToken = varName + "=?";
 							String nameVarToken = "${" + varName + "}";
 							for (String varValue : varValues) {
-								MutablePair<String, String> varField = new MutablePair<>();
+								MutablePair<String, String> varProperty = new MutablePair<>();
 								if (beanId.contains(beanIdVarToken)) {
-									varField.setLeft(beanId.replace(beanIdVarToken, "," + varName + "=" + varValue));
+									varProperty.setLeft(beanId.replace(beanIdVarToken, varName + "=" + varValue));
 								} else {
-									varField.setLeft(beanId);
+									varProperty.setLeft(beanId);
 								}
 
-								if (fieldName.contains(nameVarToken)) {
-									varField.setRight(fieldName.replace(nameVarToken, varValue));
+								if (propertyName.contains(nameVarToken)) {
+									varProperty.setRight(propertyName.replace(nameVarToken, varValue));
 								} else {
-									varField.setRight(fieldName);
+									varProperty.setRight(propertyName);
 								}
 
-								aFields.add(varField);
+								aProperties.add(varProperty);
 							}
 						}
 					}
 
-					if (aFields.isEmpty()) {
-						Pair<String, String> iField = new ImmutablePair<>(beanId, fieldName);
-						aFields.add(iField);
+					if (aProperties.isEmpty()) {
+						Pair<String, String> iProperty = new ImmutablePair<>(beanId, propertyName);
+						aProperties.add(iProperty);
 					}
 
-					for (Pair<String, String> aField : aFields) {
-						Snapshot bSnapshot = activity.getSnapshot(aField.getLeft());
-						Property attrProp = bSnapshot == null ? null : bSnapshot.get(attribute);
+					for (Pair<String, String> aProperty : aProperties) {
+						Snapshot bSnapshot = activity.getSnapshot(aProperty.getLeft());
+						com.jkoolcloud.tnt4j.core.Property attrProp = bSnapshot == null ? null
+								: bSnapshot.get(attribute);
 
 						if (attrProp != null) {
 							Object value = attrProp.getValue();
-							aSnapshot.add(aField.getRight(), value);
+							aSnapshot.add(aProperty.getRight(), value);
 						}
 					}
 				}
@@ -275,7 +279,7 @@ public class SnapshotAggregator implements ActivityAggregator {
 		private String name;
 		private String category;
 		private boolean enabled = true;
-		private Collection<Field> fields = new ArrayList<>();
+		private Collection<Property> properties = new ArrayList<>();
 
 		/**
 		 * Constructs a new SnapshotAggregation.
@@ -341,93 +345,93 @@ public class SnapshotAggregator implements ActivityAggregator {
 		}
 
 		/**
-		 * Creates field definition instance and ads it to aggregation fields list.
+		 * Creates property definition instance and ads it to aggregation properties list.
 		 *
 		 * @param name
-		 *            field name, it can have variable expression like {@code "${varName}"}
+		 *            property name, it can have variable expression like {@code "${varName}"}
 		 * @param beanId
-		 *            field bound bean identifier, it can have variable expression like {@code "${varName}"}
+		 *            property bound bean identifier, it can have variable expression like {@code "varName=?"}
 		 * @param attribute
-		 *            field bound bean attribute name to get value
+		 *            property bound bean attribute name to get value
 		 *
-		 * @return field definition instance
+		 * @return property definition instance
 		 * 
 		 * @throws IllegalArgumentException
-		 *             if any of field name, bean identifier or attribute name is empty
+		 *             if any of property name, bean identifier or attribute name is empty
 		 */
-		Field addField(String name, String beanId, String attribute) throws IllegalArgumentException {
-			Field field = new Field(name, beanId, attribute);
+		Property addProperty(String name, String beanId, String attribute) throws IllegalArgumentException {
+			Property property = new Property(name, beanId, attribute);
 
-			fields.add(field);
+			properties.add(property);
 
-			return field;
+			return property;
 		}
 
 		/**
-		 * Checks if this aggregation has empty fields list.
+		 * Checks if this aggregation has empty properties list.
 		 *
-		 * @return {@code true} if {@link #fields} is {@code null} or empty, {@code false} - otherwise
+		 * @return {@code true} if {@link #properties} is {@code null} or empty, {@code false} - otherwise
 		 */
 		boolean isEmpty() {
-			return fields == null || fields.isEmpty();
+			return properties == null || properties.isEmpty();
 		}
 
 		/**
-		 * Returns fields list for this aggregation.
+		 * Returns properties list for this aggregation.
 		 *
-		 * @return aggregation fields collection
+		 * @return aggregation properties collection
 		 */
-		Collection<Field> getFields() {
-			return fields;
+		Collection<Property> getProperties() {
+			return properties;
 		}
 	}
 
-	private static class Field {
+	private static class Property {
 		/**
-		 * Field bound bean identifier. It can have variable expression like {@code "${varName}"}.
+		 * Property bound bean identifier. It can have variable expression like {@code "varName=?"}
 		 */
 		String beanId;
 		/**
-		 * Field variables definition.
+		 * Property variables definition.
 		 */
 		Where where;
 		/**
-		 * Field bound bean attribute (snapshot property) name to get value.
+		 * Property bound bean attribute (snapshot property) name to get value.
 		 */
 		String attribute;
 		/**
-		 * Field name to be set as snapshot property name. It can have variable expression like {@code "${varName}"}.
+		 * Property name to be set as snapshot property name. It can have variable expression like {@code "${varName}"}.
 		 */
 		String name;
 
 		/**
-		 * This field bound bean snapshot full identifier.
+		 * This property bound bean snapshot full identifier.
 		 */
 		String fullBeanId;
 
 		/**
-		 * Constructs a new Field.
+		 * Constructs a new Property.
 		 *
 		 * @param name
-		 *            field name
+		 *            property name
 		 * @param beanId
 		 *            bean identifier
 		 * @param attribute
 		 *            bean attribute name
 		 *
 		 * @throws IllegalArgumentException
-		 *             if any of field name, bean identifier or attribute name is empty
+		 *             if any of property name, bean identifier or attribute name is empty
 		 */
-		Field(String name, String beanId, String attribute) throws IllegalArgumentException {
+		Property(String name, String beanId, String attribute) throws IllegalArgumentException {
 			if (StringUtils.isEmpty(name)) {
-				throw new IllegalArgumentException("Invalid configuration: field name must be set");
+				throw new IllegalArgumentException("Invalid configuration: property name must be set");
 			}
 			if (StringUtils.isEmpty(beanId)) {
-				throw new IllegalArgumentException("Invalid configuration: field bound bean id must be set");
+				throw new IllegalArgumentException("Invalid configuration: property bound bean id must be set");
 			}
 			if (StringUtils.isEmpty(attribute)) {
 				throw new IllegalArgumentException(
-						"Invalid configuration: field bound bean attribute name must be set");
+						"Invalid configuration: property bound bean attribute name must be set");
 			}
 
 			this.name = name;
@@ -436,7 +440,7 @@ public class SnapshotAggregator implements ActivityAggregator {
 		}
 
 		/**
-		 * Returns field bound bean identifier.
+		 * Returns property bound bean identifier.
 		 *
 		 * @return bean identifier
 		 */
@@ -445,7 +449,7 @@ public class SnapshotAggregator implements ActivityAggregator {
 		}
 
 		/**
-		 * Returns field bound bean snapshot full identifier.
+		 * Returns property bound bean snapshot full identifier.
 		 *
 		 * @return bean snapshot full identifier
 		 * 
@@ -479,7 +483,7 @@ public class SnapshotAggregator implements ActivityAggregator {
 		}
 
 		/**
-		 * Adds field variable definition.
+		 * Adds property variable definition.
 		 *
 		 * @param varName
 		 *            variable name
@@ -499,25 +503,25 @@ public class SnapshotAggregator implements ActivityAggregator {
 		}
 
 		/**
-		 * Returns field variables definition.
+		 * Returns property variables definition.
 		 *
-		 * @return field variables definition
+		 * @return property variables definition
 		 */
 		Where getWhere() {
 			return where;
 		}
 
 		/**
-		 * Checks if this field variables definition is empty.
+		 * Checks if this property variables definition is empty.
 		 *
-		 * @return {@code true} if field variables definition is {@code null} or empty, {@code false} - otherwise
+		 * @return {@code true} if property variables definition is {@code null} or empty, {@code false} - otherwise
 		 */
 		boolean isWhereEmpty() {
 			return where == null || where.isEmpty();
 		}
 
 		/**
-		 * Returns field bound bean attribute name.
+		 * Returns property bound bean attribute name.
 		 *
 		 * @return bean attribute name
 		 */
@@ -526,9 +530,9 @@ public class SnapshotAggregator implements ActivityAggregator {
 		}
 
 		/**
-		 * Returns field name.
+		 * Returns property name.
 		 *
-		 * @return field name
+		 * @return property name
 		 */
 		String getName() {
 			return name;
@@ -564,7 +568,7 @@ public class SnapshotAggregator implements ActivityAggregator {
 		void addVar(String varName, String varValues) throws IllegalArgumentException {
 			if (StringUtils.isEmpty(varName)) {
 				throw new IllegalArgumentException(
-						"Invalid configuration: field ''where'' condition variable name must be set");
+						"Invalid configuration: property ''where'' condition variable name must be set");
 			}
 
 			if (varMap == null) {
