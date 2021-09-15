@@ -1277,6 +1277,149 @@ metadata.
     ```
     **NOTE:** Entries are sorted by snapshot name and property key alphanumeric ordering.
 
+## MBeans collected data aggregations
+
+When JMX MBeans attribute values gets collected into Activity snapshots (one activity per sampling iteration and one snapshot per MBean), it 
+is possible to aggregate attribute values. Aggregations of individual MBean attributes can be performed into already Activity contained 
+snapshot (append some additional attributes for MBean) or make a new snapshot containing these aggregated attribute values (create kind of 
+new virtual MBean).
+
+Aggregations configuration is defined using JSON format. Default aggregations configuration file path is `config/aggregations.json`. System 
+property to set custom aggregations configuration file path to use is `com.jkoolcloud.tnt4j.stream.jmx.aggregations.config`.
+
+High level aggregations configuration is like this:
+```json
+    [
+        {
+            aggregator1 config
+        },
+        {
+            aggregator2 config
+        },
+        ...
+        {
+            aggregatorN config
+        }
+    ]
+```
+In general it is a list of aggregator configurations. Aggregations manager is able to load that list and initiate aggregator instance by 
+aggregator configuration defined aggregator type class. Aggregator itself is responsible to load rest of configuration over interface method
+`com.jkoolcloud.tnt4j.stream.jmx.aggregations.ActivityAggregator.configure(Map<String, ?> cfg) throws IllegalArgumentException` 
+implementation.
+
+Available aggregator implementations:
+* `com.jkoolcloud.tnt4j.stream.jmx.aggregations.SnapshotAggregator` - picks individual MBean attribute values from Activity contained 
+snapshots and puts them into existing or new snapshot.
+
+Aggregator configuration schema is:
+* `aggregatorId` - aggregator identifier, to identify aggregator instance in the logs, e.g. when fails to load configuration or performs 
+some aggregation actions. **Optional**, if not defined then made of class name and sequence index.
+* `type` - aggregator implementation class to use. **Required**. 
+* `enabled` - flag indicating if aggregator configuration shall be loaded and used. **Optional**, default value -`true`.
+* `snapshots` - aggregator implementation specific configuration array defining values aggregation into snapshots. **Required**:
+    * `name` - aggregation snapshot name. It can be Activity contained snapshot name (to append properties) or any other (to create new 
+    snapshot and add it to Activity). To define Activity contained snapshot name use 
+    [ObjectName](https://docs.oracle.com/javase/8/docs/api/javax/management/ObjectName.html) notation syntax, see attribute `beanId` as a 
+    sample. **Required**. 
+    * `category` - aggregation snapshot category. **Optional**, if aggregation snapshot `name` has it defined like this `category:beanId` or 
+    sets default value `jmx.aggregated` in any other case if ommited. 
+    * `enabled` - flag indicating if snapshot aggregation shall be used. **Optional**, default value -`true`.
+    * `properties` - list of snapshot properties to aggregate and store MBean attribute values. **Required**:
+        * `beanId` - property bound bean identifier, it can have variable expression like `varName=?`. To define `beanId` use 
+        [ObjectName](https://docs.oracle.com/javase/8/docs/api/javax/management/ObjectName.html) notation syntax. **Required**:
+        * `attribute` -  property bound bean attribute name to get value. **Required**.
+        * `name` - property (snapshot property) name, it can have variable expression like `${varName}`. **Required**.
+        * `where` - set of property used variable definitions. **Optional**:
+            * `[variable name]` - variable name
+            * `[variable values]` - variable values string delimited (if variable has multiple values) by `|` symbol
+
+Sample aggregator configuration may be like that:
+```json
+    {
+        "aggregatorId": "MLSnapshotsAggregator",
+        "type": "com.jkoolcloud.tnt4j.stream.jmx.aggregations.SnapshotAggregator",
+        "enabled": true,
+        "snapshots": [
+            {
+                "name": "KafkaStatsML",
+                "category": "kafka.aggregated",
+                "enabled": true,
+                "properties": [
+                    {
+                        "beanId": "kafka.server:name=UnderReplicatedPartitions,type=ReplicaManager",
+                        "attribute": "Value",
+                        "name": "UnderReplicatedPartitions"
+                    },
+                    {
+                        "beanId": "kafka.server:name=IsrShrinksPerSec,type=ReplicaManager",
+                        "attribute": "MeanRate",
+                        "name": "IsrShrinksPerSec"
+                    },
+                    {
+                        "beanId": "kafka.server:name=IsrExpandsPerSec,type=ReplicaManager",
+                        "attribute": "MeanRate",
+                        "name": "IsrExpandsPerSec"
+                    },
+                    {
+                        "beanId": "kafka.controller:name=ActiveControllerCount,type=KafkaController",
+                        "attribute": "Value",
+                        "name": "ActiveControllerCount"
+                    },
+                    {
+                        "beanId": "kafka.controller:name=OfflinePartitionsCount,type=KafkaController",
+                        "attribute": "Value",
+                        "name": "OfflinePartitionsCount"
+                    },
+                    {
+                        "beanId": "kafka.controller:name=LeaderElectionRateAndTimeMs,type=ControllerStats",
+                        "attribute": "Mean",
+                        "name": "LeaderElectionRateAndTimeMs"
+                    },
+                    {
+                        "beanId": "kafka.controller:name=UncleanLeaderElectionsPerSec,type=ControllerStats",
+                        "attribute": "MeanRate",
+                        "name": "UncleanLeaderElectionsPerSec"
+                    },
+                    {
+                        "beanId": "kafka.network:name=TotalTimeMs,request=?,type=RequestMetrics",
+                        "where": {
+                            "request": "Produce|FetchConsumer|FetchFollower"
+                        },
+                        "attribute": "Mean",
+                        "name": "${request}-TotalTimeMs"
+                    },
+                    {
+                        "beanId": "kafka.server:delayedOperation=?,name=PurgatorySize,type=DelayedOperationPurgatory",
+                        "where": {
+                            "delayedOperation": "Produce|Fetch"
+                        },
+                        "attribute": "Value",
+                        "name": "${delayedOperation}-PurgatorySize"
+                    },
+                    {
+                        "beanId": "kafka.server:name=BytesInPerSec,type=BrokerTopicMetrics",
+                        "attribute": "MeanRate",
+                        "name": "BytesInPerSec"
+                    },
+                    {
+                        "beanId": "kafka.server:name=BytesOutPerSec,type=BrokerTopicMetrics",
+                        "attribute": "MeanRate",
+                        "name": "BytesOutPerSec"
+                    },
+                    {
+                        "beanId": "kafka.network:name=RequestsPerSecond,request=?,type=RequestMetrics",
+                        "where": {
+                            "request": "Produce|FetchConsumer|FetchFollower"
+                        },
+                        "attribute": "Count",
+                        "name": "${request}-RequestsPerSecond"
+                    }
+                ]
+            }
+        ]
+    }
+```
+
 ## Where do the streams go?
 Stream-JMX streams all collected metrics based on a scheduled interval via TNT4J event streaming framework.
 All streams are written into TNT4J event sinks defined in `tnt4j.properties` file which is defined by `-Dtnt4j.config=tnt4j.properties` 
