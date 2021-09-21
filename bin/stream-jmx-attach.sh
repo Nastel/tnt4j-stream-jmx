@@ -82,4 +82,4 @@ else
   echo 'Will use java from:' "$JAVA_HOME"
 fi
 
-"$JAVA_HOME/bin/java" $TNT4JOPTS -classpath "$LIBPATH" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -attach -vm:$1 -ap:"$SCRIPTPATH/../tnt4j-stream-jmx-core-0.13-SNAPSHOT-all.jar" -ao:$TNT4J_AGENT_OPTIONS $TNT4J_AGENT_ARGS
+"$JAVA_HOME/bin/java" $TNT4JOPTS -classpath "$LIBPATH" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -attach -vm:$1 -ap:"$SCRIPTPATH/../tnt4j-stream-jmx-core-0.13-all.jar" -ao:$TNT4J_AGENT_OPTIONS $TNT4J_AGENT_ARGS
