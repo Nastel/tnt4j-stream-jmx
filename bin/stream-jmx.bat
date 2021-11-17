@@ -25,11 +25,13 @@ rem --- streamed activities log file name ---
 rem TNT4JOPTS="%TNT4JOPTS% -Dtnt4j.activities.log.filename=%RUNDIR%..\logs\tnt4j-stream-jmx_samples.log"
 rem -------------------------------------
 
+set JAVA_EXEC="java"
 IF ["%JAVA_HOME%"] EQU [""] (
   echo "JAVA_HOME" env. variable is not defined!..
 ) else (
   echo Will use java from: "%JAVA_HOME%"
+  set JAVA_EXEC="%JAVA_HOME%\bin\java"
 )
 
 @echo on
-"%JAVA_HOME%\bin\java" %TNT4JOPTS% -classpath "%LIBPATH%" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent "*:*" "" 10000 60000
+%JAVA_EXEC% %TNT4JOPTS% -classpath "%LIBPATH%" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent "*:*" "" 10000 60000

@@ -41,10 +41,12 @@ fi
 TNT4JOPTS="$TNT4JOPTS -Dfile.encoding=UTF-8 -Dsjmx.serviceId=$TNT4J_APPSERVER"
 ### -------------------------------------
 
+JAVA_EXEC="java"
 if [[ "$JAVA_HOME" == "" ]]; then
   echo '"JAVA_HOME" env. variable is not defined!..'
 else
   echo 'Will use java from:' "$JAVA_HOME"
+  JAVA_EXEC="$JAVA_HOME/bin/java"
 fi
 
-"$JAVA_HOME/bin/java" $TNT4JOPTS -classpath "$LIBPATH" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent "*:*" "" 10000 60000
+$JAVA_EXEC $TNT4JOPTS -classpath "$LIBPATH" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent "*:*" "" 10000 60000

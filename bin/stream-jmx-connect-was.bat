@@ -25,7 +25,15 @@ rem ---- appending libs path with WAS libs ----
 set LIBPATH=%RUNDIR%..\*;%RUNDIR%..\lib\*;%WAS_PATH%
 rem -------------------------------------------
 
-for /f tokens^=2-5^ delims^=.+-_^" %%j in ('%JAVA_HOME%\bin\java -fullversion 2^>^&1') do set "jver=%%j%%k"
+set JAVA_EXEC="java"
+IF ["%JAVA_HOME%"] EQU [""] (
+  echo "JAVA_HOME" env. variable is not defined!..
+) else (
+  echo Will use java from: "%JAVA_HOME%"
+  set JAVA_EXEC="%JAVA_HOME%\bin\java"
+)
+
+for /f tokens^=2-5^ delims^=.+-_^" %%j in ('%JAVA_EXEC% -fullversion 2^>^&1') do set "jver=%%j%%k"
 rem for early access versions replace "ea" part with "00" to get comparable number
 set jver=%jver:ea=00%
 
@@ -69,13 +77,7 @@ rem --- also do not forget to alter sas.client.props file to disable basic authe
 rem set CONN_OPTIONS=-connect -vm:service:jmx:iiop://localhost:2809/jndi/JMXConnector -ul:Admin -up:admin -cp:java.naming.factory.initial=com.ibm.websphere.naming.WsnInitialContextFactory -cp:java.naming.factory.url.pkgs=com.ibm.ws.naming -cp:java.naming.provider.url=corbaloc:iiop:localhost:2809/WsnAdminNameService
 rem ------------------------------------------------------------------------------------------------------------
 
-IF ["%JAVA_HOME%"] EQU [""] (
-  echo "JAVA_HOME" env. variable is not defined!..
-) else (
-  echo Will use java from: "%JAVA_HOME%"
-)
-
 @echo on
 rem --- using JAVA_HOME java and setting WAS specific options ---
-"%JAVA_HOME%\bin\java" %TNT4JOPTS% %MYCLIENTSAS% %MYCLIENTSSL% -classpath "%LIBPATH%" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent %CONN_OPTIONS% -ao:%TNT4J_AGENT_OPTIONS% %TNT4J_AGENT_ARGS%
+%JAVA_EXEC% %TNT4JOPTS% %MYCLIENTSAS% %MYCLIENTSSL% -classpath "%LIBPATH%" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent %CONN_OPTIONS% -ao:%TNT4J_AGENT_OPTIONS% %TNT4J_AGENT_ARGS%
 rem -------------------------------------------------------------

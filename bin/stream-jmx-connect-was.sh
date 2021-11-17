@@ -96,12 +96,14 @@ CONN_OPTIONS="-connect -vm:service:jmx:iiop://localhost:2809/jndi/JMXConnector -
 # CONN_OPTIONS="-connect -vm:service:jmx:iiop://localhost:2809/jndi/JMXConnector -ul:Admin -up:admin -cp:java.naming.factory.initial=com.ibm.websphere.naming.WsnInitialContextFactory -cp:java.naming.factory.url.pkgs=com.ibm.ws.naming -cp:java.naming.provider.url=corbaloc:iiop:localhost:2809/WsnAdminNameService"
 ### ------------------------------------------------------------------------------------------------------------
 
+JAVA_EXEC="java"
 if [[ "$JAVA_HOME" == "" ]]; then
   echo '"JAVA_HOME" env. variable is not defined!..'
 else
   echo 'Will use java from:' "$JAVA_HOME"
+  JAVA_EXEC="$JAVA_HOME/bin/java"
 fi
 
 ### --- using JAVA_HOME java and setting WAS specific options ---
-"$JAVA_HOME/bin/java" $TNT4JOPTS $MYCLIENTSAS $MYCLIENTSSL -classpath "$LIBPATH" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent $CONN_OPTIONS -ao:$TNT4J_AGENT_OPTIONS $TNT4J_AGENT_ARGS
+$JAVA_EXEC $TNT4JOPTS $MYCLIENTSAS $MYCLIENTSSL -classpath "$LIBPATH" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent $CONN_OPTIONS -ao:$TNT4J_AGENT_OPTIONS $TNT4J_AGENT_ARGS
 ### -------------------------------------------------------------
