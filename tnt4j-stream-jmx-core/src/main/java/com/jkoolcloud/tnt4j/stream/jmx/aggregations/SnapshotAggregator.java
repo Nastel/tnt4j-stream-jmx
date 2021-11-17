@@ -128,6 +128,9 @@ import com.jkoolcloud.tnt4j.stream.jmx.utils.LoggerUtils;
 public class SnapshotAggregator implements ActivityAggregator {
 	private static final EventSink LOGGER = LoggerUtils.getLoggerSink(SnapshotAggregator.class);
 
+	private static final String CAT_NAME_DELIMITER = ":";
+	private static final String ID_CAT_DELIMITER = "@";
+
 	private String id;
 
 	private Collection<SnapshotAggregation> snapshotAggregations = new ArrayList<>();
@@ -143,6 +146,7 @@ public class SnapshotAggregator implements ActivityAggregator {
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public void configure(Map<String, ?> cfg) throws IllegalArgumentException {
 		Collection<Map<String, ?>> snapshots = (Collection<Map<String, ?>>) cfg.get("snapshots");
 
@@ -197,19 +201,25 @@ public class SnapshotAggregator implements ActivityAggregator {
 
 				String sFullName;
 				if (StringUtils.isEmpty(sCat)) {
-					String[] nameTokens = sName.split(":");
+					String[] nameTokens = sName.split(CAT_NAME_DELIMITER);
 					sCat = nameTokens.length > 1 ? nameTokens[0] : SnapshotAggregation.DEFAULT_CATEGORY;
 					sFullName = sName;
 				} else {
-					sFullName = sCat + ":" + sName;
+					sFullName = sCat + CAT_NAME_DELIMITER + sName;
 				}
 
-				String sId = sFullName + "@" + sCat;
+				if (sFullName.contains(ID_CAT_DELIMITER)) {
+					String[] idTokens = sFullName.split(ID_CAT_DELIMITER);
+					sFullName = idTokens[0];
+				}
 
-				Snapshot aSnapshot = activity.getSnapshot(sId);
-				if (aSnapshot == null) {
-					aSnapshot = new PropertySnapshot(sCat, sFullName);
-					activity.addSnapshot(aSnapshot);
+				String sId = sFullName + ID_CAT_DELIMITER + sCat;
+
+				Collection<Snapshot> aggrSnapshots = getSnapshots(activity, sId);
+				if (aggrSnapshots.isEmpty()) {
+					Snapshot aggrSnapshot = new PropertySnapshot(sCat, sFullName);
+					activity.addSnapshot(aggrSnapshot);
+					aggrSnapshots.add(aggrSnapshot);
 				}
 
 				for (Property property : aggregation.getProperties()) {
@@ -253,13 +263,15 @@ public class SnapshotAggregator implements ActivityAggregator {
 					}
 
 					for (Pair<String, String> aProperty : aProperties) {
-						Snapshot bSnapshot = activity.getSnapshot(aProperty.getLeft());
-						com.jkoolcloud.tnt4j.core.Property attrProp = bSnapshot == null ? null
-								: bSnapshot.get(attribute);
+						Snapshot actSnapshot = activity.getSnapshot(aProperty.getLeft());
+						com.jkoolcloud.tnt4j.core.Property attrProp = actSnapshot == null ? null
+								: actSnapshot.get(attribute);
 
 						if (attrProp != null) {
 							Object value = attrProp.getValue();
-							aSnapshot.add(aProperty.getRight(), value);
+							for (Snapshot aggrSnapshot : aggrSnapshots) {
+								aggrSnapshot.add(aProperty.getRight(), value);
+							}
 						}
 					}
 				}
@@ -267,6 +279,22 @@ public class SnapshotAggregator implements ActivityAggregator {
 		}
 
 		return activity;
+	}
+
+	protected static Collection<Snapshot> getSnapshots(Activity activity, String sId) {
+		Collection<Snapshot> matchingSnapshots = new ArrayList<>();
+
+		if (activity != null) {
+			Collection<Snapshot> snapshots = activity.getSnapshots();
+
+			for (Snapshot snapshot : snapshots) {
+				if (snapshot.getId().matches(sId)) {
+					matchingSnapshots.add(snapshot);
+				}
+			}
+		}
+
+		return matchingSnapshots;
 	}
 
 	private static class SnapshotAggregation {
@@ -473,13 +501,13 @@ public class SnapshotAggregator implements ActivityAggregator {
 				return beanId;
 			}
 
-			String[] bIdTokens = beanId.split(":");
+			String[] bIdTokens = beanId.split(CAT_NAME_DELIMITER);
 
 			if (bIdTokens.length < 2) {
 				return beanId;
 			}
 
-			return beanId + "@" + bIdTokens[0];
+			return beanId + ID_CAT_DELIMITER + bIdTokens[0];
 		}
 
 		/**

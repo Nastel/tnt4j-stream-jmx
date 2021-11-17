@@ -1313,20 +1313,20 @@ snapshots and puts them into existing or new snapshot.
 
 Aggregator configuration schema is:
 * `aggregatorId` - aggregator identifier, to identify aggregator instance in the logs, e.g. when fails to load configuration or performs 
-some aggregation actions. **Optional**, if not defined then made of class name and sequence index.
+  some aggregation actions. **Optional**, if not defined then made of class name and sequence index.
 * `type` - aggregator implementation class to use. **Required**. 
 * `enabled` - flag indicating if aggregator configuration shall be loaded and used. **Optional**, default value -`true`.
 * `snapshots` - aggregator implementation specific configuration array defining values aggregation into snapshots. **Required**:
-    * `name` - aggregation snapshot name. It can be Activity contained snapshot name (to append properties) or any other (to create new 
-    snapshot and add it to Activity). To define Activity contained snapshot name use 
-    [ObjectName](https://docs.oracle.com/javase/8/docs/api/javax/management/ObjectName.html) notation syntax, see attribute `beanId` as a 
-    sample. **Required**. 
-    * `category` - aggregation snapshot category. **Optional**, if aggregation snapshot `name` has it defined like this `category:beanId` or 
-    sets default value `jmx.aggregated` in any other case if ommited. 
+    * `name` - aggregation snapshot name RegEx string. It can be Activity contained snapshot name (to append properties) or any other (to
+      create new snapshot and add it to Activity). To define Activity contained snapshot name use
+      [ObjectName](https://docs.oracle.com/javase/8/docs/api/javax/management/ObjectName.html) notation syntax, see attribute `beanId` as a
+      sample. **Required**.
+    * `category` - aggregation snapshot category RegEx string. **Optional**, if aggregation snapshot `name` has it defined like
+      this `category:beanId` or sets default value `jmx.aggregated` in any other case if ommited.
     * `enabled` - flag indicating if snapshot aggregation shall be used. **Optional**, default value -`true`.
     * `properties` - list of snapshot properties to aggregate and store MBean attribute values. **Required**:
         * `beanId` - property bound bean identifier, it can have variable expression like `varName=?`. To define `beanId` use 
-        [ObjectName](https://docs.oracle.com/javase/8/docs/api/javax/management/ObjectName.html) notation syntax. **Required**:
+          [ObjectName](https://docs.oracle.com/javase/8/docs/api/javax/management/ObjectName.html) notation syntax. **Required**.
         * `attribute` -  property bound bean attribute name to get value. **Required**.
         * `name` - property (snapshot property) name, it can have variable expression like `${varName}`. **Required**.
         * `where` - set of property used variable definitions. **Optional**:
@@ -1341,8 +1341,7 @@ Sample aggregator configuration may be like that:
         "enabled": true,
         "snapshots": [
             {
-                "name": "KafkaStatsML",
-                "category": "kafka.aggregated",
+                "name": "kafka.aggregated:KafkaStatsML",
                 "enabled": true,
                 "properties": [
                     {
@@ -1413,6 +1412,18 @@ Sample aggregator configuration may be like that:
                         },
                         "attribute": "Count",
                         "name": "${request}-RequestsPerSecond"
+                    }
+                ]
+            },
+            {
+                "name": ".*",
+                "category": ".*",
+                "enabled": true,
+                "properties": [
+                    {
+                        "beanId": "java.lang:type=Runtime",
+                        "attribute": "Name",
+                        "name": "kafkaNode"
                     }
                 ]
             }
