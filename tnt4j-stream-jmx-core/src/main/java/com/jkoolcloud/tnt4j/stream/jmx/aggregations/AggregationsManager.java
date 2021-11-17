@@ -67,8 +67,9 @@ public class AggregationsManager {
 	private static final EventSink LOGGER = LoggerUtils.getLoggerSink(AggregationsManager.class);
 
 	private static final String SYS_PROP_AGGREGATIONS_CONFIG = "com.jkoolcloud.tnt4j.stream.jmx.aggregations.config";
-	private static final String DEFAULT_CONFIG_PATH = "config/aggregations.json";
-	private static String configPath = System.getProperty(SYS_PROP_AGGREGATIONS_CONFIG, DEFAULT_CONFIG_PATH);
+	private static final String DEFAULT_AGGREGATIONS_CONFIG_PATH = "config/aggregations.json";
+	private static String configPath = System.getProperty(SYS_PROP_AGGREGATIONS_CONFIG,
+			DEFAULT_AGGREGATIONS_CONFIG_PATH);
 
 	private static Collection<ActivityAggregator> aggregators = new ArrayList<>();
 
