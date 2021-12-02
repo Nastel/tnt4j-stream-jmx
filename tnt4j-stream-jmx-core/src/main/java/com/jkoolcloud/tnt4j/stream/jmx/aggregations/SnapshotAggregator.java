@@ -30,6 +30,7 @@ import com.jkoolcloud.tnt4j.core.PropertySnapshot;
 import com.jkoolcloud.tnt4j.core.Snapshot;
 import com.jkoolcloud.tnt4j.sink.EventSink;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.LoggerUtils;
+import com.jkoolcloud.tnt4j.utils.Utils;
 
 /**
  * This class provides an aggregator implementation capable to append new attribute values to activity contained
@@ -154,9 +155,11 @@ public class SnapshotAggregator implements ActivityAggregator {
 			String sName = (String) snapshot.get("name");
 			String sCategory = (String) snapshot.get("category");
 			Boolean sEnabled = (Boolean) snapshot.get("enabled");
+			Boolean sIgnoreEmpty = (Boolean) snapshot.get("ignoreEmpty");
 
 			SnapshotAggregation snapshotAggregation = new SnapshotAggregation(sName, sCategory);
 			snapshotAggregation.setEnabled(sEnabled == null || sEnabled);
+			snapshotAggregation.setIgnoreEmpty(sIgnoreEmpty != null && sIgnoreEmpty);
 
 			Collection<Map<String, ?>> properties = (Collection<Map<String, ?>>) snapshot.get("properties");
 
@@ -215,10 +218,9 @@ public class SnapshotAggregator implements ActivityAggregator {
 
 				String sId = sFullName + ID_CAT_DELIMITER + sCat;
 
-				Collection<Snapshot> aggrSnapshots = getSnapshots(activity, sId);
+				List<Snapshot> aggrSnapshots = getSnapshots(activity, sId);
 				if (aggrSnapshots.isEmpty()) {
 					Snapshot aggrSnapshot = new PropertySnapshot(sCat, sFullName);
-					activity.addSnapshot(aggrSnapshot);
 					aggrSnapshots.add(aggrSnapshot);
 				}
 
@@ -271,7 +273,22 @@ public class SnapshotAggregator implements ActivityAggregator {
 							Object value = attrProp.getValue();
 							for (Snapshot aggrSnapshot : aggrSnapshots) {
 								aggrSnapshot.add(aProperty.getRight(), value);
+								LOGGER.log(OpLevel.TRACE, "Added snapshot ''{0}'' property {1}={2}",
+										actSnapshot.getSnapKey(), aProperty.getRight(), Utils.toString(value));
 							}
+						}
+					}
+				}
+
+				if (aggrSnapshots.size() == 1) {
+					Snapshot aggrSnapshot = aggrSnapshots.get(0);
+					if (activity.getSnapshot(aggrSnapshot.getSnapKey()) == null) {
+						if (aggrSnapshot.size() > 0 || !aggregation.isIgnoreEmpty()) {
+							activity.addSnapshot(aggrSnapshot);
+							LOGGER.log(OpLevel.DEBUG, "Added aggregated snapshot ''{0}''", aggrSnapshot.getSnapKey());
+						} else {
+							LOGGER.log(OpLevel.INFO, "Ignoring empty aggregated snapshot ''{0}''",
+									aggrSnapshot.getSnapKey());
 						}
 					}
 				}
@@ -281,8 +298,8 @@ public class SnapshotAggregator implements ActivityAggregator {
 		return activity;
 	}
 
-	protected static Collection<Snapshot> getSnapshots(Activity activity, String sId) {
-		Collection<Snapshot> matchingSnapshots = new ArrayList<>();
+	protected static List<Snapshot> getSnapshots(Activity activity, String sId) {
+		List<Snapshot> matchingSnapshots = new ArrayList<>();
 
 		if (activity != null) {
 			Collection<Snapshot> snapshots = activity.getSnapshots();
@@ -307,6 +324,7 @@ public class SnapshotAggregator implements ActivityAggregator {
 		private String name;
 		private String category;
 		private boolean enabled = true;
+		private boolean ignoreEmpty = false;
 		private Collection<Property> properties = new ArrayList<>();
 
 		/**
@@ -370,6 +388,25 @@ public class SnapshotAggregator implements ActivityAggregator {
 		 */
 		boolean isEnabled() {
 			return enabled;
+		}
+
+		/**
+		 * Sets this aggregation created empty snapshots shall be ignored.
+		 * 
+		 * @param ignoreEmpty
+		 *            flag indicating whether to ignore this aggregation created empty snapshots
+		 */
+		public void setIgnoreEmpty(boolean ignoreEmpty) {
+			this.ignoreEmpty = ignoreEmpty;
+		}
+
+		/**
+		 * Returns if this aggregation created empty snapshots shall be ignored.
+		 * 
+		 * @return {@code true} if new empty snapshots shall be ignored, {@code false} - otherwise
+		 */
+		public boolean isIgnoreEmpty() {
+			return ignoreEmpty;
 		}
 
 		/**

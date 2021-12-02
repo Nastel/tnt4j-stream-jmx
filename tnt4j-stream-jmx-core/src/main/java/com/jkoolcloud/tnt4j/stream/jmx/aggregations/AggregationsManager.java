@@ -90,6 +90,7 @@ public class AggregationsManager {
 			Gson gson = new Gson();
 			try (Reader cfgReader = new BufferedReader(new FileReader(cfgPath))) {
 				cfg = gson.fromJson(cfgReader, cfg.getClass());
+				LOGGER.log(OpLevel.INFO, "Loaded aggregations configuration file ''{0}''", cfgPath);
 			} catch (Exception exc) {
 				LOGGER.log(OpLevel.ERROR, "Failed to load aggregations configuration file ''{0}''", cfgPath, exc);
 			}
@@ -112,7 +113,7 @@ public class AggregationsManager {
 			Boolean enabled = (Boolean) aggregatorCfg.get("enabled");
 
 			if (enabled != null && !enabled) {
-				LOGGER.log(OpLevel.DEBUG, "Skipping disabled aggregation loading ''{0}:{1}''", id, type);
+				LOGGER.log(OpLevel.DEBUG, "Skipping loading disabled aggregator ''{0}:{1}''", id, type);
 				continue;
 			}
 
@@ -121,6 +122,7 @@ public class AggregationsManager {
 				aggregator.setId(StringUtils.isEmpty(id) ? aggregator.getClass().getSimpleName() + idx : id);
 				aggregator.configure(aggregatorCfg);
 				aggregators.add(aggregator);
+				LOGGER.log(OpLevel.INFO, "Will use aggregator ''{0}:{1}''", aggregator.getId(), type);
 			} catch (Exception exc) {
 				LOGGER.log(OpLevel.ERROR, "Failed to initiate aggregator ''{0}:{1}''", id, type, exc);
 			}

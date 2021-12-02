@@ -1302,7 +1302,7 @@ High level aggregations configuration is like this:
         }
     ]
 ```
-In general it is a list of aggregator configurations. Aggregations manager is able to load that list and initiate aggregator instance by 
+In general, it is a list of aggregator configurations. Aggregations manager is able to load that list and initiate aggregator instance by 
 aggregator configuration defined aggregator type class. Aggregator itself is responsible to load rest of configuration over interface method
 `com.jkoolcloud.tnt4j.stream.jmx.aggregations.ActivityAggregator.configure(Map<String, ?> cfg) throws IllegalArgumentException` 
 implementation.
@@ -1314,8 +1314,9 @@ snapshots and puts them into existing or new snapshot.
 Aggregator configuration schema is:
 * `aggregatorId` - aggregator identifier, to identify aggregator instance in the logs, e.g. when fails to load configuration or performs 
   some aggregation actions. **Optional**, if not defined then made of class name and sequence index.
-* `type` - aggregator implementation class to use. **Required**. 
+* `type` - aggregator implementation class to use. **Required**.
 * `enabled` - flag indicating if aggregator configuration shall be loaded and used. **Optional**, default value -`true`.
+* `ignoreEmpty` - flag indicating whether to ignore aggregator created empty snapshots. **Optional**, default value -`false`.
 * `snapshots` - aggregator implementation specific configuration array defining values aggregation into snapshots. **Required**:
     * `name` - aggregation snapshot name RegEx string. It can be Activity contained snapshot name (to append properties) or any other (to
       create new snapshot and add it to Activity). To define Activity contained snapshot name use
@@ -1327,7 +1328,7 @@ Aggregator configuration schema is:
     * `properties` - list of snapshot properties to aggregate and store MBean attribute values. **Required**:
         * `beanId` - property bound bean identifier, it can have variable expression like `varName=?`. To define `beanId` use 
           [ObjectName](https://docs.oracle.com/javase/8/docs/api/javax/management/ObjectName.html) notation syntax. **Required**.
-        * `attribute` -  property bound bean attribute name to get value. **Required**.
+        * `attribute` - property bound bean attribute name to get value. **Required**.
         * `name` - property (snapshot property) name, it can have variable expression like `${varName}`. **Required**.
         * `where` - set of property used variable definitions. **Optional**:
             * `[variable name]` - variable name
