@@ -91,7 +91,7 @@ public class AggregationsManager {
 			try (Reader cfgReader = new BufferedReader(new FileReader(cfgPath))) {
 				cfg = gson.fromJson(cfgReader, cfg.getClass());
 				LOGGER.log(OpLevel.INFO, "Loaded aggregations configuration file ''{0}''", cfgPath);
-			} catch (Exception exc) {
+			} catch (Throwable exc) {
 				LOGGER.log(OpLevel.ERROR, "Failed to load aggregations configuration file ''{0}''", cfgPath, exc);
 			}
 		} else {
@@ -123,7 +123,7 @@ public class AggregationsManager {
 				aggregator.configure(aggregatorCfg);
 				aggregators.add(aggregator);
 				LOGGER.log(OpLevel.INFO, "Will use aggregator ''{0}:{1}''", aggregator.getId(), type);
-			} catch (Exception exc) {
+			} catch (Throwable exc) {
 				LOGGER.log(OpLevel.ERROR, "Failed to initiate aggregator ''{0}:{1}''", id, type, exc);
 			}
 		}
@@ -139,7 +139,7 @@ public class AggregationsManager {
 		for (ActivityAggregator aggregator : aggregators) {
 			try {
 				aggregator.aggregate(activity);
-			} catch (Exception exc) {
+			} catch (Throwable exc) {
 				LOGGER.log(OpLevel.ERROR, "Failed to apply aggregator ''{0}''", aggregator.getId(), exc);
 			}
 		}

@@ -19,9 +19,12 @@ package com.jkoolcloud.tnt4j.stream.jmx.utils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -40,6 +43,10 @@ public class Utils extends com.jkoolcloud.tnt4j.utils.Utils {
 	 * {@link javax.management.ObjectName} value.
 	 */
 	public static final String OBJ_NAME_OBJ_PROP = "ObjectNameObjProp";
+
+	private static final String VAR_EXP_START_TOKEN = "${"; // NON-NLS
+	private static final String VAR_EXP_END_TOKEN = "}"; // NON-NLS
+	private static final Pattern EXPR_VAR_PATTERN = Pattern.compile("\\$\\{[\\w\\^\\[\\]=:.\\-+*/]+\\}"); // NON-NLS
 
 	/**
 	 * Loads properties from resource with given name.
@@ -275,5 +282,62 @@ public class Utils extends com.jkoolcloud.tnt4j.utils.Utils {
 	 */
 	public static String wildcardToRegex2(String str) {
 		return isWildcardString(str) ? wildcardToRegex(str) : str;
+	}
+
+	/**
+	 * Finds variable expressions like '${VarName}' in provided string and puts into collection.
+	 *
+	 * @param vars
+	 *            collection to add resolved variable expression
+	 * @param exprStr
+	 *            expression string
+	 */
+	public static void resolveExpressionVariables(Collection<String> vars, String exprStr) {
+		if (StringUtils.isNotEmpty(exprStr)) {
+			Matcher m = EXPR_VAR_PATTERN.matcher(exprStr);
+			while (m.find()) {
+				vars.add(m.group(0));
+			}
+		}
+	}
+
+	/**
+	 * Checks provided expression string contains variable placeholders having {@code "${VAR_NAME}"} format.
+	 *
+	 * @param exp
+	 *            expression string to check
+	 * @return {@code true} if expression contains variable placeholders, {@code false} - otherwise
+	 */
+	public static boolean isVariableExpression(String exp) {
+		return exp != null && EXPR_VAR_PATTERN.matcher(exp).find();
+	}
+
+	/**
+	 * Extracts variable name from provided variable placeholder string {@code varPlh}.
+	 *
+	 * @param varPlh
+	 *            variable placeholder string
+	 * @return variable name found within placeholder string, or {@code varPlh} value if it is empty or does not start
+	 *         with {@value #VAR_EXP_START_TOKEN}
+	 */
+	public static String getVarName(String varPlh) {
+		if (StringUtils.isNotEmpty(varPlh)) {
+			if (varPlh.startsWith(VAR_EXP_START_TOKEN)) {
+				return varPlh.substring(VAR_EXP_START_TOKEN.length(), varPlh.length() - VAR_EXP_END_TOKEN.length());
+			}
+		}
+
+		return varPlh;
+	}
+
+	/**
+	 * Makes expressions used variable placeholder representation.
+	 *
+	 * @param varName
+	 *            variable name
+	 * @return variable name surround by expression tokens
+	 */
+	public static String makeExpVariable(String varName) {
+		return VAR_EXP_START_TOKEN + varName + VAR_EXP_END_TOKEN;
 	}
 }

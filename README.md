@@ -1312,7 +1312,7 @@ Available aggregator implementations:
 snapshots and puts them into existing or new snapshot.
 
 Aggregator configuration schema is:
-* `aggregatorId` - aggregator identifier, to identify aggregator instance in the logs, e.g. when fails to load configuration or performs 
+* `aggregatorId` - aggregator identifier, to identify aggregator instance in the logs, e.g. when fails to load configuration or performs
   some aggregation actions. **Optional**, if not defined then made of class name and sequence index.
 * `type` - aggregator implementation class to use. **Required**.
 * `enabled` - flag indicating if aggregator configuration shall be loaded and used. **Optional**, default value -`true`.
@@ -1326,13 +1326,16 @@ Aggregator configuration schema is:
       this `category:beanId` or sets default value `jmx.aggregated` in any other case if ommited.
     * `enabled` - flag indicating if snapshot aggregation shall be used. **Optional**, default value -`true`.
     * `properties` - list of snapshot properties to aggregate and store MBean attribute values. **Required**:
-        * `beanId` - property bound bean identifier, it can have variable expression like `varName=?`. To define `beanId` use 
-          [ObjectName](https://docs.oracle.com/javase/8/docs/api/javax/management/ObjectName.html) notation syntax. **Required**.
-        * `attribute` - property bound bean attribute name to get value. **Required**.
+        * `beanId` - property bound bean identifier, it can have variable expression like `varName=?` or object name pattern. To
+          define `beanId` use [ObjectName](https://docs.oracle.com/javase/8/docs/api/javax/management/ObjectName.html) notation syntax.
+          When ommited, aggregations target snapshot is used to resolve property values. **Optional**.
+        * `attribute` - property bound bean attribute name to get value, it can have variable expression like `${attrName1}-${attrName2}`.
+          **Required**.
         * `name` - property (snapshot property) name, it can have variable expression like `${varName}`. **Required**.
         * `where` - set of property used variable definitions. **Optional**:
             * `[variable name]` - variable name
             * `[variable values]` - variable values string delimited (if variable has multiple values) by `|` symbol
+        * `transparent` - flag indicating if this property definition produces transient snapshot property. **Optional**, default value - `false`.
 
 Sample aggregator configuration may be like that:
 ```json
@@ -1407,12 +1410,12 @@ Sample aggregator configuration may be like that:
                         "name": "BytesOutPerSec"
                     },
                     {
-                        "beanId": "kafka.network:name=RequestsPerSecond,request=?,type=RequestMetrics",
+                        "beanId": "kafka.network:name=RequestsPerSec,request=?,type=RequestMetrics,*",
                         "where": {
                             "request": "Produce|FetchConsumer|FetchFollower"
                         },
                         "attribute": "Count",
-                        "name": "${request}-RequestsPerSecond"
+                        "name": "${request}-RequestsPerSec"
                     }
                 ]
             },
@@ -1422,8 +1425,19 @@ Sample aggregator configuration may be like that:
                 "enabled": true,
                 "properties": [
                     {
-                        "beanId": "java.lang:type=Runtime",
-                        "attribute": "Name",
+                        "beanId": "kafka.server:type=KafkaServer,name=ClusterId",
+                        "attribute": "Value",
+                        "name": "kafkaClusterId",
+                        "transparent": true
+                    },
+                    {
+                        "beanId": "kafka.server:type=app-info,id=?",
+                        "attribute": "id",
+                        "name": "kafkaBrokerId",
+                        "transparent": true
+                    },
+                    {
+                        "attribute": "${kafkaBrokerId}-${kafkaClusterId}",
                         "name": "kafkaNode"
                     }
                 ]

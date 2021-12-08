@@ -19,6 +19,8 @@ package com.jkoolcloud.tnt4j.stream.jmx.aggregations;
 import java.util.*;
 import java.util.regex.Pattern;
 
+import javax.management.ObjectName;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.MutablePair;
@@ -30,7 +32,7 @@ import com.jkoolcloud.tnt4j.core.PropertySnapshot;
 import com.jkoolcloud.tnt4j.core.Snapshot;
 import com.jkoolcloud.tnt4j.sink.EventSink;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.LoggerUtils;
-import com.jkoolcloud.tnt4j.utils.Utils;
+import com.jkoolcloud.tnt4j.stream.jmx.utils.Utils;
 
 /**
  * This class provides an aggregator implementation capable to append new attribute values to activity contained
@@ -111,12 +113,12 @@ import com.jkoolcloud.tnt4j.utils.Utils;
  *                         "name": "BytesOutPerSec"
  *                     },
  *                     {
- *                         "beanId": "kafka.network:name=RequestsPerSecond,request=?,type=RequestMetrics",
+ *                         "beanId": "kafka.network:name=RequestsPerSec,request=?,type=RequestMetrics,*",
  *                         "where": {
  *                             "request": "Produce|FetchConsumer|FetchFollower"
  *                         },
  *                         "attribute": "Count",
- *                         "name": "${request}-RequestsPerSecond"
+ *                         "name": "${request}-RequestsPerSec"
  *                     }
  *                 ]
  *             }
@@ -168,13 +170,18 @@ public class SnapshotAggregator implements ActivityAggregator {
 				String pBeanId = (String) property.get("beanId");
 				String pBeanAttribute = (String) property.get("attribute");
 
-				Property f = snapshotAggregation.addProperty(pName, pBeanId, pBeanAttribute);
+				Property aProperty = snapshotAggregation.addProperty(pName, pBeanId, pBeanAttribute);
 
-				Map<String, ?> fWhereMap = (Map<String, ?>) property.get("where");
-				if (fWhereMap != null) {
-					for (Map.Entry<String, ?> where : fWhereMap.entrySet()) {
-						f.addWhere(where.getKey(), (String) where.getValue());
+				Map<String, ?> pWhereMap = (Map<String, ?>) property.get("where");
+				if (pWhereMap != null) {
+					for (Map.Entry<String, ?> where : pWhereMap.entrySet()) {
+						aProperty.addWhere(where.getKey(), (String) where.getValue());
 					}
+				}
+
+				Boolean pTransparent = (Boolean) property.get("transparent");
+				if (Boolean.TRUE.equals(pTransparent)) {
+					aProperty.setTransparent(true);
 				}
 			}
 
@@ -225,7 +232,7 @@ public class SnapshotAggregator implements ActivityAggregator {
 				}
 
 				for (Property property : aggregation.getProperties()) {
-					String beanId = property.getFullBeanId();
+					String beanId = property.getBeanId();
 					String attribute = property.getAttribute();
 					String propertyName = property.getName();
 
@@ -239,10 +246,10 @@ public class SnapshotAggregator implements ActivityAggregator {
 							String[] varValues = var.getValue();
 
 							String beanIdVarToken = varName + "=?";
-							String nameVarToken = "${" + varName + "}";
+							String nameVarToken = Utils.makeExpVariable(varName);
 							for (String varValue : varValues) {
 								MutablePair<String, String> varProperty = new MutablePair<>();
-								if (beanId.contains(beanIdVarToken)) {
+								if (beanId != null && beanId.contains(beanIdVarToken)) {
 									varProperty.setLeft(beanId.replace(beanIdVarToken, varName + "=" + varValue));
 								} else {
 									varProperty.setLeft(beanId);
@@ -265,16 +272,41 @@ public class SnapshotAggregator implements ActivityAggregator {
 					}
 
 					for (Pair<String, String> aProperty : aProperties) {
-						Snapshot actSnapshot = activity.getSnapshot(aProperty.getLeft());
-						com.jkoolcloud.tnt4j.core.Property attrProp = actSnapshot == null ? null
-								: actSnapshot.get(attribute);
-
-						if (attrProp != null) {
-							Object value = attrProp.getValue();
+						com.jkoolcloud.tnt4j.core.Property attrProp;
+						if (aProperty.getLeft() == null) {
 							for (Snapshot aggrSnapshot : aggrSnapshots) {
-								aggrSnapshot.add(aProperty.getRight(), value);
+								Object value;
+								if (Utils.isVariableExpression(attribute)) {
+									List<String> varAttrs = new ArrayList<>();
+									Utils.resolveExpressionVariables(varAttrs, attribute);
+									String valString = attribute;
+
+									for (String varAttr : varAttrs) {
+										attrProp = aggrSnapshot.get(Utils.getVarName(varAttr));
+										value = attrProp == null ? null : attrProp.getValue();
+										valString = valString.replace(varAttr, Utils.toString(value));
+									}
+
+									value = valString;
+								} else {
+									attrProp = aggrSnapshot.get(attribute);
+									value = attrProp == null ? null : attrProp.getValue();
+								}
+								aggrSnapshot.add(aProperty.getRight(), value, property.isTransparent());
 								LOGGER.log(OpLevel.TRACE, "Added snapshot ''{0}'' property {1}={2}",
-										actSnapshot.getSnapKey(), aProperty.getRight(), Utils.toString(value));
+										aggrSnapshot.getSnapKey(), aProperty.getRight(), Utils.toString(value));
+							}
+						} else {
+							Snapshot actSnapshot = getSnapshot(activity, aProperty.getLeft());
+							attrProp = actSnapshot == null ? null : actSnapshot.get(attribute);
+
+							if (attrProp != null) {
+								Object value = attrProp.getValue();
+								for (Snapshot aggrSnapshot : aggrSnapshots) {
+									aggrSnapshot.add(aProperty.getRight(), value, property.isTransparent());
+									LOGGER.log(OpLevel.TRACE, "Added snapshot ''{0}'' property {1}={2}",
+											actSnapshot.getSnapKey(), aProperty.getRight(), Utils.toString(value));
+								}
 							}
 						}
 					}
@@ -298,6 +330,15 @@ public class SnapshotAggregator implements ActivityAggregator {
 		return activity;
 	}
 
+	/**
+	 * Makes a list of activity contained snapshots matching provided identifier {@code sId}.
+	 * 
+	 * @param activity
+	 *            the activity instance containing snapshots
+	 * @param sId
+	 *            snapshot identifier
+	 * @return list of snapshots having matching identifiers, or empty list if no matching snapshots found
+	 */
 	protected static List<Snapshot> getSnapshots(Activity activity, String sId) {
 		List<Snapshot> matchingSnapshots = new ArrayList<>();
 
@@ -312,6 +353,40 @@ public class SnapshotAggregator implements ActivityAggregator {
 		}
 
 		return matchingSnapshots;
+	}
+
+	/**
+	 * Returns activity contained snapshot matching provided bean identifier {@code beanId}.
+	 * 
+	 * @param activity
+	 *            the activity instance containing snapshots
+	 * @param beanId
+	 *            bean identifier
+	 * @return snapshot matching bean identifier, or {@code null} if no matching snapshot found
+	 */
+	protected static Snapshot getSnapshot(Activity activity, String beanId) {
+		if (activity != null) {
+			try {
+				ObjectName beanObjName = new ObjectName(beanId);
+				Collection<Snapshot> snapshots = activity.getSnapshots();
+
+				for (Snapshot snapshot : snapshots) {
+					try {
+						com.jkoolcloud.tnt4j.core.Property objNameProp = snapshot.get(Utils.OBJ_NAME_OBJ_PROP);
+						ObjectName snapObjName = objNameProp == null ? new ObjectName(snapshot.getName())
+								: (ObjectName) objNameProp.getValue();
+						if (beanObjName.apply(snapObjName)) {
+							return snapshot;
+						}
+					} catch (Exception exc) {
+					}
+				}
+			} catch (Exception exc) {
+				LOGGER.log(OpLevel.ERROR, "Invalid bean object name: {0}", beanId);
+			}
+		}
+
+		return null;
 	}
 
 	private static class SnapshotAggregation {
@@ -453,26 +528,34 @@ public class SnapshotAggregator implements ActivityAggregator {
 
 	private static class Property {
 		/**
-		 * Property bound bean identifier. It can have variable expression like {@code "varName=?"}
+		 * Property bound bean identifier. It can have variable expression like {@code "varName=?"}, or be any valid
+		 * {@link javax.management.ObjectName} pattern {@link javax.management.ObjectName#isPattern()}. When ommited,
+		 * aggregations target snapshot is used to resolve property values.
 		 */
-		String beanId;
+		private String beanId;
 		/**
 		 * Property variables definition.
 		 */
-		Where where;
+		private Where where;
 		/**
-		 * Property bound bean attribute (snapshot property) name to get value.
+		 * Property bound bean attribute (snapshot property) name to get value. It can have variable expression like
+		 * {@code "${attrName}"}.
 		 */
-		String attribute;
+		private String attribute;
 		/**
 		 * Property name to be set as snapshot property name. It can have variable expression like {@code "${varName}"}.
 		 */
-		String name;
+		private String name;
 
 		/**
 		 * This property bound bean snapshot full identifier.
 		 */
-		String fullBeanId;
+		private String fullBeanId;
+
+		/**
+		 * Flag indicating if this property definition produces transient snapshot property.
+		 */
+		private boolean transparent = false;
 
 		/**
 		 * Constructs a new Property.
@@ -485,15 +568,15 @@ public class SnapshotAggregator implements ActivityAggregator {
 		 *            bean attribute name
 		 *
 		 * @throws IllegalArgumentException
-		 *             if any of property name, bean identifier or attribute name is empty
+		 *             if any of property or attribute names is empty
 		 */
 		Property(String name, String beanId, String attribute) throws IllegalArgumentException {
 			if (StringUtils.isEmpty(name)) {
 				throw new IllegalArgumentException("Invalid configuration: property name must be set");
 			}
-			if (StringUtils.isEmpty(beanId)) {
-				throw new IllegalArgumentException("Invalid configuration: property bound bean id must be set");
-			}
+			// if (StringUtils.isEmpty(beanId)) {
+			// throw new IllegalArgumentException("Invalid configuration: property bound bean id must be set");
+			// }
 			if (StringUtils.isEmpty(attribute)) {
 				throw new IllegalArgumentException(
 						"Invalid configuration: property bound bean attribute name must be set");
@@ -555,7 +638,7 @@ public class SnapshotAggregator implements ActivityAggregator {
 		 * @param varValues
 		 *            variable values string delimited by {@code "|"} symbol
 		 * 
-		 * @throws java.lang.IllegalArgumentException
+		 * @throws IllegalArgumentException
 		 *             if variable name is empty
 		 * 
 		 * @see com.jkoolcloud.tnt4j.stream.jmx.aggregations.SnapshotAggregator.Where#addVar(String, String)
@@ -602,13 +685,32 @@ public class SnapshotAggregator implements ActivityAggregator {
 		String getName() {
 			return name;
 		}
+
+		/**
+		 * Returns flag indicating if this property definition produces transient snapshot property.
+		 * 
+		 * @return {@code true} if snapshot property shall be transient, {@code false} - otherwise
+		 */
+		public boolean isTransparent() {
+			return transparent;
+		}
+
+		/**
+		 * Sets flag indicating if this property definition produces transient snapshot property.
+		 * 
+		 * @param transparent
+		 *            flag indicating if this property definition produces transient snapshot property
+		 */
+		public void setTransparent(boolean transparent) {
+			this.transparent = transparent;
+		}
 	}
 
 	private static class Where {
 		/**
 		 * The variables definition map.
 		 */
-		Map<String, String[]> varMap;
+		private Map<String, String[]> varMap;
 
 		/**
 		 * Checks if variables definition map is empty.
