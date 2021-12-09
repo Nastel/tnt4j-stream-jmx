@@ -1431,7 +1431,7 @@ Sample aggregator configuration may be like that:
                         "transparent": true
                     },
                     {
-                        "beanId": "kafka.server:type=app-info,id=?",
+                        "beanId": "kafka.server:type=app-info,id=*",
                         "attribute": "id",
                         "name": "kafkaBrokerId",
                         "transparent": true
