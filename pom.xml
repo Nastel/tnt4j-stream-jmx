@@ -86,7 +86,7 @@
         <gpg.skip>true</gpg.skip>
 
         <org.slf4j.version>1.7.32</org.slf4j.version>
-        <log4j.version>1.2.17</log4j.version>
+        <log4j.version>2.16.0</log4j.version>
     </properties>
 
     <profiles>
@@ -211,8 +211,8 @@
                             <value>../config/tnt4j.properties</value>
                         </property>
                         <property>
-                            <name>log4j.configuration</name>
-                            <value>file:../config/log4j.properties</value>
+                            <name>log4j2.configurationFile</name>
+                            <value>file:../config/log4j2.xml</value>
                         </property>
                     </systemProperties>
                 </configuration>

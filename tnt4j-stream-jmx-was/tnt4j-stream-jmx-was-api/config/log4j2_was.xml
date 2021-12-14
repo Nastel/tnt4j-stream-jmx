@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright 2014-2021 JKOOL, LLC.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<Configuration strict="true"
+               xmlns="http://logging.apache.org/log4j/2.0/config"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://logging.apache.org/log4j/2.0/config
+           https://raw.githubusercontent.com/apache/logging-log4j2/master/log4j-core/src/main/resources/Log4j-config.xsd">
+    <Properties>
+        <Property name="tnt4j.stream.log.filename">logs/tnt4j-stream-jmx_was.log</Property>
+        <Property name="tnt4j.activities.log.filename">logs/tnt4j-stream-jmx_samples.json</Property>
+    </Properties>
+    <Appenders>
+        <!-- ### direct log messages to console ### -->
+        <Console name="console" target="SYSTEM_OUT">
+            <PatternLayout>
+                <Pattern>%d{ISO8601} %-5p [%t!%c{1}] - %m%n</Pattern>
+            </PatternLayout>
+        </Console>
+        <!-- ### direct log messages to file rolling daily ### -->
+        <RollingFile name="file"
+                     fileName="${tnt4j.stream.log.filename}"
+                     filePattern="${tnt4j.stream.log.filename}.%d{yyyy-MM-dd}.%i.gz"
+                     ignoreExceptions="false">
+            <Policies>
+                <OnStartupTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="50 MB"/>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+            <DefaultRolloverStrategy max="30">
+                <Delete basePath="${baseDir}" maxDepth="1">
+                    <IfFileName glob="${tnt4j.stream.log.filename}.*.gz"/>
+                    <IfLastModified age="30d"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+            <PatternLayout>
+                <Pattern>%d{ISO8601} %-5p [%t!%c{1}] - %m%n</Pattern>
+            </PatternLayout>
+        </RollingFile>
+        <!--  ### branch for sink written activity entities logger ### -->
+        <RollingFile name="activities_log"
+                     fileName="${tnt4j.activities.log.filename}"
+                     filePattern="${tnt4j.activities.log.filename}.%i.gz"
+                     ignoreExceptions="false">
+            <Policies>
+                <OnStartupTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="10 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="30">
+                <Delete basePath="${baseDir}" maxDepth="1">
+                    <IfFileName glob="${tnt4j.activities.log.filename}.*.gz"/>
+                    <IfLastModified age="30d"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+            <PatternLayout>
+                <Pattern>%m%n</Pattern>
+            </PatternLayout>
+        </RollingFile>
+        <Async name="Async">
+            <AppenderRef ref="file"/>
+            <AppenderRef ref="activities_log"/>
+        </Async>
+    </Appenders>
+    <Loggers>
+        <!-- ### jKool LLC TNT4J Stream-JMX-WAS log level and appenders used -->
+        <!--Root level="INFO">
+            <AppenderRef ref="console"/>
+            <AppenderRef ref="file"/>
+        </Root-->
+        <!-- ### change to DEBUG to have all the sampling process logged as it was
+             ### using "-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true" property. -->
+        <Logger name="com.jkoolcloud.tnt4j" level="INFO">
+            <AppenderRef ref="file"/>
+        </Logger>
+        <Logger name="com.jkoolcloud.tnt4j.stream.jmx" level="DEBUG">
+            <AppenderRef ref="file"/>
+        </Logger>
+        <!-- #### streamed activity entities logger #### -->
+        <!--Logger name="com.jkoolcloud.tnt4j.stream.jmx.activities_log" level="INFO" additivity="false">
+            <AppenderRef ref="activities_log"/>
+        </Logger-->
+        <!-- #### disable other APIs logging into Stream-JMX log #### -->
+        <!-- <Logger name="com.jkoolcloud.tnt4j.sink.impl.slf4" level="NONE"/> -->
+    </Loggers>
+</Configuration>

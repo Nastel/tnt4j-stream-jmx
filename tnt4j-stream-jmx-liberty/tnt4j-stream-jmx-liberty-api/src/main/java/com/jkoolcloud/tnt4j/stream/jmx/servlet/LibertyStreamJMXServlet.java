@@ -58,7 +58,7 @@ public class LibertyStreamJMXServlet extends StreamJMXServlet {
 		/**
 		 * LOG4J configuration file used by Liberty JMX sampler.
 		 */
-		// LOG4J_CONFIG("log4j.configuration", "log4j_liberty.properties", HIDDEN, SYSTEM, LOCAL),
+		// LOG4J_CONFIG("log4j2.configurationFile", "log4j2_liberty.xml", HIDDEN, SYSTEM, LOCAL),
 		/**
 		 * JUL configuration file used by Liberty JMX sampler.
 		 */

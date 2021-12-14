@@ -35,9 +35,9 @@ TNT4JOPTS="$TNT4JOPTS -Dtnt4j.config=$TNT4J_PROPERTIES"
 ### -------------------
 ### --- log4j file ----
 if [[ -z "$LOG4J_PROPERTIES" ]]; then
-  LOG4J_PROPERTIES="$SCRIPTPATH/../config/log4j.properties"
+  LOG4J_PROPERTIES="$SCRIPTPATH/../config/log4j2.xml"
 fi
-TNT4JOPTS="$TNT4JOPTS -Dlog4j.configuration=file:$LOG4J_PROPERTIES"
+TNT4JOPTS="$TNT4JOPTS -Dlog4j2.configurationFile=file:$LOG4J_PROPERTIES"
 ### -------------------
 
 # NOTE: Double exclamation mark in bash has a special meaning (previous command)

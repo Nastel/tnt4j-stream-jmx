@@ -31,8 +31,8 @@ IF %jver% LEQ 18 set LIBPATH=%LIBPATH%;%JAVA_HOME%\lib\tools.jar
 set TNT4JOPTS=%TNT4JOPTS% "-Dtnt4j.dump.on.vm.shutdown=true" "-Dtnt4j.dump.on.exception=true" "-Dtnt4j.dump.provider.default=true"
 IF ["%TNT4J_PROPERTIES%"] EQU [""] set TNT4J_PROPERTIES="%RUNDIR%..\config\tnt4j.properties"
 set TNT4JOPTS=%TNT4JOPTS% "-Dtnt4j.config=%TNT4J_PROPERTIES%"
-IF ["%LOG4J_PROPERTIES%"] EQU [""] set LOG4J_PROPERTIES="%RUNDIR%..\config\log4j.properties"
-set TNT4JOPTS=%TNT4JOPTS% "-Dlog4j.configuration=file:///%LOG4J_PROPERTIES%"
+IF ["%LOG4J_PROPERTIES%"] EQU [""] set LOG4J_PROPERTIES="%RUNDIR%..\config\log4j2.xml"
+set TNT4JOPTS=%TNT4JOPTS% "-Dlog4j2.configurationFile=file:///%LOG4J_PROPERTIES%"
 
 rem ---- Agent sampler options ----
 set AGENT_OPTIONS=*:*!!60000

@@ -70,7 +70,7 @@ public class WASStreamJMXServlet extends StreamJMXServlet {
 		/**
 		 * LOG4J configuration file used by WAS JMX sampler.
 		 */
-		// LOG4J_CONFIG("log4j.configuration", "log4j_was.properties", HIDDEN, SYSTEM, LOCAL),
+		// LOG4J_CONFIG("log4j2.configurationFile", "log4j2_was.xml", HIDDEN, SYSTEM, LOCAL),
 		/**
 		 * JUL configuration file used by WAS JMX sampler.
 		 */

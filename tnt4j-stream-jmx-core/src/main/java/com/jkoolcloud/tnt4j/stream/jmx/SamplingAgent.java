@@ -76,7 +76,7 @@ public class SamplingAgent {
 
 	private static final Map<Thread, SamplingAgent> ALL_AGENTS = new ConcurrentHashMap<>(5);
 
-	private static final String LOG4J_PROPERTIES_KEY = "log4j.configuration";
+	private static final String LOG4J_PROPERTIES_KEY = "log4j2.configurationFile";
 	private static final String SYS_PROP_LOG4J_CFG = "-D" + LOG4J_PROPERTIES_KEY;
 	private static final String SYS_PROP_TNT4J_CFG = "-D" + TrackerConfigStore.TNT4J_PROPERTIES_KEY;
 	private static final String SYS_PROP_AGENT_PATH = "-DSamplingAgent.path";

@@ -130,7 +130,7 @@ Executable OS shell run script files `bin/stream-jmx.bat` or `bin/stream-jmx.sh`
 
 Command line to run `stream-jmx` as JVM agent looks like this:
 ```cmd
-java -javaagent:tnt4j-stream-jmx-core-all.jar="*:*!30000" -Dtnt4j.config=tnt4j.properties -Dlog4j.configuration=file:log4j.properties -classpath "tnt4j-stream-jmx.jar;lib/*" your.class.name your-args
+java -javaagent:tnt4j-stream-jmx-core-all.jar="*:*!30000" -Dtnt4j.config=tnt4j.properties -Dlog4j2.configurationFile=file:log4j2.xml -classpath "tnt4j-stream-jmx.jar;lib/*" your.class.name your-args
 ```
 The options are `-javaagent:tnt4j-stream-jmx-core-all.jar="mbean-filter!sample-time-ms"`, classpath must include tnt4j-stream-jmx jar files as well 
 as locations of log4j and tnt4j configuration files. See [JMX Sampling Agent sampler options](#jmx-sampling-agent-sampler-options) for 
@@ -148,7 +148,7 @@ Executable OS shell run script files `bin/stream-jmx-attach.bat` or `bin/stream-
 
 Command line to attach local JVM process JMX looks like this:
 ```cmd
-java -Dtnt4j.config=.\config\tnt4j.properties -Dlog4j.configuration=file:.\config\log4j.properties -classpath "tnt4j-stream-jmx-core-all.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -attach -vm:activemq -ap:tnt4j-stream-jmx-core-all.jar -ao:*:*!10000
+java -Dtnt4j.config=.\config\tnt4j.properties -Dlog4j2.configurationFile=file:.\config\log4j2.xml -classpath "tnt4j-stream-jmx-core-all.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -attach -vm:activemq -ap:tnt4j-stream-jmx-core-all.jar -ao:*:*!10000
 ```
 System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [Stream-JMX configuration ](#stream-jmx-configuration).
 
@@ -224,7 +224,7 @@ rem using pid
 #### To connect to local JVM process
 Command line to connect local JVM process JMX looks like this:
 ```cmd
-java -Dtnt4j.config=.\config\tnt4j.properties -Dlog4j.configuration=file:.\config\log4j.properties -classpath "tnt4j-stream-jmx-core.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -vm:activemq -ao:*:*!*:dummy!10000
+java -Dtnt4j.config=.\config\tnt4j.properties -Dlog4j2.configurationFile=file:.\config\log4j2.xml -classpath "tnt4j-stream-jmx-core.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -vm:activemq -ao:*:*!*:dummy!10000
 ```
 
 System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [Stream-JMX configuration ](#stream-jmx-configuration).
@@ -243,7 +243,7 @@ seconds. Sampler options are optional - default value is `*:*!30000`. Initial sa
 #### To connect to JMX service over URL
 Command line to connect remote JMX service looks like this:
 ```cmd
-java -Dtnt4j.config=.\config\tnt4j.properties -Dlog4j.configuration=file:.\config\log4j.properties -classpath "tnt4j-stream-jmx-core.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -vm:service:jmx:<JMX_URL> -ul:admin -up:admin -ao:*:*!!10000 -cri:30 -cp:java.naming.security.authentication=simple -cp:java.naming.factory.initial=com.sun.jndi.ldap.LdapCtxFactory
+java -Dtnt4j.config=.\config\tnt4j.properties -Dlog4j2.configurationFile=file:.\config\log4j2.xml -classpath "tnt4j-stream-jmx-core.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -vm:service:jmx:<JMX_URL> -ul:admin -up:admin -ao:*:*!!10000 -cri:30 -cp:java.naming.security.authentication=simple -cp:java.naming.factory.initial=com.sun.jndi.ldap.LdapCtxFactory
 ```
 System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [Stream-JMX configuration ](#stream-jmx-configuration).
 
@@ -651,7 +651,7 @@ try {
 
 ### Command line to run
 ```cmd
-java -Dtnt4j.config=.\config\tnt4j.properties -Dlog4j.configuration=file:.\config\log4j.properties -classpath "tnt4j-stream-jmx-core.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -local -ao:*:*!*:dummy!10000
+java -Dtnt4j.config=.\config\tnt4j.properties -Dlog4j2.configurationFile=file:.\config\log4j2.xml -classpath "tnt4j-stream-jmx-core.jar;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -local -ao:*:*!*:dummy!10000
 ```
 
 System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [Stream-JMX configuration ](#stream-jmx-configuration).
@@ -834,7 +834,7 @@ For more information on TNT4J and `tnt4j.properties` [see TNT4J Wiki](https://gi
 Example below runs `SamplingAgent` helper class as a standalone java application with a given MBean filter `"*:*"`, sampling period in 
 milliseconds (`10000`), and time to run in milliseconds (`60000`):
 ```cmd
-java -Dlog4j.configuration=file:.\config\log4j.properties -classpath "*;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent "*:*" "" 10000 60000
+java -Dlog4j2.configurationFile=file:.\config\log4j2.xml -classpath "*;lib/*" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent "*:*" "" 10000 60000
 ```
 
 ## Stream-JMX configuration
@@ -861,8 +861,8 @@ To define system property for application you can use common JVM argument `-Dkey
 General use:
 * `tnt4j.config` - defines TNT4J properties file path. 
 Example: `-Dtnt4j.config=".\config\tnt4j.properties"`
-* `log4j.configuration` - defines `stream-jmx` logging used LOG4J properties file path.
-Example: `-Dlog4j.configuration="file:.\config\log4j.properties"`
+* `log4j2.configurationFile` - defines `stream-jmx` logging used LOG4J properties file path.
+Example: `-Dlog4j2.configurationFile="file:.\config\log4j2.xml"`
 * `com.jkoolcloud.tnt4j.stream.jmx.agent.forceObjectName` - defines whether to forcibly add `objectName` attribute if such is not present 
 for a MBean. Default value - `false`. 
 Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.forceObjectName=true`
@@ -890,11 +890,11 @@ Example: `-Dtnt4j.activities.log.filename=./logs/tnt4j-stream-jmx_broker0_sample
 
 **Changes between versions:**
 * Prior to version `0.7` `stream-jmx` was writing logging messages to `System.out/err` print streams. Since version `0.7` logging is 
-performed over `TNT4J` Log Sink to `slf4j-log4j12`. Logger configuration is defined in `./config/log4j.properties` file. 
+performed over `TNT4J` Log Sink to `slf4j-log4j12`. Logger configuration is defined in `./config/log4j2.xml` file. 
 If you where using system property `-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true` prior to `0.7` version, this is now configured over 
 logger log level, by setting it to `DEBUG` value, e.g:
-```properties
-log4j.logger.com.jkoolcloud.tnt4j.stream.jmx=DEBUG
+```xml
+<Logger name="com.jkoolcloud.tnt4j.stream.jmx" level="DEBUG"/>
 ```
 
 **NOTE:** when running multiple parallel instances of `stream-jmx` (e.g. collecting Kafka broker metrics using dedicated stream instance), 

@@ -116,7 +116,7 @@ public enum StreamJMXProperties implements StreamJMXProperty {
 	/**
 	 * LOG4J configuration file.
 	 */
-	LOG4J_CONFIG("log4j.configuration", "file:./log4j.properties", EDITABLE, SYSTEM, LOCAL);
+	LOG4J_CONFIG("log4j2.configurationFile", "file:./log4j2.xml", EDITABLE, SYSTEM, LOCAL);
 
 	private String key;
 	private String defaultValue;
