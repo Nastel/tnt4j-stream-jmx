@@ -41,10 +41,11 @@
                 <SizeBasedTriggeringPolicy size="50 MB"/>
                 <TimeBasedTriggeringPolicy/>
             </Policies>
-            <DefaultRolloverStrategy max="30">
+            <DefaultRolloverStrategy max="30" fileIndex="min">
                 <Delete basePath="${baseDir}" maxDepth="1">
                     <IfFileName glob="${tnt4j.stream.log.filename}.*.gz"/>
                     <IfLastModified age="30d"/>
+                    <!--IfAccumulatedFileCount exceeds="30"/-->
                 </Delete>
             </DefaultRolloverStrategy>
             <PatternLayout>
@@ -60,39 +61,36 @@
                 <OnStartupTriggeringPolicy/>
                 <SizeBasedTriggeringPolicy size="10 MB"/>
             </Policies>
-            <DefaultRolloverStrategy max="30">
+            <DefaultRolloverStrategy max="30" fileIndex="min">
                 <Delete basePath="${baseDir}" maxDepth="1">
                     <IfFileName glob="${tnt4j.activities.log.filename}.*.gz"/>
                     <IfLastModified age="30d"/>
+                    <!--IfAccumulatedFileCount exceeds="30"/-->
                 </Delete>
             </DefaultRolloverStrategy>
             <PatternLayout>
                 <Pattern>%m%n</Pattern>
             </PatternLayout>
         </RollingFile>
-        <Async name="Async">
-            <AppenderRef ref="file"/>
-            <AppenderRef ref="activities_log"/>
-        </Async>
     </Appenders>
     <Loggers>
         <!-- ### jKool LLC TNT4J Stream-JMX-Liberty log level and appenders used -->
-        <!--Root level="INFO">
+        <!--asyncRoot level="INFO">
             <AppenderRef ref="console"/>
             <AppenderRef ref="file"/>
-        </Root-->
+        </asyncRoot-->
         <!-- ### change to DEBUG to have all the sampling process logged as it was
              ### using "-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true" property. -->
-        <Logger name="com.jkoolcloud.tnt4j" level="INFO">
+        <asyncLogger name="com.jkoolcloud.tnt4j" level="INFO">
             <AppenderRef ref="file"/>
-        </Logger>
-        <Logger name="com.jkoolcloud.tnt4j.stream.jmx" level="DEBUG">
+        </asyncLogger>
+        <asyncLogger name="com.jkoolcloud.tnt4j.stream.jmx" level="DEBUG">
             <AppenderRef ref="file"/>
-        </Logger>
+        </asyncLogger>
         <!-- #### streamed activity entities logger #### -->
-        <!--Logger name="com.jkoolcloud.tnt4j.stream.jmx.activities_log" level="INFO" additivity="false">
+        <!--asyncLogger name="com.jkoolcloud.tnt4j.stream.jmx.activities_log" level="INFO" additivity="false">
             <AppenderRef ref="activities_log"/>
-        </Logger-->
+        </asyncLogger-->
         <!-- #### disable other APIs logging into Stream-JMX log #### -->
         <!-- <Logger name="com.jkoolcloud.tnt4j.sink.impl.slf4" level="NONE"/> -->
     </Loggers>
