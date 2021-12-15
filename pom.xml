@@ -20,7 +20,7 @@
 
     <groupId>com.jkoolcloud.tnt4j.stream</groupId>
     <artifactId>tnt4j-stream-jmx</artifactId>
-    <version>0.14</version>
+    <version>0.15-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>tnt4j-stream-jmx</name>
