@@ -56,7 +56,7 @@
         <RollingFile name="activities_log"
                      fileName="${tnt4j.activities.log.filename}"
                      filePattern="${tnt4j.activities.log.filename}.%i.gz"
-                     ignoreExceptions="false">
+                     ignoreExceptions="false" createOnDemand="true">
             <Policies>
                 <OnStartupTriggeringPolicy/>
                 <SizeBasedTriggeringPolicy size="10 MB"/>
@@ -92,6 +92,6 @@
             <AppenderRef ref="activities_log"/>
         </asyncLogger-->
         <!-- #### disable other APIs logging into Stream-JMX log #### -->
-        <!-- <Logger name="com.jkoolcloud.tnt4j.sink.impl.slf4" level="NONE"/> -->
+        <!-- <asyncLogger name="com.jkoolcloud.tnt4j.sink.impl.slf4" level="NONE"/> -->
     </Loggers>
 </Configuration>

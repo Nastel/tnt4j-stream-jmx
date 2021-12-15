@@ -56,7 +56,7 @@
         <RollingFile name="activities_log"
                      fileName="${tnt4j.activities.log.filename}"
                      filePattern="${tnt4j.activities.log.filename}.%i.gz"
-                     ignoreExceptions="false">
+                     ignoreExceptions="false" createOnDemand="true">
             <Policies>
                 <OnStartupTriggeringPolicy/>
                 <SizeBasedTriggeringPolicy size="10 MB"/>
@@ -81,12 +81,12 @@
         </asyncRoot>
         <!-- ### change to DEBUG to have all the sampling process logged as it was
              ### using "-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true" property. -->
-        <Logger name="com.jkoolcloud.tnt4j.stream.jmx" level="DEBUG"/>
+        <asyncLogger name="com.jkoolcloud.tnt4j.stream.jmx" level="DEBUG"/>
         <!-- #### streamed activity entities logger #### -->
         <asyncLogger name="com.jkoolcloud.tnt4j.stream.jmx.activities_log" level="INFO" additivity="false">
             <AppenderRef ref="activities_log"/>
         </asyncLogger>
         <!-- #### disable other APIs logging into Stream-JMX log #### -->
-        <!-- <Logger name="com.jkoolcloud.tnt4j.sink.impl.slf4" level="NONE"/> -->
+        <!-- <asyncLogger name="com.jkoolcloud.tnt4j.sink.impl.slf4" level="NONE"/> -->
     </Loggers>
 </Configuration>
