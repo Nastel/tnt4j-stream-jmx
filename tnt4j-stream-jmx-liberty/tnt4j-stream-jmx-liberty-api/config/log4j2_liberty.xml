@@ -31,10 +31,10 @@
                 <Pattern>%d{ISO8601} %-5p [%t!%c{1}] - %m%n</Pattern>
             </PatternLayout>
         </Console>
-        <!-- ### direct log messages to file rolling daily ### -->
+        <!-- ### direct log messages to file rolling on startup, size based and daily ### -->
         <RollingFile name="file"
                      fileName="${tnt4j.stream.log.filename}"
-                     filePattern="${tnt4j.stream.log.filename}.%d{yyyy-MM-dd}.%i.gz"
+                     filePattern="${tnt4j.stream.log.filename}.%d{yyyyMMdd}.%i.gz"
                      ignoreExceptions="false">
             <Policies>
                 <OnStartupTriggeringPolicy/>
