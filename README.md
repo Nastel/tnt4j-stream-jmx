@@ -1376,21 +1376,25 @@ Aggregator configuration schema is:
           ommited, aggregations target snapshot is used to resolve property values. **Optional**.
         * `attribute` - property bound bean attribute name to get value, it can have variable expression like `${attrName1}-${attrName2}`.
           **Required**. **NOTE:** when all variables resolve `null` value, aggregated value also gets `null`.
-        * `default` - defines default values mapping for `attribute` defined variables. **Optional**:
-            * can define single default value for all variables:
+        * `default` - defines default value(s) mapping for `attribute` defined variables or unresolved aggregated value in general.
+          **Optional**:
+            * can define default aggregated value when all variables resolve `null` values:
               ```json
               "default": "-"
               ```
-            * can define mapping for individual variables:
+            * can define mapping for individual variables and/or unresolved aggregated value:
               ```json
               "attribute": "${attrName1}-${attrName2}-${attrName3}",
               "default": {
                   "attrName1": 0,
                   "attrName2": "NA",
-                  "": "-"
+                  "": "-",
+                  ">>": "UNRESOLVED"
               }
               ```
-              **NOTE:** key `""` defines fallback default value to be applied for any unmapped variable.
+              * key `""` defines fallback default value to be applied for any unmapped variable. 
+              * key `">>"` defines default aggregated value (when attribute referenced value gets unresolved or all variables resolve `null`
+                values).
         * `name` - property (snapshot property) name, it can have variable expression like `${varName}`. **Required**.
         * `where` - set of property used variable definitions. **Optional**:
             * `[variable name]` - variable name

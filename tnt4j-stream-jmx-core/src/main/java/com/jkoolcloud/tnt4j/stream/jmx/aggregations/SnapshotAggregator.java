@@ -294,6 +294,7 @@ public class SnapshotAggregator implements ActivityAggregator {
 								} else {
 									attrProp = aggrSnapshot.get(attribute);
 									value = attrProp == null ? null : attrProp.getValue();
+									value = getAggregatedDefault(value, property.getDefaults());
 								}
 
 								if (value != null) {
@@ -310,9 +311,10 @@ public class SnapshotAggregator implements ActivityAggregator {
 						} else {
 							Snapshot actSnapshot = getSnapshot(activity, aProperty.getLeft());
 							attrProp = actSnapshot == null ? null : actSnapshot.get(attribute);
+							Object value = attrProp == null ? null : attrProp.getValue();
+							value = getAggregatedDefault(value, property.getDefaults());
 
-							if (attrProp != null) {
-								Object value = attrProp.getValue();
+							if (value != null) {
 								for (Snapshot aggrSnapshot : aggrSnapshots) {
 									aggrSnapshot.add(aProperty.getRight(), value, property.isTransparent());
 									LOGGER.log(OpLevel.TRACE, "Added snapshot ''{0}'' property {1}={2}",
@@ -406,15 +408,18 @@ public class SnapshotAggregator implements ActivityAggregator {
 	}
 
 	/**
-	 * Fills in provided variable expression {@code varExp} with variable values from provided map {@code varValuesMap}.
+	 * Fills in provided variable expression {@code varExp} with variable values from provided map {@code varValuesMap}
+	 * in common with preconfigured default values map {@code defaultValuesMap}.
 	 * 
 	 * @param varExp
 	 *            variable expression to build value
 	 * @param varValuesMap
 	 *            variable values map
 	 * @param defaultValuesMap
-	 *            variable default values map
-	 * @return variable expression filled in value string, or {@code null} if all variable values are {@code null}
+	 *            preconfigured default values map
+	 * @return variable expression filled in value string, a defined default aggregated value in case all variables are
+	 *         {@code null}, or {@code null} if all variable values are {@code null} and there is no default aggregated
+	 *         value defined
 	 */
 	protected static String fillVariables(String varExp, Map<String, ?> varValuesMap, Map<String, ?> defaultValuesMap) {
 		boolean hasValues = false;
@@ -426,7 +431,8 @@ public class SnapshotAggregator implements ActivityAggregator {
 		}
 
 		if (!hasValues) {
-			return null;
+			Object value = getAggregatedDefault(null, defaultValuesMap);
+			return value == null ? null : Utils.toString(value);
 		}
 
 		String valString = varExp;
@@ -443,22 +449,40 @@ public class SnapshotAggregator implements ActivityAggregator {
 	}
 
 	/**
+	 * Resolves default aggregated value in case provided object {@code value} is {@code null}.
+	 * 
+	 * @param value
+	 *            object value
+	 * @param defaultValuesMap
+	 *            preconfigured default values map
+	 * @return same object value if it is not {@code null}, resolved default aggregated value, or {@code null} if there
+	 *         is no default aggregated value mapping (key {@value Property#DEFAULTS_KEY_AGGREGATED}) defined
+	 */
+	protected static Object getAggregatedDefault(Object value, Map<String, ?> defaultValuesMap) {
+		return value == null //
+				? defaultValuesMap != null //
+						? defaultValuesMap.get(Property.DEFAULTS_KEY_AGGREGATED) //
+						: null //
+				: value; //
+	}
+
+	/**
 	 * Resolves default value for provided variable expression {@code varExp} from provided variable default values map
 	 * {@code defaultValuesMap}.
 	 * 
 	 * @param varExp
 	 *            variable expression
 	 * @param defaultValuesMap
-	 *            variable default values map
-	 * @return default value resolved for variable, or {@code null} if there is no variable or fallback (key
-	 *         {@value Property#DEFAULTS_KEY_ALL}) mapping to default value
+	 *            preconfigured default values map
+	 * @return default value resolved for variable, or {@code null} if there is no variable or fallback mapping (key
+	 *         {@value Property#DEFAULTS_KEY_ANY_VAR}) to default value
 	 */
 	protected static Object getDefault(String varExp, Map<String, ?> defaultValuesMap) {
 		if (defaultValuesMap != null) {
 			String varName = Utils.getVarName(varExp);
 			Object defValue = defaultValuesMap.get(varName);
 			if (defValue == null) {
-				defValue = defaultValuesMap.get(Property.DEFAULTS_KEY_ALL);
+				defValue = defaultValuesMap.get(Property.DEFAULTS_KEY_ANY_VAR);
 			}
 
 			return defValue;
@@ -608,7 +632,13 @@ public class SnapshotAggregator implements ActivityAggregator {
 		/**
 		 * Fallback default values map key to bind default value to any variable.
 		 */
-		private static final String DEFAULTS_KEY_ALL = "";
+		private static final String DEFAULTS_KEY_ANY_VAR = "";
+
+		/**
+		 * Default values map key to bind default aggregated value. It is used when all variables resolve {@code null}
+		 * values.
+		 */
+		private static final String DEFAULTS_KEY_AGGREGATED = ">>";
 
 		/**
 		 * Property bound bean identifier. It can have variable expression like {@code "varName=?"}, or be any valid
@@ -811,7 +841,7 @@ public class SnapshotAggregator implements ActivityAggregator {
 				this.defaults = (Map<String, Object>) defaults;
 			} else if (defaults != null) {
 				this.defaults = new HashMap<>(1);
-				this.defaults.put(DEFAULTS_KEY_ALL, defaults);
+				this.defaults.put(DEFAULTS_KEY_AGGREGATED, defaults);
 			}
 		}
 	}
