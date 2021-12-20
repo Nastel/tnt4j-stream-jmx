@@ -450,9 +450,10 @@ may build such SourceFQNs for VMs:
 * `localhost` - `SERVICE=ID:PC-NAME-52295-1538060220413-0:1#SERVER=2453@PC-NAME#DATACENTER=HQDC
 * `192.168.1.1` - `SERVICE=3SERVER=2457@boxName#DATACENTER=HQDC
 
-**NOTE:** VM additional `SourceFQN` path must be defined fallowing same rules as in TNT4J config
-
-- `SourceType1=value1#SourceType2=value2#...#SourceTypeN=valueN`.
+**NOTE:** VM additional `SourceFQN` path must be defined fallowing same rules as in TNT4J config:
+```
+SourceType1=value1#SourceType2=value2#...#SourceTypeN=valueN
+```
 
 ##### ZooKeeper orchestrated VMs access
 
@@ -892,8 +893,8 @@ value **after**.
 JMX sampler configuration properties are:
 * `forceObjectName` - flag indicating to forcibly add `objectName` attribute if such is not present for a MBean. Default value - `false`.
 * `compositeDelimiter` - delimiter used to tokenize composite/tabular type MBean properties keys. Default value - `\`;
-* `useObjectNameProperties` - flag indicating to copy MBean `ObjectName` contained properties into sample snapshot properties. Default value
-    - `true`.
+* `useObjectNameProperties` - flag indicating to copy MBean `ObjectName` contained properties into sample snapshot properties. Default value -
+  `true`.
 * `excludeOnError` - flag indicating to auto-exclude failed to sample attributes. Default value - `false`.
 * `excludedAttributes` - list of user chosen attribute names (may have wildcards `*` and `?`) to exclude, pattern:
   `attr1,attr2,...,attrN@MBean1_ObjectName;...;attr1,attr2,...,attrN@MBeanN_ObjectName`. Default value - ``.
@@ -1374,13 +1375,28 @@ Aggregator configuration schema is:
           define `beanId` use [ObjectName](https://docs.oracle.com/javase/8/docs/api/javax/management/ObjectName.html) notation syntax. When
           ommited, aggregations target snapshot is used to resolve property values. **Optional**.
         * `attribute` - property bound bean attribute name to get value, it can have variable expression like `${attrName1}-${attrName2}`.
-          **Required**.
+          **Required**. **NOTE:** when all variables resolve `null` value, aggregated value also gets `null`.
+        * `default` - defines default values mapping for `attribute` defined variables. **Optional**:
+            * can define single default value for all variables:
+              ```json
+              "default": "-"
+              ```
+            * can define mapping for individual variables:
+              ```json
+              "attribute": "${attrName1}-${attrName2}-${attrName3}",
+              "default": {
+                  "attrName1": 0,
+                  "attrName2": "NA",
+                  "": "-"
+              }
+              ```
+              **NOTE:** key `""` defines fallback default value to be applied for any unmapped variable.
         * `name` - property (snapshot property) name, it can have variable expression like `${varName}`. **Required**.
         * `where` - set of property used variable definitions. **Optional**:
             * `[variable name]` - variable name
             * `[variable values]` - variable values string delimited (if variable has multiple values) by `|` symbol
-        * `transparent` - flag indicating if this property definition produces transient snapshot property. **Optional**, default value
-            - `false`.
+        * `transparent` - flag indicating if this property definition produces transient snapshot property. **Optional**, default value -
+          `false`.
 
 Sample aggregator configuration may be like that:
 ```json

@@ -183,6 +183,9 @@ public class SnapshotAggregator implements ActivityAggregator {
 				if (Boolean.TRUE.equals(pTransparent)) {
 					aProperty.setTransparent(true);
 				}
+
+				Object pDefault = property.get("default");
+				aProperty.setDefaults(pDefault);
 			}
 
 			snapshotAggregations.add(snapshotAggregation);
@@ -279,22 +282,30 @@ public class SnapshotAggregator implements ActivityAggregator {
 								if (Utils.isVariableExpression(attribute)) {
 									List<String> varAttrs = new ArrayList<>();
 									Utils.resolveExpressionVariables(varAttrs, attribute);
-									String valString = attribute;
+									Map<String, Object> varValuesMap = new HashMap<>(varAttrs.size());
 
 									for (String varAttr : varAttrs) {
 										attrProp = aggrSnapshot.get(Utils.getVarName(varAttr));
 										value = attrProp == null ? null : attrProp.getValue();
-										valString = valString.replace(varAttr, Utils.toString(value));
+										varValuesMap.put(varAttr, value);
 									}
 
-									value = valString;
+									value = fillVariables(attribute, varValuesMap, property.getDefaults());
 								} else {
 									attrProp = aggrSnapshot.get(attribute);
 									value = attrProp == null ? null : attrProp.getValue();
 								}
-								aggrSnapshot.add(aProperty.getRight(), value, property.isTransparent());
-								LOGGER.log(OpLevel.TRACE, "Added snapshot ''{0}'' property {1}={2}",
-										aggrSnapshot.getSnapKey(), aProperty.getRight(), Utils.toString(value));
+
+								if (value != null) {
+									aggrSnapshot.add(aProperty.getRight(), value, property.isTransparent());
+									LOGGER.log(OpLevel.TRACE, "Added snapshot ''{0}'' property {1}={2}",
+											aggrSnapshot.getSnapKey(), aProperty.getRight(), Utils.toString(value));
+								}
+								// else {
+								// LOGGER.log(OpLevel.TRACE,
+								// "Snapshot ''{0}'' attribute ''{1}'' does not resolve any value",
+								// aggrSnapshot.getSnapKey(), attribute);
+								// }
 							}
 						} else {
 							Snapshot actSnapshot = getSnapshot(activity, aProperty.getLeft());
@@ -308,6 +319,11 @@ public class SnapshotAggregator implements ActivityAggregator {
 											actSnapshot.getSnapKey(), aProperty.getRight(), Utils.toString(value));
 								}
 							}
+							// else {
+							// LOGGER.log(OpLevel.TRACE,
+							// "Snapshot ''{0}'' attribute ''{1}'' does not resolve any value",
+							// aProperty.getLeft(), attribute);
+							// }
 						}
 					}
 				}
@@ -384,6 +400,68 @@ public class SnapshotAggregator implements ActivityAggregator {
 			} catch (Exception exc) {
 				LOGGER.log(OpLevel.ERROR, "Invalid bean object name: {0}", beanId);
 			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Fills in provided variable expression {@code varExp} with variable values from provided map {@code varValuesMap}.
+	 * 
+	 * @param varExp
+	 *            variable expression to build value
+	 * @param varValuesMap
+	 *            variable values map
+	 * @param defaultValuesMap
+	 *            variable default values map
+	 * @return variable expression filled in value string, or {@code null} if all variable values are {@code null}
+	 */
+	protected static String fillVariables(String varExp, Map<String, ?> varValuesMap, Map<String, ?> defaultValuesMap) {
+		boolean hasValues = false;
+		for (Object varValue : varValuesMap.values()) {
+			if (varValue != null) {
+				hasValues = true;
+				break;
+			}
+		}
+
+		if (!hasValues) {
+			return null;
+		}
+
+		String valString = varExp;
+
+		for (Map.Entry<String, ?> vme : varValuesMap.entrySet()) {
+			Object varValue = vme.getValue();
+			if (varValue == null) {
+				varValue = getDefault(vme.getKey(), defaultValuesMap);
+			}
+			valString = valString.replace(vme.getKey(), Utils.toString(varValue));
+		}
+
+		return valString;
+	}
+
+	/**
+	 * Resolves default value for provided variable expression {@code varExp} from provided variable default values map
+	 * {@code defaultValuesMap}.
+	 * 
+	 * @param varExp
+	 *            variable expression
+	 * @param defaultValuesMap
+	 *            variable default values map
+	 * @return default value resolved for variable, or {@code null} if there is no variable or fallback (key
+	 *         {@value Property#DEFAULTS_KEY_ALL}) mapping to default value
+	 */
+	protected static Object getDefault(String varExp, Map<String, ?> defaultValuesMap) {
+		if (defaultValuesMap != null) {
+			String varName = Utils.getVarName(varExp);
+			Object defValue = defaultValuesMap.get(varName);
+			if (defValue == null) {
+				defValue = defaultValuesMap.get(Property.DEFAULTS_KEY_ALL);
+			}
+
+			return defValue;
 		}
 
 		return null;
@@ -528,6 +606,11 @@ public class SnapshotAggregator implements ActivityAggregator {
 
 	private static class Property {
 		/**
+		 * Fallback default values map key to bind default value to any variable.
+		 */
+		private static final String DEFAULTS_KEY_ALL = "";
+
+		/**
 		 * Property bound bean identifier. It can have variable expression like {@code "varName=?"}, or be any valid
 		 * {@link javax.management.ObjectName} pattern {@link javax.management.ObjectName#isPattern()}. When ommited,
 		 * aggregations target snapshot is used to resolve property values.
@@ -556,6 +639,8 @@ public class SnapshotAggregator implements ActivityAggregator {
 		 * Flag indicating if this property definition produces transient snapshot property.
 		 */
 		private boolean transparent = false;
+
+		private Map<String, Object> defaults;
 
 		/**
 		 * Constructs a new Property.
@@ -703,6 +788,31 @@ public class SnapshotAggregator implements ActivityAggregator {
 		 */
 		public void setTransparent(boolean transparent) {
 			this.transparent = transparent;
+		}
+
+		/**
+		 * Returns default values map for attribute defined variables.
+		 * 
+		 * @return default values map
+		 */
+		public Map<String, ?> getDefaults() {
+			return defaults;
+		}
+
+		/**
+		 * Sets default values for attribute defined variables.
+		 * 
+		 * @param defaults
+		 *            variable default values configuration
+		 */
+		@SuppressWarnings("unchecked")
+		public void setDefaults(Object defaults) {
+			if (defaults instanceof Map) {
+				this.defaults = (Map<String, Object>) defaults;
+			} else if (defaults != null) {
+				this.defaults = new HashMap<>(1);
+				this.defaults.put(DEFAULTS_KEY_ALL, defaults);
+			}
 		}
 	}
 
