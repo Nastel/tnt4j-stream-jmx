@@ -86,6 +86,8 @@
                         <excludes>
                             <!--<exclude>org.slf4j*:*</exclude>-->
                             <!--<exclude>log4j*:*</exclude>-->
+                            <!--exclude>org.apache.logging.log4j*:*</exclude-->
+                            <!--exclude>com.lmax*:*</exclude-->
                         </excludes>
                     </artifactSet>
                     <createDependencyReducedPom>false</createDependencyReducedPom>

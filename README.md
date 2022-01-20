@@ -3,6 +3,18 @@
 -----------------------
 **NOTE:** `Stream-JMX` version `0.14` migrated logger to `log4j2`. In case you have changed default `Stream-JMX` logger configuration using
 previous `Stream-JMX` versions, please check new logger configuration file [log4j2.xml](./config/log4j2.xml).
+
+### Major `Log4j12` to `Log4j2` migration notes to consider
+
+1. `Log4j2` supports configuration defined in `XML`, `JSON`, `YAML` and `properties` formats (**NOTE:** `Log4j2` `XML` and `properties`
+   formats **differs** from ones used by `Log4j12`). Previous `Log4j12` `log4j.properties` file defined configuration shall be migrated into
+   one of these new configuration definition formats.
+1. `Log4j2` changed configuration file definition System property name from `log4j.configuration` to `log4j2.configurationFile`.
+1. See [Log4j 2.x migration guide](https://logging.apache.org/log4j/2.x/manual/migration.html) and
+   [Log4j 2.x configuration reference](https://logging.apache.org/log4j/2.0/manual/configuration.html) for more details
+1. `Log4j2` used asynchronous logging techniques notably increases application performance comparing to `Log4j12`. See
+   [Log4j 2.x Asynchronous Logging Performance report](https://logging.apache.org/log4j/2.x/manual/async.html#Asynchronous_Logging_Performance)
+   as reference.
 -----------------------
 
 A Lightweight framework to stream and monitor JMX metrics.
