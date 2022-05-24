@@ -1,0 +1,115 @@
+[
+    {
+        "aggregatorId": "MLSnapshotsAggregator",
+        "type": "com.jkoolcloud.tnt4j.stream.jmx.aggregations.SnapshotAggregator",
+        "enabled": true,
+        "snapshots": [
+            {
+                "name": "kafka.aggregated:KafkaStatsML",
+                "enabled": true,
+                "ignoreEmpty": true,
+                "properties": [
+                    {
+                        "beanId": "kafka.server:name=UnderReplicatedPartitions,type=ReplicaManager",
+                        "attribute": "Value",
+                        "name": "UnderReplicatedPartitions"
+                    },
+                    {
+                        "beanId": "kafka.server:name=IsrShrinksPerSec,type=ReplicaManager",
+                        "attribute": "MeanRate",
+                        "name": "IsrShrinksPerSec"
+                    },
+                    {
+                        "beanId": "kafka.server:name=IsrExpandsPerSec,type=ReplicaManager",
+                        "attribute": "MeanRate",
+                        "name": "IsrExpandsPerSec"
+                    },
+                    {
+                        "beanId": "kafka.controller:name=ActiveControllerCount,type=KafkaController",
+                        "attribute": "Value",
+                        "name": "ActiveControllerCount"
+                    },
+                    {
+                        "beanId": "kafka.controller:name=OfflinePartitionsCount,type=KafkaController",
+                        "attribute": "Value",
+                        "name": "OfflinePartitionsCount"
+                    },
+                    {
+                        "beanId": "kafka.controller:name=LeaderElectionRateAndTimeMs,type=ControllerStats",
+                        "attribute": "Mean",
+                        "name": "LeaderElectionRateAndTimeMs"
+                    },
+                    {
+                        "beanId": "kafka.controller:name=UncleanLeaderElectionsPerSec,type=ControllerStats",
+                        "attribute": "MeanRate",
+                        "name": "UncleanLeaderElectionsPerSec"
+                    },
+                    {
+                        "beanId": "kafka.network:name=TotalTimeMs,request=?,type=RequestMetrics",
+                        "where": {
+                            "request": "Produce|FetchConsumer|FetchFollower"
+                        },
+                        "attribute": "Mean",
+                        "name": "${request}-TotalTimeMs"
+                    },
+                    {
+                        "beanId": "kafka.server:delayedOperation=?,name=PurgatorySize,type=DelayedOperationPurgatory",
+                        "where": {
+                            "delayedOperation": "Produce|Fetch"
+                        },
+                        "attribute": "Value",
+                        "name": "${delayedOperation}-PurgatorySize"
+                    },
+                    {
+                        "beanId": "kafka.server:name=BytesInPerSec,type=BrokerTopicMetrics",
+                        "attribute": "MeanRate",
+                        "name": "BytesInPerSec"
+                    },
+                    {
+                        "beanId": "kafka.server:name=BytesOutPerSec,type=BrokerTopicMetrics",
+                        "attribute": "MeanRate",
+                        "name": "BytesOutPerSec"
+                    },
+                    {
+                        "beanId": "kafka.network:name=RequestsPerSec,request=?,type=RequestMetrics,*",
+                        "where": {
+                            "request": "Produce|FetchConsumer|FetchFollower"
+                        },
+                        "attribute": "Count",
+                        "name": "${request}-RequestsPerSec"
+                    }
+                ]
+            },
+            {
+                "name": ".*",
+                "category": ".*",
+                "enabled": true,
+                "properties": [
+                    {
+                        "beanId": "kafka.server:type=KafkaServer,name=ClusterId",
+                        "attribute": "Value",
+                        "name": "kafkaClusterId",
+                        "transparent": true
+                    },
+                    {
+                        "beanId": "kafka.server:type=app-info,id=*",
+                        "attribute": "id",
+                        "name": "kafkaBrokerId",
+                        "transparent": true
+                    },
+                    {
+                        "attribute": "${kafkaBrokerId}-${kafkaClusterId}",
+                        "default": {
+                            "kafkaBrokerId": "-",
+                            "kafkaClusterId": "-",
+                            "": "-",
+                            ">>": null
+                        },
+                        //"default": "-",
+                        "name": "kafkaNode"
+                    }
+                ]
+            }
+        ]
+    }
+]
