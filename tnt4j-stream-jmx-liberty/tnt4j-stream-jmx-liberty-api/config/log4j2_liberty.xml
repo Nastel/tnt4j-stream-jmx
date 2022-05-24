@@ -18,8 +18,7 @@
 <Configuration strict="true"
                xmlns="http://logging.apache.org/log4j/2.0/config"
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-               xsi:schemaLocation="http://logging.apache.org/log4j/2.0/config
-           https://raw.githubusercontent.com/apache/logging-log4j2/master/log4j-core/src/main/resources/Log4j-config.xsd">
+               xsi:schemaLocation="http://logging.apache.org/log4j/2.0/config">
     <Properties>
         <Property name="tnt4j.stream.log.filename">logs/tnt4j-stream-jmx_liberty.log</Property>
         <Property name="tnt4j.activities.log.filename">logs/tnt4j-stream-jmx_samples.json</Property>
