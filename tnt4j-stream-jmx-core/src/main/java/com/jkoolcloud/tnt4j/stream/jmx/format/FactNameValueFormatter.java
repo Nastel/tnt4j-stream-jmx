@@ -60,6 +60,8 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	protected Map<String, String> keyReplacements = new HashMap<>();
 	protected Map<String, String> valueReplacements = new HashMap<>();
 
+	private boolean addSelfSnapshot = true;
+
 	public FactNameValueFormatter() {
 		super("time.stamp={2},level={1},source={3},msg=\"{0}\"");
 
@@ -77,7 +79,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		toString(nvString, event.getSource()).append(PATH_DELIM).append(event.getName()).append(PATH_DELIM)
 				.append("Events").append(FIELD_SEP);
 
-		if (event.getOperation().getSnapshot(SELF_SNAP_ID) == null) {
+		if (addSelfSnapshot && event.getOperation().getSnapshot(SELF_SNAP_ID) == null) {
 			Snapshot selfSnapshot = getSelfSnapshot(event.getOperation());
 			if (event.getTag() != null) {
 				Set<String> tags = event.getTag();
@@ -115,7 +117,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		nvString.append("OBJ:Streams");
 		toString(nvString, activity.getSource()).append(PATH_DELIM).append("Activities").append(FIELD_SEP);
 
-		if (activity.getSnapshot(SELF_SNAP_ID) == null) {
+		if (addSelfSnapshot && activity.getSnapshot(SELF_SNAP_ID) == null) {
 			Snapshot selfSnapshot = getSelfSnapshot(activity);
 			selfSnapshot.add("id.count", activity.getIdCount());
 
@@ -171,8 +173,9 @@ public class FactNameValueFormatter extends DefaultFormatter {
 
 		nvString.append("OBJ:Streams");
 		toString(nvString, source).append(PATH_DELIM).append("Message").append(FIELD_SEP);
-		nvString.append("Self").append(PATH_DELIM).append("level=").append(getValueStr(level)).append(FIELD_SEP);
-		nvString.append("Self").append(PATH_DELIM).append("msg-text=");
+		nvString.append(SELF_SNAP_NAME).append(PATH_DELIM).append("level=").append(getValueStr(level))
+				.append(FIELD_SEP);
+		nvString.append(SELF_SNAP_NAME).append(PATH_DELIM).append("msg-text=");
 		Utils.quote(Utils.format(msg, args), nvString).append(END_SEP);
 		return nvString.toString();
 	}
@@ -369,6 +372,8 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		} else {
 			Utils.parseReplacements(pValue, valueReplacements);
 		}
+
+		addSelfSnapshot = com.jkoolcloud.tnt4j.utils.Utils.getBoolean("AddSelfSnapshot", settings, addSelfSnapshot);
 	}
 
 	/**
