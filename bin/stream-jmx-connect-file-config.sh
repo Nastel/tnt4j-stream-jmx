@@ -17,10 +17,10 @@ should_include_file() {
   fi
 }
 
-if command -v realpath >/dev/null 2>&1; then
-    SCRIPTPATH=`dirname $(realpath $0)`
+if command -v readlink >/dev/null 2>&1; then
+    SCRIPTPATH=$(dirname $(readlink -m $BASH_SOURCE))
 else
-    SCRIPTPATH=$( cd "$(dirname "$0")" ; pwd -P )
+    SCRIPTPATH=$(cd "$(dirname "$BASH_SOURCE")" ; pwd -P)
 fi
 
 ### --- When connecting application instance having basic JMX implementation, e.g. ordinary Java app, Tomcat, Kafka

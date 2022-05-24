@@ -5,10 +5,10 @@
 # 1. service identifier for the process being monitored  (optional)
 ### -----------------------------
 
-if command -v realpath >/dev/null 2>&1; then
-    SCRIPTPATH=`dirname $(realpath $0)`
+if command -v readlink >/dev/null 2>&1; then
+    SCRIPTPATH=$(dirname $(readlink -m $BASH_SOURCE))
 else
-    SCRIPTPATH=$( cd "$(dirname "$0")" ; pwd -P )
+    SCRIPTPATH=$(cd "$(dirname "$BASH_SOURCE")" ; pwd -P)
 fi
 
 LIBPATH="$SCRIPTPATH/../*:$SCRIPTPATH/../lib/*"
