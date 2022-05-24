@@ -21,7 +21,7 @@ import java.util.Map;
 import com.jkoolcloud.tnt4j.utils.Utils;
 
 /**
- * Custom fact path value formatter (Single Level Item) implementation used for a IBM WebSphere Application Server and
+ * Custom fact path value formatter (Single Level Item) implementation used for an IBM WebSphere Application Server and
  * Liberty JMX sampling. It uses first available level attribute and skips all rest.
  *
  * @version $Revision: 1 $
@@ -68,7 +68,7 @@ public class SLIFactPathValueFormatter extends FactPathValueFormatter {
 	}
 
 	/**
-	 * Initializes default set symbol replacements for a attribute keys.
+	 * Initializes default set symbol replacements for an attribute keys.
 	 * <p>
 	 * Default keys string replacements mapping is:
 	 * <ul>

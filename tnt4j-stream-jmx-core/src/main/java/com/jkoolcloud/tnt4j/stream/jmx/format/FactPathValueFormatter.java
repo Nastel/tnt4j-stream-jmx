@@ -42,16 +42,26 @@ import com.jkoolcloud.tnt4j.utils.Utils;
  */
 public class FactPathValueFormatter extends FactNameValueFormatter {
 
+	/**
+	 * Defines default unique property key suffix {@value}.
+	 */
 	public static final String UNIQUE_SUFFIX = "_";
 
+	/**
+	 * Unique property key suffix value.
+	 */
 	protected String uniqueSuffix = UNIQUE_SUFFIX;
+	/**
+	 * Levels attribute matrix used to build facts object path.
+	 */
 	protected String[][] pathLevelAttrKeys = null;
-
-	protected final Properties objNameProps = new Properties();
 
 	private Comparator<Snapshot> snapshotComparator;
 	private Comparator<Property> propertyComparator;
 
+	/**
+	 * Constructs a new instance of {@code FactPathValueFormatter}.
+	 */
 	public FactPathValueFormatter() {
 		super();
 	}
@@ -187,11 +197,10 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 			return objCanonName;
 		}
 
-		synchronized (objNameProps) {
-			loadProps(objNameProps, objCanonName, ddIdx);
+		Properties objNameProps = new Properties();
+		loadProps(objNameProps, objCanonName, ddIdx);
 
-			return getObjNameStr(objNameProps);
-		}
+		return getObjNameStr(objNameProps);
 	}
 
 	@Override
@@ -205,14 +214,21 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 		return getObjNameStr(objNameProps);
 	}
 
+	/**
+	 * Creates key object name properties map.
+	 * 
+	 * @param objName
+	 *            object name instance
+	 * @return key object name properties map
+	 */
 	protected Map<String, String> getKeyPropertyList(ObjectName objName) {
 		Map<String, String> objNameProps = new LinkedHashMap<>(5);
-		objNameProps.put("domain", objName.getDomain());
+		objNameProps.put("domain", objName.getDomain()); // NON-NLS
 
 		String objNamePropsStr = objName.getKeyPropertyListString();
-		String[] objNamePropsStrs = objNamePropsStr.split(FIELD_SEP);
+		String[] objNamePropsStrings = objNamePropsStr.split(FIELD_SEP);
 
-		for (String prop : objNamePropsStrs) {
+		for (String prop : objNamePropsStrings) {
 			String[] kv = prop.split(EQ);
 			objNameProps.put(kv[0].trim(), kv[1]);
 		}
@@ -220,6 +236,13 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 		return objNameProps;
 	}
 
+	/**
+	 * Builds object name string from provided object name properties.
+	 * 
+	 * @param objNameProps
+	 *            object name properties map
+	 * @return object name string built from provided properties
+	 */
 	protected String getObjNameStr(Map<?, ?> objNameProps) {
 		StringBuilder pathBuilder = new StringBuilder(128);
 		String pv;
