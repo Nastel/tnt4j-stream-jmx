@@ -1,6 +1,7 @@
 # Stream-JMX
 
 -----------------------
+
 **NOTE:** `Stream-JMX` version `0.14` migrated logger to `log4j2`. In case you have changed default `Stream-JMX` logger configuration using
 previous `Stream-JMX` versions, please check new logger configuration file [log4j2.xml](./config/log4j2.xml).
 
@@ -12,9 +13,10 @@ previous `Stream-JMX` versions, please check new logger configuration file [log4
 1. `Log4j2` changed configuration file definition System property name from `log4j.configuration` to `log4j2.configurationFile`.
 1. See [Log4j 2.x migration guide](https://logging.apache.org/log4j/2.x/manual/migration.html) and
    [Log4j 2.x configuration reference](https://logging.apache.org/log4j/2.0/manual/configuration.html) for more details
-1. `Log4j2` used asynchronous logging techniques notably increases application performance comparing to `Log4j12`. See
+1. `Log4j2` used asynchronous logging techniques noticeably increases application performance comparing to `Log4j12`. See
    [Log4j 2.x Asynchronous Logging Performance report](https://logging.apache.org/log4j/2.x/manual/async.html#Asynchronous_Logging_Performance)
    as reference.
+
 -----------------------
 
 A Lightweight framework to stream and monitor JMX metrics.
@@ -77,20 +79,20 @@ PID/process name), then `Stream-JMX` runner and sampled process VMs **MUST be**:
 * of same architecture (`x86`, `x64`)
 * `Stream-JMX` runner VM version higher or equal compared to sampled VMs version - e.g. trying to sample JVM 10+ using JVM 8 may produce
   exceptions like this:
-```
-java.io.IOException: Non-numeric value found - int expected
+  ```
+  java.io.IOException: Non-numeric value found - int expected
     at sun.tools.attach.HotSpotVirtualMachine.readInt(HotSpotVirtualMachine.java:299)
     at sun.tools.attach.HotSpotVirtualMachine.loadAgentLibrary(HotSpotVirtualMachine.java:63)
     at sun.tools.attach.HotSpotVirtualMachine.loadAgentLibrary(HotSpotVirtualMachine.java:79)
     at sun.tools.attach.HotSpotVirtualMachine.loadAgent(HotSpotVirtualMachine.java:103)
     at com.sun.tools.attach.VirtualMachine.loadAgent(VirtualMachine.java:540)
-```
+  ```
 * check if **JDK** `attach` tooling is enabled and bound:
     * for Java versions prior **`9`**, check which **JDK** `tools.jar` is referred over `LIBPATH` variable, it also must match runner JVM
     * for Java versions **`9+`**, check if `jdk.attach` module is enabled over `--add-opens` and `--add-exports` arguments:
-    ```cmd
-    java --add-exports=jdk.attach/sun.tools.attach=ALL-UNNAMED --add-opens=jdk.attach/sun.tools.attach=ALL-UNNAMED ...
-    ```
+      ```cmd
+      java --add-exports=jdk.attach/sun.tools.attach=ALL-UNNAMED --add-opens=jdk.attach/sun.tools.attach=ALL-UNNAMED ...
+      ```
 
 If JVM vendors, architecture or versions does not match conditions above - then only way to collect JMX samples is using `-connect` mode
 defining `JMXConnector` (over `RMI`) URL.
@@ -222,28 +224,28 @@ Executable OS shell run script files `bin/stream-jmx-conenct.bat` or `bin/stream
 4. sampling agent arguments (optional, `.` value sets default)
 
 * MS Windows
-```cmd
-rem using URL
-/bin/stream-jmx-connect.bat service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi
-rem using URL with connection parameters
-/bin/stream-jmx-connect.bat service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi . . -ul:admin -up:admin -cp:java.naming.security.authentication=simple -cp:java.naming.factory.initial=com.sun.jndi.ldap.LdapCtxFactory
-rem using process name part
-/bin/stream-jmx-connect.bat activemq
-rem using pid
-/bin/stream-jmx-connect.bat 1553 
-```
+  ```cmd
+  rem using URL
+  /bin/stream-jmx-connect.bat service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi
+  rem using URL with connection parameters
+  /bin/stream-jmx-connect.bat service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi . . -ul:admin -up:admin -cp:java.naming.security.authentication=simple -cp:java.naming.factory.initial=com.sun.jndi.ldap.LdapCtxFactory
+  rem using process name part
+  /bin/stream-jmx-connect.bat activemq
+  rem using pid
+  /bin/stream-jmx-connect.bat 1553 
+  ```
 
 * *nix
-```bash
-# using URL
-./bin/stream-jmx-connect.sh service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi
-# using URL with connection parameters
-./bin/stream-jmx-connect.sh service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi . . -ul:admin -up:admin -cp:java.naming.security.authentication=simple -cp:java.naming.factory.initial=com.sun.jndi.ldap.LdapCtxFactory
-# using process name part
-./bin/stream-jmx-connect.sh activemq
-# using pid
-./bin/stream-jmx-connect.sh 1553
-```
+  ```bash
+  # using URL
+  ./bin/stream-jmx-connect.sh service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi
+  # using URL with connection parameters
+  ./bin/stream-jmx-connect.sh service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi . . -ul:admin -up:admin -cp:java.naming.security.authentication=simple -cp:java.naming.factory.initial=com.sun.jndi.ldap.LdapCtxFactory
+  # using process name part
+  ./bin/stream-jmx-connect.sh activemq
+  # using pid
+  ./bin/stream-jmx-connect.sh 1553
+  ```
 
 #### To connect to local JVM process
 
@@ -302,28 +304,28 @@ states:
 
 **NOTE**:
 * URI of remote RMI service (e.g., to connect remote Kafka service) may require additional `/` chars:
-```cmd
--vm:service:jmx:rmi:///jndi/rmi:///[HOST]:[PORT]/jmxrmi
-``
-e.g.:
-```cmd
--vm:service:jmx:rmi:///jndi/rmi:///172.16.6.35:2181/jmxrmi
-```
+  ```cmd
+  -vm:service:jmx:rmi:///jndi/rmi:///[HOST]:[PORT]/jmxrmi
+  ```
+  e.g.:
+  ```cmd
+  -vm:service:jmx:rmi:///jndi/rmi:///172.16.6.35:2181/jmxrmi
+  ```
 * Remote end may require to enable JMX listening port in service configuration to accept connections (e.g., to connect remote Kafka
   service):
-```bash
-export JMX_PORT=${JMX_PORT:-9999}
-```
+  ```bash
+  export JMX_PORT=${JMX_PORT:-9999}
+  ```
 * Tomcat and Kafka does not provide J2EE implementation, thus you need only stream-jmx `core` jar in `classpath` when sampling Tomcat/Kafka
   metrics over JMX. Executable OS shell run script files uses only `core` as `MODULE_SET` variable value:
     * `bin/stream-jmx-conenct.bat`
-    ```cmd
-    set MODULE_SET=core
-    ```
+      ```cmd
+      set MODULE_SET=core
+      ```
     * `bin/stream-jmx-conenct.sh`
-    ```bash
-    MODULE_SET=("core")
-    ```
+      ```bash
+      MODULE_SET=("core")
+      ```
 * See [Enabling Tomcat JMX Remote](https://tomcat.apache.org/tomcat-7.0-doc/monitoring.html) to enable remote JMX access of Tomcat server
   instance. **If your Tomcat server is behind firewall - also refer
   to [JMX Remote Lifecycle Listener](https://tomcat.apache.org/tomcat-7.0-doc/config/listeners.html#JMX_Remote_Lifecycle_Listener_-_org.apache.catalina.mbeans.JmxRemoteLifecycleListener)
@@ -506,7 +508,7 @@ symbol as configuration token placeholder.
 
 ##### How to migrate Source definitions from single to multi VM sampling
 
-When you where sampling JMX running as many instances of Stream-JMX as there where monitored JVMs, you where defining complete `SourceFQN`
+When you where sampling JMX running as many instances of Stream-JMX as there were monitored JVMs, you where defining complete `SourceFQN`
 within `source.factory.RootFQN` property of Stream-JMX TNT4J configuration.
 
 When monitoring multiple JVMs running single instance of Stream-JMX, `source.factory.RootFQN` property should define only part of
@@ -518,35 +520,35 @@ uniquely distinguish JVMs.
 Consider this Stream-JMX run scenario to monitor 3 instances of service runner VMs:
 * One Stream-JMX instance per monitored VM
     * you've been having such TNT4J source configuration:
-    ```properties
-        source.factory.SERVICE: $sjmx.serviceId
-        source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?
-    ```
+      ```properties
+          source.factory.SERVICE: $sjmx.serviceId
+          source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?
+      ```
     * running 3 instances of Stream-JMX
-    ```bash
-      ./bin/stream-jmx-connect.sh service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi -ul:admin -up:admin -sp:sjmx.serviceId=Broker-0
-      ./bin/stream-jmx-connect.sh service:jmx:rmi:///jndi/rmi://localhost:9998/jmxrmi -ul:admin -up:admin -sp:sjmx.serviceId=Broker-1
-      ./bin/stream-jmx-connect.sh service:jmx:rmi:///jndi/rmi://localhost:9997/jmxrmi -ul:admin -up:admin -sp:sjmx.serviceId=Broker-2
-    ```
+      ```bash
+        ./bin/stream-jmx-connect.sh service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi -ul:admin -up:admin -sp:sjmx.serviceId=Broker-0
+        ./bin/stream-jmx-connect.sh service:jmx:rmi:///jndi/rmi://localhost:9998/jmxrmi -ul:admin -up:admin -sp:sjmx.serviceId=Broker-1
+        ./bin/stream-jmx-connect.sh service:jmx:rmi:///jndi/rmi://localhost:9997/jmxrmi -ul:admin -up:admin -sp:sjmx.serviceId=Broker-2
+      ```
 * One Stream-JMX instance per 3 monitored VMs
     * you've been having such TNT4J source configuration:
-    ```properties
-       source.factory.RootFQN: SERVER=?#DATACENTER=?
-    ```
+      ```properties
+         source.factory.RootFQN: SERVER=?#DATACENTER=?
+      ```
     * configuring VM connections in `connections.cfg` file
-    ```
-    ##############################################################################################################################################################
-    #            VM connection string                      #    Agent options   #  User name    #    Password       #                Source addition             #
-    ##############################################################################################################################################################
-     service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi        *:*!!60000          admin             admin             SERVICE=Broker-0
-     service:jmx:rmi:///jndi/rmi://localhost:9998/jmxrmi        *:*!!60000          admin             admin             SERVICE=Broker-1 
-     service:jmx:rmi:///jndi/rmi://localhost:9997/jmxrmi        *:*!!60000          admin             admin             SERVICE=Broker-2
-    ##############################################################################################################################################################
-    ```
+      ```
+      ##############################################################################################################################################################
+      #            VM connection string                      #    Agent options   #  User name    #    Password       #                Source addition             #
+      ##############################################################################################################################################################
+       service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi        *:*!!60000          admin             admin             SERVICE=Broker-0
+       service:jmx:rmi:///jndi/rmi://localhost:9998/jmxrmi        *:*!!60000          admin             admin             SERVICE=Broker-1 
+       service:jmx:rmi:///jndi/rmi://localhost:9997/jmxrmi        *:*!!60000          admin             admin             SERVICE=Broker-2
+      ##############################################################################################################################################################
+      ```
     * running Stream-JMX
-    ```bash
-      ./bin/stream-jmx-connect-file-config.sh connections.cfg
-    ```
+      ```bash
+        ./bin/stream-jmx-connect-file-config.sh connections.cfg
+      ```
 
 #### Connecting remote WebSphere Application Server (WAS)
 
@@ -561,13 +563,13 @@ Additions needed to run `SamplingAgent` connected to remote WAS machine can be f
 **NOTE:** When you have IBM JVM running on client side and getting authentication or naming related exceptions, you have to:
 * Alter `sas.client.props` by setting `com.ibm.CORBA.validateBasicAuth=false`
 * Add additional `SamplingAgent` arguments:
-```properties
-    -ul:[your WAS user]
-    -up:[your WAS user pass]
-    -cp:java.naming.factory.initial=com.ibm.websphere.naming.WsnInitialContextFactory
-    -cp:java.naming.factory.url.pkgs=com.ibm.ws.naming
-    -cp:java.naming.provider.url=corbaloc:iiop:localhost:2809/WsnAdminNameService
-```
+  ```properties
+      -ul:[your WAS user]
+      -up:[your WAS user pass]
+      -cp:java.naming.factory.initial=com.ibm.websphere.naming.WsnInitialContextFactory
+      -cp:java.naming.factory.url.pkgs=com.ibm.ws.naming
+      -cp:java.naming.provider.url=corbaloc:iiop:localhost:2809/WsnAdminNameService
+  ```
 
 #### Connecting remote WebLogic (version 12c) server instance
 
@@ -575,14 +577,14 @@ Additions needed to run `SamplingAgent` connected to remote WebLogic machine can
 `bin/stream-jmx-conenct.bat` or `bin/stream-jmx-conenct.sh`. It contains these major configuration additions:
 * WebLogic environment setup configuration in `setDomainEnv.sh/setDomainEnv.cmd` file, exposing JMX access port and security options like:
     * .bat/cmd
-    ```cmd
-    set JAVA_OPTIONS=%JAVA_OPTIONS% -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=8788 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false
-    ```
+      ```cmd
+      set JAVA_OPTIONS=%JAVA_OPTIONS% -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=8788 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false
+      ```
     * .sh
-    ```bash
-    JAVA_OPTIONS="${JAVA_OPTIONS} -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=8788 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
-    export JAVA_OPTIONS
-    ```
+      ```bash
+      JAVA_OPTIONS="${JAVA_OPTIONS} -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=8788 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
+      export JAVA_OPTIONS
+      ```
 * appending `LIBPATH` variable with WebLogic client libs from `${WL_INSTALL_DIR}/wlserver/server/lib/`:
     * `wlclient.jar`
     * `wljmxclient.jar`
@@ -590,36 +592,36 @@ Additions needed to run `SamplingAgent` connected to remote WebLogic machine can
 
   For example:
     * .bat/cmd
-    ```cmd
-    set WL_HOME=C:\Oracle\Middleware\Oracle_Home
-    set WL_CLINET_LIBS=%WL_HOME%\wlserver\server\lib\wlclient.jar;%WL_HOME%\wlserver\server\lib\wljmxclient.jar;%WL_HOME%\wlserver\server\lib\javax.javaee-api.jar
-    set LIBPATH=%LIBPATH%;%RUNDIR%..\lib\*;%WL_CLINET_LIBS%
-    ```
+      ```cmd
+      set WL_HOME=C:\Oracle\Middleware\Oracle_Home
+      set WL_CLINET_LIBS=%WL_HOME%\wlserver\server\lib\wlclient.jar;%WL_HOME%\wlserver\server\lib\wljmxclient.jar;%WL_HOME%\wlserver\server\lib\javax.javaee-api.jar
+      set LIBPATH=%LIBPATH%;%RUNDIR%..\lib\*;%WL_CLINET_LIBS%
+      ```
     * .sh
-    ```bash
-    WL_HOME="/opt/Oracle/Middleware/Oracle_Home"
-    WL_CLINET_LIBS="$WL_HOME/wlserver/server/lib/wlclient.jar:$WL_HOME/wlserver/server/lib/wljmxclient.jar:$WL_HOME/wlserver/server/lib/javax.javaee-api.jar"
-    LIBPATH="$LIBPATH:$SCRIPTPATH/../lib/*:$WL_CLINET_LIBS"
-    ```
+      ```bash
+      WL_HOME="/opt/Oracle/Middleware/Oracle_Home"
+      WL_CLINET_LIBS="$WL_HOME/wlserver/server/lib/wlclient.jar:$WL_HOME/wlserver/server/lib/wljmxclient.jar:$WL_HOME/wlserver/server/lib/javax.javaee-api.jar"
+      LIBPATH="$LIBPATH:$SCRIPTPATH/../lib/*:$WL_CLINET_LIBS"
+      ```
 * enable `j2ee` module use:
     * .bat/cmd
-    ```cmd
-    set MODULE_SET=core j2ee
-    ```
+      ```cmd
+      set MODULE_SET=core j2ee
+      ```
     * .sh
-    ```bash
-    MODULE_SET=("core" "j2ee")
-    ```
+      ```bash
+      MODULE_SET=("core" "j2ee")
+      ```
 * Add additional `SamplingAgent` arguments:
-```properties
-    -cp:jmx.remote.protocol.provider.pkgs=weblogic.management.remote
-    # Add user credentials if needed
-    -cp:java.naming.security.principal=user
-    -cp:java.naming.security.credentials=password
-    # Optional naming parameters
-    #-cp:java.naming.factory.initial=weblogic.jndi.WLInitialContextFactory
-    #-cp:java.naming.provider.url=t3://localhost:7001
-```
+  ```properties
+      -cp:jmx.remote.protocol.provider.pkgs=weblogic.management.remote
+      # Add user credentials if needed
+      -cp:java.naming.security.principal=user
+      -cp:java.naming.security.credentials=password
+      # Optional naming parameters
+      #-cp:java.naming.factory.initial=weblogic.jndi.WLInitialContextFactory
+      #-cp:java.naming.provider.url=t3://localhost:7001
+  ```
 
 WebLogic 12c provides these JNDI Names for WebLogic MBean Servers:
 * `weblogic.management.mbeanservers.domainruntime` - Domain Runtime MBean Server
@@ -753,7 +755,7 @@ Login to WebSphere Integrated Solutions Console and install TNT4J-Stream-JMX ear
   application you usually do, or fallowing IBM's instruction. Keep in mind context path.
 * Start the application.
 
-By default Stream-JMX connects to local WAS runner JVM using `com.ibm.websphere.management.AdminServiceFactory.getMBeanFactory()`.
+By default, Stream-JMX connects to local WAS runner JVM using `com.ibm.websphere.management.AdminServiceFactory.getMBeanFactory()`.
 
 Navigate to `http://localhost:9080/YOUR_CHOOSEN_CONTEXT_PATH/`. TNT4J-Stream-JMX configuration/monitoring page should be displayed.
 See [Generic servlet page features](#generic-servlet-page-features) on what is available there.
@@ -821,7 +823,7 @@ There is a simple Liberty `server.xml` configuration required to run Stream-JMX 
 </server>
 ```
 
-By default Stream-JMX connects to local Liberty runner JVM using `java.lang.management.ManagementFactory.getPlatformMBeanServer()`.
+By default, Stream-JMX connects to local Liberty runner JVM using `java.lang.management.ManagementFactory.getPlatformMBeanServer()`.
 
 Navigate to `http://localhost:9080/YOUR_CHOOSEN_CONTEXT_PATH/`. TNT4J-Stream-JMX configuration/monitoring page should be displayed.
 See [Generic servlet page features](#generic-servlet-page-features) on what is available there.
@@ -948,9 +950,9 @@ General use:
   performed over `TNT4J` Log Sink to `slf4j-log4j12`. Logger configuration is defined in `./config/log4j2.xml` file. If you where using
   system property `-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true` prior to `0.7` version, this is now configured over logger log level,
   by setting it to `DEBUG` value, e.g:
-```xml
-<Logger name="com.jkoolcloud.tnt4j.stream.jmx" level="DEBUG"/>
-```
+  ```xml
+  <Logger name="com.jkoolcloud.tnt4j.stream.jmx" level="DEBUG"/>
+  ```
 
 **NOTE:** when running multiple parallel instances of `stream-jmx` (e.g. collecting Kafka broker metrics using dedicated stream instance),
 it is recommended to define different log file names (using system properties `tnt4j.stream.log.filename` and
@@ -1015,23 +1017,23 @@ Stream-JMS has couple additional features in comparison with basic `TNT4J` when 
           optional), e.g.: `@bean:kafka.server:id=?,type=app-info`.
 
    then putting all together, `tnt4j.properties` configuration will be like this:
-    ```properties
-    ...
-    source.factory: com.jkoolcloud.tnt4j.stream.jmx.source.JMXSourceFactoryImpl
-    source.factory.DATACENTER: HQDC
-    source.factory.SERVICE: @bean:org.apache.activemq:type=Broker,brokerName=localhost/?BrokerId
-    source.factory.SERVER: @bean:JMImplementation:type=MBeanServerDelegate/?MBeanServerId
-    source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?
-    ...
-    ```
+   ```properties
+   ...
+   source.factory: com.jkoolcloud.tnt4j.stream.jmx.source.JMXSourceFactoryImpl
+   source.factory.DATACENTER: HQDC
+   source.factory.SERVICE: @bean:org.apache.activemq:type=Broker,brokerName=localhost/?BrokerId
+   source.factory.SERVER: @bean:JMImplementation:type=MBeanServerDelegate/?MBeanServerId
+   source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?
+   ...
+   ```
 
 ## Stream-JMX event data formatters
 
-* `com.jkoolcloud.tnt4j.streams.format.FactNameValueFormatter` - this class provides key/value formatting for tnt4j activities, events and
-  snapshots. The output format follows the following format:
-    ```
-    "OBJ:name-value-prefix1\name1=value1,name-value-prefix1\name2=value2,....,name-value-prefixN\nameN=valueN"
-    ```
+* `com.jkoolcloud.tnt4j.stream.jmx.format.FactNameValueFormatter` - this class provides key/value formatting for tnt4j activities, events
+  and snapshots. The output format follows the following format:
+  ```
+  "OBJ:name-value-prefix1\name1=value1,name-value-prefix1\name2=value2,....,name-value-prefixN\nameN=valueN"
+  ```
   Sample output:
     ```
     OBJ:Streams\0,
@@ -1104,9 +1106,9 @@ Stream-JMS has couple additional features in comparison with basic `TNT4J` when 
 
 * `com.jkoolcloud.tnt4j.stream.jmx.format.FactPathValueFormatter` - this class provides key/value formatting for tnt4j activities, events
   and snapshots. The output format follows the following format:
-    ```
-    "OBJ:object-path1\name1=value1,object-path1\name2=value2,....,object-pathN\nameN=valueN""
-    ```
+  ```
+  "OBJ:object-path1\name1=value1,object-path1\name2=value2,....,object-pathN\nameN=valueN""
+  ```
   Sample output:
     ```
     OBJ:Streams\0,
@@ -1416,111 +1418,111 @@ Aggregator configuration schema is:
 
 Sample aggregator configuration may be like that:
 ```json
-    {
-        "aggregatorId": "MLSnapshotsAggregator",
-        "type": "com.jkoolcloud.tnt4j.stream.jmx.aggregations.SnapshotAggregator",
-        "enabled": true,
-        "snapshots": [
-            {
-                "name": "kafka.aggregated:KafkaStatsML",
-                "enabled": true,
-                "properties": [
-                    {
-                        "beanId": "kafka.server:name=UnderReplicatedPartitions,type=ReplicaManager",
-                        "attribute": "Value",
-                        "name": "UnderReplicatedPartitions"
+{
+    "aggregatorId": "MLSnapshotsAggregator",
+    "type": "com.jkoolcloud.tnt4j.stream.jmx.aggregations.SnapshotAggregator",
+    "enabled": true,
+    "snapshots": [
+        {
+            "name": "kafka.aggregated:KafkaStatsML",
+            "enabled": true,
+            "properties": [
+                {
+                    "beanId": "kafka.server:name=UnderReplicatedPartitions,type=ReplicaManager",
+                    "attribute": "Value",
+                    "name": "UnderReplicatedPartitions"
+                },
+                {
+                    "beanId": "kafka.server:name=IsrShrinksPerSec,type=ReplicaManager",
+                    "attribute": "MeanRate",
+                    "name": "IsrShrinksPerSec"
+                },
+                {
+                    "beanId": "kafka.server:name=IsrExpandsPerSec,type=ReplicaManager",
+                    "attribute": "MeanRate",
+                    "name": "IsrExpandsPerSec"
+                },
+                {
+                    "beanId": "kafka.controller:name=ActiveControllerCount,type=KafkaController",
+                    "attribute": "Value",
+                    "name": "ActiveControllerCount"
+                },
+                {
+                    "beanId": "kafka.controller:name=OfflinePartitionsCount,type=KafkaController",
+                    "attribute": "Value",
+                    "name": "OfflinePartitionsCount"
+                },
+                {
+                    "beanId": "kafka.controller:name=LeaderElectionRateAndTimeMs,type=ControllerStats",
+                    "attribute": "Mean",
+                    "name": "LeaderElectionRateAndTimeMs"
+                },
+                {
+                    "beanId": "kafka.controller:name=UncleanLeaderElectionsPerSec,type=ControllerStats",
+                    "attribute": "MeanRate",
+                    "name": "UncleanLeaderElectionsPerSec"
+                },
+                {
+                    "beanId": "kafka.network:name=TotalTimeMs,request=?,type=RequestMetrics",
+                    "where": {
+                        "request": "Produce|FetchConsumer|FetchFollower"
                     },
-                    {
-                        "beanId": "kafka.server:name=IsrShrinksPerSec,type=ReplicaManager",
-                        "attribute": "MeanRate",
-                        "name": "IsrShrinksPerSec"
+                    "attribute": "Mean",
+                    "name": "${request}-TotalTimeMs"
+                },
+                {
+                    "beanId": "kafka.server:delayedOperation=?,name=PurgatorySize,type=DelayedOperationPurgatory",
+                    "where": {
+                        "delayedOperation": "Produce|Fetch"
                     },
-                    {
-                        "beanId": "kafka.server:name=IsrExpandsPerSec,type=ReplicaManager",
-                        "attribute": "MeanRate",
-                        "name": "IsrExpandsPerSec"
+                    "attribute": "Value",
+                    "name": "${delayedOperation}-PurgatorySize"
+                },
+                {
+                    "beanId": "kafka.server:name=BytesInPerSec,type=BrokerTopicMetrics",
+                    "attribute": "MeanRate",
+                    "name": "BytesInPerSec"
+                },
+                {
+                    "beanId": "kafka.server:name=BytesOutPerSec,type=BrokerTopicMetrics",
+                    "attribute": "MeanRate",
+                    "name": "BytesOutPerSec"
+                },
+                {
+                    "beanId": "kafka.network:name=RequestsPerSec,request=?,type=RequestMetrics,*",
+                    "where": {
+                        "request": "Produce|FetchConsumer|FetchFollower"
                     },
-                    {
-                        "beanId": "kafka.controller:name=ActiveControllerCount,type=KafkaController",
-                        "attribute": "Value",
-                        "name": "ActiveControllerCount"
-                    },
-                    {
-                        "beanId": "kafka.controller:name=OfflinePartitionsCount,type=KafkaController",
-                        "attribute": "Value",
-                        "name": "OfflinePartitionsCount"
-                    },
-                    {
-                        "beanId": "kafka.controller:name=LeaderElectionRateAndTimeMs,type=ControllerStats",
-                        "attribute": "Mean",
-                        "name": "LeaderElectionRateAndTimeMs"
-                    },
-                    {
-                        "beanId": "kafka.controller:name=UncleanLeaderElectionsPerSec,type=ControllerStats",
-                        "attribute": "MeanRate",
-                        "name": "UncleanLeaderElectionsPerSec"
-                    },
-                    {
-                        "beanId": "kafka.network:name=TotalTimeMs,request=?,type=RequestMetrics",
-                        "where": {
-                            "request": "Produce|FetchConsumer|FetchFollower"
-                        },
-                        "attribute": "Mean",
-                        "name": "${request}-TotalTimeMs"
-                    },
-                    {
-                        "beanId": "kafka.server:delayedOperation=?,name=PurgatorySize,type=DelayedOperationPurgatory",
-                        "where": {
-                            "delayedOperation": "Produce|Fetch"
-                        },
-                        "attribute": "Value",
-                        "name": "${delayedOperation}-PurgatorySize"
-                    },
-                    {
-                        "beanId": "kafka.server:name=BytesInPerSec,type=BrokerTopicMetrics",
-                        "attribute": "MeanRate",
-                        "name": "BytesInPerSec"
-                    },
-                    {
-                        "beanId": "kafka.server:name=BytesOutPerSec,type=BrokerTopicMetrics",
-                        "attribute": "MeanRate",
-                        "name": "BytesOutPerSec"
-                    },
-                    {
-                        "beanId": "kafka.network:name=RequestsPerSec,request=?,type=RequestMetrics,*",
-                        "where": {
-                            "request": "Produce|FetchConsumer|FetchFollower"
-                        },
-                        "attribute": "Count",
-                        "name": "${request}-RequestsPerSec"
-                    }
-                ]
-            },
-            {
-                "name": ".*",
-                "category": ".*",
-                "enabled": true,
-                "properties": [
-                    {
-                        "beanId": "kafka.server:type=KafkaServer,name=ClusterId",
-                        "attribute": "Value",
-                        "name": "kafkaClusterId",
-                        "transparent": true
-                    },
-                    {
-                        "beanId": "kafka.server:type=app-info,id=*",
-                        "attribute": "id",
-                        "name": "kafkaBrokerId",
-                        "transparent": true
-                    },
-                    {
-                        "attribute": "${kafkaBrokerId}-${kafkaClusterId}",
-                        "name": "kafkaNode"
-                    }
-                ]
-            }
-        ]
-    }
+                    "attribute": "Count",
+                    "name": "${request}-RequestsPerSec"
+                }
+            ]
+        },
+        {
+            "name": ".*",
+            "category": ".*",
+            "enabled": true,
+            "properties": [
+                {
+                    "beanId": "kafka.server:type=KafkaServer,name=ClusterId",
+                    "attribute": "Value",
+                    "name": "kafkaClusterId",
+                    "transparent": true
+                },
+                {
+                    "beanId": "kafka.server:type=app-info,id=*",
+                    "attribute": "id",
+                    "name": "kafkaBrokerId",
+                    "transparent": true
+                },
+                {
+                    "attribute": "${kafkaBrokerId}-${kafkaClusterId}",
+                    "name": "kafkaNode"
+                }
+            ]
+        }
+    ]
+}
 ```
 
 ## Where do the streams go?
@@ -1601,6 +1603,8 @@ Below is an example of TNT4J stream configuration writing collected JMX samples 
     #event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.FactPathValueFormatter
     ; If JMX attributes should be formatted as JMX object paths for IBM WAS and Liberty
     #event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.SLIFactPathValueFormatter
+    ; Whether to add Activity/Event context data snapshot 'Self'
+    #event.formatter.AddSelfSnapshot: false
     ; Mapping of attribute key string symbol replacements
     #event.formatter.KeyReplacements: " "->"_" "\""->"'" "/"->"%" "="->"\\" ","->"!'" "\\\\"->"\\"
     ; Mapping of attribute value string symbol replacements
@@ -1651,6 +1655,8 @@ Below is an example of TNT4J stream configuration writing collected JMX samples 
     #event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.FactPathValueFormatter
     ; If JMX attributes should be formatted as JMX object paths for IBM WAS and Liberty
     #event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.SLIFactPathValueFormatter
+    ; Whether to add Activity/Event context data snapshot 'Self'
+    #event.formatter.AddSelfSnapshot: false
     ; Mapping of attribute key string symbol replacements
     #event.formatter.KeyReplacements: " "->"_" "\""->"'" "/"->"%" "="->"\\" ","->"!'" "\\\\"->"\\"
     ; Mapping of attribute value string symbol replacements
@@ -1712,6 +1718,7 @@ sample data formatted by `FactNameValueFormatter` and to jKool repo defined by a
     event.sink.factory.EventSinkFactory.ap.Host: localhost
     event.sink.factory.EventSinkFactory.ap.Port: 6060
     event.sink.factory.EventSinkFactory.ap.Formatter: com.jkoolcloud.tnt4j.stream.jmx.format.FactNameValueFormatter
+    #event.sink.factory.EventSinkFactory.ap.Formatter.AddSelfSnapshot: false
     event.sink.factory.EventSinkFactory.ap.Formatter.KeyReplacements: " "->"_" "\""->"'" "/"->"%" "="->"\\" ","->"!'" "\\\\"->"\\"
     event.sink.factory.EventSinkFactory.ap.Formatter.ValueReplacements: "\r"->"\\r" "\n"->"\\n" ";"->"&" ","->"&" "["->"{(" "]"->")}" "\""->"'"
 
@@ -1744,7 +1751,7 @@ java -Dtnt4j.dump.on.exceptionn=true -Dtnt4j.dump.provider.default=true -Dtnt4j.
 ```
 `-Dtnt4j.dump.folder=./` specifies the destination folder where dump (.dump) files will be created (default is current working directory).
 
-By default Stream-JMX will generate dumps with the following info:
+By default, Stream-JMX will generate dumps with the following info:
 
 * Java Properties Dump -- `PropertiesDumpProvider`
 * Java Runtime Dump -- `MXBeanDumpProvider`
@@ -1766,9 +1773,9 @@ java -Dcom.jkoolcloud.tnt4j.stream.jmx.sampler.factory=com.jkoolcloud.tnt4j.stre
 `SamplerFactory` is used to generate instances of the underlying sampler implementations (objects that provide sampling of underlying
 mbeans).
 ```java
-    // return default or user defined SamplerFactory implementation
-    SamplerFactory factory = DefaultSamplerFactory.getInstance();
-    ...
+// return default or user defined SamplerFactory implementation
+SamplerFactory factory = DefaultSamplerFactory.getInstance();
+...
 ```
 
 ## Managing Sample Behavior
@@ -1780,11 +1787,11 @@ registration order.
 In addition to intercepting sample events, applications may want to control how one ore more attributes are sampled and whether each sample
 is reported/logged. See example below:
 ```java
-    // return default or user defined SamplerFactory implementation
-    SamplerFactory factory = DefaultSamplerFactory.getInstance();
-    // create an instance of the sampler that will sample mbeans
-    Sampler sampler = factory.newInstance();
-    sampler.setSchedule(Sampler.JMX_FILTER_ALL, 30000).addListener(new MySampleListener())).run();
+// return default or user defined SamplerFactory implementation
+SamplerFactory factory = DefaultSamplerFactory.getInstance();
+// create an instance of the sampler that will sample mbeans
+Sampler sampler = factory.newInstance();
+sampler.setSchedule(Sampler.JMX_FILTER_ALL, 30000).addListener(new MySampleListener())).run();
 ```
 Below is a sample of what `MySampleListener` may look like:
 ```java
@@ -1859,14 +1866,14 @@ example, what if you wanted to setup an action when a specific MBean attribute e
 Stream-JMX `AttributeCondition` and `AttributeAction` interfaces allow you to call your action at runtime every time a condition is
 evaluated to `true`. See example below:
 ```java
-    // return default or user defined SamplerFactory implementation
-    SamplerFactory factory = DefaultSamplerFactory.getInstance();
-    // create an instance of the sampler that will sample mbeans
-    Sampler sampler = factory.newInstance();
-    // create a condition when ThreadCount > 100
-    AttributeCondition myCondition = new SimpleCondition("java.lang:type=Threading", "ThreadCount", 100, ">");
-    // schedule collection (ping) for given MBean filter and 30000 ms sampling period
-    sampler.setSchedule(Sampler.JMX_FILTER_ALL, 30000).register(myCondition, new MyAttributeAction()).run();
+// return default or user defined SamplerFactory implementation
+SamplerFactory factory = DefaultSamplerFactory.getInstance();
+// create an instance of the sampler that will sample mbeans
+Sampler sampler = factory.newInstance();
+// create a condition when ThreadCount > 100
+AttributeCondition myCondition = new SimpleCondition("java.lang:type=Threading", "ThreadCount", 100, ">");
+// schedule collection (ping) for given MBean filter and 30000 ms sampling period
+sampler.setSchedule(Sampler.JMX_FILTER_ALL, 30000).register(myCondition, new MyAttributeAction()).run();
 ```
 Below is a sample of what `MyAttributeAction` may look like:
 ```java
@@ -1901,7 +1908,7 @@ Modules list:
          <artifactId>tnt4j-stream-jmx-core</artifactId>
          <version>0.14.1</version>
      </dependency>
-  ``` 
+  ```
 * `J2EE` (O) - J2EE API addition to handle J2EE API defined attributes and implements abstract Stream-JMX servlet API. Maven dependency:
   ```xml
      <dependency>
@@ -1962,7 +1969,7 @@ Modules list:
   ```
 * `Distribution` (OU) - build distribution packages. After running, see `build/` directory.
 
-All optional modules (extensions) depends to `core` module and can't be build and run without it.
+All optional modules (extensions) depends on `core` module and can't be build and run without it.
 
 **NOTE:** `Distribution` module performs Maven post-build release assemblies delivery to `build/` directory.
 
@@ -2000,30 +2007,30 @@ This module does not require manually downloaded dependencies, but depends on **
     ```
     * System executables `bin/stream-jmx*.bat` or `bin/stream-jmx*.sh` by variable `TOOLS_PATH`
         * .bat/cmd
-        ```cmd
-        set TOOLS_PATH="%JAVA_HOME%\lib\tools.jar"
-        ```
+          ```cmd
+          set TOOLS_PATH="%JAVA_HOME%\lib\tools.jar"
+          ```
         * .sh
-        ```bash
-        TOOLS_PATH="$JAVA_HOME/lib/tools.jar"
-        ```
+          ```bash
+          TOOLS_PATH="$JAVA_HOME/lib/tools.jar"
+          ```
 * For Java versions **`9+`**, `jdk.attach` module is enabled in:
     * Maven POM script by adding `maven-compiler-plugin` plugin configuration
-    ```xml
-      <compilerArgs>
-          <arg>--add-exports=jdk.attach/sun.tools.attach=ALL-UNNAMED</arg>
-          <arg>--add-opens=jdk.attach/sun.tools.attach=ALL-UNNAMED</arg>
-      </compilerArgs>
-    ```
+      ```xml
+        <compilerArgs>
+            <arg>--add-exports=jdk.attach/sun.tools.attach=ALL-UNNAMED</arg>
+            <arg>--add-opens=jdk.attach/sun.tools.attach=ALL-UNNAMED</arg>
+        </compilerArgs>
+      ```
     * System executables `bin/stream-jmx*.bat` or `bin/stream-jmx*.sh` by variable `TNT4JOPTS`
         * .bat/cmd
-        ```cmd
-        TNT4JOPTS="--add-exports=jdk.attach/sun.tools.attach=ALL-UNNAMED" "--add-opens=jdk.attach/sun.tools.attach=ALL-UNNAMED"
-        ```
+          ```cmd
+          TNT4JOPTS="--add-exports=jdk.attach/sun.tools.attach=ALL-UNNAMED" "--add-opens=jdk.attach/sun.tools.attach=ALL-UNNAMED"
+          ```
         * .sh
-        ```bash
-        TNT4JOPTS="--add-exports=jdk.attach/sun.tools.attach=ALL-UNNAMED --add-opens=jdk.attach/sun.tools.attach=ALL-UNNAMED"
-        ```
+          ```bash
+          TNT4JOPTS="--add-exports=jdk.attach/sun.tools.attach=ALL-UNNAMED --add-opens=jdk.attach/sun.tools.attach=ALL-UNNAMED"
+          ```
 **NOTE:** you may need to change paths if these do not match your environment.
 
 #### `WAS` module
@@ -2049,17 +2056,17 @@ Download the above libraries and place into the `tnt4j-stream-jmx/tnt4j-stream-j
 
 Additionally alter system executables `bin/stream-jmx*.bat` or `bin/stream-jmx*.sh` by extending environment variable `LIBPATH` value:
 * MS Windows
-```cmd
-set WAS_HOME=C:\IBM\WebSphere\AppServer
-set WAS_PATH=%WAS_HOME%\runtimes\*;%WAS_HOME%\lib\webadmin\management.jar;%WAS_HOME%\plugins\com.ibm.ws.runtime.jar
-set LIBPATH=%RUNDIR%..\*;%RUNDIR%..\lib\*;%WAS_PATH%
-```
+  ```cmd
+  set WAS_HOME=C:\IBM\WebSphere\AppServer
+  set WAS_PATH=%WAS_HOME%\runtimes\*;%WAS_HOME%\lib\webadmin\management.jar;%WAS_HOME%\plugins\com.ibm.ws.runtime.jar
+  set LIBPATH=%RUNDIR%..\*;%RUNDIR%..\lib\*;%WAS_PATH%
+  ```
 * *nix
-```bash
-WAS_HOME="/opt/IBM/WebSphere/AppServer"
-WAS_PATH="$WAS_HOME/runtimes/*:$WAS_HOME/lib/webadmin/management.jar:$WAS_HOME/plugins/com.ibm.ws.runtime.jar"
-LIBPATH="$SCRIPTPATH/../*:$SCRIPTPATH/../lib/*:$WAS_PATH"
-```
+  ```bash
+  WAS_HOME="/opt/IBM/WebSphere/AppServer"
+  WAS_PATH="$WAS_HOME/runtimes/*:$WAS_HOME/lib/webadmin/management.jar:$WAS_HOME/plugins/com.ibm.ws.runtime.jar"
+  LIBPATH="$SCRIPTPATH/../*:$SCRIPTPATH/../lib/*:$WAS_PATH"
+  ```
 
 If you don't have actual `WAS` installation, `WAS_PATH` may also refer to jars located in `tnt4j-stream-jmx/tnt4j-stream-jmx-was/lib/*`
 directory.
@@ -2074,7 +2081,7 @@ directory.
 * To make Maven required `source` and `javadoc` packages, use profile `pack-maven`
 * To make Maven central compliant release having `source`, `javadoc` and all signed packages, use `maven-release` profile
 
-By default Maven will build all modules defined in `tnt4j-stream-jmx/pom.xml` file.
+By default, Maven will build all modules defined in `tnt4j-stream-jmx/pom.xml` file.
 
 If you do not want to build some of optional modules, comment those out like `WAS` module is. Or you can define Maven to build your
 preferred set of modules using `-pl, --projects` argument (comma separated modules list) together with `-am, --also-make` argument, e.g.:
