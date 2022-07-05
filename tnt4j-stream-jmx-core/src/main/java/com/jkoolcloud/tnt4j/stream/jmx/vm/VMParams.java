@@ -24,7 +24,7 @@ import java.util.StringJoiner;
  * @param <T>
  *            the type of VM reference: descriptor or URL
  *
- * @version $Revision : 1 $
+ * @version $Revision: 1 $
  *
  * @see com.jkoolcloud.tnt4j.stream.jmx.vm.VMDescriptorParams
  * @see com.jkoolcloud.tnt4j.stream.jmx.vm.JMXURLConnectionParams
