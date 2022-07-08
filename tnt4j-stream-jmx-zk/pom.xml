@@ -81,11 +81,20 @@
                                 <Class-Path>.</Class-Path>
                             </manifestEntries>
                         </transformer>
+                        <transformer implementation="org.apache.maven.plugins.shade.resource.ApacheNoticeResourceTransformer">
+                            <addHeader>false</addHeader>
+                        </transformer>
+                        <!--transformer implementation="org.apache.maven.plugins.shade.resource.ApacheLicenseResourceTransformer">
+                         </transformer-->
+                        <transformer implementation="org.apache.maven.plugins.shade.resource.properties.PropertiesTransformer">
+                            <!-- required configuration -->
+                            <resource>sjmx-defaults.properties</resource>
+                            <ordinalKey>ordinal</ordinalKey>
+                        </transformer>
                     </transformers>
                     <artifactSet>
                         <excludes>
                             <!--<exclude>org.slf4j*:*</exclude>-->
-                            <!--<exclude>log4j*:*</exclude>-->
                             <!--exclude>org.apache.logging.log4j*:*</exclude-->
                             <!--exclude>com.lmax*:*</exclude-->
                         </excludes>
@@ -99,6 +108,8 @@
                                 <exclude>META-INF/*.SF</exclude>
                                 <exclude>META-INF/*.DSA</exclude>
                                 <exclude>META-INF/*.RSA</exclude>
+                                <!--exclude>META-INF/DEPENDENCIES*</exclude>
+                                <exclude>META-INF/MANIFEST*</exclude-->
                             </excludes>
                         </filter>
                     </filters>
