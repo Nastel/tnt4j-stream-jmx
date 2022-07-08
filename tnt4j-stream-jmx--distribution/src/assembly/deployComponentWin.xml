@@ -46,9 +46,7 @@
                         <outputDirectory></outputDirectory>
                         <directory>${project.build.directory}</directory>
                         <includes>
-                            <include>*.jar</include>
-                            <include>*.war</include>
-                            <include>*.ear</include>
+                            <!--include>*.jar</include-->
                             <include>*-sources.jar</include>
                             <include>*-tests.jar</include>
                             <include>*-javadoc.jar</include>
@@ -57,6 +55,16 @@
                             <exclude>*-classes.jar</exclude>
                             <exclude>original-*.jar</exclude>
                         </excludes>
+                    </fileSet>
+                    <!-- produced optional jars -->
+                    <fileSet>
+                        <outputDirectory>opt</outputDirectory>
+                        <directory>${project.build.directory}</directory>
+                        <includes>
+                            <include>*-all.jar</include>
+                            <!--include>*.war</include>
+                               <include>*.ear</include-->
+                        </includes>
                     </fileSet>
                     <!-- configuration -->
                     <fileSet>
