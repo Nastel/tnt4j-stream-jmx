@@ -86,7 +86,7 @@
         <gpg.skip>true</gpg.skip>
 
         <org.slf4j.version>1.7.36</org.slf4j.version>
-        <log4j.version>2.17.2</log4j.version>
+        <log4j.version>2.18.0</log4j.version>
     </properties>
 
     <profiles>
