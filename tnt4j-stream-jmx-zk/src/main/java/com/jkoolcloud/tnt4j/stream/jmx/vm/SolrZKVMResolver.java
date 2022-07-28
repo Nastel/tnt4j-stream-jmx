@@ -22,10 +22,11 @@ import java.util.regex.Pattern;
 
 import javax.management.remote.JMXServiceURL;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.jkoolcloud.tnt4j.core.OpLevel;
 import com.jkoolcloud.tnt4j.sink.EventSink;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.LoggerUtils;
-import com.jkoolcloud.tnt4j.utils.Utils;
 
 /**
  * Resolves ZooKeeper orchestrated "Apache Solr" VMs JMX connections.
@@ -73,7 +74,7 @@ public class SolrZKVMResolver extends ZKVMResolver {
 			String host = matcher.group("host"); // NON-NLS
 
 			String portProp = getAdditionalOption(OO_PORT);
-			if (Utils.isEmpty(portProp)) {
+			if (StringUtils.isEmpty(portProp)) {
 				throw new RuntimeException("Apache Solr JMX port number is not defined");
 			}
 

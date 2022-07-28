@@ -232,12 +232,12 @@ public class SamplingAgent {
 		String tnt4jProp = System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY);
 		String log4jProp = System.getProperty(LOG4J_PROPERTIES_KEY);
 		String agentLibPath = "";
-		if (!Utils.isEmpty(agentArgs)) {
+		if (StringUtils.isNotEmpty(agentArgs)) {
 			String[] args = agentArgs.split("!");
 
 			for (String arg : args) {
 				if (arg.startsWith(SYS_PROP_TNT4J_CFG)) {
-					if (Utils.isEmpty(tnt4jProp)) {
+					if (StringUtils.isEmpty(tnt4jProp)) {
 						String[] prop = arg.split("=", 2);
 						tnt4jProp = prop.length > 1 ? prop[1] : null;
 
@@ -248,7 +248,7 @@ public class SamplingAgent {
 					agentLibPath = prop.length > 1 ? prop[1] : null;
 				}
 				if (arg.startsWith(SYS_PROP_LOG4J_CFG)) {
-					if (Utils.isEmpty(log4jProp)) {
+					if (StringUtils.isEmpty(log4jProp)) {
 						String[] prop = arg.split("=", 2);
 						log4jProp = prop.length > 1 ? prop[1] : null;
 
@@ -890,7 +890,7 @@ public class SamplingAgent {
 	public static void attach(String vmDescr, String agentJarPath, String agentOptions) throws Exception {
 		LOGGER.log(OpLevel.INFO, "SamplingAgent.attach(): vmDescr={0}, agentJarPath={1}, agentOptions={2}", vmDescr,
 				agentJarPath, agentOptions);
-		if (Utils.isEmpty(vmDescr)) {
+		if (StringUtils.isEmpty(vmDescr)) {
 			throw new RuntimeException("Java VM descriptor must be not empty!..");
 		}
 
@@ -918,12 +918,12 @@ public class SamplingAgent {
 		agentOptions += "!" + SYS_PROP_AGENT_PATH + "=" + agentPath;
 
 		String tnt4jConf = System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY);
-		if (!Utils.isEmpty(tnt4jConf)) {
+		if (StringUtils.isNotEmpty(tnt4jConf)) {
 			String tnt4jPropPath = new File(tnt4jConf).getAbsolutePath();
 			agentOptions += "!" + SYS_PROP_TNT4J_CFG + "=" + tnt4jPropPath;
 		}
 		String log4jConf = System.getProperty(LOG4J_PROPERTIES_KEY);
-		if (!Utils.isEmpty(log4jConf)) {
+		if (StringUtils.isNotEmpty(log4jConf)) {
 			String log4jPropPath = new File(log4jConf).getAbsolutePath();
 			agentOptions += "!" + SYS_PROP_LOG4J_CFG + "=" + log4jPropPath;
 		}

@@ -18,6 +18,8 @@ package com.jkoolcloud.tnt4j.stream.jmx.format;
 
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.jkoolcloud.tnt4j.utils.Utils;
 
 /**
@@ -47,7 +49,7 @@ public class SLIFactPathValueFormatter extends FactPathValueFormatter {
 		for (String[] levelAttrKeys : pathLevelAttrKeys) {
 			for (String pKey : levelAttrKeys) {
 				pv = (String) objNameProps.remove(pKey);
-				if (!Utils.isEmpty(pv) && !"null".equals(pv)) {
+				if (StringUtils.isNotEmpty(pv) && !"null".equals(pv)) {
 					pv = Utils.replace(pv, keyReplacements);
 					if (pv.startsWith(PATH_DELIM)) {
 						pv = pv.substring(1);

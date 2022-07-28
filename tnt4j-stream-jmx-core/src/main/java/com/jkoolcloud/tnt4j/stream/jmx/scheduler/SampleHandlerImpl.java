@@ -24,6 +24,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.management.*;
 import javax.management.relation.MBeanServerNotificationFilter;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.jkoolcloud.tnt4j.core.Activity;
 import com.jkoolcloud.tnt4j.core.OpLevel;
 import com.jkoolcloud.tnt4j.core.PropertySnapshot;
@@ -34,7 +36,6 @@ import com.jkoolcloud.tnt4j.stream.jmx.conditions.*;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleContext;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.UnsupportedAttributeException;
-import com.jkoolcloud.tnt4j.stream.jmx.utils.Utils;
 
 /**
  * <p>
@@ -172,7 +173,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	private void loadMBeans() {
 		try {
 			tokenizeFilters(mbeanIncFilter, iFilters);
-			if (!Utils.isEmpty(mbeanExcFilter)) {
+			if (StringUtils.isNotEmpty(mbeanExcFilter)) {
 				tokenizeFilters(mbeanExcFilter, eFilters);
 			}
 			listenForChanges();

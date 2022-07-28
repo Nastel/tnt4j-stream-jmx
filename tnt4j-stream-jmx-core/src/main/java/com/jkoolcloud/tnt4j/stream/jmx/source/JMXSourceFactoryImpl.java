@@ -197,7 +197,7 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 	}
 
 	private static String resolveSJMXPropValue(String propName) {
-		if (SOURCE_SERVER_ADDRESS.equals(propName) || SOURCE_SERVER_NAME.equals(propName)) {
+		if (StringUtils.equalsAny(propName, SOURCE_SERVER_ADDRESS, SOURCE_SERVER_NAME)) {
 			Thread thread = Thread.currentThread();
 			String host = null;
 

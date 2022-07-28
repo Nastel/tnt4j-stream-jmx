@@ -23,6 +23,7 @@ import java.util.*;
 import javax.management.remote.JMXServiceURL;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
@@ -283,7 +284,7 @@ public abstract class ZKVMResolver implements VMResolver<JMXServiceURL>, Closeab
 	 */
 	protected String getURLPattern() {
 		String urlPattern = getAdditionalOption(OO_URL_PATTERN);
-		return Utils.isEmpty(urlPattern) ? DEFAULT_RMI_URL : urlPattern;
+		return StringUtils.isEmpty(urlPattern) ? DEFAULT_RMI_URL : urlPattern;
 	}
 
 	/**
@@ -333,7 +334,7 @@ public abstract class ZKVMResolver implements VMResolver<JMXServiceURL>, Closeab
 	protected VMParams<JMXServiceURL> buildURLConnectionParams(String serviceName, String serviceURL)
 			throws IOException {
 		String additionalSourceFQN = baseVMDescrParams.getAdditionalSourceFQN();
-		if (com.jkoolcloud.tnt4j.utils.Utils.isEmpty(additionalSourceFQN) || EMPTY.equals(additionalSourceFQN)) {
+		if (StringUtils.isEmpty(additionalSourceFQN) || EMPTY.equals(additionalSourceFQN)) {
 			additionalSourceFQN = "SERVICE=" + serviceName; // NON-NLS
 		}
 
@@ -355,7 +356,7 @@ public abstract class ZKVMResolver implements VMResolver<JMXServiceURL>, Closeab
 	 * @return VM resolver instance
 	 */
 	static ZKVMResolver build(String vmDescr) {
-		if (!Utils.isEmpty(vmDescr)) {
+		if (StringUtils.isNotEmpty(vmDescr)) {
 			if (vmDescr.toLowerCase().startsWith(KafkaZKVMResolver.PREFIX)) {
 				return new KafkaZKVMResolver();
 			} else if (vmDescr.toLowerCase().startsWith(SolrZKVMResolver.PREFIX)) {

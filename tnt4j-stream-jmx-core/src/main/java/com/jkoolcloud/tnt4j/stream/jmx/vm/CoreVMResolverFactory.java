@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.jkoolcloud.tnt4j.core.OpLevel;
 import com.jkoolcloud.tnt4j.sink.EventSink;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.LoggerUtils;
@@ -51,7 +53,7 @@ public class CoreVMResolverFactory implements VMResolverFactory {
 	@SuppressWarnings("unchecked")
 	public List<JMXURLConnectionParams> getJmxServiceURLs(VMParams vmDescrParams) throws Exception {
 		String vmDescr = Utils.toString(vmDescrParams.getVMRef());
-		if (Utils.isEmpty(vmDescr)) {
+		if (StringUtils.isEmpty(vmDescr)) {
 			throw new RuntimeException("Java VM descriptor must be not empty!..");
 		}
 
