@@ -16,7 +16,6 @@
 
 package com.jkoolcloud.tnt4j.stream.jmx.vm;
 
-import java.text.MessageFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,6 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.jkoolcloud.tnt4j.core.OpLevel;
 import com.jkoolcloud.tnt4j.sink.EventSink;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.LoggerUtils;
+import com.jkoolcloud.tnt4j.utils.Utils;
 
 /**
  * Resolves ZooKeeper orchestrated "Apache Solr" VMs JMX connections.
@@ -79,7 +79,7 @@ public class SolrZKVMResolver extends ZKVMResolver {
 			}
 
 			Integer port = Integer.parseInt(portProp);
-			String serviceURL = MessageFormat.format(getURLPattern(), host, port);
+			String serviceURL = Utils.format(getURLPattern(), host, port);
 
 			return buildURLConnectionParams(path, serviceURL);
 		}

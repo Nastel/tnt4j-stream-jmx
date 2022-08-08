@@ -16,8 +16,6 @@
 
 package com.jkoolcloud.tnt4j.stream.jmx.vm;
 
-import java.text.MessageFormat;
-
 import javax.management.remote.JMXServiceURL;
 
 import com.jayway.jsonpath.DocumentContext;
@@ -25,6 +23,7 @@ import com.jayway.jsonpath.JsonPath;
 import com.jkoolcloud.tnt4j.core.OpLevel;
 import com.jkoolcloud.tnt4j.sink.EventSink;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.LoggerUtils;
+import com.jkoolcloud.tnt4j.stream.jmx.utils.Utils;
 
 /**
  * Resolves ZooKeeper orchestrated "Apache Kafka" VMs JMX connections.
@@ -75,7 +74,7 @@ public class KafkaZKVMResolver extends ZKVMResolver {
 			logger().log(OpLevel.DEBUG, "KafkaZKVMResolver.nodeToConnection: found exposed JMX: {0}:{1}", host, port);
 
 			String serviceName = path.substring(path.lastIndexOf("/") + 1);
-			String serviceURL = MessageFormat.format(getURLPattern(), host, port);
+			String serviceURL = Utils.format(getURLPattern(), host, port);
 
 			return buildURLConnectionParams(serviceName, serviceURL);
 		}
