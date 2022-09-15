@@ -21,6 +21,8 @@ import static com.jkoolcloud.tnt4j.stream.jmx.servlet.StreamJMXProperty.Scope.*;
 
 import java.io.*;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Properties;
@@ -180,10 +182,11 @@ public abstract class StreamJMXServlet extends HttpServlet {
 		for (StreamJMXProperty property : StreamJMXProperties.values(servletProperties, FILE_EDITOR)) {
 			String tnt4jConfigContents = req.getParameter(property.key());
 			if (tnt4jConfigContents != null) {
-				FileOutputStream tnt4jProperties = null;
+				OutputStream tnt4jProperties = null;
 				String fileName = new File(System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY)).getName();
 				try {
-					tnt4jProperties = new FileOutputStream(getClass().getClassLoader().getResource(fileName).getFile());
+					tnt4jProperties = Files
+							.newOutputStream(Paths.get(getClass().getClassLoader().getResource(fileName).getFile()));
 					tnt4jProperties.write(tnt4jConfigContents.getBytes());
 					changed = true;
 				} catch (Exception e) {
