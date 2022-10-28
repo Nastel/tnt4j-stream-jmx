@@ -297,11 +297,11 @@ public abstract class ZKVMResolver implements VMResolver<JMXServiceURL>, Closeab
 	 */
 	protected String getAdditionalOption(String optKey) {
 		if (additionalOptions == null) {
+			additionalOptions = new HashMap<>();
+
 			if (baseVMDescrParams != null) {
 				String otherOptions = baseVMDescrParams.getAdditionalOptions();
 				if (otherOptions != null) {
-					additionalOptions = new HashMap<>();
-
 					String[] opts = otherOptions.split(VMConstants.OTHER_OPTIONS_DELIM);
 					for (String opt : opts) {
 						String[] optionTokens = opt.split(VMConstants.OTHER_OPTIONS_KV_DELIM);
