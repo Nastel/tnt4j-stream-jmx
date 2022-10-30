@@ -11,15 +11,15 @@ rem -----------------------------
 set RUNDIR=%~dp0
 
 rem --- When connecting application instance having basic JMX implementation, e.g. ordinary Java app, Tomcat, Kafka
-set MODULE_SET=core
+rem set MODULE_SET=core
 rem --- Uncomment when intended to collect monitored VMs (e.g. Kafka, Solr) from ZooKeeper registry
-rem set MODULE_SET=core zk
+set MODULE_SET=zk
 rem --- Uncomment when connecting some J2EE implementing application instance JMX
-rem set MODULE_SET=core j2ee
+rem set MODULE_SET=j2ee
 rem --- Uncomment when connecting IBM Websphere Application Server (WAS) instance JMX
-rem set MODULE_SET=core j2ee was
+rem set MODULE_SET=was-api
 rem --- Uncomment when connecting IBM Websphere Liberty Server instance JMX
-rem set MODULE_SET=core j2ee liberty
+rem set MODULE_SET=liberty-api
 
 rem LIBPATH initialization for stream-jmx modules
 for %%a in (%MODULE_SET%) do (
@@ -27,7 +27,13 @@ for %%a in (%MODULE_SET%) do (
 )
 rem echo %LIBPATH%
 
-set LIBPATH=%LIBPATH%;%RUNDIR%..\lib\*
+rem --- Additional libraries for WebLogic ---
+rem set WL_HOME=C:\Oracle\Middleware\Oracle_Home
+rem set WL_CLINET_LIBS=%WL_HOME%\wlserver\server\lib\wlclient.jar;%WL_HOME%\wlserver\server\lib\wljmxclient.jar;%WL_HOME%\wlserver\server\lib\javax.javaee-api.jar
+rem set TOOLS_PATH=%TOOLS_PATH%;%WL_CLINET_LIBS%
+rem -----------------------------------------
+
+rem set LIBPATH=%LIBPATH%;%RUNDIR%..\lib\*
 
 set JAVA_EXEC="java"
 IF ["%JAVA_HOME%"] EQU [""] (
@@ -80,7 +86,7 @@ IF ["%LIBPATH%"] EQU [""] (
 EXIT /B 0
 :search_lib_path
 for /f "delims=" %%a in ('
-    dir /a-d /b /s %RUNDIR%..\tnt4j-stream-jmx-%1*.jar ^| find /i /v "-sources" ^| find /i /v "-javadoc" ^| find /i /v "-test" ^| find /i /v "-all"
+    dir /a-d /b /s %RUNDIR%..\opt\tnt4j-stream-jmx-%1*.jar ^| find /i /v "-sources" ^| find /i /v "-javadoc" ^| find /i /v "-test"
 ') do call :concat_lib_path %%~fa
 EXIT /B 0
 :eof

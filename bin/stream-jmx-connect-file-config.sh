@@ -7,7 +7,7 @@
 ### -----------------------------
 
 # Exclude jars not necessary for running commands.
-regex="(-(test|sources|javadoc|all)\.jar|jar.asc)$"
+regex="(-(test|sources|javadoc)\.jar|jar.asc)$"
 should_include_file() {
   file=$1
   if [[ -z "$(echo "$file" | egrep "$regex")" ]] ; then
@@ -24,19 +24,19 @@ else
 fi
 
 ### --- When connecting application instance having basic JMX implementation, e.g. ordinary Java app, Tomcat, Kafka
-MODULE_SET=("core")
+#MODULE_SET=("core")
 ### --- Uncomment when intended to collect monitored VMs (e.g. Kafka, Solr) from ZooKeeper registry
-# MODULE_SET=("core" "zk")
+MODULE_SET=("zk")
 ### --- Uncomment when connecting some J2EE implementing application instance JMX
-# MODULE_SET=("core" "j2ee")
+# MODULE_SET=("j2ee")
 ### --- Uncomment when connecting IBM Websphere Application Server (WAS) instance JMX
-# MODULE_SET=("core" "j2ee" "was")
+# MODULE_SET=("was-api")
 ### --- Uncomment when connecting IBM Websphere Liberty Server instance JMX
-# MODULE_SET=("core" "j2ee" "liberty")
+# MODULE_SET=("liberty-api")
 
 for module in "${MODULE_SET[@]}"
 do
-  for file in "$SCRIPTPATH"/../tnt4j-stream-jmx-"$module"*.jar;
+  for file in "$SCRIPTPATH"/../opt/tnt4j-stream-jmx-"$module"*.jar;
   do
     if should_include_file "$file"; then
       if [[ -z "$LIBPATH" ]] ; then
@@ -49,8 +49,13 @@ do
 done
 echo "$LIBPATH"
 
+### --- Additional libraries for WebLogic ---
+# WL_HOME="/opt/Oracle/Middleware/Oracle_Home"
+# WL_CLINET_LIBS="$WL_HOME/wlserver/server/lib/wlclient.jar:$WL_HOME/wlserver/server/lib/wljmxclient.jar:$WL_HOME/wlserver/server/lib/javax.javaee-api.jar"
+# TOOLS_PATH="$TOOLS_PATH:$WL_CLINET_LIBS"
+### -----------------------------------------
 
-LIBPATH="$LIBPATH:$SCRIPTPATH/../lib/*"
+#LIBPATH="$LIBPATH:$SCRIPTPATH/../lib/*"
 
 jver=$("${JAVA_PATH}" -fullversion 2>&1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1 | cut -d'-' -f1 | cut -d'+' -f1 | cut -d'_' -f1)
 
