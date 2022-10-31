@@ -68,7 +68,7 @@ public abstract class ZKVMResolver implements VMResolver<JMXServiceURL>, Closeab
 	/**
 	 * Default VM URL pattern: {@value}.
 	 */
-	static final String DEFAULT_RMI_URL = "service:jmx:rmi:///jndi/rmi://{0}:{1,number,######}/jmxrmi"; // NON-NLS
+	static final String DEFAULT_RMI_URL = "service:jmx:rmi:///jndi/rmi://{0}:{1,number,#####0}/jmxrmi"; // NON-NLS
 
 	/**
 	 * Defines empty VM descriptor properties token: {@value}.

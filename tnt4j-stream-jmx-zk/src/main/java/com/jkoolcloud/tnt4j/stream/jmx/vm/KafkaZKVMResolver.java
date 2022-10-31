@@ -71,7 +71,8 @@ public class KafkaZKVMResolver extends ZKVMResolver {
 		Object port = doc.read("$.jmx_port"); // NON-NLS
 
 		if (port instanceof Integer && (Integer) port != -1) {
-			logger().log(OpLevel.DEBUG, "KafkaZKVMResolver.nodeToConnection: found exposed JMX: {0}:{1}", host, port);
+			logger().log(OpLevel.DEBUG, "KafkaZKVMResolver.nodeToConnection: found exposed JMX: {0}:{1,number,#####0}",
+					host, port);
 
 			String serviceName = path.substring(path.lastIndexOf("/") + 1);
 			String serviceURL = Utils.format(getURLPattern(), host, port);
