@@ -55,7 +55,7 @@ public class PropertyNameBuilder {
 	 *            property tokens delimiter
 	 */
 	public PropertyNameBuilder(String initName, String delimiter) {
-		this.marks = new ArrayDeque<Integer>(5);
+		this.marks = new ArrayDeque<>(5);
 		this.delimiter = delimiter;
 		this.sb = new StringBuilder(checkPropertyName(initName));
 	}

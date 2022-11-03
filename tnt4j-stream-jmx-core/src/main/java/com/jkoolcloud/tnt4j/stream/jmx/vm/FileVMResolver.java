@@ -237,11 +237,7 @@ public class FileVMResolver implements VMResolver<String> {
 			vKey = key.substring(gIdx + 1);
 		}
 
-		Map<String, String> props = propsMap.get(gKey);
-		if (props == null) {
-			props = new HashMap<>();
-			propsMap.put(gKey, props);
-		}
+		Map<String, String> props = propsMap.computeIfAbsent(gKey, k -> new HashMap<>());
 
 		props.put(vKey.trim(), value);
 	}

@@ -94,6 +94,7 @@ public class AttributeSample {
 	 */
 	public Object sample() throws Exception {
 		try {
+			// TODO: obtain all mbean attributes over single call using "getAttributes"
 			value = server.getAttribute(name, ainfo.getName());
 		} catch (Exception exc) {
 			value = getValueFromException(exc);

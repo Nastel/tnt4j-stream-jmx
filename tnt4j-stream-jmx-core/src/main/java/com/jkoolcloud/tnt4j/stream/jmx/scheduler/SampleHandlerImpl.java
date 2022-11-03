@@ -204,13 +204,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	 */
 	private static void excludeFromSet(Set<ObjectName> objSet, List<ObjectName> eFilters) {
 		for (ObjectName eName : eFilters) {
-			Iterator<ObjectName> it = objSet.iterator();
-			while (it.hasNext()) {
-				ObjectName name = it.next();
-				if (eName.apply(name)) {
-					it.remove();
-				}
-			}
+			objSet.removeIf(eName::apply);
 		}
 	}
 
