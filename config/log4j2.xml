@@ -80,7 +80,7 @@
         </asyncRoot>
         <!-- ### change to DEBUG to have all the sampling process logged as it was
              ### using "-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true" property. -->
-        <asyncLogger name="com.jkoolcloud.tnt4j.stream.jmx" level="DEBUG"/>
+        <asyncLogger name="com.jkoolcloud.tnt4j.stream.jmx" level="INFO"/>
         <!-- #### streamed activity entities logger #### -->
         <asyncLogger name="com.jkoolcloud.tnt4j.stream.jmx.activities_log" level="INFO" additivity="false">
             <AppenderRef ref="activities_log"/>
