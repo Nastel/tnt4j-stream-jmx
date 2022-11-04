@@ -222,6 +222,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 
 		int pCount = 0;
 		for (Entry<ObjectName, MBeanInfo> entry : mbeans.entrySet()) {
+			// TODO: make sampling multi-thread using executor service (configurable).
 			ObjectName name = entry.getKey();
 			MBeanInfo info = entry.getValue();
 
@@ -256,17 +257,17 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	}
 
 	/**
-	 * Sample and retrieve the value associated with the MBean attribute.
+	 * Sample and retrieve the value list associated with the MBean attributes.
 	 *
 	 * @param sample
 	 *            MBean sample instance
-	 * @return the value associated with the current attribute
+	 * @return MBean attributes value list
 	 * @throws Exception
-	 *             if exception occurs while sampling attribute value
+	 *             if exception occurs while sampling attribute values
 	 *
 	 * @see AttributeSample#sample()
 	 */
-	protected Object sample(AttributeSample sample) throws Exception {
+	protected AttributeList sample(AttributeSample sample) throws Exception {
 		return sample.sample();
 	}
 

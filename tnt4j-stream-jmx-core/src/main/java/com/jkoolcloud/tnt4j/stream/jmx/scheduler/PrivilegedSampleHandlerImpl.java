@@ -19,6 +19,7 @@ package com.jkoolcloud.tnt4j.stream.jmx.scheduler;
 import java.security.AccessController;
 import java.security.PrivilegedExceptionAction;
 
+import javax.management.AttributeList;
 import javax.management.MBeanServerConnection;
 
 import com.jkoolcloud.tnt4j.source.Source;
@@ -32,25 +33,46 @@ import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeSample;
  */
 public class PrivilegedSampleHandlerImpl extends SampleHandlerImpl {
 
+	/**
+	 * Create new instance of {@code PrivilegedSampleHandlerImpl} with a given MBean server and a set of filters.
+	 *
+	 * @param mServerConn
+	 *            MBean server connection instance
+	 * @param incFilter
+	 *            MBean include filters semicolon separated
+	 * @param excFilter
+	 *            MBean exclude filters semicolon separated
+	 * @param source
+	 *            sampler source
+	 */
 	public PrivilegedSampleHandlerImpl(MBeanServerConnection mServerConn, String incFilter, String excFilter,
 			Source source) {
 		super(mServerConn, incFilter, excFilter, source);
 	}
 
 	@Override
-	protected Object sample(AttributeSample sample) throws Exception {
+	protected AttributeList sample(AttributeSample sample) throws Exception {
 		return AccessController.doPrivileged(new SamplePrivilegedAction(sample));
 	}
 
-	private static class SamplePrivilegedAction implements PrivilegedExceptionAction<Object> {
+	/**
+	 * This class defines privileged exception action to sample MBean attributes.
+	 */
+	protected static class SamplePrivilegedAction implements PrivilegedExceptionAction<AttributeList> {
 		private final AttributeSample sample;
 
+		/**
+		 * Create new instance of {@code SamplePrivilegedAction} with a given MBean sample instance.
+		 * 
+		 * @param sample
+		 *            MBean attributes sample instance
+		 */
 		SamplePrivilegedAction(AttributeSample sample) {
 			this.sample = sample;
 		}
 
 		@Override
-		public Object run() throws Exception {
+		public AttributeList run() throws Exception {
 			return sample.sample();
 		}
 	}

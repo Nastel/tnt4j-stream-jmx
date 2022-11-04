@@ -18,6 +18,7 @@ package com.jkoolcloud.tnt4j.stream.jmx.scheduler;
 
 import java.security.PrivilegedExceptionAction;
 
+import javax.management.AttributeList;
 import javax.management.MBeanServerConnection;
 
 import com.jkoolcloud.tnt4j.source.Source;
@@ -31,27 +32,26 @@ import com.jkoolcloud.tnt4j.stream.jmx.utils.WASSecurityHelper;
  * 
  * @version $Revision: 1 $
  */
-public class WASSampleHandlerImpl extends SampleHandlerImpl {
+public class WASSampleHandlerImpl extends PrivilegedSampleHandlerImpl {
 
+	/**
+	 * Create new instance of {@code WASSampleHandlerImpl} with a given MBean server and a set of filters.
+	 *
+	 * @param mServerConn
+	 *            MBean server connection instance
+	 * @param incFilter
+	 *            MBean include filters semicolon separated
+	 * @param excFilter
+	 *            MBean exclude filters semicolon separated
+	 * @param source
+	 *            sampler source
+	 */
 	public WASSampleHandlerImpl(MBeanServerConnection mServerConn, String incFilter, String excFilter, Source source) {
 		super(mServerConn, incFilter, excFilter, source);
 	}
 
 	@Override
-	protected Object sample(AttributeSample sample) throws Exception {
+	protected AttributeList sample(AttributeSample sample) throws Exception {
 		return WASSecurityHelper.doPrivilegedAction(new SamplePrivilegedAction(sample));
-	}
-
-	private static class SamplePrivilegedAction implements PrivilegedExceptionAction<Object> {
-		private final AttributeSample sample;
-
-		SamplePrivilegedAction(AttributeSample sample) {
-			this.sample = sample;
-		}
-
-		@Override
-		public Object run() throws Exception {
-			return sample.sample();
-		}
 	}
 }
