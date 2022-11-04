@@ -65,34 +65,22 @@ public class SimpleCondition implements AttributeCondition {
 
 	@Override
 	public boolean evaluate(AttributeSample sample) {
-		if (sample.getAttributeInfo().getName().equals(attrName)
-				&& sample.getObjectName().getCanonicalName().equals(objName)) {
+		Object sValue = sample.getValue(attrName);
+		if (sValue != null && sample.getObjectName().getCanonicalName().equals(objName)) {
 			if (op.endsWith("=")) {
-				return sample.get().equals(value);
-			} else if (op.endsWith("!=")) {
-				Object val = sample.get();
-				if (val instanceof Number) {
-					return ((Number) val).doubleValue() != value.doubleValue();
-				}
-			} else if (op.endsWith(">")) {
-				Object val = sample.get();
-				if (val instanceof Number) {
-					return ((Number) val).doubleValue() > value.doubleValue();
-				}
-			} else if (op.endsWith(">=")) {
-				Object val = sample.get();
-				if (val instanceof Number) {
-					return ((Number) val).doubleValue() >= value.doubleValue();
-				}
-			} else if (op.endsWith("<")) {
-				Object val = sample.get();
-				if (val instanceof Number) {
-					return ((Number) val).doubleValue() < value.doubleValue();
-				}
-			} else if (op.endsWith("<=")) {
-				Object val = sample.get();
-				if (val instanceof Number) {
-					return ((Number) val).doubleValue() <= value.doubleValue();
+				return sValue.equals(value);
+			} else if (sValue instanceof Number) {
+				double sValueD = ((Number) sValue).doubleValue();
+				if (op.endsWith("!=")) {
+					return sValueD != value.doubleValue();
+				} else if (op.endsWith(">")) {
+					return sValueD > value.doubleValue();
+				} else if (op.endsWith(">=")) {
+					return sValueD >= value.doubleValue();
+				} else if (op.endsWith("<")) {
+					return sValueD < value.doubleValue();
+				} else if (op.endsWith("<=")) {
+					return sValueD <= value.doubleValue();
 				}
 			}
 		}

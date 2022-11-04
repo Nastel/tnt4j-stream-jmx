@@ -53,7 +53,6 @@ public class DefaultSampleListener implements SampleListener {
 	public static final String STAT_USE_OBJ_NAME_PROPS_MODE = "listener.useObjectNameProperties.mode";
 	public static final String STAT_EXCLUDE_ON_ERROR_MODE = "listener.excludeOnError.mode";
 	public static final String STAT_EXCLUDE_SET_COUNT = "listener.exclude.set.count";
-	public static final String STAT_SILENCE_SET_COUNT = "listener.silence.set.count";
 	public static final String STAT_USER_EXCLUDED_ATTRS_COUNT = "listener.user.excluded.attrs.count";
 
 	boolean forceObjectName = false;
@@ -62,7 +61,6 @@ public class DefaultSampleListener implements SampleListener {
 	boolean excludeOnError = false;
 
 	Collection<MBeanAttributeInfo> excAttrs = new HashSet<>(89);
-	Collection<MBeanAttributeInfo> silenceAttrs = new HashSet<>(89);
 	Map<ObjectName, Pattern> userExcAttrs = new HashMap<>(5);
 
 	private PropertyNameBuilder pnb;
@@ -150,12 +148,14 @@ public class DefaultSampleListener implements SampleListener {
 	/**
 	 * Determine if a given attribute to be excluded from sampling.
 	 *
-	 * @param sample
-	 *            current attribute sample
+	 * @param objName
+	 *            MBean object name
+	 * @param ainfo
+	 *            MBean attribute info
 	 * @return {@code true} when attribute should be excluded, {@code false} - otherwise
 	 */
-	protected boolean isExcluded(AttributeSample sample) {
-		return isInCollection(excAttrs, sample.getAttributeInfo()) || isExcludedByUser(userExcAttrs, sample);
+	protected boolean isExcluded(ObjectName objName, MBeanAttributeInfo ainfo) {
+		return isInCollection(excAttrs, ainfo) || isExcludedByUser(userExcAttrs, objName, ainfo);
 	}
 
 	/**
@@ -166,27 +166,6 @@ public class DefaultSampleListener implements SampleListener {
 	 */
 	protected void exclude(MBeanAttributeInfo attr) {
 		addToCollection(excAttrs, attr);
-	}
-
-	/**
-	 * Determine if a given attribute is silenced and no sampling failure message shall be posted.
-	 *
-	 * @param attr
-	 *            attribute instance to check
-	 * @return {@code true} if attribute is included in silenced attributes list, {@code false} - otherwise
-	 */
-	protected boolean isSilenced(MBeanAttributeInfo attr) {
-		return isInCollection(silenceAttrs, attr);
-	}
-
-	/**
-	 * Mark a given attribute to be silenced and no sampling failure messages shall be posted.
-	 *
-	 * @param attr
-	 *            attribute instance to add
-	 */
-	protected void silence(MBeanAttributeInfo attr) {
-		addToCollection(silenceAttrs, attr);
 	}
 
 	private static void addToCollection(Collection<MBeanAttributeInfo> coll, MBeanAttributeInfo attr) {
@@ -209,22 +188,25 @@ public class DefaultSampleListener implements SampleListener {
 	 *
 	 * @param userExcAttrs
 	 *            user excluded attributes map
-	 * @param sample
-	 *            current attribute sample
+	 * @param objName
+	 *            MBean object name
+	 * @param ainfo
+	 *            MBean attribute info
 	 * @return {@code true} is attribute is excluded by user defined list, {@code false} - otherwise
 	 */
-	protected boolean isExcludedByUser(Map<ObjectName, Pattern> userExcAttrs, AttributeSample sample) {
+	protected boolean isExcludedByUser(Map<ObjectName, Pattern> userExcAttrs, ObjectName objName,
+			MBeanAttributeInfo ainfo) {
 		if (!Utils.isEmpty(userExcAttrs)) {
 			for (Map.Entry<ObjectName, Pattern> ueae : userExcAttrs.entrySet()) {
-				boolean apply = ueae.getKey().apply(sample.getObjectName());
+				boolean apply = ueae.getKey().apply(objName);
 
 				if (apply) {
 					Pattern attributeNamePattern = ueae.getValue();
-					Matcher fMatcher = attributeNamePattern.matcher(sample.getAttributeInfo().getName());
+					Matcher fMatcher = attributeNamePattern.matcher(ainfo.getName());
 					if (fMatcher.matches()) {
 						LOGGER.log(OpLevel.DEBUG, "UserExclude: Excluding user defined MBean attribute: {1}@{0}",
-								sample.getObjectName(), sample.getAttributeInfo().getName());
-						exclude(sample.getAttributeInfo());
+								objName, ainfo.getName());
+						exclude(ainfo);
 						return true;
 					}
 				}
@@ -237,26 +219,34 @@ public class DefaultSampleListener implements SampleListener {
 	@Override
 	public void pre(SampleContext context, Activity activity) {
 		LOGGER.log(OpLevel.DEBUG,
-				"Pre: {0}: sample.count={1}, mbean.count={2}, sample.mbeans.count={3}, exclude.user.attr.set={4}, exclude.attr.set={5}, silence.attr.set={6}, total.noop.count={7}, total.exclude.count={8}, total.error.count={9}, tracking.id={10}, mbean.server={11}",
+				"Pre: {0}: sample.count={1}, mbean.count={2}, sample.mbeans.count={3}, exclude.user.attr.set={4}, exclude.attr.set={5}, total.noop.count={7}, total.exclude.count={8}, total.error.count={9}, tracking.id={10}, mbean.server={11}",
 				activity.getName(), context.getSampleCount(), getMBeanCount(context), context.getMBeanCount(),
-				userExcAttrs.size(), excAttrs.size(), silenceAttrs.size(), context.getTotalNoopCount(),
-				context.getExcludeAttrCount(), context.getTotalErrorCount(), activity.getTrackingId(),
-				context.getMBeanServer());
+				userExcAttrs.size(), excAttrs.size(), context.getTotalNoopCount(), context.getExcludeAttrCount(),
+				context.getTotalErrorCount(), activity.getTrackingId(), context.getMBeanServer());
 	}
 
 	@Override
 	public void pre(SampleContext context, AttributeSample sample) {
-		sample.excludeNext(!sample.getAttributeInfo().isReadable() || isExcluded(sample));
-		sample.silence(isSilenced(sample.getAttributeInfo()));
+		Map<String, MBeanAttributeInfo> aInfoMap = sample.getAttributesInfo();
+		for (Map.Entry<String, MBeanAttributeInfo> ainfo : aInfoMap.entrySet()) {
+			boolean exclude = !ainfo.getValue().isReadable() || isExcluded(sample.getObjectName(), ainfo.getValue());
+
+			if (exclude) {
+				sample.exclude(ainfo.getValue());
+			}
+		}
 	}
 
 	@Override
 	public void post(SampleContext context, AttributeSample sample) throws UnsupportedAttributeException {
-		MBeanAttributeInfo mbAttrInfo = sample.getAttributeInfo();
 		PropertySnapshot snapshot = sample.getSnapshot();
 		buildLock.lock();
 		try {
-			processAttrValue(snapshot, mbAttrInfo, initPropName(mbAttrInfo.getName()), sample.get());
+			AttributeList attrList = sample.get();
+			for (Attribute attr : attrList.asList()) {
+				MBeanAttributeInfo mbAttrInfo = sample.getAttributeInfo(attr.getName());
+				processAttrValue(snapshot, mbAttrInfo, initPropName(mbAttrInfo.getName()), attr.getValue());
+			}
 		} finally {
 			buildLock.unlock();
 		}
@@ -309,12 +299,12 @@ public class DefaultSampleListener implements SampleListener {
 	@Override
 	public void post(SampleContext context, Activity activity) {
 		LOGGER.log(OpLevel.DEBUG,
-				"Post: {0}: sample.count={1}, mbean.count={2}, elapsed.usec={3}, snap.count={4}, id.count={5}, sample.mbeans.count={6}, sample.metric.count={7}, sample.time.usec={8}, exclude.user.attr.set={9}, exclude.attr.set={10}, silence.attr.set={11}, total.noop.count={12}, total.exclude.count={13}, total.error.count={14}, tracking.id={15}, mbean.server={16}",
+				"Post: {0}: sample.count={1}, mbean.count={2}, elapsed.usec={3}, snap.count={4}, id.count={5}, sample.mbeans.count={6}, sample.metric.count={7}, sample.time.usec={8}, exclude.user.attr.set={9}, exclude.attr.set={10}, total.noop.count={12}, total.exclude.count={13}, total.error.count={14}, tracking.id={15}, mbean.server={16}",
 				activity.getName(), context.getSampleCount(), getMBeanCount(context), activity.getElapsedTimeUsec(),
 				activity.getSnapshotCount(), activity.getIdCount(), context.getMBeanCount(),
 				context.getLastMetricCount(), context.getLastSampleUsec(), userExcAttrs.size(), excAttrs.size(),
-				silenceAttrs.size(), context.getTotalNoopCount(), context.getExcludeAttrCount(),
-				context.getTotalErrorCount(), activity.getTrackingId(), context.getMBeanServer());
+				context.getTotalNoopCount(), context.getExcludeAttrCount(), context.getTotalErrorCount(),
+				activity.getTrackingId(), context.getMBeanServer());
 	}
 
 	private static String getMBeanCount(SampleContext context) {
@@ -327,20 +317,11 @@ public class DefaultSampleListener implements SampleListener {
 
 	@Override
 	public void error(SampleContext context, AttributeSample sample, OpLevel level) {
-		sample.excludeNext(isFatalError(sample.getError(), level == null ? OpLevel.ERROR : level));
-		sample.silence(true);
-		LOGGER.log(OpLevel.DEBUG,
-				"Error: Failed to sample:\n ojbName={0},\n info={1},\n exclude={2}\n silence={3}\n ex={4}",
-				sample.getObjectName(), sample.getAttributeInfo(), sample.excludeNext(), sample.isSilence(),
+		LOGGER.log(OpLevel.DEBUG, "Error: Failed to sample:\n ojbName={0},\n info={1},\n exclude={2}\n ex={4}",
+				sample.getObjectName(), sample.getAttributesInfo(), sample.excludes().size(),
 				LOGGER.isSet(OpLevel.TRACE) ? Utils.getExceptionMessage(sample.getError())
 						: Utils.getAllExceptionMessages(sample.getError()),
 				LOGGER.isSet(OpLevel.TRACE) ? sample.getError() : null);
-		if (sample.excludeNext()) {
-			exclude(sample.getAttributeInfo());
-		}
-		if (sample.isSilence()) {
-			silence(sample.getAttributeInfo());
-		}
 	}
 
 	private boolean isFatalError(Throwable exc, OpLevel level) {
@@ -387,7 +368,6 @@ public class DefaultSampleListener implements SampleListener {
 		stats.put(STAT_USE_OBJ_NAME_PROPS_MODE, useObjectNameProperties);
 		stats.put(STAT_EXCLUDE_ON_ERROR_MODE, excludeOnError);
 		stats.put(STAT_EXCLUDE_SET_COUNT, excAttrs.size());
-		stats.put(STAT_SILENCE_SET_COUNT, silenceAttrs.size());
 		stats.put(STAT_USER_EXCLUDED_ATTRS_COUNT, userExcAttrs.size());
 	}
 

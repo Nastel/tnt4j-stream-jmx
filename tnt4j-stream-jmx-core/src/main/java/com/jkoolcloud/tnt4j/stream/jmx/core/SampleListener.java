@@ -60,8 +60,8 @@ public interface SampleListener {
 
 	/**
 	 * This method is called before each attribute is sampled. Throw a runtime exception if you want all further samples
-	 * to halt. Set {@link AttributeSample#excludeNext(boolean)} to {@code true} to skip sampling this attribute. Set
-	 * {@link AttributeSample#silence(boolean)} to {@code true} to suppress exception trace printing for this attribute.
+	 * to halt. Use {@link AttributeSample#exclude(javax.management.MBeanAttributeInfo)} to skip sampling of particular
+	 * attributes.
 	 * 
 	 * @param context
 	 *            current sample context

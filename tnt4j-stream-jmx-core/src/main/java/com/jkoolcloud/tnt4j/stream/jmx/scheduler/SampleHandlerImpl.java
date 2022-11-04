@@ -226,29 +226,24 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 			MBeanInfo info = entry.getValue();
 
 			PropertySnapshot snapshot = new PropertySnapshot(name.getDomain(), name.getCanonicalName());
-			for (MBeanAttributeInfo attr : info.getAttributes()) {
-				AttributeSample sample = AttributeSample.newAttributeSample(activity, snapshot, mbeanServer, name,
-						attr);
-				try {
-					if (doPre(sample)) {
-						sample(sample); // obtain a sample
-						doPost(sample);
-						if (sample.isError() && !sample.isSilence()) {
-							doError(sample, OpLevel.WARNING);
-						}
-						if (sample.isError()
-								&& "ConnectException".equals(sample.getError().getClass().getSimpleName())) {
-							return pCount;
-						}
+			AttributeSample sample = AttributeSample.newAttributeSample(activity, snapshot, mbeanServer, name,
+					info.getAttributes());
+			try {
+				if (doPre(sample)) {
+					sample(sample); // obtain a sample
+					doPost(sample);
+					if (sample.isError()) {
+						doError(sample, OpLevel.WARNING);
 					}
-				} catch (Throwable ex) {
-					doError(sample, ex, OpLevel.ERROR);
-				} finally {
-					if (sample.excludeNext()) {
-						excCount++;
+					if (sample.isError() && "ConnectException".equals(sample.getError().getClass().getSimpleName())) {
+						return pCount;
 					}
-					evalAttrConditions(sample);
 				}
+			} catch (Throwable ex) {
+				doError(sample, ex, OpLevel.ERROR);
+			} finally {
+				excCount += sample.excludes().size();
+				evalAttrConditions(sample);
 			}
 			if (snapshot.size() > 0) {
 				doComplete(activity, name, info, snapshot);
@@ -462,7 +457,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 				lst.pre(context, sample);
 			}
 		}
-		return !sample.excludeNext();
+		return sample.hasAttributesToSample();
 	}
 
 	/**

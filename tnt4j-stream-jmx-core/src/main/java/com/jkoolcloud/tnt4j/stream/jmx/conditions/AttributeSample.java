@@ -15,6 +15,8 @@
  */
 package com.jkoolcloud.tnt4j.stream.jmx.conditions;
 
+import java.util.*;
+
 import javax.management.*;
 
 import com.jkoolcloud.tnt4j.core.Activity;
@@ -23,23 +25,23 @@ import com.jkoolcloud.tnt4j.stream.jmx.utils.Utils;
 
 /**
  * <p>
- * This class provides a wrapper for sampling a single JMX MBean attribute and maintain sample context.
+ * This class provides a wrapper for sampling a list of JMX MBean attributes and maintain sample context.
  * </p>
  * 
- * @version $Revision: 1 $
+ * @version $Revision: 2 $
  * 
  */
 public class AttributeSample {
 	Activity activity;
 	MBeanServerConnection server;
 	ObjectName name;
-	MBeanAttributeInfo ainfo;
+	Map<String, MBeanAttributeInfo> aInfoMap;
 	long timeStamp = 0;
-	Object value;
+	AttributeList value;
 	Throwable ex;
 	PropertySnapshot snapshot;
-	boolean excludeNext = false;
-	boolean silence = false;
+
+	Set<String> excludeAttrs = new HashSet<>(2);
 
 	/**
 	 * Create an attribute sample.
@@ -52,16 +54,35 @@ public class AttributeSample {
 	 *            MBean server connection instance
 	 * @param name
 	 *            MBean object name reference
-	 * @param ainfo
-	 *            MBean attribute info
+	 * @param attributes
+	 *            MBean attribute handles array
 	 */
 	protected AttributeSample(Activity activity, PropertySnapshot snapshot, MBeanServerConnection serverConn,
-			ObjectName name, MBeanAttributeInfo ainfo) {
+			ObjectName name, MBeanAttributeInfo[] attributes) {
 		this.activity = activity;
 		this.server = serverConn;
 		this.name = name;
-		this.ainfo = ainfo;
+		this.aInfoMap = asMap(attributes);
 		this.snapshot = snapshot;
+	}
+
+	/**
+	 * Converts MBean attribute handles array into map.
+	 * 
+	 * @param attributes
+	 *            MBean attribute handles array
+	 * @return MBean attribute handles map
+	 */
+	protected static Map<String, MBeanAttributeInfo> asMap(MBeanAttributeInfo[] attributes) {
+		Map<String, MBeanAttributeInfo> attrMap = new LinkedHashMap<>();
+
+		if (attributes != null) {
+			for (MBeanAttributeInfo ai : attributes) {
+				attrMap.put(ai.getName(), ai);
+			}
+		}
+
+		return attrMap;
 	}
 
 	/**
@@ -75,29 +96,42 @@ public class AttributeSample {
 	 *            MBean server connection instance
 	 * @param name
 	 *            MBean object name reference
-	 * @param ainfo
-	 *            MBean attribute info
+	 * @param attributes
+	 *            MBean attribute handles array
 	 * @return a new attribute sample instance
 	 */
 	public static AttributeSample newAttributeSample(Activity activity, PropertySnapshot snapshot,
-			MBeanServerConnection serverConn, ObjectName name, MBeanAttributeInfo ainfo) {
-		return new AttributeSample(activity, snapshot, serverConn, name, ainfo);
+			MBeanServerConnection serverConn, ObjectName name, MBeanAttributeInfo[] attributes) {
+		return new AttributeSample(activity, snapshot, serverConn, name, attributes);
 	}
 
 	/**
-	 * Sample and retrieve the value associated with the MBean attribute.
+	 * Sample and retrieve the value list associated with the MBean attributes.
 	 * 
-	 * @return the value associated with the current attribute
+	 * @return MBean attributes value list
 	 *
 	 * @throws Exception
 	 *             if any sampling error occurs
 	 */
-	public Object sample() throws Exception {
+	public AttributeList sample() throws Exception {
 		try {
-			// TODO: obtain all mbean attributes over single call using "getAttributes"
-			value = server.getAttribute(name, ainfo.getName());
+			Set<String> attrNames = new LinkedHashSet<>(aInfoMap.size());
+			for (String attrName : aInfoMap.keySet()) {
+				if (!excludeAttrs.contains(attrName)) {
+					attrNames.add(attrName);
+				}
+			}
+			value = server.getAttributes(name, attrNames.toArray(new String[0]));
+			if (attrNames.size() != value.size()) {
+				for (Attribute attr : value.asList()) {
+					attrNames.remove(attr.getName());
+				}
+
+				for (String attrName : attrNames) {
+					value.add(new Attribute(attrName, "<unavailable>"));
+				}
+			}
 		} catch (Exception exc) {
-			value = getValueFromException(exc);
 			ex = exc;
 		}
 		timeStamp = Utils.currentTimeUsec();
@@ -145,42 +179,35 @@ public class AttributeSample {
 	}
 
 	/**
-	 * Has the attribute been marked for exclusion
+	 * Add MBean attribute handle to excluded attributes list. To be added, provided MBean attribute handle shall be
+	 * associated with this sample.
 	 * 
-	 * @return {@code true} if attribute to be marked for exclusion, {@code false} otherwise
+	 * @param ainfo
+	 *            MBean attribute handle
 	 */
-	public boolean excludeNext() {
-		return excludeNext;
+	public void exclude(MBeanAttributeInfo ainfo) {
+		if (aInfoMap.get(ainfo.getName()) != null) {
+			excludeAttrs.add(ainfo.getName());
+		}
 	}
 
 	/**
-	 * Mark attribute to be excluded from sampling
+	 * Obtain collection of excluded attribute names.
 	 * 
-	 * @param exclude
-	 *            {@code true} to exclude, {@code false} to include
-	 * @return {@code true} if attribute to be marked for exclusion, {@code false} otherwise
+	 * @return collection of excluded attribute names
 	 */
-	public boolean excludeNext(boolean exclude) {
-		return excludeNext = exclude;
+	public Collection<String> excludes() {
+		return excludeAttrs;
 	}
 
 	/**
-	 * Has the attribute been marked to suppress exceptions printing to console output.
-	 *
-	 * @return {@code true} if attribute to be marked for suppression, {@code false} otherwise
+	 * Checks if this sample has any attributes available to sample. Excluded attribute names list shall not contain all
+	 * MBean available attributes.
+	 * 
+	 * @return {@code true} if this sample has any attributes to sample, {@code false} - otherwise
 	 */
-	public boolean isSilence() {
-		return silence;
-	}
-
-	/**
-	 * Marks attribute to suppress exceptions printing to console output.
-	 *
-	 * @param silence
-	 *            {@code true} to suppress exceptions printing to console output, {@code false} otherwise
-	 */
-	public void silence(boolean silence) {
-		this.silence = silence;
+	public boolean hasAttributesToSample() {
+		return aInfoMap.size() > excludeAttrs.size();
 	}
 
 	/**
@@ -194,12 +221,23 @@ public class AttributeSample {
 	}
 
 	/**
-	 * Obtain MBean attribute handle associated with this sample
+	 * Obtain MBean attribute handles map associated with this sample.
 	 * 
-	 * @return MBean attribute handle associated with this sample
+	 * @return MBean attribute handles map associated with this sample
 	 */
-	public MBeanAttributeInfo getAttributeInfo() {
-		return ainfo;
+	public Map<String, MBeanAttributeInfo> getAttributesInfo() {
+		return aInfoMap;
+	}
+
+	/**
+	 * Obtain MBean attribute handle associated with this sample by attribute name.
+	 * 
+	 * @param name
+	 *            MBean attribute name
+	 * @return MBean attribute handle
+	 */
+	public MBeanAttributeInfo getAttributeInfo(String name) {
+		return aInfoMap.get(name);
 	}
 
 	/**
@@ -250,12 +288,32 @@ public class AttributeSample {
 	}
 
 	/**
-	 * Obtain last sampled value. This value can only be non null after {@link #sample()} is called.
+	 * Obtain last sampled attribute values list. This list can only be non-null after {@link #sample()} is called.
 	 * 
-	 * @return Obtain last sampled value, see {@link #sample()}
+	 * @return last sampled attribute values list
+	 * 
+	 * @see #sample()
 	 */
-	public Object get() {
+	public AttributeList get() {
 		return value;
+	}
+
+	/**
+	 * Obtain last sampled attribute value.
+	 * 
+	 * @param attrName
+	 *            attribute name
+	 * @return last sampled attribute value, or {@code null} if attribute is not found by provided name
+	 * 
+	 * @see #sample()
+	 */
+	public Object getValue(String attrName) {
+		for (Attribute attr : value.asList()) {
+			if (attr.getName().equals(attrName)) {
+				return attr.getValue();
+			}
+		}
+		return null;
 	}
 
 	/**
