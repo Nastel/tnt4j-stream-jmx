@@ -78,6 +78,7 @@
         <java.compiler.debuglevel>source,lines,vars</java.compiler.debuglevel>
         <java.compiler.verbose>false</java.compiler.verbose>
         <maven.compiler.args></maven.compiler.args>
+        <maven.compiler.args></maven.compiler.args>
 
         <maven.source.skip>true</maven.source.skip>
         <maven.javadoc.skip>true</maven.javadoc.skip>
@@ -180,6 +181,7 @@
                     <source>${java.source.version}</source>
                     <target>${java.target.version}</target>
                     <debuglevel>${java.compiler.debuglevel}</debuglevel>
+                    <compilerArgument>${maven.compiler.args}</compilerArgument>
                     <compilerArgument>${maven.compiler.args}</compilerArgument>
                 </configuration>
             </plugin>
