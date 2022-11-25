@@ -77,6 +77,7 @@
         <java.compiler.version>${project.java.version}</java.compiler.version>
         <java.compiler.debuglevel>source,lines,vars</java.compiler.debuglevel>
         <java.compiler.verbose>false</java.compiler.verbose>
+        <maven.compiler.args></maven.compiler.args>
 
         <maven.source.skip>true</maven.source.skip>
         <maven.javadoc.skip>true</maven.javadoc.skip>
@@ -90,6 +91,24 @@
     </properties>
 
     <profiles>
+        <profile>
+            <id>java9-plus-target</id>
+            <properties>
+                <project.java.version>${java.specification.version}</project.java.version>
+            </properties>
+        </profile>
+        <profile>
+            <id>java9-plus</id>
+            <activation>
+                <jdk>[9,)</jdk>
+            </activation>
+            <properties>
+                <java.source.version>${project.java.version}</java.source.version>
+                <java.target.version>${project.java.version}</java.target.version>
+                <java.compiler.version>${project.java.version}</java.compiler.version>
+                <maven.compiler.release>${project.java.version}</maven.compiler.release>
+            </properties>
+        </profile>
         <profile>
             <id>pack-bin</id>
             <properties>
@@ -158,6 +177,7 @@
                     <source>${java.source.version}</source>
                     <target>${java.target.version}</target>
                     <debuglevel>${java.compiler.debuglevel}</debuglevel>
+                    <compilerArgument>${maven.compiler.args}</compilerArgument>
                 </configuration>
             </plugin>
             <plugin>

@@ -147,31 +147,15 @@
                 <jdk>[9.0,)</jdk>
             </activation>
             <properties>
+                <!--                <maven.compiler.args>-->
+                <!--                    &#45;&#45;add-exports=jdk.attach/sun.tools.attach=ALL-UNNAMED &#45;&#45;add-opens=jdk.attach/sun.tools.attach=ALL-UNNAMED-->
+                <!--                </maven.compiler.args>-->
+                <maven.compiler.args>
+                    --add-opens=jdk.attach/sun.tools.attach=ALL-UNNAMED
+                </maven.compiler.args>
+                <!-- When using opens/exports release can't be downgraded to java 8 -->
                 <project.java.version>${java.specification.version}</project.java.version>
-                <java.source.version>${project.java.version}</java.source.version>
-                <java.target.version>${project.java.version}</java.target.version>
-                <java.compiler.version>${project.java.version}</java.compiler.version>
             </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-compiler-plugin</artifactId>
-                        <version>3.8.1</version>
-                        <configuration>
-                            <verbose>${java.compiler.verbose}</verbose>
-                            <compilerVersion>${java.compiler.version}</compilerVersion>
-                            <source>${java.source.version}</source>
-                            <target>${java.target.version}</target>
-                            <debuglevel>${java.compiler.debuglevel}</debuglevel>
-                            <compilerArgs>
-                                <arg>--add-exports=jdk.attach/sun.tools.attach=ALL-UNNAMED</arg>
-                                <arg>--add-opens=jdk.attach/sun.tools.attach=ALL-UNNAMED</arg>
-                            </compilerArgs>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
         <profile>
             <id>up-to-java9</id>
