@@ -105,12 +105,17 @@
                         <filter>
                             <artifact>*:*</artifact>
                             <excludes>
+                                <!-- Remove jars container module definitions -->
+                                <exclude>module-info.class</exclude>
                                 <!-- Remove jars contained signatures -->
                                 <exclude>META-INF/*.SF</exclude>
                                 <exclude>META-INF/*.DSA</exclude>
                                 <exclude>META-INF/*.RSA</exclude>
-                                <!--exclude>META-INF/DEPENDENCIES*</exclude>
-                                <exclude>META-INF/MANIFEST*</exclude-->
+                                <!-- Remove jars container licenses/notices and etc. -->
+                                <exclude>META-INF/LICENSE*</exclude>
+                                <exclude>META-INF/NOTICE*</exclude>
+                                <exclude>META-INF/DEPENDENCIES</exclude>
+                                <exclude>META-INF/MANIFEST.MF</exclude>
                             </excludes>
                         </filter>
                     </filters>
