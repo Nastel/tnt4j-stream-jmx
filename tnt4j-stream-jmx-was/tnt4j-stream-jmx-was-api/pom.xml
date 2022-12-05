@@ -31,7 +31,22 @@
     <description>IBM WAS JMX collection and streaming API package</description>
 
     <properties>
+        <javaee.api.version>8.0.1</javaee.api.version>
+        <jakartaee.api.version>9.1.0</jakartaee.api.version>
+        <com.ibm.ws.version>8.5.0</com.ibm.ws.version>
     </properties>
+
+    <profiles>
+        <profile>
+            <id>java11-plus-dep</id>
+            <activation>
+                <jdk>[11,)</jdk>
+            </activation>
+            <properties>
+                <jakartaee.api.version>10.0.0</jakartaee.api.version>
+            </properties>
+        </profile>
+    </profiles>
 
     <build>
         <resources>
@@ -164,14 +179,20 @@
         <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-api</artifactId>
-            <version>8.0.1</version>
+            <version>${javaee.api.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
+            <version>${jakartaee.api.version}</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>com.ibm.ws</groupId>
             <artifactId>com.ibm.ws.admin.client</artifactId>
-            <version>8.5.0</version>
+            <version>${com.ibm.ws.version}</version>
             <scope>provided</scope>
             <!--<scope>system</scope>-->
             <!--<systemPath>${pom.basedir}/lib/was/com.ibm.ws.admin.client_8.5.0.jar</systemPath>-->
@@ -179,7 +200,7 @@
         <dependency>
             <groupId>com.ibm.ws</groupId>
             <artifactId>com.ibm.ws.ejb.thinclient</artifactId>
-            <version>8.5.0</version>
+            <version>${com.ibm.ws.version}</version>
             <scope>provided</scope>
             <!--<scope>system</scope>-->
             <!--<systemPath>${pom.basedir}/lib/was/com.ibm.ws.ejb.thinclient_8.5.0.jar</systemPath>-->
@@ -187,7 +208,7 @@
         <dependency>
             <groupId>com.ibm.ws</groupId>
             <artifactId>com.ibm.ws.orb</artifactId>
-            <version>8.5.0</version>
+            <version>${com.ibm.ws.version}</version>
             <scope>provided</scope>
             <!--<scope>system</scope>-->
             <!--<systemPath>${pom.basedir}/lib/was/com.ibm.ws.orb_8.5.0.jar</systemPath>-->
