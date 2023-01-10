@@ -92,6 +92,9 @@
 
         <junit.version>5.9.2</junit.version>
         <mockito.version>3.12.4</mockito.version>
+
+        <junit.version>5.9.2</junit.version>
+        <mockito.version>3.12.4</mockito.version>
     </properties>
 
     <profiles>
