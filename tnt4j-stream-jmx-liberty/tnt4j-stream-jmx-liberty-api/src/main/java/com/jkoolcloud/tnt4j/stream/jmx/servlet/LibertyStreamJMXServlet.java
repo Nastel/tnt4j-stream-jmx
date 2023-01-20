@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2022 JKOOL, LLC.
+ * Copyright 2015-2023 JKOOL, LLC.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,6 +55,7 @@ public class LibertyStreamJMXServlet extends StreamJMXServlet {
 		 * TNT4J configuration file used to stream Liberty JMX samples.
 		 */
 		TNT4J_CONFIG(TrackerConfigStore.TNT4J_PROPERTIES_KEY, "tnt4j_liberty.properties", EDITABLE, SYSTEM, LOCAL);
+
 		/**
 		 * LOG4J configuration file used by Liberty JMX sampler.
 		 */
