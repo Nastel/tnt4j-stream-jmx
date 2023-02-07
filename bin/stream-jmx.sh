@@ -12,7 +12,7 @@ else
 fi
 
 LIBPATH="$SCRIPTPATH/../*:$SCRIPTPATH/../lib/*"
-TNT4JOPTS="-Dtnt4j.dump.on.vm.shutdown=true -Dtnt4j.dump.on.exception=true -Dtnt4j.dump.provider.default=true"
+TNT4JOPTS="$TNT4JOPTS -Dtnt4j.dump.on.vm.shutdown=true -Dtnt4j.dump.on.exception=true -Dtnt4j.dump.provider.default=true"
 
 ### --- tnt4j file ----
 if [[ -z "$TNT4J_PROPERTIES" ]]; then
