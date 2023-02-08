@@ -73,7 +73,7 @@ public class CoreVMResolverFactory implements VMResolverFactory {
 			if (rvm instanceof JMXURLConnectionParams) {
 				returnList.add((JMXURLConnectionParams) rvm);
 			} else if (rvm instanceof VMDescriptorParams) {
-				List<JMXURLConnectionParams> drl = getJmxServiceURLs((VMDescriptorParams) rvm);
+				List<JMXURLConnectionParams> drl = getJmxServiceURLs(rvm);
 				if (!Utils.isEmpty(drl)) {
 					returnList.addAll(drl);
 				}
