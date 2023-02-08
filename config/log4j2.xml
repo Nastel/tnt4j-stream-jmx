@@ -18,7 +18,8 @@
 <Configuration strict="true"
                xmlns="http://logging.apache.org/log4j/2.0/config"
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-               xsi:schemaLocation="http://logging.apache.org/log4j/2.0/config">
+               xsi:schemaLocation="http://logging.apache.org/log4j/2.0/config
+                                   https://raw.githubusercontent.com/apache/logging-log4j2/master/log4j-core/src/main/resources/Log4j-config.xsd">
     <Properties>
         <Property name="tnt4j.stream.log.filename">logs/tnt4j-stream-jmx.log</Property>
         <Property name="tnt4j.activities.log.filename">logs/tnt4j-stream-jmx_samples.log</Property>
@@ -74,17 +75,17 @@
     </Appenders>
     <Loggers>
         <!-- ### jKool LLC TNT4J Stream-JMX log level and appenders used -->
-        <asyncRoot level="INFO">
+        <AsyncRoot level="INFO">
             <AppenderRef ref="console"/>
             <AppenderRef ref="file"/>
-        </asyncRoot>
+        </AsyncRoot>
         <!-- ### change to DEBUG to have all the sampling process logged as it was
              ### using "-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.trace=true" property. -->
-        <asyncLogger name="com.jkoolcloud.tnt4j.stream.jmx" level="INFO"/>
+        <AsyncLogger name="com.jkoolcloud.tnt4j.stream.jmx" level="INFO"/>
         <!-- #### streamed activity entities logger #### -->
-        <asyncLogger name="com.jkoolcloud.tnt4j.stream.jmx.activities_log" level="INFO" additivity="false">
+        <AsyncLogger name="com.jkoolcloud.tnt4j.stream.jmx.activities_log" level="INFO" additivity="false">
             <AppenderRef ref="activities_log"/>
-        </asyncLogger>
+        </AsyncLogger>
         <!-- #### disable other APIs logging into Stream-JMX log #### -->
         <!-- <asyncLogger name="com.jkoolcloud.tnt4j.sink.impl.slf4" level="NONE"/> -->
     </Loggers>
