@@ -226,7 +226,7 @@ public abstract class ZKVMResolver implements VMResolver<JMXServiceURL>, Closeab
 		List<VMParams<JMXServiceURL>> vmConnections = new ArrayList<>();
 		try {
 			List<String> dataNodes = zk().getChildren(path, watcher, null);
-			logger().log(OpLevel.DEBUG, "ZKVMResolver.handleChange: found nodes: {0}", dataNodes);
+			logger().log(OpLevel.INFO, "ZKVMResolver.handleChange: found nodes: {0}", dataNodes);
 			logger().log(OpLevel.DEBUG, "ZKVMResolver.handleChange: already watched nodes: {0}",
 					connectionRegistry.keySet());
 
