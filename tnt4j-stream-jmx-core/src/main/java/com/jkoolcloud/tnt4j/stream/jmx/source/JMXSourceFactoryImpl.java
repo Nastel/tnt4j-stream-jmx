@@ -17,6 +17,7 @@
 package com.jkoolcloud.tnt4j.stream.jmx.source;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -206,8 +207,7 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 
 				// get MBeanServerConnection from JMX RMI connector
 				if (jmxConn instanceof JMXAddressable) {
-					JMXServiceURL url = ((JMXAddressable) jmxConn).getAddress();
-					host = url == null ? null : url.getHost();
+					host = getHost((JMXAddressable) jmxConn);
 				}
 			}
 
@@ -219,6 +219,29 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 		}
 
 		return UNKNOWN_SOURCE;
+	}
+
+	private static String getHost(JMXAddressable jmxAddressable) {
+		JMXServiceURL url = jmxAddressable.getAddress();
+		String host = url == null ? null : url.getHost();
+
+		if (url != null && host.isEmpty()) {
+			String path = url.getURLPath();
+			URI uri;
+			if (path.startsWith("/jndi/")) {
+				uri = URI.create(url.getURLPath().substring("/jndi/".length()));
+			} else if (path.startsWith("/stub/")) {
+				uri = URI.create(url.getURLPath().substring("/stub/".length()));
+			} else if (path.startsWith("/ior/")) {
+				uri = URI.create(url.getURLPath().substring("/ior/".length()));
+			} else {
+				uri = URI.create(url.getURLPath());
+			}
+
+			host = uri.getHost();
+		}
+
+		return host;
 	}
 
 	@Override
