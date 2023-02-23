@@ -29,7 +29,7 @@
     <licenses>
         <license>
             <name>The Apache License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
     </licenses>
     <organization>
@@ -94,7 +94,7 @@
         <mockito.version>3.12.4</mockito.version>
 
         <junit.version>5.9.2</junit.version>
-        <mockito.version>3.12.4</mockito.version>
+        <mockito.version>4.11.0</mockito.version>
     </properties>
 
     <profiles>
@@ -114,6 +114,15 @@
                 <java.target.version>${project.java.version}</java.target.version>
                 <java.compiler.version>${project.java.version}</java.compiler.version>
                 <maven.compiler.release>${project.java.version}</maven.compiler.release>
+            </properties>
+        </profile>
+        <profile>
+            <id>java11-plus-dep</id>
+            <activation>
+                <jdk>[11,)</jdk>
+            </activation>
+            <properties>
+                <mockito.version>5.1.1</mockito.version>
             </properties>
         </profile>
         <profile>
