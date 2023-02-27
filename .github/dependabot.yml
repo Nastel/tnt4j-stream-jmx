@@ -10,6 +10,8 @@ updates:
         versions: "[2.x,)"
       - dependency-name: "jakarta.servlet:jakarta.servlet-api"
         versions: "[5.x,)"
+      - dependency-name: "jakarta.platform:jakarta.jakartaee-api"
+        versions: "[10.x,)"
       # Maven plugins
       - dependency-name: "org.apache.maven.plugins:maven-assembly-plugin"
         versions: "[3.1.1,)"
