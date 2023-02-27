@@ -33,8 +33,8 @@
         </license>
     </licenses>
     <organization>
-        <name>jKool, LLC</name>
-        <url>https://www.jkoolcloud.com/</url>
+        <name>${project.organization.name}</name>
+        <url>${project.organization.url}</url>
     </organization>
     <developers>
         <developer>
@@ -65,19 +65,21 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <project.resources.encoding>UTF-8</project.resources.encoding>
+        <project.organization.name>jKool, LLC</project.organization.name>
+        <project.organization.url>https://www.jkoolcloud.com/</project.organization.url>
         <product.vendor>${project.organization.name}</product.vendor>
         <product.name>${project.name}</product.name>
         <product.name.hr>TNT4J Stream JMX</product.name.hr>
         <product.copyright.html>
             <![CDATA[<font size="-1">Copyright &#169; 2015-2023 ${project.organization.name}. All Rights Reserved.</font>]]></product.copyright.html>
 
-        <project.java.version>1.8</project.java.version>
-        <java.source.version>${project.java.version}</java.source.version>
-        <java.target.version>${project.java.version}</java.target.version>
-        <java.compiler.version>${project.java.version}</java.compiler.version>
-        <java.compiler.debuglevel>source,lines,vars</java.compiler.debuglevel>
-        <java.compiler.verbose>false</java.compiler.verbose>
-        <maven.compiler.args></maven.compiler.args>
+        <project.java.version>8</project.java.version>
+        <maven.compiler.source>${project.java.version}</maven.compiler.source>
+        <maven.compiler.target>${project.java.version}</maven.compiler.target>
+        <maven.compiler.version>${project.java.version}</maven.compiler.version>
+        <maven.compiler.debuglevel>source,lines,vars</maven.compiler.debuglevel>
+        <maven.compiler.verbose>false</maven.compiler.verbose>
+        <maven.compiler.fork>false</maven.compiler.fork>
         <maven.compiler.args></maven.compiler.args>
 
         <maven.source.skip>true</maven.source.skip>
@@ -89,9 +91,6 @@
 
         <org.slf4j.version>1.7.36</org.slf4j.version>
         <log4j.version>2.20.0</log4j.version>
-
-        <junit.version>5.9.2</junit.version>
-        <mockito.version>3.12.4</mockito.version>
 
         <junit.version>5.9.2</junit.version>
         <mockito.version>4.11.0</mockito.version>
@@ -188,12 +187,12 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.10.1</version>
                 <configuration>
-                    <verbose>${java.compiler.verbose}</verbose>
-                    <compilerVersion>${java.compiler.version}</compilerVersion>
-                    <source>${java.source.version}</source>
-                    <target>${java.target.version}</target>
-                    <debuglevel>${java.compiler.debuglevel}</debuglevel>
-                    <compilerArgument>${maven.compiler.args}</compilerArgument>
+                    <verbose>${maven.compiler.verbose}</verbose>
+                    <compilerVersion>${maven.compiler.version}</compilerVersion>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                    <debuglevel>${maven.compiler.debuglevel}</debuglevel>
+                    <fork>${maven.compiler.fork}</fork>
                     <compilerArgument>${maven.compiler.args}</compilerArgument>
                 </configuration>
             </plugin>
