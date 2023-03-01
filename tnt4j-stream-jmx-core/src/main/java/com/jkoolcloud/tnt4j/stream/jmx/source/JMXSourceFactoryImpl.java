@@ -124,7 +124,7 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 						type, e);
 			}
 
-			return Utils.resolve(name, UNKNOWN_SOURCE);
+			return StringUtils.replace(name, "=", "::");
 		} else if (name.startsWith(SJMX_PROP_PREFIX)) {
 			return resolveSJMXPropValue(name.substring(1));
 		}
