@@ -1606,7 +1606,7 @@ Below is an example of TNT4J stream configuration writing collected JMX samples 
     ; Whether to add Activity/Event context data snapshot 'Self'
     #event.formatter.AddSelfSnapshot: false
     ; Mapping of attribute key string symbol replacements
-    #event.formatter.KeyReplacements: " "->"_" "\""->"'" "/"->"%" "="->"\\" ","->"!'" "\\\\"->"\\"
+    #event.formatter.KeyReplacements: " "->"_" "\""->"'" "/"->"%" "="->"\\" ","->"!" "\\\\"->"\\"
     ; Mapping of attribute value string symbol replacements
     #event.formatter.ValueReplacements: "\r"->"\\r" "\n"->"\\n" ";"->"|" ","->"|" "["->"{(" "]"->")}" "\""->"'"
     ; Definitions ObjectName attributes sets used when building path: ';' is level set delimiter and ',' is set attribute names delimiter
@@ -1658,7 +1658,7 @@ Below is an example of TNT4J stream configuration writing collected JMX samples 
     ; Whether to add Activity/Event context data snapshot 'Self'
     #event.formatter.AddSelfSnapshot: false
     ; Mapping of attribute key string symbol replacements
-    #event.formatter.KeyReplacements: " "->"_" "\""->"'" "/"->"%" "="->"\\" ","->"!'" "\\\\"->"\\"
+    #event.formatter.KeyReplacements: " "->"_" "\""->"'" "/"->"%" "="->"\\" ","->"!" "\\\\"->"\\"
     ; Mapping of attribute value string symbol replacements
     #event.formatter.ValueReplacements: "\r"->"\\r" "\n"->"\\n" ";"->"|" ","->"|" "["->"{(" "]"->")}" "\""->"'"
     ; Definitions ObjectName attributes sets used when building path: ';' is level set delimiter and ',' is set attribute names delimiter
@@ -1719,7 +1719,7 @@ sample data formatted by `FactNameValueFormatter` and to jKool repo defined by a
     event.sink.factory.EventSinkFactory.ap.Port: 6060
     event.sink.factory.EventSinkFactory.ap.Formatter: com.jkoolcloud.tnt4j.stream.jmx.format.FactNameValueFormatter
     #event.sink.factory.EventSinkFactory.ap.Formatter.AddSelfSnapshot: false
-    event.sink.factory.EventSinkFactory.ap.Formatter.KeyReplacements: " "->"_" "\""->"'" "/"->"%" "="->"\\" ","->"!'" "\\\\"->"\\"
+    event.sink.factory.EventSinkFactory.ap.Formatter.KeyReplacements: " "->"_" "\""->"'" "/"->"%" "="->"\\" ","->"!" "\\\\"->"\\"
     event.sink.factory.EventSinkFactory.ap.Formatter.ValueReplacements: "\r"->"\\r" "\n"->"\\n" ";"->"&" ","->"&" "["->"{(" "]"->")}" "\""->"'"
 
     event.sink.factory.EventSinkFactory.jkool: com.jkoolcloud.jesl.tnt4j.sink.JKCloudEventSinkFactory
