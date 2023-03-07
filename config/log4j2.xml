@@ -15,7 +15,7 @@
   ~ limitations under the License.
   -->
 
-<Configuration strict="true"
+<Configuration strict="true" shutdownHook="disable"
                xmlns="http://logging.apache.org/log4j/2.0/config"
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                xsi:schemaLocation="http://logging.apache.org/log4j/2.0/config

@@ -239,7 +239,6 @@ public class SchedulerImpl extends ActivityScheduler implements Scheduler {
 	public void close() {
 		super.close();
 		if (SamplingAgent.getAllSamplers().isEmpty()) {
-
 			TrackingLogger.shutdown(getLogger());
 		}
 

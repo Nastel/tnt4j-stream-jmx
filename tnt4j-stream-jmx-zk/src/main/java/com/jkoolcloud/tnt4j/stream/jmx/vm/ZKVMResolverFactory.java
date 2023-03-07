@@ -71,7 +71,6 @@ public class ZKVMResolverFactory extends CoreVMResolverFactory {
 	@Override
 	public void shutdown() {
 		if (!ZK_VM_RESOLVERS.isEmpty()) {
-
 			for (Map.Entry<String, ZKVMResolver> vre : ZK_VM_RESOLVERS.entrySet()) {
 				Utils.close(vre.getValue());
 			}

@@ -74,7 +74,7 @@ public class SamplingAgent {
 	protected Sampler platformJmx;
 	protected final Map<MBeanServerConnection, Sampler> STREAM_SAMPLERS = new ConcurrentHashMap<>(5);
 
-	private static final Map<Thread, SamplingAgent> ALL_AGENTS = new ConcurrentHashMap<>(5);
+	private static final Collection<SamplingAgent> ALL_AGENTS = new ArrayList<>(5);
 
 	private static final String LOG4J_PROPERTIES_KEY = "log4j2.configurationFile";
 	private static final String SYS_PROP_LOG4J_CFG = "-D" + LOG4J_PROPERTIES_KEY;
@@ -124,12 +124,15 @@ public class SamplingAgent {
 
 		initListenerProperties();
 		initFeatures();
+
+		initShutdownHook();
 	}
 
 	private static VMResolverFactory vmResolverFactory;
 	private static final Properties clProps = new Properties();
 
 	private boolean stopSampling = false;
+	private boolean synchronousSamplers = false;
 	private JMXConnector connector;
 
 	private SamplingAgent() {
@@ -139,11 +142,47 @@ public class SamplingAgent {
 	 * Creates new instance of sampling agent and puts it to registry.
 	 *
 	 * @return new sampling agent instance
+	 * 
+	 * @see #newSamplingAgent(boolean)
 	 */
 	public static SamplingAgent newSamplingAgent() {
+		return newSamplingAgent(false);
+	}
+
+	/**
+	 * Creates new instance of sampling agent and puts it to registry.
+	 *
+	 * @param synchronousSamplers
+	 *            flag indicating whether agent handled samplers shall run synchronously within agent thread or
+	 *            concurrently by starting dedicated threads
+	 * @return new sampling agent instance
+	 */
+	public static SamplingAgent newSamplingAgent(boolean synchronousSamplers) {
 		SamplingAgent agent = new SamplingAgent();
-		ALL_AGENTS.put(Thread.currentThread(), agent);
+		agent.synchronousSamplers = synchronousSamplers;
+		ALL_AGENTS.add(agent);
 		return agent;
+	}
+
+	/**
+	 * Initializes sampling agent shutdown hook.
+	 * 
+	 * @see #destroy()
+	 */
+	protected static void initShutdownHook() {
+		Thread shutdownHook = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				long startTime = System.currentTimeMillis();
+				try {
+					destroy();
+				} catch (Exception exc) {
+				}
+				LOGGER.log(OpLevel.INFO, "SamplingAgent.shutdownHook: waited {0}ms. on Stream-JMX to complete...",
+						(System.currentTimeMillis() - startTime));
+			}
+		}, "tnt4j-stream-jmx-shutdown-hook");
+		Runtime.getRuntime().addShutdownHook(shutdownHook);
 	}
 
 	/**
@@ -177,7 +216,7 @@ public class SamplingAgent {
 				initDelay = Integer.parseInt(args.length > 3 ? args[3] : args[2]);
 			}
 		}
-		SamplingAgent agent = newSamplingAgent();
+		SamplingAgent agent = newSamplingAgent(true);
 		agent.sample(incFilter, excFilter, initDelay, period, TimeUnit.MILLISECONDS);
 		LOGGER.log(OpLevel.INFO,
 				"SamplingAgent.premain: include.filter={0}, exclude.filter={1}, sample.ms={2}, initDelay.ms={3}, listener.properties={4}, tnt4j.config={5}, jmx.sample.list={6}",
@@ -344,7 +383,7 @@ public class SamplingAgent {
 	 * @throws Exception
 	 *             if exception occurs while initializing MBeans sampling
 	 */
-	public static void main(String[] args) throws Exception {
+	public static void main(String... args) throws Exception {
 		boolean argsValid = parseArgs(clProps, args);
 
 		if (argsValid) {
@@ -493,11 +532,11 @@ public class SamplingAgent {
 	 *
 	 * @return map of all registered samplers
 	 */
-	public static Map<MBeanServerConnection, Sampler> getAllSamplers() {
-		Map<MBeanServerConnection, Sampler> samplers = new HashMap<>();
-		for (SamplingAgent agent : ALL_AGENTS.values()) {
+	public static List<Sampler> getAllSamplers() {
+		List<Sampler> samplers = new ArrayList<>(5);
+		for (SamplingAgent agent : ALL_AGENTS) {
 			if (agent != null) {
-				samplers.putAll(agent.getSamplers());
+				samplers.addAll(agent.getSamplers().values());
 			}
 		}
 		return samplers;
@@ -872,7 +911,19 @@ public class SamplingAgent {
 			SamplerFactory sFactory, Sampler sampler, Map<MBeanServerConnection, Sampler> agents) throws IOException {
 		agents.put(sampler.getMBeanServer(), sampler);
 		sampler.setSchedule(incFilter, excFilter, initDelay, period, tUnit, sFactory, getSource())
-				.addListener(sFactory.newListener(LISTENER_PROPERTIES)).run();
+				.addListener(sFactory.newListener(LISTENER_PROPERTIES));
+
+		if (synchronousSamplers) {
+			sampler.run();
+		} else {
+			Thread t = new Thread(new Runnable() {
+				@Override
+				public void run() {
+					sampler.run();
+				}
+			}, "Sampler-thread-" + ALL_AGENTS.size() + "-" + STREAM_SAMPLERS.size());
+			t.start();
+		}
 	}
 
 	/**
@@ -1085,9 +1136,8 @@ public class SamplingAgent {
 	 */
 	public static void sampleLocalVM(String options, boolean wait) throws Exception {
 		LOGGER.log(OpLevel.INFO, "SamplingAgent.sampleLocalVM(): options={0}, wait={1}", options, wait);
-		SamplingAgent samplingAgent = newSamplingAgent();
+		SamplingAgent samplingAgent = newSamplingAgent(true);
 		if (wait) {
-
 			samplingAgent.startSamplerAndWait(options);
 		} else {
 			samplingAgent.startSampler(options);
@@ -1105,25 +1155,6 @@ public class SamplingAgent {
 	}
 
 	private void lockSampler() throws InterruptedException {
-		Thread mainThread = Thread.currentThread(); // Reference to the current thread.
-		Thread shutdownHook = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				stopSampling = true;
-				stopSampler();
-
-				long startTime = System.currentTimeMillis();
-				try {
-					mainThread.join(TimeUnit.SECONDS.toMillis(2));
-				} catch (Exception exc) {
-				}
-				LOGGER.log(OpLevel.INFO,
-						"SamplingAgent.startSamplerAndWait: waited {0}ms. on Stream-JMX to complete...",
-						(System.currentTimeMillis() - startTime));
-			}
-		});
-		Runtime.getRuntime().addShutdownHook(shutdownHook);
-
 		if (platformJmx != null) {
 			LOGGER.log(OpLevel.INFO, "SamplingAgent.startSamplerAndWait: locking on sampler: {0}...", platformJmx);
 
@@ -1133,10 +1164,6 @@ public class SamplingAgent {
 		}
 
 		LOGGER.log(OpLevel.INFO, "SamplingAgent.startSamplerAndWait: stopping Stream-JMX...");
-		try {
-			Runtime.getRuntime().removeShutdownHook(shutdownHook);
-		} catch (IllegalStateException exc) {
-		}
 	}
 
 	private void startSampler(String options) throws Exception {
@@ -1217,8 +1244,9 @@ public class SamplingAgent {
 	 * @see #cancel()
 	 */
 	public static void destroy() {
-		for (SamplingAgent agent : ALL_AGENTS.values()) {
+		for (SamplingAgent agent : ALL_AGENTS) {
 			synchronized (agent.STREAM_SAMPLERS) {
+				agent.stopSampling = true;
 				agent.stopSampler();
 				agent.shutdownSamplers();
 			}
