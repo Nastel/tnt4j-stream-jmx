@@ -170,17 +170,14 @@ public class SamplingAgent {
 	 * @see #destroy()
 	 */
 	protected static void initShutdownHook() {
-		Thread shutdownHook = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				long startTime = System.currentTimeMillis();
-				try {
-					destroy();
-				} catch (Exception exc) {
-				}
-				LOGGER.log(OpLevel.INFO, "SamplingAgent.shutdownHook: waited {0}ms. on Stream-JMX to complete...",
-						(System.currentTimeMillis() - startTime));
+		Thread shutdownHook = new Thread(() -> {
+			long startTime = System.currentTimeMillis();
+			try {
+				destroy();
+			} catch (Exception exc) {
 			}
+			LOGGER.log(OpLevel.INFO, "SamplingAgent.shutdownHook: waited {0}ms. on Stream-JMX to complete...",
+					(System.currentTimeMillis() - startTime));
 		}, "tnt4j-stream-jmx-shutdown-hook");
 		Runtime.getRuntime().addShutdownHook(shutdownHook);
 	}
@@ -916,12 +913,7 @@ public class SamplingAgent {
 		if (synchronousSamplers) {
 			sampler.run();
 		} else {
-			Thread t = new Thread(new Runnable() {
-				@Override
-				public void run() {
-					sampler.run();
-				}
-			}, "Sampler-thread-" + ALL_AGENTS.size() + "-" + STREAM_SAMPLERS.size());
+			Thread t = new Thread(sampler, "Sampler-thread-" + ALL_AGENTS.size() + "-" + STREAM_SAMPLERS.size());
 			t.start();
 		}
 	}
