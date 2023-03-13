@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -38,6 +37,7 @@ import javax.management.remote.JMXServiceURL;
 import javax.net.ssl.*;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
 
 import com.jkoolcloud.tnt4j.config.DefaultConfigFactory;
 import com.jkoolcloud.tnt4j.config.TrackerConfig;
@@ -355,10 +355,7 @@ public class SamplingAgent {
 			return;
 		}
 
-		Class<?> clCls = classLoader.getClass();
-		Field ucpField = clCls.getDeclaredField("ucp");
-		ucpField.setAccessible(true);
-		Object ucp = ucpField.get(classLoader);
+		Object ucp = FieldUtils.readDeclaredField(classLoader, "ucp", true); // NON-NLS
 		Method method = ucp.getClass().getDeclaredMethod("addURL", URL.class);
 		method.setAccessible(true);
 		for (URL classPathEntryURL : classPathEntriesURL) {
@@ -1089,6 +1086,9 @@ public class SamplingAgent {
 							connRetryInterval);
 					TimeUnit.SECONDS.sleep(connRetryInterval);
 				}
+
+				// TODO: if connection was obtained from ZooKeeper, after 3 retries it shall redo VMs resolution from ZK
+				// again since ZK and kafka service may have been restarted.
 			}
 		} while (!stopSampling);
 	}
