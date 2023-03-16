@@ -36,6 +36,7 @@ import com.ibm.websphere.security.auth.callback.WSCallbackHandlerImpl;
 import com.ibm.websphere.security.cred.WSCredential;
 import com.jkoolcloud.tnt4j.core.OpLevel;
 import com.jkoolcloud.tnt4j.sink.EventSink;
+import com.jkoolcloud.tnt4j.utils.SecurityUtils;
 
 /**
  * Helper class used to simplify use of WAS security entities.
@@ -211,7 +212,7 @@ public class WASSecurityHelper {
 			if (StringUtils.isNotEmpty(user) && StringUtils.isNotEmpty(pass)) {
 				LOGGER.log(OpLevel.INFO, "==> trying to login manually as: {0}", user);
 				try {
-					login(user, pass);
+					login(user, SecurityUtils.getPass2(pass));
 				} catch (LoginException e) {
 					LOGGER.log(OpLevel.ERROR, "!!!!   Failed to login user {0} and acquire subject!..   !!!!", user, e);
 				}

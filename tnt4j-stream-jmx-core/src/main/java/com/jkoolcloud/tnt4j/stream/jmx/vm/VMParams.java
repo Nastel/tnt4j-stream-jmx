@@ -18,6 +18,9 @@ package com.jkoolcloud.tnt4j.stream.jmx.vm;
 
 import java.util.StringJoiner;
 
+import com.jkoolcloud.tnt4j.stream.jmx.utils.Utils;
+import com.jkoolcloud.tnt4j.utils.SecurityUtils;
+
 /**
  * Base class to define VM descriptor and context attributes.
  *
@@ -116,7 +119,7 @@ public abstract class VMParams<T> {
 	 * @return instance of this VM descriptor parameters package
 	 */
 	public VMParams<T> setPass(String pass) {
-		this.pass = pass;
+		this.pass = SecurityUtils.getPass2(pass);
 		return this;
 	}
 
@@ -286,7 +289,7 @@ public abstract class VMParams<T> {
 		return new StringJoiner(", ", getClass().getSimpleName() + "[", "]") // NON-NLS
 				.add("vmRef=" + vmRef) // NON-NLS
 				.add("user='" + user + "'") // NON-NLS
-				.add("pass='" + pass + "'") // NON-NLS
+				.add("pass='" + Utils.hideEnd(pass, "*", 0) + "'") // NON-NLS
 				.add("agentOptions='" + agentOptions + "'") // NON-NLS
 				.add("additionalSourceFQN='" + additionalSourceFQN + "'") // NON-NLS
 				.add("reconnectRule=" + reconnectRule) // NON-NLS

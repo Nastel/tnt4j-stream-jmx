@@ -1025,7 +1025,7 @@ public class SamplingAgent {
 		LOGGER.log(OpLevel.INFO,
 				"SamplingAgent.connect(): url={0}, user={1}, pass={2}, options={3}, connParams={4}, connRetryInterval={5}",
 				connectionParams.getVMRef(), connectionParams.getUser(),
-				Utils.hideEnd(connectionParams.getPass(), "x", 0), connectionParams.getAgentOptions(), connParams,
+				Utils.hideEnd(connectionParams.getPass(), "*", 0), connectionParams.getAgentOptions(), connParams,
 				connectionParams.getReconnectInterval());
 
 		if (connectionParams.getVMRef() == null) {
