@@ -316,7 +316,7 @@
             <!--<plugin>-->
             <!--<groupId>org.apache.maven.plugins</groupId>-->
             <!--<artifactId>maven-release-plugin</artifactId>-->
-            <!--<version>2.5.3</version>-->
+            <!--<version>3.0.0-M7</version>-->
             <!--<configuration>-->
             <!--<autoVersionSubmodules>true</autoVersionSubmodules>-->
             <!--<useReleaseProfile>false</useReleaseProfile>-->
@@ -346,19 +346,6 @@
             <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
-        <!-- may be used instead of mockito -->
-        <!--<dependency>-->
-        <!--<groupId>org.jmockit</groupId>-->
-        <!--<artifactId>jmockit</artifactId>-->
-        <!--<version>1.30</version>-->
-        <!--<scope>test</scope>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-        <!--<groupId>org.jmockit</groupId>-->
-        <!--<artifactId>jmockit-coverage</artifactId>-->
-        <!--<version>1.23</version>-->
-        <!--<scope>test</scope>-->
-        <!--</dependency>-->
     </dependencies>
 
     <modules>
