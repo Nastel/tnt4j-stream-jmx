@@ -35,7 +35,7 @@ import com.jkoolcloud.tnt4j.stream.jmx.scheduler.SchedulerImpl;
 /**
  * <p>
  * This class provides scheduled execution and sampling of a JMX metrics for a given {@link MBeanServerConnection}
- * instance. By default the class will use {@link ManagementFactory#getPlatformMBeanServer()} instance.
+ * instance. By default, the class will use {@link ManagementFactory#getPlatformMBeanServer()} instance.
  * </p>
  * 
  * 
