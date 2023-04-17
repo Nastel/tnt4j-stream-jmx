@@ -18,7 +18,11 @@ rem set WAS_HOME=C:\Program Files (x86)\IBM\WebSphere\AppServer
 set JAVA_HOME=%WAS_HOME%\java
 set WAS_PATH=%WAS_HOME%\runtimes\*;%WAS_HOME%\lib\webadmin\management.jar;%WAS_HOME%\plugins\com.ibm.ws.runtime.jar
 set MYCLIENTSAS="-Dcom.ibm.CORBA.ConfigURL=file:%RUNDIR%..\config\sas.client.props"
+REM Fix slashes for file: URI
+set MYCLIENTSAS=%MYCLIENTSAS:\=/%
 set MYCLIENTSSL="-Dcom.ibm.SSL.ConfigURL=file:%RUNDIR%..\config\ssl.client.props"
+REM Fix slashes for file: URI
+set MYCLIENTSSL=%MYCLIENTSSL:\=/%
 rem ----------------------------------------
 
 rem ---- appending libs path with WAS libs ----
@@ -44,7 +48,7 @@ set TNT4JOPTS=%TNT4JOPTS% "-Dtnt4j.dump.on.vm.shutdown=true" "-Dtnt4j.dump.on.ex
 IF ["%TNT4J_PROPERTIES%"] EQU [""] set TNT4J_PROPERTIES="%RUNDIR%..\config\tnt4j.properties"
 set TNT4JOPTS=%TNT4JOPTS% "-Dtnt4j.config=%TNT4J_PROPERTIES%"
 IF ["%LOG4J_PROPERTIES%"] EQU [""] set LOG4J_PROPERTIES="%RUNDIR%..\config\log4j2.xml"
-set TNT4JOPTS=%TNT4JOPTS% "-Dlog4j2.configurationFile=file:///%LOG4J_PROPERTIES%"
+set TNT4JOPTS=%TNT4JOPTS% "-Dlog4j2.configurationFile=%LOG4J_PROPERTIES%"
 rem ---- adding WAS specific JMX sampler options ----
 set TNT4JOPTS=%TNT4JOPTS% "-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.forceObjectName=true" "-Dcom.jkoolcloud.tnt4j.stream.jmx.sampler.factory=com.jkoolcloud.tnt4j.stream.jmx.impl.WASSamplerFactory" "-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.excludeOnError=true"
 rem -------------------------------------------------
