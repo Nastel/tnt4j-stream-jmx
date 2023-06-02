@@ -74,7 +74,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	public String format(TrackingEvent event) {
 		StringBuilder nvString = new StringBuilder(1024);
 
-		nvString.append("OBJ:Streams");
+		nvString.append("OBJ:");
 		// ------------------------------------------------------------- name
 		toString(nvString, event.getSource()).append(PATH_DELIM).append(event.getName()).append(PATH_DELIM)
 				.append("Events").append(FIELD_SEP);
@@ -114,7 +114,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	public String format(TrackingActivity activity) {
 		StringBuilder nvString = new StringBuilder(1024);
 
-		nvString.append("OBJ:Streams");
+		nvString.append("OBJ:");
 		toString(nvString, activity.getSource()).append(PATH_DELIM).append("Activities").append(FIELD_SEP);
 
 		if (addSelfSnapshot && activity.getSnapshot(SELF_SNAP_ID) == null) {
@@ -171,7 +171,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	public String format(long ttl, Source source, OpLevel level, String msg, Object... args) {
 		StringBuilder nvString = new StringBuilder(1024);
 
-		nvString.append("OBJ:Streams");
+		nvString.append("OBJ:");
 		toString(nvString, source).append(PATH_DELIM).append("Message").append(FIELD_SEP);
 		nvString.append(SELF_SNAP_NAME).append(PATH_DELIM).append("level=").append(getValueStr(level))
 				.append(FIELD_SEP);

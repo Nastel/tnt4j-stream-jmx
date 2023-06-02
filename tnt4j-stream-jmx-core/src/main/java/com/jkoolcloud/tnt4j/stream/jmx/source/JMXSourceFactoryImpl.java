@@ -71,10 +71,11 @@ import com.jkoolcloud.tnt4j.utils.Utils;
  * {@code
  *  source: com.jkoolcloud.tnt4j.stream.jmx
  * 	source.factory: com.jkoolcloud.tnt4j.stream.jmx.source.JMXSourceFactoryImpl
+ * 	source.factory.GENERIC: Streams
  * 	source.factory.DATACENTER: HQDC
  * 	source.factory.SERVER: @bean:JMImplementation:type=MBeanServerDelegate/?MBeanServerId
  * 	source.factory.SERVICE: @bean:org.apache.activemq:type=Broker,brokerName=localhost/?BrokerId
- * 	source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?
+ * 	source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?#GENERIC=?
  * }
  * </pre>
  *
@@ -84,10 +85,11 @@ import com.jkoolcloud.tnt4j.utils.Utils;
  * {@code
  *  source: com.jkoolcloud.tnt4j.stream.jmx
  *  source.factory: com.jkoolcloud.tnt4j.stream.jmx.source.JMXSourceFactoryImpl
+ *  source.factory.GENERIC: Streams
  *  source.factory.DATACENTER: HQDC
  *  source.factory.SERVER: @sjmx.serverName
  *  source.factory.SERVICE: @bean:org.apache.activemq:type=Broker,brokerName=localhost/?BrokerId
- *  source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?
+ *  source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?#GENERIC=?
  * }
  * </pre>
  *

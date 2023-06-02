@@ -436,7 +436,7 @@ same service on different machines), e.g.
 ```properties
     source.factory.SERVICE: @bean:org.apache.activemq:type=Broker,brokerName=localhost/?BrokerId
     source.factory.SERVER: @bean:java.lang:type=Runtime/?Name
-    source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?
+    source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?#GENERIC=?
 ```
 then no additional source configuration is required.
 
@@ -447,9 +447,10 @@ same machine), every service identifies itself over different MBean property. In
 
 For example, when `tnt4j.properties` defines `RootFQN` as:
 ```properties
+    source.factory.GENERIC: Streams
     source.factory.DATACENTER: HQDC
     source.factory.SERVER: @bean:java.lang:type=Runtime/?Name
-    source.factory.RootFQN: SERVER=?#DATACENTER=?
+    source.factory.RootFQN: SERVER=?#DATACENTER=?#GENERIC=?
 ```
 and having VMs configured this way:
 ```
@@ -522,7 +523,7 @@ Consider this Stream-JMX run scenario to monitor 3 instances of service runner V
     * you've been having such TNT4J source configuration:
       ```properties
           source.factory.SERVICE: $sjmx.serviceId
-          source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?
+          source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?#GENERIC=?
       ```
     * running 3 instances of Stream-JMX
       ```bash
@@ -533,7 +534,7 @@ Consider this Stream-JMX run scenario to monitor 3 instances of service runner V
 * One Stream-JMX instance per 3 monitored VMs
     * you've been having such TNT4J source configuration:
       ```properties
-         source.factory.RootFQN: SERVER=?#DATACENTER=?
+         source.factory.RootFQN: SERVER=?#DATACENTER=?#GENERIC=?
       ```
     * configuring VM connections in `connections.cfg` file
       ```
@@ -993,19 +994,21 @@ Stream-JMS has couple additional features in comparison with basic `TNT4J` when 
    definition. In this case `tnt4j.properties` configuration would be like this:
     ```properties
     ; Remote machine IP address
-    ...
+    ...                            
+    source.factory.GENERIC: Streams
     source.factory.DATACENTER: HQDC
     source.factory.SERVICE: broker-01
     source.factory.SERVER: @sjmx.serverAddress
-    source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?
+    source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?#GENERIC=?
     ...
 
     ; Remote machine host name
-    ...
+    ...              
+    source.factory.GENERIC: Streams
     source.factory.DATACENTER: HQDC
     source.factory.SERVICE: broker-01
     source.factory.SERVER: @sjmx.serverName
-    source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?
+    source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?#GENERIC=?
     ...
     ```
 2. Can resolve values for `source` fields from JMX MBean attributes. Two items are required to use in `tnt4j.properties` configuration to
@@ -1022,10 +1025,11 @@ Stream-JMS has couple additional features in comparison with basic `TNT4J` when 
    ```properties
    ...
    source.factory: com.jkoolcloud.tnt4j.stream.jmx.source.JMXSourceFactoryImpl
+   source.factory.GENERIC: Streams
    source.factory.DATACENTER: HQDC
    source.factory.SERVICE: @bean:org.apache.activemq:type=Broker,brokerName=localhost/?BrokerId
    source.factory.SERVER: @bean:JMImplementation:type=MBeanServerDelegate/?MBeanServerId
-   source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?
+   source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?#GENERIC=?
    ...
    ```
 
@@ -1541,10 +1545,11 @@ Below is an example of TNT4J stream configuration writing collected JMX samples 
 {
     source: com.jkoolcloud.tnt4j.stream.jmx
     source.factory: com.jkoolcloud.tnt4j.stream.jmx.source.JMXSourceFactoryImpl
+    source.factory.GENERIC: Streams
     source.factory.GEOADDR: New York
     source.factory.DATACENTER: YourDC
     source.factory.SERVICE: $sjmx.serviceId
-    source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?#GEOADDR=?
+    source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?#GEOADDR=?#GENERIC=?
     source.factory.RootSSN: tnt4j-stream-jmx
 
     tracker.factory: com.jkoolcloud.tnt4j.tracker.DefaultTrackerFactory
@@ -1578,10 +1583,11 @@ Below is an example of TNT4J stream configuration writing collected JMX samples 
 {
     source: com.jkoolcloud.tnt4j.stream.jmx
     source.factory: com.jkoolcloud.tnt4j.stream.jmx.source.JMXSourceFactoryImpl
+    source.factory.GENERIC: Streams
     source.factory.GEOADDR: New York
     source.factory.DATACENTER: YourDC
     source.factory.SERVICE: $sjmx.serviceId
-    source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?#GEOADDR=?
+    source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?#GEOADDR=?#GENERIC=?
     source.factory.RootSSN: tnt4j-stream-jmx
 
     tracker.factory: com.jkoolcloud.tnt4j.tracker.DefaultTrackerFactory
@@ -1635,10 +1641,11 @@ Below is an example of TNT4J stream configuration writing collected JMX samples 
 {
     source: com.jkoolcloud.tnt4j.stream.jmx
     source.factory: com.jkoolcloud.tnt4j.stream.jmx.source.JMXSourceFactoryImpl
+    source.factory.GENERIC: Streams
     source.factory.GEOADDR: New York
     source.factory.DATACENTER: YourDC
     source.factory.SERVICE: $sjmx.serviceId
-    source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?#GEOADDR=?
+    source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?#GEOADDR=?#GENERIC=?
     source.factory.RootSSN: tnt4j-stream-jmx
 
     tracker.factory: com.jkoolcloud.tnt4j.tracker.DefaultTrackerFactory
@@ -1701,10 +1708,11 @@ sample data formatted by `FactNameValueFormatter` and to jKool repo defined by a
 {
     source: com.jkoolcloud.tnt4j.stream.jmx
     source.factory: com.jkoolcloud.tnt4j.stream.jmx.source.JMXSourceFactoryImpl
+    source.factory.GENERIC: Streams
     source.factory.GEOADDR: New York
     source.factory.DATACENTER: YourDC
     source.factory.SERVICE: $sjmx.serviceId
-    source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?#GEOADDR=?
+    source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?#GEOADDR=?#GENERIC=?
     source.factory.RootSSN: tnt4j-stream-jmx
 
     tracker.factory: com.jkoolcloud.tnt4j.tracker.DefaultTrackerFactory
