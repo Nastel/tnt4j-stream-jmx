@@ -30,6 +30,13 @@
     <artifactId>tnt4j-stream-jmx-core</artifactId>
 
     <properties>
+        <!--                <maven.compiler.args>-->
+        <!--                    &#45;&#45;add-exports=jdk.attach/sun.tools.attach=ALL-UNNAMED &#45;&#45;add-opens=jdk.attach/sun.tools.attach=ALL-UNNAMED-->
+        <!--                </maven.compiler.args>-->
+        <maven.compiler.args>
+            --add-opens=jdk.attach/sun.tools.attach=ALL-UNNAMED
+        </maven.compiler.args>
+
         <jesl.version>0.11-SNAPSHOT</jesl.version>
         <gson.version>2.10.1</gson.version>
         <disruptor.version>3.4.4</disruptor.version>
@@ -66,40 +73,6 @@
             </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>java9-plus</id>
-            <activation>
-                <jdk>[9,)</jdk>
-            </activation>
-            <properties>
-                <!--                <maven.compiler.args>-->
-                <!--                    &#45;&#45;add-exports=jdk.attach/sun.tools.attach=ALL-UNNAMED &#45;&#45;add-opens=jdk.attach/sun.tools.attach=ALL-UNNAMED-->
-                <!--                </maven.compiler.args>-->
-                <maven.compiler.args>
-                    --add-opens=jdk.attach/sun.tools.attach=ALL-UNNAMED
-                </maven.compiler.args>
-                <!-- When using opens/exports release can't be downgraded to java 8 -->
-                <project.java.version>${java.specification.version}</project.java.version>
-            </properties>
-        </profile>
-        <profile>
-            <id>up-to-java9</id>
-            <activation>
-                <jdk>(,9)</jdk>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>com.sun</groupId>
-                    <artifactId>tools</artifactId>
-                    <version>${project.java.version}</version>
-                    <scope>system</scope>
-                    <systemPath>${java.home}/../lib/tools.jar</systemPath>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
 
     <dependencies>
         <dependency>
