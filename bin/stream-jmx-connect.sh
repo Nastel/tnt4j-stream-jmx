@@ -61,13 +61,7 @@ echo "$LIBPATH"
 
 jver=$("${JAVA_PATH}" -fullversion 2>&1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1 | cut -d'-' -f1 | cut -d'+' -f1 | cut -d'_' -f1)
 
-if [[ $jver -ge 9 ]]; then
-  TNT4JOPTS="$TNT4JOPTS --add-exports=jdk.attach/sun.tools.attach=ALL-UNNAMED --add-opens=jdk.attach/sun.tools.attach=ALL-UNNAMED"
-else
-  TOOLS_PATH="$JAVA_HOME/lib/tools.jar"
-  LIBPATH="$LIBPATH:$TOOLS_PATH"
-fi
-
+TNT4JOPTS="$TNT4JOPTS --add-exports=jdk.attach/sun.tools.attach=ALL-UNNAMED --add-opens=jdk.attach/sun.tools.attach=ALL-UNNAMED"
 TNT4JOPTS="$TNT4JOPTS -Dtnt4j.dump.on.vm.shutdown=true -Dtnt4j.dump.on.exception=true -Dtnt4j.dump.provider.default=true"
 
 ### --- tnt4j file ----
