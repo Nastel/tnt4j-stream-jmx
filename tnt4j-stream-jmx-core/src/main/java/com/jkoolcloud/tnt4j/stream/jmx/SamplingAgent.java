@@ -195,29 +195,12 @@ public class SamplingAgent {
 	 *             if IO exception occurs while initializing MBeans sampling
 	 */
 	public static void premain(String options, Instrumentation inst) throws IOException {
-		String incFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.include.filter", Sampler.JMX_FILTER_ALL);
-		String excFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.exclude.filter",
-				Sampler.JMX_FILTER_NONE);
-		int period = Integer.getInteger("com.jkoolcloud.tnt4j.stream.jmx.period", Sampler.JMX_SAMPLE_PERIOD);
-		int initDelay = Integer.getInteger("com.jkoolcloud.tnt4j.stream.jmx.init.delay", period);
-		if (options != null) {
-			String[] args = options.split("!");
-			if (args.length > 0) {
-				incFilter = args[0];
-			}
-			if (args.length > 1) {
-				excFilter = args.length > 2 ? args[1] : excFilter;
-				period = Integer.parseInt(args.length > 2 ? args[2] : args[1]);
-			}
-			if (args.length > 2) {
-				initDelay = Integer.parseInt(args.length > 3 ? args[3] : args[2]);
-			}
-		}
+		SamplingArgs sa = SamplingArgs.parse(options);
 		SamplingAgent agent = newSamplingAgent(true);
-		agent.sample(incFilter, excFilter, initDelay, period, TimeUnit.MILLISECONDS);
+		agent.sample(sa.incFilter, sa.excFilter, sa.initDelay, sa.period, TimeUnit.MILLISECONDS);
 		LOGGER.log(OpLevel.INFO,
 				"SamplingAgent.premain: include.filter={0}, exclude.filter={1}, sample.ms={2}, initDelay.ms={3}, listener.properties={4}, tnt4j.config={5}, jmx.sample.list={6}",
-				incFilter, excFilter, period, initDelay, LISTENER_PROPERTIES,
+				sa.incFilter, sa.excFilter, sa.period, sa.initDelay, LISTENER_PROPERTIES,
 				System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY), agent.STREAM_SAMPLERS);
 	}
 
@@ -734,12 +717,9 @@ public class SamplingAgent {
 	 *             if IO exception occurs while initializing MBeans sampling
 	 */
 	public void sample() throws IOException {
-		String incFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.include.filter", Sampler.JMX_FILTER_ALL);
-		String excFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.exclude.filter",
-				Sampler.JMX_FILTER_NONE);
-		int period = Integer.getInteger("com.jkoolcloud.tnt4j.stream.jmx.period", Sampler.JMX_SAMPLE_PERIOD);
-		int initDelay = Integer.getInteger("com.jkoolcloud.tnt4j.stream.jmx.init.delay", period);
-		sample(incFilter, excFilter, initDelay, period);
+		SamplingArgs sa = new SamplingArgs();
+
+		sample(sa.incFilter, sa.excFilter, sa.initDelay, sa.period);
 	}
 
 	/**
@@ -1163,34 +1143,17 @@ public class SamplingAgent {
 	}
 
 	private void startSampler(String options, JMXConnector connector) throws Exception {
-		String incFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.include.filter", Sampler.JMX_FILTER_ALL);
-		String excFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.exclude.filter",
-				Sampler.JMX_FILTER_NONE);
-		int period = Integer.getInteger("com.jkoolcloud.tnt4j.stream.jmx.period", Sampler.JMX_SAMPLE_PERIOD);
-		int initDelay = Integer.getInteger("com.jkoolcloud.tnt4j.stream.jmx.init.delay", period);
-		if (options != null) {
-			String[] args = options.split("!");
-			if (args.length > 0) {
-				incFilter = args[0];
-			}
-			if (args.length > 1) {
-				excFilter = args.length > 2 ? args[1] : Sampler.JMX_FILTER_NONE;
-				period = Integer.parseInt(args.length > 2 ? args[2] : args[1]);
-			}
-			if (args.length > 2) {
-				initDelay = Integer.parseInt(args.length > 3 ? args[3] : args[2]);
-			}
-		}
+		SamplingArgs sa = SamplingArgs.parse(options);
 
 		if (connector == null) {
-			sample(incFilter, excFilter, initDelay, period, TimeUnit.MILLISECONDS);
+			sample(sa.incFilter, sa.excFilter, sa.initDelay, sa.period, TimeUnit.MILLISECONDS);
 		} else {
-			sample(incFilter, excFilter, initDelay, period, TimeUnit.MILLISECONDS, connector);
+			sample(sa.incFilter, sa.excFilter, sa.initDelay, sa.period, TimeUnit.MILLISECONDS, connector);
 		}
 
 		LOGGER.log(OpLevel.INFO,
 				"SamplingAgent.startSampler: include.filter={0}, exclude.filter={1}, sample.ms={2}, initDelay.ms={3}, listener.properties={4}, tnt4j.config={5}, jmx.sample.list={6}",
-				incFilter, excFilter, period, initDelay, LISTENER_PROPERTIES,
+				sa.incFilter, sa.excFilter, sa.period, sa.initDelay, LISTENER_PROPERTIES,
 				System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY), STREAM_SAMPLERS);
 	}
 
@@ -1324,6 +1287,63 @@ public class SamplingAgent {
 		public boolean accept(File dir, String name) {
 			String nfn = name.toLowerCase();
 			return nfn.endsWith(".jar") || nfn.endsWith(".zip");
+		}
+	}
+
+	private static class SamplingArgs {
+		/**
+		 * Included MBeans filter string.
+		 */
+		String incFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.include.filter", Sampler.JMX_FILTER_ALL);
+		/**
+		 * Excluded MBeans filter string.
+		 */
+		String excFilter = System.getProperty("com.jkoolcloud.tnt4j.stream.jmx.exclude.filter",
+				Sampler.JMX_FILTER_NONE);
+		/**
+		 * Sampling period in milliseconds.
+		 */
+		int period = Integer.getInteger("com.jkoolcloud.tnt4j.stream.jmx.period", Sampler.JMX_SAMPLE_PERIOD);
+		/**
+		 * Initial sampling delay in milliseconds.
+		 */
+		int initDelay = Integer.getInteger("com.jkoolcloud.tnt4j.stream.jmx.init.delay", period);
+
+		private SamplingArgs() {
+		}
+
+		/**
+		 * Parses sampling arguments set from provided {@code options} string.
+		 * 
+		 * @param options
+		 *            '!' separated list of options mbean-filter!sample.ms!initDelay.ms, where mbean-filter is semicolon
+		 *            separated list of mbean filters and {@code initDelay} is optional
+		 * @return sampling arguments instance with pased values
+		 */
+		static SamplingArgs parse(String options) {
+			SamplingArgs sa = new SamplingArgs();
+
+			if (options != null) {
+				String[] args = options.split("!");
+				if (args.length > 0) {
+					sa.incFilter = args[0];
+				}
+				if (args.length > 1) {
+					sa.excFilter = args.length > 2 ? args[1] : sa.excFilter;
+					try {
+						sa.period = Integer.parseInt(args.length > 2 ? args[2] : args[1]);
+					} catch (NumberFormatException exc) {
+					}
+				}
+				if (args.length > 2) {
+					try {
+						sa.initDelay = Integer.parseInt(args.length > 3 ? args[3] : args[2]);
+					} catch (NumberFormatException exc) {
+					}
+				}
+			}
+
+			return sa;
 		}
 	}
 
