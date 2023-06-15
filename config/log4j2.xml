@@ -21,8 +21,8 @@
                xsi:schemaLocation="http://logging.apache.org/log4j/2.0/config
                                    https://raw.githubusercontent.com/apache/logging-log4j2/main/log4j-core/src/main/resources/Log4j-config.xsd">
     <Properties>
-        <Property name="tnt4j.stream.log.filename">logs/tnt4j-stream-jmx.log</Property>
-        <Property name="tnt4j.activities.log.filename">logs/tnt4j-stream-jmx_samples.log</Property>
+        <Property name="tnt4j.stream.log.filename">${sys:tnt4j.stream.log.filename:-logs/tnt4j-stream-jmx.log}</Property>
+        <Property name="tnt4j.activities.log.filename">${sys:tnt4j.activities.log.filename:-logs/tnt4j-stream-jmx_samples.log}</Property>
     </Properties>
     <Appenders>
         <!-- ### direct log messages to console ### -->
