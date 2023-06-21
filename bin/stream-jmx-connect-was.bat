@@ -44,7 +44,7 @@ set jver=%jver:ea=00%
 IF %jver% GTR 18 set TNT4JOPTS=%TNT4JOPTS% "--add-exports=jdk.attach/sun.tools.attach=ALL-UNNAMED" "--add-opens=jdk.attach/sun.tools.attach=ALL-UNNAMED"
 IF %jver% LEQ 18 set LIBPATH=%LIBPATH%;%JAVA_HOME%\lib\tools.jar
 
-set TNT4JOPTS=%TNT4JOPTS% "-Dtnt4j.dump.on.vm.shutdown=true" "-Dtnt4j.dump.on.exception=true" "-Dtnt4j.dump.provider.default=true"
+set TNT4JOPTS=%TNT4JOPTS% "-Dtnt4j.dump.on.vm.shutdown=false" "-Dtnt4j.dump.on.exception=true" "-Dtnt4j.dump.provider.default=true"
 IF ["%TNT4J_PROPERTIES%"] EQU [""] set TNT4J_PROPERTIES="%RUNDIR%..\config\tnt4j.properties"
 set TNT4JOPTS=%TNT4JOPTS% "-Dtnt4j.config=%TNT4J_PROPERTIES%"
 IF ["%LOG4J_PROPERTIES%"] EQU [""] set LOG4J_PROPERTIES="%RUNDIR%..\config\log4j2.xml"

@@ -26,7 +26,15 @@ MYCLIENTSSL="-Dcom.ibm.SSL.ConfigURL=file:$SCRIPTPATH/../config/ssl.client.props
 LIBPATH="$SCRIPTPATH/../*:$SCRIPTPATH/../lib/*:$WAS_PATH"
 ### -------------------------------------------
 
-jver=$("${JAVA_PATH}" -fullversion 2>&1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1 | cut -d'-' -f1 | cut -d'+' -f1 | cut -d'_' -f1)
+JAVA_EXEC="java"
+if [[ "$JAVA_HOME" == "" ]]; then
+  echo '"JAVA_HOME" env. variable is not defined!..'
+else
+  echo 'Will use java from:' "$JAVA_HOME"
+  JAVA_EXEC="$JAVA_HOME/bin/java"
+fi
+
+jver=$("${JAVA_EXEC}" -fullversion 2>&1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1 | cut -d'-' -f1 | cut -d'+' -f1 | cut -d'_' -f1)
 
 if [[ $jver -ge 9 ]]; then
   TNT4JOPTS="$TNT4JOPTS --add-exports=jdk.attach/sun.tools.attach=ALL-UNNAMED --add-opens=jdk.attach/sun.tools.attach=ALL-UNNAMED"
@@ -95,14 +103,6 @@ CONN_OPTIONS="-connect -vm:service:jmx:iiop://localhost:2809/jndi/JMXConnector -
 ### --- also do not forget to alter sas.client.props file to disable basic authentication ---
 # CONN_OPTIONS="-connect -vm:service:jmx:iiop://localhost:2809/jndi/JMXConnector -ul:Admin -up:admin -cp:java.naming.factory.initial=com.ibm.websphere.naming.WsnInitialContextFactory -cp:java.naming.factory.url.pkgs=com.ibm.ws.naming -cp:java.naming.provider.url=corbaloc:iiop:localhost:2809/WsnAdminNameService"
 ### ------------------------------------------------------------------------------------------------------------
-
-JAVA_EXEC="java"
-if [[ "$JAVA_HOME" == "" ]]; then
-  echo '"JAVA_HOME" env. variable is not defined!..'
-else
-  echo 'Will use java from:' "$JAVA_HOME"
-  JAVA_EXEC="$JAVA_HOME/bin/java"
-fi
 
 ### --- using JAVA_HOME java and setting WAS specific options ---
 $JAVA_EXEC $TNT4JOPTS $MYCLIENTSAS $MYCLIENTSSL -classpath "$LIBPATH" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent $CONN_OPTIONS -ao:$TNT4J_AGENT_OPTIONS $TNT4J_AGENT_ARGS

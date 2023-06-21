@@ -57,7 +57,15 @@ echo "$LIBPATH"
 
 #LIBPATH="$LIBPATH:$SCRIPTPATH/../lib/*"
 
-jver=$("${JAVA_PATH}" -fullversion 2>&1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1 | cut -d'-' -f1 | cut -d'+' -f1 | cut -d'_' -f1)
+JAVA_EXEC="java"
+if [[ "$JAVA_HOME" == "" ]]; then
+  echo '"JAVA_HOME" env. variable is not defined!..'
+else
+  echo 'Will use java from:' "$JAVA_HOME"
+  JAVA_EXEC="$JAVA_HOME/bin/java"
+fi
+
+jver=$("${JAVA_EXEC}" -fullversion 2>&1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1 | cut -d'-' -f1 | cut -d'+' -f1 | cut -d'_' -f1)
 
 if [[ $jver -ge 9 ]]; then
   TNT4JOPTS="$TNT4JOPTS --add-exports=jdk.attach/sun.tools.attach=ALL-UNNAMED --add-opens=jdk.attach/sun.tools.attach=ALL-UNNAMED"
@@ -104,13 +112,5 @@ if [[ "x$4" != "x" ]] && [[ "x$4" != "x." ]]; then
     TNT4J_AGENT_ARGS="$4"
 fi
 ### -------------------------
-
-JAVA_EXEC="java"
-if [[ "$JAVA_HOME" == "" ]]; then
-  echo '"JAVA_HOME" env. variable is not defined!..'
-else
-  echo 'Will use java from:' "$JAVA_HOME"
-  JAVA_EXEC="$JAVA_HOME/bin/java"
-fi
 
 $JAVA_EXEC $TNT4JOPTS -classpath "$LIBPATH" com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent -connect -f:$1 $TNT4J_AGENT_ARGS
