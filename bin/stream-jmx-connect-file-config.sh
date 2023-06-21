@@ -65,7 +65,7 @@ else
   JAVA_EXEC="$JAVA_HOME/bin/java"
 fi
 
-jver=$("${JAVA_EXEC}" -fullversion 2>&1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1 | cut -d'-' -f1 | cut -d'+' -f1 | cut -d'_' -f1)
+jver=$("${JAVA_EXEC}" -version 2>&1 | head -n 1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1 | cut -d'-' -f1 | cut -d'+' -f1 | cut -d'_' -f1)
 
 TNT4JOPTS="$TNT4JOPTS --add-exports=jdk.attach/sun.tools.attach=ALL-UNNAMED --add-opens=jdk.attach/sun.tools.attach=ALL-UNNAMED"
 TNT4JOPTS="$TNT4JOPTS -Dtnt4j.dump.on.vm.shutdown=false -Dtnt4j.dump.on.exception=true -Dtnt4j.dump.provider.default=true"
