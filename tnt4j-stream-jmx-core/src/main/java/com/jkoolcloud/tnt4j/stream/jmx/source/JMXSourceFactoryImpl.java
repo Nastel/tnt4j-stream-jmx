@@ -49,9 +49,9 @@ import com.jkoolcloud.tnt4j.utils.Utils;
  * This factory can resolve two types of MBean provided values:
  * <ul>
  * <li>Mbean attribute value - descriptor pattern is {@code "@bean:MBean_ObjectName/?AttributeName"}. It also allows use
- * of wildcard symbols {@code *}, e.g.: <code>"@bean:org.apache.ZooKeeperService:name0=*&#47;?ClientPort"</code>
- * resolving {@code ClientPort} value for first available (if more than one is running on same JVM, but usually it
- * should be only one) ZooKeeper service instance.</li>
+ * of wildcard symbols {@code *}, e.g.: {@code "@bean:org.apache.ZooKeeperService:name0=*&#47;?ClientPort"} resolving
+ * {@code ClientPort} value for first available (if more than one is running on same JVM, but usually it should be only
+ * one) ZooKeeper service instance.</li>
  * <li>MBean key property - descriptor pattern is {@code "@bean:MBean_ObjectName:PropertyKey=?(,OtherProperties)"} (part
  * within {@code ()} is optional), e.g.: {@code "@bean:kafka.server:id=?,type=app-info"}.</li>
  * </ul>
