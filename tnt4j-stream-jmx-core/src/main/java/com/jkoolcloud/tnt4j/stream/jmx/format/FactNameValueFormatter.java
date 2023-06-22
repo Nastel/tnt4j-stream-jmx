@@ -16,7 +16,7 @@
 package com.jkoolcloud.tnt4j.stream.jmx.format;
 
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -57,8 +57,8 @@ public class FactNameValueFormatter extends DefaultFormatter {
 
 	private static final String SNAP_NAME_PROP = "JMX_SNAP_NAME";
 
-	protected Map<String, String> keyReplacements = new HashMap<>();
-	protected Map<String, String> valueReplacements = new HashMap<>();
+	protected Map<String, String> keyReplacements = new LinkedHashMap<>();
+	protected Map<String, String> valueReplacements = new LinkedHashMap<>();
 
 	private boolean addSelfSnapshot = true;
 
