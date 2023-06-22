@@ -46,10 +46,12 @@ public class SLIFactPathValueFormatter extends FactPathValueFormatter {
 		StringBuilder pathBuilder = new StringBuilder(256);
 		String pv;
 
+		boolean appended;
 		for (String[] levelAttrKeys : pathLevelAttrKeys) {
+			appended = false;
 			for (String pKey : levelAttrKeys) {
 				pv = (String) objNameProps.remove(pKey);
-				if (StringUtils.isNotEmpty(pv) && !"null".equals(pv)) {
+				if (!appended && StringUtils.isNotEmpty(pv) && !"null".equals(pv)) {
 					pv = Utils.replace(pv, keyReplacements);
 					if (pv.startsWith(PATH_DELIM)) {
 						pv = pv.substring(1);
@@ -58,11 +60,16 @@ public class SLIFactPathValueFormatter extends FactPathValueFormatter {
 						pv = pv.substring(0, pv.length() - 1);
 					}
 
-					pathBuilder.append(pathBuilder.length() > 0 ? PATH_DELIM : "").append(pv);
-					if (levelAttrKeys.length > 1) {
-						break;
-					}
+					appendPath(pathBuilder, pv);
+					appended = true;
 				}
+			}
+		}
+
+		if (!objNameProps.isEmpty()) {
+			for (Map.Entry<?, ?> pe : objNameProps.entrySet()) {
+				pv = String.valueOf(pe.getValue());
+				appendPath(pathBuilder, pv);
 			}
 		}
 
