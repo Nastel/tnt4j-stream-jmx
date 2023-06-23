@@ -215,7 +215,7 @@ try {
 
 ### Command line to run
 
-Executable OS shell run script files `bin/stream-jmx-conenct.bat` or `bin/stream-jmx-conenct.sh` are dedicated to do the job:
+Executable OS shell run script files `bin/stream-jmx-connect.bat` or `bin/stream-jmx-connect.sh` are dedicated to do the job:
 
 `stream-jmx-connect` script has 4 parameters:
 1. process id or service URI (required)
@@ -318,11 +318,11 @@ states:
   ```
 * Tomcat and Kafka does not provide J2EE implementation, thus you need only stream-jmx `core` jar in `classpath` when sampling Tomcat/Kafka
   metrics over JMX. Executable OS shell run script files uses only `core` as `MODULE_SET` variable value:
-    * `bin/stream-jmx-conenct.bat`
+    * `bin/stream-jmx-connect.bat`
       ```cmd
       set MODULE_SET=core
       ```
-    * `bin/stream-jmx-conenct.sh`
+    * `bin/stream-jmx-connect.sh`
       ```bash
       MODULE_SET=("core")
       ```
@@ -554,7 +554,7 @@ Consider this Stream-JMX run scenario to monitor 3 instances of service runner V
 #### Connecting remote WebSphere Application Server (WAS)
 
 Additions needed to run `SamplingAgent` connected to remote WAS machine can be found in executable OS shell run script files
-`bin/stream-jmx-conenct-was.bat` or `bin/stream-jmx-conenct-was.sh`. It contains these major configuration additions:
+`bin/stream-jmx-connect-was.bat` or `bin/stream-jmx-connect-was.sh`. It contains these major configuration additions:
 * WAS environment setup configuration
 * appending `LIBPATH` variable with WAS libs
 * adding WAS specific JMX sampler options
@@ -575,7 +575,7 @@ Additions needed to run `SamplingAgent` connected to remote WAS machine can be f
 #### Connecting remote WebLogic (version 12c) server instance
 
 Additions needed to run `SamplingAgent` connected to remote WebLogic machine can be found in executable OS shell run script files
-`bin/stream-jmx-conenct.bat` or `bin/stream-jmx-conenct.sh`. It contains these major configuration additions:
+`bin/stream-jmx-connect.bat` or `bin/stream-jmx-connect.sh`. It contains these major configuration additions:
 * WebLogic environment setup configuration in `setDomainEnv.sh/setDomainEnv.cmd` file, exposing JMX access port and security options like:
     * .bat/cmd
       ```cmd
