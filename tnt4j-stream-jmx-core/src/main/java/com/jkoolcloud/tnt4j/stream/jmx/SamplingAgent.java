@@ -49,10 +49,12 @@ import com.jkoolcloud.tnt4j.source.Source;
 import com.jkoolcloud.tnt4j.source.SourceFactory;
 import com.jkoolcloud.tnt4j.source.SourceType;
 import com.jkoolcloud.tnt4j.stream.jmx.core.DefaultSampleListener;
+import com.jkoolcloud.tnt4j.stream.jmx.core.JMXServerConnection;
 import com.jkoolcloud.tnt4j.stream.jmx.core.PropertyNameBuilder;
 import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
 import com.jkoolcloud.tnt4j.stream.jmx.factory.DefaultSamplerFactory;
 import com.jkoolcloud.tnt4j.stream.jmx.factory.SamplerFactory;
+import com.jkoolcloud.tnt4j.stream.jmx.impl.JMXMBeanServerConnection;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.LoggerUtils;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.Utils;
 import com.jkoolcloud.tnt4j.stream.jmx.vm.*;
@@ -72,7 +74,7 @@ public class SamplingAgent {
 	private static final EventSink LOGGER = LoggerUtils.getLoggerSink(SamplingAgent.class);
 
 	protected Sampler platformJmx;
-	protected final Map<MBeanServerConnection, Sampler> STREAM_SAMPLERS = new ConcurrentHashMap<>(5);
+	protected final Map<JMXServerConnection, Sampler> STREAM_SAMPLERS = new ConcurrentHashMap<>(5);
 
 	private static final Collection<SamplingAgent> ALL_AGENTS = new ArrayList<>(5);
 
@@ -798,7 +800,7 @@ public class SamplingAgent {
 		for (MBeanServer server : mbsList) {
 			Sampler jmxSampler = STREAM_SAMPLERS.get(server);
 			if (jmxSampler == null) {
-				jmxSampler = sFactory.newInstance(server);
+				jmxSampler = sFactory.newInstance(new JMXMBeanServerConnection(server));
 				scheduleSampler(incFilter, excFilter, initDelay, period, tUnit, sFactory, jmxSampler, STREAM_SAMPLERS);
 			}
 		}
@@ -872,7 +874,8 @@ public class SamplingAgent {
 		if (platformJmx == null) {
 			synchronized (STREAM_SAMPLERS) {
 				// create new sampler with default MBeanServer instance
-				platformJmx = mbSrvConn == null ? sFactory.newInstance() : sFactory.newInstance(mbSrvConn);
+				platformJmx = mbSrvConn == null ? sFactory.newInstance()
+						: sFactory.newInstance(new JMXMBeanServerConnection(mbSrvConn));
 				// schedule sample with a given filter and sampling period
 				scheduleSampler(incFilter, excFilter, initDelay, period, tUnit, sFactory, platformJmx, STREAM_SAMPLERS);
 			}
@@ -882,7 +885,7 @@ public class SamplingAgent {
 	}
 
 	private void scheduleSampler(String incFilter, String excFilter, long initDelay, long period, TimeUnit tUnit,
-			SamplerFactory sFactory, Sampler sampler, Map<MBeanServerConnection, Sampler> agents) throws IOException {
+			SamplerFactory sFactory, Sampler sampler, Map<JMXServerConnection, Sampler> agents) throws IOException {
 		agents.put(sampler.getMBeanServer(), sampler);
 		sampler.setSchedule(incFilter, excFilter, initDelay, period, tUnit, sFactory, getSource())
 				.addListener(sFactory.newListener(LISTENER_PROPERTIES));
@@ -967,8 +970,8 @@ public class SamplingAgent {
 	}
 
 	/**
-	 * Connects to {@code vmDescr} defined JVM over {@link JMXConnector} an uses {@link MBeanServerConnection} to
-	 * collect samples.
+	 * Connects to {@code vmDescr} defined JVM over {@link JMXConnector} an uses {@link JMXServerConnection} to collect
+	 * samples.
 	 *
 	 * @param vmDescr
 	 *            JVM descriptor: JMX service URI, local JVM name fragment or pid
@@ -988,8 +991,8 @@ public class SamplingAgent {
 	}
 
 	/**
-	 * Connects to {@code vmDescr} defined JVM over {@link JMXConnector} an uses {@link MBeanServerConnection} to
-	 * collect samples.
+	 * Connects to {@code vmDescr} defined JVM over {@link JMXConnector} an uses {@link JMXServerConnection} to collect
+	 * samples.
 	 *
 	 * @param connectionParams
 	 *            JMX service connection parameters
@@ -1158,12 +1161,12 @@ public class SamplingAgent {
 	}
 
 	/**
-	 * Obtain a map of all scheduled MBeanServerConnections and associated sample references.
+	 * Obtain a map of all scheduled JMXServerConnections and associated sample references.
 	 *
-	 * @return map of all scheduled MBeanServerConnections and associated sample references.
+	 * @return map of all scheduled JMXServerConnections and associated sample references.
 	 */
-	public Map<MBeanServerConnection, Sampler> getSamplers() {
-		HashMap<MBeanServerConnection, Sampler> copy = new HashMap<>(89);
+	public Map<JMXServerConnection, Sampler> getSamplers() {
+		HashMap<JMXServerConnection, Sampler> copy = new HashMap<>(89);
 		copy.putAll(STREAM_SAMPLERS);
 		return copy;
 	}
@@ -1180,12 +1183,12 @@ public class SamplingAgent {
 	}
 
 	/**
-	 * Cancel and close all sampling for a given {@link MBeanServer} instance.
+	 * Cancel and close all sampling for a given {@link JMXServerConnection} instance.
 	 *
 	 * @param mServerConn
 	 *            MBeanServerConnection instance
 	 */
-	public void cancel(MBeanServerConnection mServerConn) {
+	public void cancel(JMXServerConnection mServerConn) {
 		Sampler sampler = STREAM_SAMPLERS.remove(mServerConn);
 		if (sampler != null) {
 			sampler.cancel();

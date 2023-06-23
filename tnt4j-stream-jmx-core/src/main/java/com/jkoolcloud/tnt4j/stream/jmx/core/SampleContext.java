@@ -15,8 +15,6 @@
  */
 package com.jkoolcloud.tnt4j.stream.jmx.core;
 
-import javax.management.MBeanServerConnection;
-
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.NestedHandler;
 
 /**
@@ -36,7 +34,7 @@ public interface SampleContext {
 	 * 
 	 * @return MBean server connection instance associated with this listener
 	 */
-	MBeanServerConnection getMBeanServer();
+	JMXServerConnection getMBeanServer();
 
 	/**
 	 * Reset all counters maintained by this context

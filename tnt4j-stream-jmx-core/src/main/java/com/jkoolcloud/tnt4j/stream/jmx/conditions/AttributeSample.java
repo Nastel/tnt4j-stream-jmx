@@ -21,6 +21,7 @@ import javax.management.*;
 
 import com.jkoolcloud.tnt4j.core.Activity;
 import com.jkoolcloud.tnt4j.core.PropertySnapshot;
+import com.jkoolcloud.tnt4j.stream.jmx.core.JMXServerConnection;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.Utils;
 
 /**
@@ -33,7 +34,7 @@ import com.jkoolcloud.tnt4j.stream.jmx.utils.Utils;
  */
 public class AttributeSample {
 	Activity activity;
-	MBeanServerConnection server;
+	JMXServerConnection server;
 	ObjectName name;
 	Map<String, MBeanAttributeInfo> aInfoMap;
 	long timeStamp = 0;
@@ -57,7 +58,7 @@ public class AttributeSample {
 	 * @param attributes
 	 *            MBean attribute handles array
 	 */
-	protected AttributeSample(Activity activity, PropertySnapshot snapshot, MBeanServerConnection serverConn,
+	protected AttributeSample(Activity activity, PropertySnapshot snapshot, JMXServerConnection serverConn,
 			ObjectName name, MBeanAttributeInfo[] attributes) {
 		this.activity = activity;
 		this.server = serverConn;
@@ -101,7 +102,7 @@ public class AttributeSample {
 	 * @return a new attribute sample instance
 	 */
 	public static AttributeSample newAttributeSample(Activity activity, PropertySnapshot snapshot,
-			MBeanServerConnection serverConn, ObjectName name, MBeanAttributeInfo[] attributes) {
+			JMXServerConnection serverConn, ObjectName name, MBeanAttributeInfo[] attributes) {
 		return new AttributeSample(activity, snapshot, serverConn, name, attributes);
 	}
 
@@ -263,7 +264,7 @@ public class AttributeSample {
 	 * 
 	 * @return MBean server connection instance associated with this instance
 	 */
-	public MBeanServerConnection getMBeanServer() {
+	public JMXServerConnection getMBeanServer() {
 		return server;
 	}
 

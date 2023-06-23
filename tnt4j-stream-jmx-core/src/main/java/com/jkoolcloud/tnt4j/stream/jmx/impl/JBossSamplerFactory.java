@@ -15,8 +15,7 @@
  */
 package com.jkoolcloud.tnt4j.stream.jmx.impl;
 
-import javax.management.MBeanServerConnection;
-
+import com.jkoolcloud.tnt4j.stream.jmx.core.JMXServerConnection;
 import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
 
 /**
@@ -38,7 +37,7 @@ public class JBossSamplerFactory extends PlatformSamplerFactory {
 	}
 
 	@Override
-	public Sampler newInstance(MBeanServerConnection mServerConn) {
+	public Sampler newInstance(JMXServerConnection mServerConn) {
 		return mServerConn == null ? newInstance() : new JBossJmxSampler(mServerConn, this);
 	}
 }

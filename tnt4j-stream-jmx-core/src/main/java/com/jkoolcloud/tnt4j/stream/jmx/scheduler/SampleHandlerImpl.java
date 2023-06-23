@@ -33,6 +33,7 @@ import com.jkoolcloud.tnt4j.core.Snapshot;
 import com.jkoolcloud.tnt4j.source.Source;
 import com.jkoolcloud.tnt4j.stream.jmx.aggregations.AggregationsManager;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.*;
+import com.jkoolcloud.tnt4j.stream.jmx.core.JMXServerConnection;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleContext;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.UnsupportedAttributeException;
@@ -71,7 +72,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	long lastMetricCount = 0, lastSampleTimeUsec = 0;
 	long noopCount = 0, excCount = 0, errorCount = 0;
 
-	MBeanServerConnection mbeanServer;
+	JMXServerConnection mbeanServer;
 	SampleContext context;
 	Throwable lastError;
 
@@ -94,7 +95,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	 * @param source
 	 *            sampler source
 	 */
-	public SampleHandlerImpl(MBeanServerConnection mServerConn, String incFilter, String excFilter, Source source) {
+	public SampleHandlerImpl(JMXServerConnection mServerConn, String incFilter, String excFilter, Source source) {
 		mbeanServer = mServerConn;
 		mbeanIncFilter = incFilter;
 		mbeanExcFilter = excFilter;
@@ -138,7 +139,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	 * @throws InstanceNotFoundException
 	 *             if MBean name provided does not match any of the registered MBeans
 	 */
-	private void listenForChanges() throws IOException, InstanceNotFoundException {
+	private void listenForChanges() throws Exception {
 		if (MBeanFilter == null) {
 			MBeanFilter = new MBeanServerNotificationFilter();
 			MBeanFilter.enableAllObjectNames();

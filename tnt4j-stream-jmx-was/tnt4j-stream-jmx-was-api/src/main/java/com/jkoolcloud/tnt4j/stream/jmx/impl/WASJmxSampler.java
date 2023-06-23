@@ -16,16 +16,16 @@
 package com.jkoolcloud.tnt4j.stream.jmx.impl;
 
 import java.lang.management.ManagementFactory;
-import java.lang.reflect.Method;
 
 import javax.management.MBeanServer;
-import javax.management.MBeanServerConnection;
 
+import com.ibm.websphere.management.AdminServiceFactory;
+import com.ibm.websphere.management.MBeanFactory;
 import com.jkoolcloud.tnt4j.core.OpLevel;
 import com.jkoolcloud.tnt4j.sink.EventSink;
+import com.jkoolcloud.tnt4j.stream.jmx.core.JMXServerConnection;
 import com.jkoolcloud.tnt4j.stream.jmx.factory.SamplerFactory;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.LoggerUtils;
-import com.jkoolcloud.tnt4j.utils.Utils;
 
 /**
  * <p>
@@ -40,8 +40,6 @@ import com.jkoolcloud.tnt4j.utils.Utils;
 public class WASJmxSampler extends PlatformJmxSampler {
 	private static final EventSink LOGGER = LoggerUtils.getLoggerSink(WASJmxSampler.class);
 
-	public static final String WAS_JMX_ADMIN_CLASS = "com.ibm.websphere.management.AdminServiceFactory";
-
 	/**
 	 * Dynamically identify and load WebSphere JMX MBean Server
 	 * {@code com.ibm.websphere.management.AdminServiceFactory}. Throws exception if WAS specific MBeanServer is not
@@ -53,14 +51,11 @@ public class WASJmxSampler extends PlatformJmxSampler {
 	 *             if exception occurs resolving admin server class or resolving and invoking method
 	 */
 	public static MBeanServer getAdminServer() throws Exception {
-		Class<?> adminClass = Class.forName(WAS_JMX_ADMIN_CLASS);
-		Method getMbeanFactory = adminClass.getDeclaredMethod("getMBeanFactory", Utils.NO_PARAMS_C);
-		Object mbeanFactory = getMbeanFactory.invoke(null, Utils.NO_PARAMS_O);
+		MBeanFactory mbeanFactory = AdminServiceFactory.getMBeanFactory();
 		if (mbeanFactory != null) {
-			Method mserverMethod = mbeanFactory.getClass().getMethod("getMBeanServer", Utils.NO_PARAMS_C);
-			return (MBeanServer) mserverMethod.invoke(mbeanFactory, Utils.NO_PARAMS_O);
+			return mbeanFactory.getMBeanServer();
 		}
-		throw new RuntimeException("No admin mbeanFactory found: class=" + WAS_JMX_ADMIN_CLASS);
+		throw new RuntimeException("No admin mbeanFactory found: class=" + AdminServiceFactory.class.getName());
 	}
 
 	/**
@@ -86,7 +81,7 @@ public class WASJmxSampler extends PlatformJmxSampler {
 	 *            sampler factory instance
 	 */
 	protected WASJmxSampler(SamplerFactory sFactory) {
-		super(defaultMBeanServer(), sFactory);
+		super(new JMXMBeanServerConnection(defaultMBeanServer()), sFactory);
 	}
 
 	/**
@@ -97,7 +92,7 @@ public class WASJmxSampler extends PlatformJmxSampler {
 	 * @param sFactory
 	 *            sampler factory instance
 	 */
-	protected WASJmxSampler(MBeanServerConnection mServerConn, SamplerFactory sFactory) {
+	protected WASJmxSampler(JMXServerConnection mServerConn, SamplerFactory sFactory) {
 		super(mServerConn, sFactory);
 	}
 }

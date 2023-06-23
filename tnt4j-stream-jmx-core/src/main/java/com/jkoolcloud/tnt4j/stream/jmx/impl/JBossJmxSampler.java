@@ -19,10 +19,10 @@ import java.lang.management.ManagementFactory;
 import java.lang.reflect.Method;
 
 import javax.management.MBeanServer;
-import javax.management.MBeanServerConnection;
 
 import com.jkoolcloud.tnt4j.core.OpLevel;
 import com.jkoolcloud.tnt4j.sink.EventSink;
+import com.jkoolcloud.tnt4j.stream.jmx.core.JMXServerConnection;
 import com.jkoolcloud.tnt4j.stream.jmx.factory.SamplerFactory;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.LoggerUtils;
 import com.jkoolcloud.tnt4j.utils.Utils;
@@ -83,7 +83,7 @@ public class JBossJmxSampler extends PlatformJmxSampler {
 	 *            sampler factory instance
 	 */
 	protected JBossJmxSampler(SamplerFactory sFactory) {
-		super(defaultMBeanServer(), sFactory);
+		super(new JMXMBeanServerConnection(defaultMBeanServer()), sFactory);
 	}
 
 	/**
@@ -94,7 +94,7 @@ public class JBossJmxSampler extends PlatformJmxSampler {
 	 * @param sFactory
 	 *            sampler factory instance
 	 */
-	protected JBossJmxSampler(MBeanServerConnection mServerConn, SamplerFactory sFactory) {
+	protected JBossJmxSampler(JMXServerConnection mServerConn, SamplerFactory sFactory) {
 		super(mServerConn, sFactory);
 	}
 }

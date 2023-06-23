@@ -17,11 +17,10 @@ package com.jkoolcloud.tnt4j.stream.jmx.impl;
 
 import java.util.Map;
 
-import javax.management.MBeanServerConnection;
-
 import com.jkoolcloud.tnt4j.source.Source;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.SampleHandler;
 import com.jkoolcloud.tnt4j.stream.jmx.core.DefaultSampleListener;
+import com.jkoolcloud.tnt4j.stream.jmx.core.JMXServerConnection;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
 import com.jkoolcloud.tnt4j.stream.jmx.factory.SamplerFactory;
@@ -51,7 +50,7 @@ public class PlatformSamplerFactory implements SamplerFactory {
 	}
 
 	@Override
-	public Sampler newInstance(MBeanServerConnection mServerConn) {
+	public Sampler newInstance(JMXServerConnection mServerConn) {
 		return mServerConn == null ? newInstance() : new PlatformJmxSampler(mServerConn, this);
 	}
 
@@ -71,13 +70,12 @@ public class PlatformSamplerFactory implements SamplerFactory {
 	}
 
 	@Override
-	public SampleHandler newSampleHandler(MBeanServerConnection mServerConn, String incFilterList,
-			String excFilterList) {
+	public SampleHandler newSampleHandler(JMXServerConnection mServerConn, String incFilterList, String excFilterList) {
 		return newSampleHandler(mServerConn, incFilterList, excFilterList, null);
 	}
 
 	@Override
-	public SampleHandler newSampleHandler(MBeanServerConnection mServerConn, String incFilterList, String excFilterList,
+	public SampleHandler newSampleHandler(JMXServerConnection mServerConn, String incFilterList, String excFilterList,
 			Source source) {
 		return System.getSecurityManager() == null
 				? new SampleHandlerImpl(mServerConn, incFilterList, excFilterList, source)

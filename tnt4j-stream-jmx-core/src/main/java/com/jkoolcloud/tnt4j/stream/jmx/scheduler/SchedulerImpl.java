@@ -17,8 +17,6 @@ package com.jkoolcloud.tnt4j.stream.jmx.scheduler;
 
 import java.util.concurrent.TimeUnit;
 
-import javax.management.MBeanServerConnection;
-
 import org.apache.commons.lang3.StringUtils;
 
 import com.jkoolcloud.tnt4j.ActivityScheduler;
@@ -36,7 +34,8 @@ import com.jkoolcloud.tnt4j.stream.jmx.factory.SamplerFactory;
 
 /**
  * <p>
- * This class provides scheduled sample/heart-beat for a given JMX {@link MBeanServerConnection}.
+ * This class provides scheduled sample/heart-beat for a given JMX
+ * {@link com.jkoolcloud.tnt4j.stream.jmx.core.JMXServerConnection}.
  * </p>
  * 
  * @version $Revision: 1 $

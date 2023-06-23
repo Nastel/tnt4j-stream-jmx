@@ -19,12 +19,11 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.concurrent.TimeUnit;
 
-import javax.management.MBeanServerConnection;
-
 import com.jkoolcloud.tnt4j.TrackingLogger;
 import com.jkoolcloud.tnt4j.source.Source;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeAction;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeCondition;
+import com.jkoolcloud.tnt4j.stream.jmx.core.JMXServerConnection;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleContext;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
@@ -34,8 +33,9 @@ import com.jkoolcloud.tnt4j.stream.jmx.scheduler.SchedulerImpl;
 
 /**
  * <p>
- * This class provides scheduled execution and sampling of a JMX metrics for a given {@link MBeanServerConnection}
- * instance. By default, the class will use {@link ManagementFactory#getPlatformMBeanServer()} instance.
+ * This class provides scheduled execution and sampling of a JMX metrics for a given
+ * {@link com.jkoolcloud.tnt4j.stream.jmx.core.JMXServerConnection} instance. By default, the class will use
+ * {@link ManagementFactory#getPlatformMBeanServer()} instance.
  * </p>
  * 
  * 
@@ -47,7 +47,7 @@ import com.jkoolcloud.tnt4j.stream.jmx.scheduler.SchedulerImpl;
  */
 public class PlatformJmxSampler implements Sampler {
 	protected Scheduler sampler;
-	protected MBeanServerConnection targetServer;
+	protected JMXServerConnection targetServer;
 	protected SamplerFactory sFactory;
 
 	/**
@@ -57,7 +57,7 @@ public class PlatformJmxSampler implements Sampler {
 	 *            sampler factory instance
 	 */
 	protected PlatformJmxSampler(SamplerFactory sFactory) {
-		this(ManagementFactory.getPlatformMBeanServer(), sFactory);
+		this(new JMXMBeanServerConnection(ManagementFactory.getPlatformMBeanServer()), sFactory);
 	}
 
 	/**
@@ -68,13 +68,13 @@ public class PlatformJmxSampler implements Sampler {
 	 * @param sFactory
 	 *            sampler factory instance
 	 */
-	protected PlatformJmxSampler(MBeanServerConnection mServerConn, SamplerFactory sFactory) {
+	protected PlatformJmxSampler(JMXServerConnection mServerConn, SamplerFactory sFactory) {
 		targetServer = mServerConn;
 		this.sFactory = sFactory;
 	}
 
 	@Override
-	public MBeanServerConnection getMBeanServer() {
+	public JMXServerConnection getMBeanServer() {
 		return targetServer;
 	}
 
@@ -154,7 +154,7 @@ public class PlatformJmxSampler implements Sampler {
 	 * 
 	 * @return new {@link Scheduler} instance
 	 */
-	protected Scheduler newScheduler(MBeanServerConnection mServerConn, String incFilter, String excFilter, long period,
+	protected Scheduler newScheduler(JMXServerConnection mServerConn, String incFilter, String excFilter, long period,
 			TimeUnit tUnit) {
 		return newScheduler(mServerConn, incFilter, excFilter, 0, period, tUnit);
 	}
@@ -177,7 +177,7 @@ public class PlatformJmxSampler implements Sampler {
 	 *
 	 * @return new {@link Scheduler} instance
 	 */
-	protected Scheduler newScheduler(MBeanServerConnection mServerConn, String incFilter, String excFilter,
+	protected Scheduler newScheduler(JMXServerConnection mServerConn, String incFilter, String excFilter,
 			long initDelay, long period, TimeUnit tUnit) {
 		return new SchedulerImpl(this.getClass().getName(),
 				sFactory.newSampleHandler(mServerConn, incFilter, excFilter), incFilter, excFilter, initDelay, period,
@@ -203,7 +203,7 @@ public class PlatformJmxSampler implements Sampler {
 	 *            sampler factory instance
 	 * @return new {@link Scheduler} instance
 	 */
-	protected Scheduler newScheduler(MBeanServerConnection mServerConn, String incFilter, String excFilter,
+	protected Scheduler newScheduler(JMXServerConnection mServerConn, String incFilter, String excFilter,
 			long initDelay, long period, TimeUnit tUnit, SamplerFactory sFactory) {
 		return newScheduler(mServerConn, incFilter, excFilter, initDelay, period, tUnit, sFactory, null);
 	}
@@ -229,7 +229,7 @@ public class PlatformJmxSampler implements Sampler {
 	 *            sample source
 	 * @return new {@link Scheduler} instance
 	 */
-	protected Scheduler newScheduler(MBeanServerConnection mServerConn, String incFilter, String excFilter,
+	protected Scheduler newScheduler(JMXServerConnection mServerConn, String incFilter, String excFilter,
 			long initDelay, long period, TimeUnit tUnit, SamplerFactory sFactory, Source source) {
 		SchedulerImpl scheduler = new SchedulerImpl(getClass().getName(),
 				sFactory == null ? null : sFactory.newSampleHandler(mServerConn, incFilter, excFilter, source),

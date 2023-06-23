@@ -19,10 +19,10 @@ package com.jkoolcloud.tnt4j.stream.jmx.scheduler;
 import java.security.PrivilegedExceptionAction;
 
 import javax.management.AttributeList;
-import javax.management.MBeanServerConnection;
 
 import com.jkoolcloud.tnt4j.source.Source;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeSample;
+import com.jkoolcloud.tnt4j.stream.jmx.core.JMXServerConnection;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.WASSecurityHelper;
 
 /**
@@ -46,7 +46,7 @@ public class WASSampleHandlerImpl extends PrivilegedSampleHandlerImpl {
 	 * @param source
 	 *            sampler source
 	 */
-	public WASSampleHandlerImpl(MBeanServerConnection mServerConn, String incFilter, String excFilter, Source source) {
+	public WASSampleHandlerImpl(JMXServerConnection mServerConn, String incFilter, String excFilter, Source source) {
 		super(mServerConn, incFilter, excFilter, source);
 	}
 

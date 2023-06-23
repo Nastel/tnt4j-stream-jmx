@@ -17,10 +17,9 @@ package com.jkoolcloud.tnt4j.stream.jmx.factory;
 
 import java.util.Map;
 
-import javax.management.MBeanServerConnection;
-
 import com.jkoolcloud.tnt4j.source.Source;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.SampleHandler;
+import com.jkoolcloud.tnt4j.stream.jmx.core.JMXServerConnection;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
 
@@ -60,7 +59,7 @@ public interface SamplerFactory {
 	 * 
 	 * @see Sampler
 	 */
-	Sampler newInstance(MBeanServerConnection mServerConn);
+	Sampler newInstance(JMXServerConnection mServerConn);
 
 	/**
 	 * Creates instance of {@link SampleListener} to be used by {@link Sampler}.
@@ -91,7 +90,7 @@ public interface SamplerFactory {
 	 *            MBean exclude filters semicolon separated
 	 * @return sample handler instance to use
 	 */
-	SampleHandler newSampleHandler(MBeanServerConnection mServerConn, String incFilterList, String excFilterList);
+	SampleHandler newSampleHandler(JMXServerConnection mServerConn, String incFilterList, String excFilterList);
 
 	/**
 	 * Creates instance of {@link SampleHandler} to be used by {@link Sampler}.
@@ -106,6 +105,6 @@ public interface SamplerFactory {
 	 *            sampler source
 	 * @return sample handler instance to use
 	 */
-	SampleHandler newSampleHandler(MBeanServerConnection mServerConn, String incFilterList, String excFilterList,
+	SampleHandler newSampleHandler(JMXServerConnection mServerConn, String incFilterList, String excFilterList,
 			Source source);
 }

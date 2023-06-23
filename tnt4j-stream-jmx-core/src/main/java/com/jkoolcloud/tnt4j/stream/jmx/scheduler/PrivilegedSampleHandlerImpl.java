@@ -20,10 +20,10 @@ import java.security.AccessController;
 import java.security.PrivilegedExceptionAction;
 
 import javax.management.AttributeList;
-import javax.management.MBeanServerConnection;
 
 import com.jkoolcloud.tnt4j.source.Source;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeSample;
+import com.jkoolcloud.tnt4j.stream.jmx.core.JMXServerConnection;
 
 /**
  * Sample handler extension to be used by Java security enabled JVM and performing attributes sampling by invoking
@@ -45,7 +45,7 @@ public class PrivilegedSampleHandlerImpl extends SampleHandlerImpl {
 	 * @param source
 	 *            sampler source
 	 */
-	public PrivilegedSampleHandlerImpl(MBeanServerConnection mServerConn, String incFilter, String excFilter,
+	public PrivilegedSampleHandlerImpl(JMXServerConnection mServerConn, String incFilter, String excFilter,
 			Source source) {
 		super(mServerConn, incFilter, excFilter, source);
 	}

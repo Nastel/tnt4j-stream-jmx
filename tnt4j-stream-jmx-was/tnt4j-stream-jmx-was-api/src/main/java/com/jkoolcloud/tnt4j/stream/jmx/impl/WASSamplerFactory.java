@@ -17,10 +17,9 @@ package com.jkoolcloud.tnt4j.stream.jmx.impl;
 
 import java.util.Map;
 
-import javax.management.MBeanServerConnection;
-
 import com.jkoolcloud.tnt4j.source.Source;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.SampleHandler;
+import com.jkoolcloud.tnt4j.stream.jmx.core.JMXServerConnection;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
 import com.jkoolcloud.tnt4j.stream.jmx.scheduler.WASSampleHandlerImpl;
@@ -54,7 +53,7 @@ public class WASSamplerFactory extends J2EESamplerFactory {
 	}
 
 	@Override
-	public Sampler newInstance(MBeanServerConnection mServerConn) {
+	public Sampler newInstance(JMXServerConnection mServerConn) {
 		return mServerConn == null ? newInstance() : new WASJmxSampler(mServerConn, this);
 	}
 
@@ -69,7 +68,7 @@ public class WASSamplerFactory extends J2EESamplerFactory {
 	}
 
 	@Override
-	public SampleHandler newSampleHandler(MBeanServerConnection mServerConn, String incFilterList, String excFilterList,
+	public SampleHandler newSampleHandler(JMXServerConnection mServerConn, String incFilterList, String excFilterList,
 			Source source) {
 		if (local && WASSecurityHelper.isServerSecurityEnabled()) {
 			return new WASSampleHandlerImpl(mServerConn, incFilterList, excFilterList, source);
