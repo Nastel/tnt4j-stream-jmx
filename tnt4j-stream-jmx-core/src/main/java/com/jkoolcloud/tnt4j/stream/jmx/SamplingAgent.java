@@ -1186,7 +1186,7 @@ public class SamplingAgent {
 	 * Cancel and close all sampling for a given {@link JMXServerConnection} instance.
 	 *
 	 * @param mServerConn
-	 *            MBeanServerConnection instance
+	 *            JMXServerConnection instance
 	 */
 	public void cancel(JMXServerConnection mServerConn) {
 		Sampler sampler = STREAM_SAMPLERS.remove(mServerConn);
