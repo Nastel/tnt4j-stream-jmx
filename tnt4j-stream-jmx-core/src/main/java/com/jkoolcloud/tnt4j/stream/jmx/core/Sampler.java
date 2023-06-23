@@ -18,8 +18,6 @@ package com.jkoolcloud.tnt4j.stream.jmx.core;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import javax.management.MBeanServerConnection;
-
 import com.jkoolcloud.tnt4j.TrackingLogger;
 import com.jkoolcloud.tnt4j.source.Source;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeAction;
@@ -82,7 +80,7 @@ public interface Sampler extends NestedHandler<Sampler, SampleListener>, Runnabl
 	 *
 	 * @return MBean server connection instance
 	 */
-	MBeanServerConnection getMBeanServer();
+	JMXServerConnection getMBeanServer();
 
 	/**
 	 * Obtain {@link TrackingLogger} instance for logging

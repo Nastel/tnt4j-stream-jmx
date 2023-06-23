@@ -25,7 +25,7 @@ import com.jkoolcloud.tnt4j.stream.jmx.conditions.SampleHandler;
 /**
  * <p>
  * This interface provides a way to implement classes that implement scheduled sample/heart-beat for a given JMX
- * {@link javax.management.MBeanServerConnection}.
+ * {@link com.jkoolcloud.tnt4j.stream.jmx.core.JMXServerConnection}.
  * </p>
  * 
  * @version $Revision: 1 $

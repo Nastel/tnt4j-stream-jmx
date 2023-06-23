@@ -15,7 +15,6 @@
  */
 package com.jkoolcloud.tnt4j.stream.jmx.core;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
@@ -310,7 +309,7 @@ public class DefaultSampleListener implements SampleListener {
 	private static String getMBeanCount(SampleContext context) {
 		try {
 			return String.valueOf(context.getMBeanServer().getMBeanCount());
-		} catch (IOException exc) {
+		} catch (Exception exc) {
 			return Utils.getExceptionMessages(exc);
 		}
 	}

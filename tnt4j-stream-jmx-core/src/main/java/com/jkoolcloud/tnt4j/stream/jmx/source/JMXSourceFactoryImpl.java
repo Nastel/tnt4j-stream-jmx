@@ -16,7 +16,6 @@
 
 package com.jkoolcloud.tnt4j.stream.jmx.source;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.Iterator;
 import java.util.Map;
@@ -24,9 +23,9 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
-import javax.management.*;
+import javax.management.ObjectInstance;
+import javax.management.ObjectName;
 import javax.management.remote.JMXAddressable;
-import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXServiceURL;
 
 import org.apache.commons.lang3.StringUtils;
@@ -38,6 +37,7 @@ import com.jkoolcloud.tnt4j.source.Source;
 import com.jkoolcloud.tnt4j.source.SourceFactoryImpl;
 import com.jkoolcloud.tnt4j.source.SourceType;
 import com.jkoolcloud.tnt4j.stream.jmx.SamplingAgentThread;
+import com.jkoolcloud.tnt4j.stream.jmx.core.JMXServerConnection;
 import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.LoggerUtils;
 import com.jkoolcloud.tnt4j.utils.Utils;
@@ -139,8 +139,7 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 		return split.length == 2;
 	}
 
-	private static String getAttributeValue(String oNameStr) throws MBeanException, AttributeNotFoundException,
-			InstanceNotFoundException, ReflectionException, IOException, MalformedObjectNameException {
+	private static String getAttributeValue(String oNameStr) throws Exception {
 		String[] paths = oNameStr.split(Pattern.quote(MBEAN_ATTR_DELIM));
 		if (paths.length != 2) {
 			throw new IllegalArgumentException(Utils.format(
@@ -150,7 +149,7 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 		String objectNamePart = paths[0];
 		String attributeNamePart = paths[1];
 
-		MBeanServerConnection mBeanServerConn = getMBeanServerConnection();
+		JMXServerConnection mBeanServerConn = getMBeanServerConnection();
 		Set<ObjectInstance> objects = mBeanServerConn.queryMBeans(new ObjectName(objectNamePart), null);
 
 		if (Utils.isEmpty(objects)) {
@@ -162,15 +161,15 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 		}
 	}
 
-	private static MBeanServerConnection getMBeanServerConnection() {
+	private static JMXServerConnection getMBeanServerConnection() {
 		Thread thread = Thread.currentThread();
 
 		if (thread instanceof SamplingAgentThread) {
-			Map<MBeanServerConnection, Sampler> samplers = ((SamplingAgentThread) thread).getSamplingAgent()
+			Map<JMXServerConnection, Sampler> samplers = ((SamplingAgentThread) thread).getSamplingAgent()
 					.getSamplers();
 			if (!Utils.isEmpty(samplers)) {
-				Set<Map.Entry<MBeanServerConnection, Sampler>> samplersSet = samplers.entrySet();
-				Iterator<Map.Entry<MBeanServerConnection, Sampler>> samplersIter = samplersSet.iterator();
+				Set<Map.Entry<JMXServerConnection, Sampler>> samplersSet = samplers.entrySet();
+				Iterator<Map.Entry<JMXServerConnection, Sampler>> samplersIter = samplersSet.iterator();
 				return samplersIter.next().getKey();
 			}
 		}
@@ -178,7 +177,7 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 		throw new IllegalStateException("MBean server connection not found for thread " + thread);
 	}
 
-	private static String getKeyPropertyValue(String oNameStr) throws MalformedObjectNameException, IOException {
+	private static String getKeyPropertyValue(String oNameStr) throws Exception {
 		String queryName = oNameStr.replace("?", "*"); // NON-NLS
 		ObjectName oName = new ObjectName(queryName);
 		Set<ObjectInstance> objects = getMBeanServerConnection().queryMBeans(oName, null);
@@ -205,7 +204,8 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 			String host = null;
 
 			if (thread instanceof SamplingAgentThread) {
-				JMXConnector jmxConn = ((SamplingAgentThread) thread).getSamplingAgent().getConnector();
+				javax.management.remote.JMXConnector jmxConn = ((SamplingAgentThread) thread).getSamplingAgent()
+						.getConnector();
 
 				// get MBeanServerConnection from JMX RMI connector
 				if (jmxConn instanceof JMXAddressable) {
