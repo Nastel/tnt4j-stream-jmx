@@ -35,7 +35,7 @@ import com.jkoolcloud.tnt4j.stream.jmx.core.PropertyNameBuilder;
 public class WASSampleListener extends J2EESampleListener {
 
 	/**
-	 * Create an instance of {@code WASSampleListener} with a a given print stream and configuration properties.
+	 * Create an instance of {@code WASSampleListener} with a given print stream and configuration properties.
 	 *
 	 * @param properties
 	 *            listener configuration properties map

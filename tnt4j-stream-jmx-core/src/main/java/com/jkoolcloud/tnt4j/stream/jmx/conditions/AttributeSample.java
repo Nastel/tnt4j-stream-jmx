@@ -55,27 +55,28 @@ public class AttributeSample {
 	 *            MBean server connection instance
 	 * @param name
 	 *            MBean object name reference
-	 * @param attributes
-	 *            MBean attribute handles array
+	 * @param mBeanInfo
+	 *            MBean info
 	 */
 	protected AttributeSample(Activity activity, PropertySnapshot snapshot, JMXServerConnection serverConn,
-			ObjectName name, MBeanAttributeInfo[] attributes) {
+			ObjectName name, MBeanInfo mBeanInfo) {
 		this.activity = activity;
 		this.server = serverConn;
 		this.name = name;
-		this.aInfoMap = asMap(attributes);
+		this.aInfoMap = asMap(mBeanInfo);
 		this.snapshot = snapshot;
 	}
 
 	/**
-	 * Converts MBean attribute handles array into map.
+	 * Converts MBean info provided attribute handles array into map.
 	 * 
-	 * @param attributes
-	 *            MBean attribute handles array
+	 * @param mBeanInfo
+	 *            MBean info
 	 * @return MBean attribute handles map
 	 */
-	protected static Map<String, MBeanAttributeInfo> asMap(MBeanAttributeInfo[] attributes) {
-		Map<String, MBeanAttributeInfo> attrMap = new LinkedHashMap<>();
+	protected static Map<String, MBeanAttributeInfo> asMap(MBeanInfo mBeanInfo) {
+		MBeanAttributeInfo[] attributes = mBeanInfo.getAttributes();
+		Map<String, MBeanAttributeInfo> attrMap = new LinkedHashMap<>(attributes.length);
 
 		if (attributes != null) {
 			for (MBeanAttributeInfo ai : attributes) {
@@ -97,13 +98,13 @@ public class AttributeSample {
 	 *            MBean server connection instance
 	 * @param name
 	 *            MBean object name reference
-	 * @param attributes
-	 *            MBean attribute handles array
+	 * @param mBeanInfo
+	 *            MBean info
 	 * @return a new attribute sample instance
 	 */
 	public static AttributeSample newAttributeSample(Activity activity, PropertySnapshot snapshot,
-			JMXServerConnection serverConn, ObjectName name, MBeanAttributeInfo[] attributes) {
-		return new AttributeSample(activity, snapshot, serverConn, name, attributes);
+			JMXServerConnection serverConn, ObjectName name, MBeanInfo mBeanInfo) {
+		return new AttributeSample(activity, snapshot, serverConn, name, mBeanInfo);
 	}
 
 	/**

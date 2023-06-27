@@ -33,7 +33,7 @@ public class PropertyNameBuilder {
 
 	private StringBuilder sb;
 	private Deque<Integer> marks;
-	private String delimiter;
+	private final String delimiter;
 	private String delimReplacement = DEFAULT_COMPOSITE_DELIMITER_REPLACEMENT;
 
 	/**
