@@ -228,8 +228,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 			MBeanInfo info = entry.getValue();
 
 			PropertySnapshot snapshot = new PropertySnapshot(name.getDomain(), name.getCanonicalName());
-			AttributeSample sample = AttributeSample.newAttributeSample(activity, snapshot, mbeanServer, name,
-					info.getAttributes());
+			AttributeSample sample = createSample(activity, snapshot, mbeanServer, name, info);
 			try {
 				if (doPre(sample)) {
 					sample(sample); // obtain a sample
@@ -255,6 +254,30 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 			}
 		}
 		return pCount;
+	}
+
+	/**
+	 * Creates an attribute sample instance.
+	 *
+	 * @param activity
+	 *            associated with current sample
+	 * @param snapshot
+	 *            to put MBean attribute values
+	 * @param mbeanServer
+	 *            MBean server connection instance
+	 * @param name
+	 *            MBean object name reference
+	 * @param info
+	 *            MBean info
+	 * @return a new attribute sample instance
+	 * 
+	 * @see com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeSample#newAttributeSample(com.jkoolcloud.tnt4j.core.Activity,
+	 *      com.jkoolcloud.tnt4j.core.PropertySnapshot, com.jkoolcloud.tnt4j.stream.jmx.core.JMXServerConnection,
+	 *      javax.management.ObjectName, javax.management.MBeanInfo)
+	 */
+	protected AttributeSample createSample(Activity activity, PropertySnapshot snapshot,
+			JMXServerConnection mbeanServer, ObjectName name, MBeanInfo info) {
+		return AttributeSample.newAttributeSample(activity, snapshot, mbeanServer, name, info);
 	}
 
 	/**
