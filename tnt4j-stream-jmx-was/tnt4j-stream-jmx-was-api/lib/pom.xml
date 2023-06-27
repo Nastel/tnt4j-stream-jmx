@@ -29,17 +29,17 @@
         <dependency>
             <groupId>com.ibm.ws</groupId>
             <artifactId>com.ibm.ws.orb</artifactId>
-            <version>8.5.0</version>
+            <version>9.0</version>
         </dependency>
         <dependency>
             <groupId>com.ibm.ws</groupId>
             <artifactId>com.ibm.ws.ejb.thinclient</artifactId>
-            <version>8.5.0</version>
+            <version>9.0</version>
         </dependency>
         <dependency>
             <groupId>com.ibm.ws</groupId>
             <artifactId>com.ibm.ws.admin.client</artifactId>
-            <version>8.5.0</version>
+            <version>9.0</version>
         </dependency>
     </dependencies>
 
@@ -60,9 +60,9 @@
                         <configuration>
                             <groupId>com.ibm.ws</groupId>
                             <artifactId>com.ibm.ws.orb</artifactId>
-                            <version>8.5.0</version>
+                            <version>9.0</version>
                             <packaging>jar</packaging>
-                            <file>${basedir}/was/com.ibm.ws.orb_8.5.0.jar</file>
+                            <file>${basedir}/was/com.ibm.ws.orb_9.0.jar</file>
                             <generatePom>true</generatePom>
                         </configuration>
                     </execution>
@@ -75,9 +75,9 @@
                         <configuration>
                             <groupId>com.ibm.ws</groupId>
                             <artifactId>com.ibm.ws.ejb.thinclient</artifactId>
-                            <version>8.5.0</version>
+                            <version>9.0</version>
                             <packaging>jar</packaging>
-                            <file>${basedir}/was/com.ibm.ws.ejb.thinclient_8.5.0.jar</file>
+                            <file>${basedir}/was/com.ibm.ws.ejb.thinclient_9.0.jar</file>
                             <generatePom>true</generatePom>
                         </configuration>
                     </execution>
@@ -90,9 +90,9 @@
                         <configuration>
                             <groupId>com.ibm.ws</groupId>
                             <artifactId>com.ibm.ws.admin.client</artifactId>
-                            <version>8.5.0</version>
+                            <version>9.0</version>
                             <packaging>jar</packaging>
-                            <file>${basedir}/was/com.ibm.ws.admin.client_8.5.0.jar</file>
+                            <file>${basedir}/was/com.ibm.ws.admin.client_9.0.jar</file>
                             <generatePom>true</generatePom>
                         </configuration>
                     </execution>

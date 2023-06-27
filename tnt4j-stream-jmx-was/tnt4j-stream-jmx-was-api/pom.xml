@@ -33,7 +33,7 @@
     <properties>
         <javaee.api.version>8.0.1</javaee.api.version>
         <jakartaee.api.version>9.1.0</jakartaee.api.version>
-        <com.ibm.ws.version>8.5.0</com.ibm.ws.version>
+        <com.ibm.ws.version>9.0</com.ibm.ws.version>
     </properties>
 
     <profiles>
@@ -112,7 +112,7 @@
             <version>${com.ibm.ws.version}</version>
             <scope>provided</scope>
             <!--<scope>system</scope>-->
-            <!--<systemPath>${pom.basedir}/lib/was/com.ibm.ws.admin.client_8.5.0.jar</systemPath>-->
+            <!--<systemPath>${pom.basedir}/lib/was/com.ibm.ws.admin.client_9.0.jar</systemPath>-->
         </dependency>
         <dependency>
             <groupId>com.ibm.ws</groupId>
@@ -120,7 +120,7 @@
             <version>${com.ibm.ws.version}</version>
             <scope>provided</scope>
             <!--<scope>system</scope>-->
-            <!--<systemPath>${pom.basedir}/lib/was/com.ibm.ws.ejb.thinclient_8.5.0.jar</systemPath>-->
+            <!--<systemPath>${pom.basedir}/lib/was/com.ibm.ws.ejb.thinclient_9.0.jar</systemPath>-->
         </dependency>
         <dependency>
             <groupId>com.ibm.ws</groupId>
@@ -128,7 +128,7 @@
             <version>${com.ibm.ws.version}</version>
             <scope>provided</scope>
             <!--<scope>system</scope>-->
-            <!--<systemPath>${pom.basedir}/lib/was/com.ibm.ws.orb_8.5.0.jar</systemPath>-->
+            <!--<systemPath>${pom.basedir}/lib/was/com.ibm.ws.orb_9.0.jar</systemPath>-->
         </dependency>
 
         <dependency>
