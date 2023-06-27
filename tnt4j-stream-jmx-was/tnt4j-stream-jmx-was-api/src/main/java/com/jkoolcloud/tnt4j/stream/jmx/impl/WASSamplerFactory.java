@@ -28,7 +28,7 @@ import com.jkoolcloud.tnt4j.stream.jmx.utils.WASSecurityHelper;
 /**
  * <p>
  * This class provides a {@link com.jkoolcloud.tnt4j.stream.jmx.factory.SamplerFactory} implementation with
- * {@link WASJmxSampler} as underlying sampler implementation and
+ * {@link WASJmxSampler} as underlying sampler implementation, {@link WASSampleListener} as sample listener and
  * {@link com.jkoolcloud.tnt4j.stream.jmx.format.SLIFactPathValueFormatter} as samples formatter.
  * </p>
  *
@@ -37,6 +37,7 @@ import com.jkoolcloud.tnt4j.stream.jmx.utils.WASSecurityHelper;
  * @see Sampler
  * @see WASJmxSampler
  * @see WASSampleListener
+ * @see com.jkoolcloud.tnt4j.stream.jmx.format.SLIFactPathValueFormatter
  */
 public class WASSamplerFactory extends J2EESamplerFactory {
 
