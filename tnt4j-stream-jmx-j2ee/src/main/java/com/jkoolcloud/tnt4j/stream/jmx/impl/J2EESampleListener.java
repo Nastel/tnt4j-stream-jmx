@@ -26,17 +26,25 @@ import com.jkoolcloud.tnt4j.core.PropertySnapshot;
 import com.jkoolcloud.tnt4j.stream.jmx.core.DefaultSampleListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.PropertyNameBuilder;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
+import com.jkoolcloud.tnt4j.stream.jmx.utils.Utils;
 
 /**
  * This class provide a specific implementation of a {@link SampleListener} to handle J2EE API {@link Stats} type
  * attributes.
  *
- * @version $Revision: 1 $
+ * @version $Revision: 2 $
  */
 public class J2EESampleListener extends DefaultSampleListener {
 
 	/**
-	 * Create an instance of {@code J2EESampleListener} with a a given print stream and configuration properties.
+	 * Flag indicating to add J2EE stats metadata entries as attributes for a MBean.
+	 */
+	protected static String PROP_ADD_STATISTIC_METADATA = "addStatisticMetadata";
+
+	private boolean addStatisticMetadata = false;
+
+	/**
+	 * Create an instance of {@code J2EESampleListener} with a given print stream and configuration properties.
 	 *
 	 * @param properties
 	 *            listener configuration properties map
@@ -45,6 +53,17 @@ public class J2EESampleListener extends DefaultSampleListener {
 	 */
 	public J2EESampleListener(Map<String, ?> properties) {
 		super(properties);
+
+		addStatisticMetadata = Utils.getBoolean(PROP_ADD_STATISTIC_METADATA, properties, addStatisticMetadata);
+	}
+
+	/**
+	 * Checks whether to add J2EE stats metadata entries as attributes for a MBean.
+	 * 
+	 * @return {@code true} if to add J2EE stats metadata entries as attributes, {@code false} - otherwise
+	 */
+	protected boolean isAddStatisticMetadata() {
+		return addStatisticMetadata;
 	}
 
 	@Override
@@ -74,7 +93,6 @@ public class J2EESampleListener extends DefaultSampleListener {
 		}
 		if (stats instanceof JMSSessionStats) {
 			JMSSessionStats jmsSessionStats = (JMSSessionStats) stats;
-
 			collectStats(jmsSessionStats.getProducers(), snapshot, mbAttrInfo, statName);
 			collectStats(jmsSessionStats.getConsumers(), snapshot, mbAttrInfo, statName);
 		}
@@ -85,11 +103,35 @@ public class J2EESampleListener extends DefaultSampleListener {
 		}
 		if (stats instanceof JMSConnectionStats) {
 			JMSConnectionStats jmsConnectionStats = (JMSConnectionStats) stats;
-			collectStats(jmsConnectionStats.getSessions(), snapshot, mbAttrInfo, statName);
+
+			processAttrValue(snapshot, mbAttrInfo, statName.append("Transactional"),
+					jmsConnectionStats.isTransactional());
 		}
 		if (stats instanceof JMSStats) {
 			JMSStats jmsStats = (JMSStats) stats;
 			collectStats(jmsStats.getConnections(), snapshot, mbAttrInfo, statName);
+		}
+		if (stats instanceof JCAConnectionStats) {
+			JCAConnectionStats jcaConnStats = (JCAConnectionStats) stats;
+
+			processAttrValue(snapshot, mbAttrInfo, statName.append("ConnectionFactory"),
+					jcaConnStats.getConnectionFactory());
+			processAttrValue(snapshot, mbAttrInfo, statName.append("ManagedConnectionFactory"),
+					jcaConnStats.getManagedConnectionFactory());
+		}
+		if (stats instanceof JDBCConnectionStats) {
+			JDBCConnectionStats jdbcConnectionStats = (JDBCConnectionStats) stats;
+
+			processAttrValue(snapshot, mbAttrInfo, statName.append("JdbcDataSource"),
+					jdbcConnectionStats.getJdbcDataSource());
+		}
+		if (stats instanceof JMSConsumerStats) {
+			JMSConsumerStats jmsConsumerStats = (JMSConsumerStats) stats;
+			processAttrValue(snapshot, mbAttrInfo, statName.append("Origin"), jmsConsumerStats.getOrigin());
+		}
+		if (stats instanceof JMSProducerStats) {
+			JMSProducerStats jmsProducerStats = (JMSProducerStats) stats;
+			processAttrValue(snapshot, mbAttrInfo, statName.append("Destination"), jmsProducerStats.getDestination());
 		}
 
 		Statistic[] statistics = stats.getStatistics();
@@ -106,10 +148,12 @@ public class J2EESampleListener extends DefaultSampleListener {
 
 	private void collectStats(Stats[] stats, PropertySnapshot snapshot, MBeanAttributeInfo mbAttrInfo,
 			PropertyNameBuilder statName) {
+		String initialStatName = statName.toString();
 		for (int i = 0; i < stats.length; i++) {
 			String sName = getStatsName(stats[i]);
-			statName.append(StringUtils.isEmpty(sName) ? String.valueOf(i) : sName);
+			statName.append(StringUtils.isEmpty(sName) ? getEmptyStatsName(stats[i], i) : sName);
 			collectStats(stats[i], snapshot, mbAttrInfo, statName);
+			statName.reset(initialStatName);
 		}
 	}
 
@@ -143,6 +187,19 @@ public class J2EESampleListener extends DefaultSampleListener {
 		return statsName;
 	}
 
+	/**
+	 * Constructs stats name for stats instance having no any meaningful name.
+	 * 
+	 * @param stats
+	 *            stats instance
+	 * @param index
+	 *            stats instance index in the array
+	 * @return stats name build of stats class name and index
+	 */
+	protected String getEmptyStatsName(Stats stats, int index) {
+		return stats.getClass().getSimpleName() + "[" + index + "]";
+	}
+
 	protected void processEmptyStats(Stats stats, PropertySnapshot snapshot, PropertyNameBuilder propName) {
 		snapshot.add(propName.propString(), stats.toString());
 	}
@@ -153,10 +210,12 @@ public class J2EESampleListener extends DefaultSampleListener {
 			return;
 		}
 
-		processAttrValue(snapshot, mbAttrInfo, propName.append("Name"), stat.getName());
-		processAttrValue(snapshot, mbAttrInfo, propName.append("Description"), stat.getDescription());
-		processAttrValue(snapshot, mbAttrInfo, propName.append("LastSampleTime"), stat.getLastSampleTime());
-		processAttrValue(snapshot, mbAttrInfo, propName.append("StartTime"), stat.getStartTime());
+		if (isAddStatisticMetadata()) {
+			processAttrValue(snapshot, mbAttrInfo, propName.append("Name"), stat.getName());
+			processAttrValue(snapshot, mbAttrInfo, propName.append("Description"), stat.getDescription());
+			processAttrValue(snapshot, mbAttrInfo, propName.append("LastSampleTime"), stat.getLastSampleTime());
+			processAttrValue(snapshot, mbAttrInfo, propName.append("StartTime"), stat.getStartTime());
+		}
 		processAttrValue(snapshot, mbAttrInfo, propName.append("Unit"), stat.getUnit());
 
 		if (stat instanceof CountStatistic) {

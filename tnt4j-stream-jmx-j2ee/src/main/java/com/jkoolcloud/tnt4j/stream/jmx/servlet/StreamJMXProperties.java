@@ -77,9 +77,13 @@ public enum StreamJMXProperties implements StreamJMXProperty {
 	 */
 	PORT("com.jkoolcloud.tnt4j.stream.jmx.tnt4j.out.port", "6000", EDITABLE, SYSTEM, LOCAL),
 	/**
-	 * Agent force object name flag.
+	 * Agent force object name as fact flag.
 	 */
 	FORCE_OBJ_NAME("com.jkoolcloud.tnt4j.stream.jmx.agent.forceObjectName", "true", EDITABLE, SYSTEM),
+	/**
+	 * Agent add statistic metadata values as facts flag.
+	 */
+	ADD_STATISTIC_METADATA("com.jkoolcloud.tnt4j.stream.jmx.agent.addStatisticMetadata", "false", EDITABLE, SYSTEM),
 	/**
 	 * Agent MBean attribute composite/tabular data tokens delimiter.
 	 */

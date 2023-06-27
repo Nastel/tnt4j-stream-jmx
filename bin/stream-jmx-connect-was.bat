@@ -50,7 +50,7 @@ set TNT4JOPTS=%TNT4JOPTS% "-Dtnt4j.config=%TNT4J_PROPERTIES%"
 IF ["%LOG4J_PROPERTIES%"] EQU [""] set LOG4J_PROPERTIES="%RUNDIR%..\config\log4j2.xml"
 set TNT4JOPTS=%TNT4JOPTS% "-Dlog4j2.configurationFile=%LOG4J_PROPERTIES%"
 rem ---- adding WAS specific JMX sampler options ----
-set TNT4JOPTS=%TNT4JOPTS% "-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.forceObjectName=true" "-Dcom.jkoolcloud.tnt4j.stream.jmx.sampler.factory=com.jkoolcloud.tnt4j.stream.jmx.impl.WASSamplerFactory" "-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.excludeOnError=true"
+set TNT4JOPTS=%TNT4JOPTS% "-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.forceObjectName=true" "-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.addStatisticMetadata=false" "-Dcom.jkoolcloud.tnt4j.stream.jmx.sampler.factory=com.jkoolcloud.tnt4j.stream.jmx.impl.WASSamplerFactory" "-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.excludeOnError=true"
 rem -------------------------------------------------
 
 rem ---- Agent sampler options ----
