@@ -62,7 +62,7 @@ public class WASStreamJMXServlet extends StreamJMXServlet {
 		/**
 		 * JMX sampler factory used to collect WAS JMX samples.
 		 */
-		JMX_SAMPLER_FACTORY("com.jkoolcloud.tnt4j.stream.jmx.sampler.factory", "com.jkoolcloud.tnt4j.stream.jmx.impl.WASSamplerFactory", READ_ONLY, SYSTEM),
+		JMX_SAMPLER_FACTORY("com.jkoolcloud.tnt4j.stream.jmx.sampler.factory", "com.jkoolcloud.tnt4j.stream.jmx.impl.WASPMISamplerFactory", READ_ONLY, SYSTEM),
 		/**
 		 * TNT4J configuration file used to stream WAS JMX samples.
 		 */

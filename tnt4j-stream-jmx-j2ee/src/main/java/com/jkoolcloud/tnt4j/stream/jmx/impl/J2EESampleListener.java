@@ -163,6 +163,20 @@ public class J2EESampleListener extends DefaultSampleListener {
 		statName.popLevel();
 	}
 
+	/**
+	 * Resolves meaningful name for provided stats instance.
+	 * <p>
+	 * <ul>
+	 * <li>for {@link JMSProducerStats} it returns destination</li>
+	 * <li>for {@link JMSConsumerStats} it returns origin</li>
+	 * <li>for {@link JCAConnectionStats} it returns connection factory</li>
+	 * <li>for {@link JDBCConnectionStats} it returns JDBC data source</li>
+	 * </ul>
+	 * 
+	 * @param stats
+	 *            stats instance
+	 * @return meaningful name for the stats instance
+	 */
 	protected String getStatsName(Stats stats) {
 		String statsName = null;
 

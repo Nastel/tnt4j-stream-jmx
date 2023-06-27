@@ -27,8 +27,7 @@ import com.jkoolcloud.tnt4j.stream.jmx.core.PropertyNameBuilder;
 
 /**
  * This class provide a specific implementation of a {@link com.jkoolcloud.tnt4j.stream.jmx.impl.J2EESampleListener} to
- * handle WAS API {@link com.ibm.ws.pmi.j2ee.StatsImpl} and {@link com.ibm.websphere.pmi.stat.WSStats} type J2EE
- * statistics values.
+ * handle WAS API provided {@link com.ibm.ws.pmi.j2ee.StatsImpl} type J2EE statistics values.
  * 
  * @version $Revision: 1 $
  */
