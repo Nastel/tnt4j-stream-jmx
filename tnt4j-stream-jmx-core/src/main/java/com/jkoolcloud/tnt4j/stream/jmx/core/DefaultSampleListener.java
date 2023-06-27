@@ -66,7 +66,7 @@ public class DefaultSampleListener implements SampleListener {
 	protected final ReentrantLock buildLock = new ReentrantLock();
 
 	/**
-	 * Create an instance of {@code DefaultSampleListener} with a a given print stream and configuration properties.
+	 * Create an instance of {@code DefaultSampleListener} with a given print stream and configuration properties.
 	 *
 	 * @param properties
 	 *            listener configuration properties map
@@ -191,7 +191,7 @@ public class DefaultSampleListener implements SampleListener {
 	 *            MBean object name
 	 * @param ainfo
 	 *            MBean attribute info
-	 * @return {@code true} is attribute is excluded by user defined list, {@code false} - otherwise
+	 * @return {@code true} when attribute is excluded by user defined list, {@code false} - otherwise
 	 */
 	protected boolean isExcludedByUser(Map<ObjectName, Pattern> userExcAttrs, ObjectName objName,
 			MBeanAttributeInfo ainfo) {

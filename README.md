@@ -132,6 +132,7 @@ Arguments definition:
   multiple times. Argument format: `-slp:key=value`
     * `trace` - flag indicating whether the sample listener should print trace entries to print stream. Default value - `false`.
     * `forceObjectName` - flag indicating to forcibly add `objectName` attribute if such is not present for a MBean. Default value - `false`.
+    * `addStatisticMetadata` - flag indicating to add J2EE metadata entries as attributes for a MBean. Default value - `true`.
     * `compositeDelimiter` - delimiter used to tokenize composite/tabular type MBean properties keys. Default value - `\`.
     * `useObjectNameProperties` - flag indicating to copy MBean ObjectName contained properties into sample snapshot properties. Default
       value - `true`.
@@ -907,6 +908,7 @@ value **after**.
 
 JMX sampler configuration properties are:
 * `forceObjectName` - flag indicating to forcibly add `objectName` attribute if such is not present for a MBean. Default value - `false`.
+* `addStatisticMetadata` - flag indicating to add J2EE metadata entries as attributes for a MBean. Default value - `true`.
 * `compositeDelimiter` - delimiter used to tokenize composite/tabular type MBean properties keys. Default value - `\`;
 * `useObjectNameProperties` - flag indicating to copy MBean `ObjectName` contained properties into sample snapshot properties. Default value -
   `true`.
@@ -927,6 +929,8 @@ General use:
   Example: `-Dlog4j2.configurationFile="file:./config/log4j2.xml"`
 * `com.jkoolcloud.tnt4j.stream.jmx.agent.forceObjectName` - defines whether to forcibly add `objectName` attribute if such is not present
   for a MBean. Default value - `false`. Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.forceObjectName=true`
+* `com.jkoolcloud.tnt4j.stream.jmx.agent.addStatisticMetadata` - defines whether to add J2EE statistic metadata entries as attributes 
+  for a MBean. Default value - `true`. Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.addStatisticMetadata=false` 
 * `com.jkoolcloud.tnt4j.stream.jmx.agent.compositeDelimiter` - defines delimiter used to tokenize composite/tabular type MBean properties
   keys. Default value - `\`. Example: `-Dcom.jkoolcloud.tnt4j.stream.jmx.agent.compositeDelimiter=.`
 * `com.jkoolcloud.tnt4j.stream.jmx.agent.useObjectNameProperties` - defines whether to copy MBean `ObjectName` contained properties into
@@ -969,6 +973,7 @@ To define stream JMX sampler configuration property use program argument`-slp:`.
 properties use as many argument definitions as there are required properties. For example:
 ```cmd
 -slp:forceObjectName=true
+-slp:addStatisticMetadata=false
 -slp:compositeDelimiter=.
 -slp:useObjectNameProperties=false
 -slp:excludeOnError=true
