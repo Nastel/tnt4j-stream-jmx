@@ -23,7 +23,7 @@
     <parent>
         <groupId>com.jkoolcloud.tnt4j.stream</groupId>
         <artifactId>tnt4j-stream-jmx</artifactId>
-        <version>1.18-SNAPSHOT</version>
+        <version>1.17.1</version>
     </parent>
     <packaging>jar</packaging>
 
