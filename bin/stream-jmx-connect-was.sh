@@ -43,7 +43,7 @@ else
   LIBPATH="$LIBPATH:$TOOLS_PATH"
 fi
 
-TNT4JOPTS="$TNT4JOPTS -Dtnt4j.dump.on.vm.shutdown=true -Dtnt4j.dump.on.exception=true -Dtnt4j.dump.provider.default=true"
+TNT4JOPTS="$TNT4JOPTS -Dtnt4j.dump.on.vm.shutdown=false -Dtnt4j.dump.on.exception=true -Dtnt4j.dump.provider.default=true"
 
 ### --- tnt4j file ----
 if [[ -z "$TNT4J_PROPERTIES" ]]; then
@@ -59,7 +59,7 @@ TNT4JOPTS="$TNT4JOPTS -Dlog4j2.configurationFile=file:$LOG4J_PROPERTIES"
 ### -------------------
 
 ### ---- adding WAS specific JMX sampler options ----
-TNT4JOPTS="$TNT4JOPTS -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.forceObjectName=true -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.addStatisticMetadata=false -Dcom.jkoolcloud.tnt4j.stream.jmx.sampler.factory=com.jkoolcloud.tnt4j.stream.jmx.impl.WASPMISamplerFactory -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.excludeOnError=true"
+TNT4JOPTS="$TNT4JOPTS -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.forceObjectName=true -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.useObjectNameProperties=false -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.addStatisticMetadata=false -Dcom.jkoolcloud.tnt4j.stream.jmx.sampler.factory=com.jkoolcloud.tnt4j.stream.jmx.impl.WASPMISamplerFactory -Dcom.jkoolcloud.tnt4j.stream.jmx.agent.excludeOnError=true"
 ### -------------------------------------------------
 
 # NOTE: Double exclamation mark in bash has a special meaning (previous command)
