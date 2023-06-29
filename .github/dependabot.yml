@@ -6,8 +6,6 @@ updates:
       interval: "daily"
     open-pull-requests-limit: 10
     ignore:
-      - dependency-name: "org.slf4j:slf4j*"
-        versions: "[2.x,)"
       - dependency-name: "jakarta.servlet:jakarta.servlet-api"
         versions: "[5.x,)"
       - dependency-name: "jakarta.platform:jakarta.jakartaee-api"
