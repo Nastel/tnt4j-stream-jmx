@@ -92,7 +92,7 @@
         <!--<maven.test.skip>true</maven.test.skip>-->
         <gpg.skip>true</gpg.skip>
 
-        <org.slf4j.version>1.7.36</org.slf4j.version>
+        <org.slf4j.version>2.0.7</org.slf4j.version>
         <log4j.version>2.20.0</log4j.version>
 
         <junit.version>5.9.3</junit.version>
