@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.jkoolcloud.tnt4j.core.OpLevel;
 import com.jkoolcloud.tnt4j.sink.EventSink;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.LoggerUtils;
+import com.jkoolcloud.tnt4j.stream.jmx.utils.Utils;
 
 /**
  * This class provides a generic way to get a default {@link com.jkoolcloud.tnt4j.stream.jmx.vm.VMResolverFactory}
@@ -41,9 +42,8 @@ public class DefaultVMResolverFactory {
 
 	private static VMResolverFactory initFactory(String factoryClassName) {
 		try {
-			Class<?> factoryClass = Class
-					.forName(StringUtils.isEmpty(factoryClassName) ? DEFAULT_RESOLVER_FACTORY : factoryClassName);
-			return (VMResolverFactory) factoryClass.newInstance();
+			return (VMResolverFactory) Utils.createInstance(
+					StringUtils.isEmpty(factoryClassName) ? DEFAULT_RESOLVER_FACTORY : factoryClassName);
 		} catch (Throwable ex) {
 			LOGGER.log(OpLevel.ERROR, "Failed to initialize VM resolver factory using class: {0}", factoryClassName,
 					ex);
