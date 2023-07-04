@@ -21,6 +21,7 @@ import com.jkoolcloud.tnt4j.core.OpLevel;
 import com.jkoolcloud.tnt4j.sink.EventSink;
 import com.jkoolcloud.tnt4j.stream.jmx.impl.PlatformSamplerFactory;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.LoggerUtils;
+import com.jkoolcloud.tnt4j.utils.Utils;
 
 /**
  * <p>
@@ -39,9 +40,8 @@ public class DefaultSamplerFactory {
 
 	private static SamplerFactory initFactory(String factoryClassName) {
 		try {
-			Class<?> factoryClass = Class
-					.forName(StringUtils.isEmpty(factoryClassName) ? DEFAULT_SAMPLER_FACTORY : factoryClassName);
-			return (SamplerFactory) factoryClass.newInstance();
+			return (SamplerFactory) Utils
+					.createInstance(StringUtils.isEmpty(factoryClassName) ? DEFAULT_SAMPLER_FACTORY : factoryClassName);
 		} catch (Throwable ex) {
 			LOGGER.log(OpLevel.ERROR, "Failed to initialize sampler factory using class: {0}", factoryClassName, ex);
 			return new PlatformSamplerFactory();
