@@ -55,7 +55,7 @@ TNT4JOPTS="$TNT4JOPTS -Dtnt4j.config=$TNT4J_PROPERTIES"
 if [[ -z "$LOG4J_PROPERTIES" ]]; then
   LOG4J_PROPERTIES="$SCRIPTPATH/../config/log4j2.xml"
 fi
-TNT4JOPTS="$TNT4JOPTS -Dlog4j2.configurationFile=file:$LOG4J_PROPERTIES"
+TNT4JOPTS="$TNT4JOPTS -Dlog4j2.configurationFile=$LOG4J_PROPERTIES"
 ### -------------------
 
 ### ---- adding WAS specific JMX sampler options ----
