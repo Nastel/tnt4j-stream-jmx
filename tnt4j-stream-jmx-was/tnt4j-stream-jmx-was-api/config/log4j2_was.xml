@@ -84,7 +84,7 @@
         <AsyncLogger name="com.jkoolcloud.tnt4j" level="INFO">
             <AppenderRef ref="file"/>
         </AsyncLogger>
-        <AsyncLogger name="com.jkoolcloud.tnt4j.stream.jmx" level="DEBUG">
+        <AsyncLogger name="com.jkoolcloud.tnt4j.stream.jmx" level="INFO">
             <AppenderRef ref="file"/>
         </AsyncLogger>
         <!-- #### streamed activity entities logger #### -->
