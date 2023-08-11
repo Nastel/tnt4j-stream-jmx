@@ -120,8 +120,10 @@ Arguments definition:
 * `-vm:` - virtual machine descriptor. It can be `PID` or `JVM process name fragment`. `*` value is wildcard to pick all found VMs, running
   on local machine.
 * `-ao:` - agent options string using `!` symbol as delimiter. Options format: `mbean-filter!exclude-filter!sample-ms!init-delay-ms`
-    * `mbean-filter` - MBean include name filter defined using object name pattern: `domainName:keysSet`.
-    * `exclude-filter` - MBean exclude name filter defined using object name pattern: `domainName:keysSet`.
+    * `mbean-filter` - MBean include name filter defined using object name pattern: `domainName:keysSet`. **NOTE:** Multiple filters can be 
+      defined using `;` as delimiter: `domainName1:keysSet1;domainName2:keysSet2;domainName3:keysSet3`.
+    * `exclude-filter` - MBean exclude name filter defined using object name pattern: `domainName:keysSet`. **NOTE:** Multiple filters can 
+      be defined using `;` as delimiter: `domainName1:keysSet1;domainName2:keysSet2;domainName3:keysSet3`.
     * `sample-ms` - MBeans sampling rate in milliseconds.
     * `init-delay-ms` - MBeans sampling initial delay in milliseconds. Optional, by default it is equal to `sample-ms` value.
 * `-cp:` - JMX connection parameter string using `=` symbol as delimiter. Defines only one parameter, to define more than one use this
@@ -983,8 +985,10 @@ properties use as many argument definitions as there are required properties. Fo
 ### JMX Sampling Agent sampler options
 
 Agent options are defined using format: `mbean-filter!exclude-filter!sample-ms!init-delay-ms`
-* `mbean-filter` - MBean include name filter defined using object name pattern: `domainName:keysSet`
-* `exclude-filter` - MBean exclude name filter defined using object name pattern: `domainName:keysSet`
+* `mbean-filter` - MBean include name filter defined using object name pattern: `domainName:keysSet`. **NOTE:** Multiple filters can be 
+  defined using `;` as delimiter: `domainName1:keysSet1;domainName2:keysSet2;domainName3:keysSet3`.
+* `exclude-filter` - MBean exclude name filter defined using object name pattern: `domainName:keysSet`. **NOTE:** Multiple filters can be 
+  defined using `;` as delimiter: `domainName1:keysSet1;domainName2:keysSet2;domainName3:keysSet3`.
 * `sample-ms` - MBeans sampling rate in milliseconds
 * `init-delay-ms` - MBeans sampling initial delay in milliseconds. Optional, by default it is equal to `sample-ms` value
 
