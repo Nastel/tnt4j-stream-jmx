@@ -1622,6 +1622,8 @@ Below is an example of TNT4J stream configuration writing collected JMX samples 
     #event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.SLIFactPathValueFormatter
     ; Whether to add Activity/Event context data snapshot 'Self'
     #event.formatter.AddSelfSnapshot: false
+    ; Whether to add fact value type prefixes for fact names
+    #event.formatter.AddValueTypePrefix: true
     ; Mapping of attribute key string symbol replacements
     #event.formatter.KeyReplacements: " "->"_" "\""->"'" "/"->"%" "="->"\\" ","->"!" "\\\\"->"\\"
     ; Mapping of attribute value string symbol replacements
@@ -1675,6 +1677,8 @@ Below is an example of TNT4J stream configuration writing collected JMX samples 
     #event.formatter: com.jkoolcloud.tnt4j.stream.jmx.format.SLIFactPathValueFormatter
     ; Whether to add Activity/Event context data snapshot 'Self'
     #event.formatter.AddSelfSnapshot: false
+    ; Whether to add fact value type prefixes for fact names
+    #event.formatter.AddValueTypePrefix: true
     ; Mapping of attribute key string symbol replacements
     #event.formatter.KeyReplacements: " "->"_" "\""->"'" "/"->"%" "="->"\\" ","->"!" "\\\\"->"\\"
     ; Mapping of attribute value string symbol replacements
@@ -1738,6 +1742,7 @@ sample data formatted by `FactNameValueFormatter` and to jKool repo defined by a
     event.sink.factory.EventSinkFactory.ap.Port: 6060
     event.sink.factory.EventSinkFactory.ap.Formatter: com.jkoolcloud.tnt4j.stream.jmx.format.FactNameValueFormatter
     #event.sink.factory.EventSinkFactory.ap.Formatter.AddSelfSnapshot: false
+    #event.sink.factory.EventSinkFactory.ap.Formatter.AddValueTypePrefix: true
     event.sink.factory.EventSinkFactory.ap.Formatter.KeyReplacements: " "->"_" "\""->"'" "/"->"%" "="->"\\" ","->"!" "\\\\"->"\\"
     event.sink.factory.EventSinkFactory.ap.Formatter.ValueReplacements: "\r"->"\\r" "\n"->"\\n" ";"->"&" ","->"&" "["->"{(" "]"->")}" "\""->"'"
 

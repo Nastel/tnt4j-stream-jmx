@@ -75,7 +75,7 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 
 	private Comparator<Snapshot> getSnapshotComparator() {
 		if (snapshotComparator == null) {
-			snapshotComparator = new Comparator<Snapshot>() {
+			snapshotComparator = new Comparator<>() {
 				@Override
 				public int compare(Snapshot s1, Snapshot s2) {
 					String s1Path = getSnapName(s1);
@@ -110,7 +110,7 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 
 	private Comparator<Property> getPropertyComparator() {
 		if (propertyComparator == null) {
-			propertyComparator = new Comparator<Property>() {
+			propertyComparator = new Comparator<>() {
 				@Override
 				public int compare(Property p1, Property p2) {
 					return p1.getKey().compareTo(p2.getKey());
@@ -152,6 +152,9 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 			String pKey = getUniquePropertyKey(p.getKey(), pArray, i);
 			Object value = p.getValue();
 
+			if (addValueTypePrefix) {
+				nvString.append(getValueType(value));
+			}
 			nvString.append(getKeyStr(sName, pKey));
 			nvString.append(EQ).append(getValueStr(value)).append(FIELD_SEP);
 		}
