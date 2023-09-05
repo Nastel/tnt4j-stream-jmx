@@ -15,10 +15,7 @@
  */
 package com.jkoolcloud.tnt4j.stream.jmx.format;
 
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.management.ObjectName;
 
@@ -39,7 +36,7 @@ import com.jkoolcloud.tnt4j.tracker.TrackingEvent;
  * </p>
  * Newline is added at the end of each line.
  *
- * @version $Revision: 1 $
+ * @version $Revision: 2 $
  * 
  * @see com.jkoolcloud.tnt4j.stream.jmx.scheduler.SchedulerImpl
  */
@@ -57,10 +54,20 @@ public class FactNameValueFormatter extends DefaultFormatter {
 
 	private static final String SNAP_NAME_PROP = "JMX_SNAP_NAME";
 
+	/**
+	 * Mapping of attribute key string symbol replacements.
+	 */
 	protected Map<String, String> keyReplacements = new LinkedHashMap<>();
+	/**
+	 * Mapping of attribute value string symbol replacements.
+	 */
 	protected Map<String, String> valueReplacements = new LinkedHashMap<>();
 
 	private boolean addSelfSnapshot = true;
+	/**
+	 * Flag indicating whether to add fact value type prefixes for fact names. Default {@value}.
+	 */
+	protected boolean addValueTypePrefix = false;
 
 	public FactNameValueFormatter() {
 		super("time.stamp={2},level={1},source={3},msg=\"{0}\"");
@@ -244,10 +251,52 @@ public class FactNameValueFormatter extends DefaultFormatter {
 			String pKey = p.getKey();
 			Object value = p.getValue();
 
+			if (addValueTypePrefix) {
+				nvString.append(getValueType(value));
+			}
 			nvString.append(getKeyStr(sName, pKey));
 			nvString.append(EQ).append(getValueStr(value)).append(FIELD_SEP);
 		}
 		return nvString;
+	}
+
+	/**
+	 * Returns provided value type string to prefix fact name.
+	 * 
+	 * @param value
+	 *            value to determine type
+	 * @return value type prefix string
+	 */
+	protected String getValueType(Object value) {
+		if (value instanceof Integer) {
+			return "$I$";
+		}
+		if (value instanceof Long) {
+			return "$L$";
+		}
+		if (value instanceof Float) {
+			return "$F$";
+		}
+		if (value instanceof Double) {
+			return "$D$";
+		}
+		if (value instanceof Boolean) {
+			return "$B$";
+		}
+		if (value instanceof String) {
+			return "$S$";
+		}
+		if (value instanceof Date) {
+			return "$T$";
+		}
+		// if (value instanceof Date) {
+		// return "$M$"; //timestamp numeric long
+		// }
+		if (value instanceof byte[]) {
+			return "$X$";
+		}
+
+		return "$V$";
 	}
 
 	/**
@@ -345,12 +394,18 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	 *            attribute value
 	 * @return decorated string representation of attribute value
 	 *
+	 * @see com.jkoolcloud.tnt4j.utils.Utils#base64EncodeStr(byte[])
 	 * @see com.jkoolcloud.tnt4j.utils.Utils#toString(Object)
 	 * @see #initDefaultValueReplacements()
 	 * @see Utils#replace(String, Map)
 	 */
 	protected String getValueStr(Object value) {
-		String valStr = Utils.toString(value);
+		String valStr;
+		if (value instanceof byte[]) {
+			valStr = Utils.base64EncodeStr((byte[]) value);
+		} else {
+			valStr = Utils.toString(value);
+		}
 
 		return Utils.replace(valStr, valueReplacements);
 	}
@@ -374,6 +429,8 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		}
 
 		addSelfSnapshot = com.jkoolcloud.tnt4j.utils.Utils.getBoolean("AddSelfSnapshot", settings, addSelfSnapshot);
+		addValueTypePrefix = com.jkoolcloud.tnt4j.utils.Utils.getBoolean("AddValueTypePrefix", settings,
+				addValueTypePrefix);
 	}
 
 	/**
