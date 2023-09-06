@@ -65,9 +65,9 @@ public class FactNameValueFormatter extends DefaultFormatter {
 
 	private boolean addSelfSnapshot = true;
 	/**
-	 * Flag indicating whether to add fact value type prefixes for fact names. Default {@value}.
+	 * Flag indicating whether to add AutoPilot fact value type prefixes for fact names. Default {@value}.
 	 */
-	protected boolean addValueTypePrefix = false;
+	protected boolean addAPValueTypePrefix = false;
 
 	public FactNameValueFormatter() {
 		super("time.stamp={2},level={1},source={3},msg=\"{0}\"");
@@ -251,8 +251,8 @@ public class FactNameValueFormatter extends DefaultFormatter {
 			String pKey = p.getKey();
 			Object value = p.getValue();
 
-			if (addValueTypePrefix) {
-				nvString.append(getValueType(value));
+			if (addAPValueTypePrefix) {
+				nvString.append(getAPValueType(value));
 			}
 			nvString.append(getKeyStr(sName, pKey));
 			nvString.append(EQ).append(getValueStr(value)).append(FIELD_SEP);
@@ -261,13 +261,13 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	}
 
 	/**
-	 * Returns provided value type string to prefix fact name.
+	 * Returns provided value AutoPilot type string to prefix fact name.
 	 * 
 	 * @param value
 	 *            value to determine type
-	 * @return value type prefix string
+	 * @return AutoPilot value type prefix string
 	 */
-	protected String getValueType(Object value) {
+	protected String getAPValueType(Object value) {
 		if (value instanceof Integer) {
 			return "$I$";
 		}
@@ -429,8 +429,8 @@ public class FactNameValueFormatter extends DefaultFormatter {
 		}
 
 		addSelfSnapshot = com.jkoolcloud.tnt4j.utils.Utils.getBoolean("AddSelfSnapshot", settings, addSelfSnapshot);
-		addValueTypePrefix = com.jkoolcloud.tnt4j.utils.Utils.getBoolean("AddValueTypePrefix", settings,
-				addValueTypePrefix);
+		addAPValueTypePrefix = com.jkoolcloud.tnt4j.utils.Utils.getBoolean("AddAPValueTypePrefix", settings,
+				addAPValueTypePrefix);
 	}
 
 	/**

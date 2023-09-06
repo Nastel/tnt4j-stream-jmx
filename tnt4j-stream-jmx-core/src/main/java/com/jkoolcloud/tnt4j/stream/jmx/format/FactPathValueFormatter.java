@@ -152,8 +152,8 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 			String pKey = getUniquePropertyKey(p.getKey(), pArray, i);
 			Object value = p.getValue();
 
-			if (addValueTypePrefix) {
-				nvString.append(getValueType(value));
+			if (addAPValueTypePrefix) {
+				nvString.append(getAPValueType(value));
 			}
 			nvString.append(getKeyStr(sName, pKey));
 			nvString.append(EQ).append(getValueStr(value)).append(FIELD_SEP);
