@@ -61,4 +61,11 @@ public interface ActivityAggregator {
 	 * @return aggregated activity instance, in most cases same as provided one
 	 */
 	Activity aggregate(Activity activity);
+
+	/**
+	 * Checks if this aggregation has any active aggregations available.
+	 * 
+	 * @return {@code true} if this aggregator has any active aggregations available, {@code false} - otherwise
+	 */
+	boolean isEnabled();
 }

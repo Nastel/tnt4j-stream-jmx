@@ -113,7 +113,7 @@ public class AggregationsManager {
 			Boolean enabled = (Boolean) aggregatorCfg.get("enabled");
 
 			if (enabled != null && !enabled) {
-				LOGGER.log(OpLevel.DEBUG, "Skipping loading disabled aggregator ''{0}:{1}''", id, type);
+				LOGGER.log(OpLevel.DEBUG, "Skipping disabled aggregator ''{0}:{1}''", id, type);
 				continue;
 			}
 
@@ -143,5 +143,20 @@ public class AggregationsManager {
 				LOGGER.log(OpLevel.ERROR, "Failed to apply aggregator ''{0}''", aggregator.getId(), exc);
 			}
 		}
+	}
+
+	/**
+	 * Checks if there are any aggregations defined and enabled for execution.
+	 * 
+	 * @return {@code true} if there are any aggregators defined and enabled, {@code false} - otherwise
+	 */
+	public static boolean isActive() {
+		for (ActivityAggregator aggregator : aggregators) {
+			if (aggregator.isEnabled()) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }
