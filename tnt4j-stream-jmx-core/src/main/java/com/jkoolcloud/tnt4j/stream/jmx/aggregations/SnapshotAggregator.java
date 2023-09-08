@@ -135,6 +135,7 @@ public class SnapshotAggregator implements ActivityAggregator {
 	private static final String ID_CAT_DELIMITER = "@";
 
 	private String id;
+	private boolean enabled = false;
 
 	private Collection<SnapshotAggregation> snapshotAggregations = new ArrayList<>();
 
@@ -189,6 +190,9 @@ public class SnapshotAggregator implements ActivityAggregator {
 			}
 
 			snapshotAggregations.add(snapshotAggregation);
+			if (snapshotAggregation.isEnabled()) {
+				enabled = true;
+			}
 		}
 	}
 
@@ -346,6 +350,11 @@ public class SnapshotAggregator implements ActivityAggregator {
 		}
 
 		return activity;
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return enabled;
 	}
 
 	/**
