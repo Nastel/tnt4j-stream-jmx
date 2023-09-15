@@ -173,11 +173,26 @@ public class FactNameValueFormatter extends DefaultFormatter {
 
 		nvString.append("OBJ:");
 		toString(nvString, source).append(PATH_DELIM).append("Message").append(FIELD_SEP);
-		nvString.append(SELF_SNAP_NAME).append(PATH_DELIM).append("level=").append(getValueStr(level))
-				.append(FIELD_SEP);
-		nvString.append(SELF_SNAP_NAME).append(PATH_DELIM).append("msg-text=");
-		Utils.quote(Utils.format(msg, args), nvString).append(END_SEP);
+		nvString.append(SELF_SNAP_NAME).append(PATH_DELIM).append("level");
+		formatValue(nvString, level, FIELD_SEP);
+		nvString.append(SELF_SNAP_NAME).append(PATH_DELIM).append("msg-text");
+		formatValue(nvString, Utils.format(msg, args), END_SEP);
 		return nvString.toString();
+	}
+
+	/**
+	 * Formats provided {@code value} and appends to provided string builder.
+	 * 
+	 * @param nvString
+	 *            string builder instance to append
+	 * @param value
+	 *            value to append
+	 * @param sep
+	 *            fields separator symbol
+	 * @return string builder instance
+	 */
+	protected StringBuilder formatValue(StringBuilder nvString, Object value, String sep) {
+		return nvString.append(EQ).append(getValueStr(value)).append(sep);
 	}
 
 	/**
@@ -245,7 +260,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 			Object value = p.getValue();
 
 			nvString.append(getKeyStr(sName, pKey));
-			nvString.append(EQ).append(getValueStr(value)).append(FIELD_SEP);
+			formatValue(nvString, value, FIELD_SEP);
 		}
 		return nvString;
 	}
