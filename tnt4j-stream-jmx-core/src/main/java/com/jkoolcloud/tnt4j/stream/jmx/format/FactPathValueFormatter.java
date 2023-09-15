@@ -156,7 +156,7 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 				nvString.append(getAPValueType(value));
 			}
 			nvString.append(getKeyStr(sName, pKey));
-			nvString.append(EQ).append(getValueStr(value)).append(FIELD_SEP);
+			formatValue(nvString, value, FIELD_SEP);
 		}
 		return nvString;
 	}
