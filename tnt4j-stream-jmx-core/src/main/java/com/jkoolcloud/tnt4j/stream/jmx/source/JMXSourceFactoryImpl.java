@@ -17,10 +17,7 @@
 package com.jkoolcloud.tnt4j.stream.jmx.source;
 
 import java.net.URI;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import javax.management.ObjectInstance;
@@ -36,6 +33,7 @@ import com.jkoolcloud.tnt4j.source.DefaultSource;
 import com.jkoolcloud.tnt4j.source.Source;
 import com.jkoolcloud.tnt4j.source.SourceFactoryImpl;
 import com.jkoolcloud.tnt4j.source.SourceType;
+import com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent;
 import com.jkoolcloud.tnt4j.stream.jmx.SamplingAgentThread;
 import com.jkoolcloud.tnt4j.stream.jmx.core.JMXServerConnection;
 import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
@@ -168,9 +166,13 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 			Map<JMXServerConnection, Sampler> samplers = ((SamplingAgentThread) thread).getSamplingAgent()
 					.getSamplers();
 			if (!Utils.isEmpty(samplers)) {
-				Set<Map.Entry<JMXServerConnection, Sampler>> samplersSet = samplers.entrySet();
-				Iterator<Map.Entry<JMXServerConnection, Sampler>> samplersIter = samplersSet.iterator();
-				return samplersIter.next().getKey();
+				Set<JMXServerConnection> connSet = samplers.keySet();
+				return Utils.getLast(connSet.iterator());
+			}
+		} else {
+			List<Sampler> samplers = SamplingAgent.getAllSamplers();
+			if (!Utils.isEmpty(samplers)) {
+				return samplers.get(samplers.size() - 1).getMBeanServer();
 			}
 		}
 
@@ -203,14 +205,19 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 			Thread thread = Thread.currentThread();
 			String host = null;
 
+			javax.management.remote.JMXConnector jmxConn = null;
 			if (thread instanceof SamplingAgentThread) {
-				javax.management.remote.JMXConnector jmxConn = ((SamplingAgentThread) thread).getSamplingAgent()
-						.getConnector();
-
-				// get MBeanServerConnection from JMX RMI connector
-				if (jmxConn instanceof JMXAddressable) {
-					host = getHost((JMXAddressable) jmxConn);
+				jmxConn = ((SamplingAgentThread) thread).getSamplingAgent().getConnector();
+			} else {
+				Collection<SamplingAgent> agents = SamplingAgent.getAllAgents();
+				if (!Utils.isEmpty(agents)) {
+					jmxConn = Utils.getLast(agents.iterator()).getConnector();
 				}
+			}
+
+			// get MBeanServerConnection from JMX RMI connector
+			if (jmxConn instanceof JMXAddressable) {
+				host = getHost((JMXAddressable) jmxConn);
 			}
 
 			if (SOURCE_SERVER_ADDRESS.equals(propName)) {
