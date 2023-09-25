@@ -233,7 +233,7 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 
 		for (String prop : objNamePropsStrings) {
 			String[] kv = prop.split(EQ);
-			objNameProps.put(kv[0].trim(), kv[1]);
+			objNameProps.put(kv[0].trim(), kv.length > 1 ? kv[1] : "");
 		}
 
 		return objNameProps;
