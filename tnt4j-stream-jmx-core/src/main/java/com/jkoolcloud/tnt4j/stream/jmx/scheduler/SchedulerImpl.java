@@ -15,6 +15,7 @@
  */
 package com.jkoolcloud.tnt4j.stream.jmx.scheduler;
 
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
@@ -25,6 +26,7 @@ import com.jkoolcloud.tnt4j.config.DefaultConfigFactory;
 import com.jkoolcloud.tnt4j.config.TrackerConfig;
 import com.jkoolcloud.tnt4j.config.TrackerConfigStore;
 import com.jkoolcloud.tnt4j.core.ActivityListener;
+import com.jkoolcloud.tnt4j.core.OpLevel;
 import com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeAction;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeCondition;
@@ -45,23 +47,8 @@ public class SchedulerImpl extends ActivityScheduler implements Scheduler {
 	protected long initDelay;
 	protected long period;
 	protected TimeUnit timeUnit;
-	protected String incFilter;
-	protected String excFilter;
 
-	/**
-	 * Create new instance of {@code SchedulerImpl} with a given name, MBean server, sampling period. Filter is set to
-	 * all MBeans.
-	 *
-	 * @param name
-	 *            name of assigned to the sampler
-	 * @param handler
-	 *            sample handler instance
-	 * @param period
-	 *            sampling period in milliseconds
-	 */
-	public SchedulerImpl(String name, SampleHandler handler, long period) {
-		this(name, handler, Sampler.JMX_FILTER_ALL, period);
-	}
+	protected SampleActivityTask task;
 
 	/**
 	 * Create new instance of {@code SchedulerImpl} with a given name, MBean server, filter list and sampling period.
@@ -70,81 +57,16 @@ public class SchedulerImpl extends ActivityScheduler implements Scheduler {
 	 *            name of assigned to the sampler
 	 * @param handler
 	 *            sample handler instance
-	 * @param incFilterList
-	 *            MBean filters semicolon separated
-	 * @param period
-	 *            sampling period in milliseconds
+	 * @param samplerCfg
+	 *            sampler configuration map
 	 */
-	public SchedulerImpl(String name, SampleHandler handler, String incFilterList, long period) {
-		this(name, handler, incFilterList, null, period, TimeUnit.MILLISECONDS);
-	}
-
-	/**
-	 * Create new instance of {@code SchedulerImpl} with a given name, MBean server, filter list and sampling period.
-	 *
-	 * @param name
-	 *            name of assigned to the sampler
-	 * @param handler
-	 *            sample handler instance
-	 * @param incFilterList
-	 *            MBean filters semicolon separated
-	 * @param period
-	 *            sampling period
-	 * @param tUnit
-	 *            time unit for the sampling period
-	 */
-	public SchedulerImpl(String name, SampleHandler handler, String incFilterList, long period, TimeUnit tUnit) {
-		this(name, handler, incFilterList, null, period, tUnit);
-	}
-
-	/**
-	 * Create new instance of {@code SchedulerImpl} with a given name, MBean server, filter list and sampling period.
-	 *
-	 * @param name
-	 *            name of assigned to the sampler
-	 * @param handler
-	 *            sample handler instance
-	 * @param incFilterList
-	 *            MBean include filters semicolon separated
-	 * @param excFilterList
-	 *            MBean exclude filters semicolon separated
-	 * @param period
-	 *            sampling period
-	 * @param tUnit
-	 *            time unit for the sampling period
-	 */
-	public SchedulerImpl(String name, SampleHandler handler, String incFilterList, String excFilterList, long period,
-			TimeUnit tUnit) {
-		this(name, handler, incFilterList, excFilterList, 0, period, tUnit);
-	}
-
-	/**
-	 * Create new instance of {@code SchedulerImpl} with a given name, MBean server, filter list and sampling period.
-	 *
-	 * @param name
-	 *            name of assigned to the sampler
-	 * @param handler
-	 *            sample handler instance
-	 * @param incFilterList
-	 *            MBean include filters semicolon separated
-	 * @param excFilterList
-	 *            MBean exclude filters semicolon separated
-	 * @param initDelay
-	 *            initial delay before first sampling
-	 * @param period
-	 *            sampling period
-	 * @param tUnit
-	 *            time unit for the sampling period
-	 */
-	public SchedulerImpl(String name, SampleHandler handler, String incFilterList, String excFilterList, long initDelay,
-			long period, TimeUnit tUnit) {
+	public SchedulerImpl(String name, SampleHandler handler, Map<String, ?> samplerCfg) {
 		super(name, handler);
 		this.listener = (SampleHandler) this.getListener();
-		this.initDelay = initDelay;
-		this.period = period;
-		this.timeUnit = tUnit;
-		this.incFilter = incFilterList;
-		this.excFilter = excFilterList;
+		this.listener.setScheduler(this);
+		this.initDelay = ((Number) samplerCfg.get(Sampler.CFG_INITIAL_DELAY)).longValue();
+		this.period = ((Number) samplerCfg.get(Sampler.CFG_SAMPLING_PERIOD)).longValue();
+		this.timeUnit = (TimeUnit) samplerCfg.get(Sampler.CFG_TIME_UNIT);
 	}
 
 	/**
@@ -154,28 +76,18 @@ public class SchedulerImpl extends ActivityScheduler implements Scheduler {
 	 *            name of assigned to the sampler
 	 * @param handler
 	 *            sample handler instance
-	 * @param incFilterList
-	 *            MBean include filters semicolon separated
-	 * @param excFilterList
-	 *            MBean exclude filters semicolon separated
-	 * @param initDelay
-	 *            initial delay before first sampling
-	 * @param period
-	 *            sampling period
-	 * @param tUnit
-	 *            time unit for the sampling period
+	 * @param samplerCfg
+	 *            sampler configuration map
 	 * @param sFactory
 	 *            sampler factory instance
 	 */
-	public SchedulerImpl(String name, SampleHandler handler, String incFilterList, String excFilterList, long initDelay,
-			long period, TimeUnit tUnit, SamplerFactory sFactory) {
+	public SchedulerImpl(String name, SampleHandler handler, Map<String, ?> samplerCfg, SamplerFactory sFactory) {
 		super(name, loadLoggerConfig(name, sFactory, handler));
 		this.listener = (SampleHandler) this.getListener();
-		this.initDelay = initDelay;
-		this.period = period;
-		this.timeUnit = tUnit;
-		this.incFilter = incFilterList;
-		this.excFilter = excFilterList;
+		this.listener.setScheduler(this);
+		this.initDelay = ((Number) samplerCfg.get(Sampler.CFG_INITIAL_DELAY)).longValue();
+		this.period = ((Number) samplerCfg.get(Sampler.CFG_SAMPLING_PERIOD)).longValue();
+		this.timeUnit = (TimeUnit) samplerCfg.get(Sampler.CFG_TIME_UNIT);
 	}
 
 	/**
@@ -215,16 +127,6 @@ public class SchedulerImpl extends ActivityScheduler implements Scheduler {
 	}
 
 	@Override
-	public String getIncFilter() {
-		return incFilter;
-	}
-
-	@Override
-	public String getExcFilter() {
-		return excFilter;
-	}
-
-	@Override
 	public long getPeriod() {
 		return TimeUnit.MILLISECONDS.convert(period, timeUnit);
 	}
@@ -232,6 +134,22 @@ public class SchedulerImpl extends ActivityScheduler implements Scheduler {
 	@Override
 	public void run() {
 		this.schedule(this.getName(), initDelay, period, timeUnit);
+	}
+
+	@Override
+	protected Runnable newActivityTask(TrackingLogger lg, String name, OpLevel level) {
+		task = new SampleActivityTask(lg, name, (level == null ? getOpLevel() : level));
+
+		return task;
+	}
+
+	/**
+	 * Returns activity task bound to this scheduler.
+	 * 
+	 * @return activity task bound to this scheduler
+	 */
+	protected SampleActivityTask getActivityTask() {
+		return task;
 	}
 
 	@Override

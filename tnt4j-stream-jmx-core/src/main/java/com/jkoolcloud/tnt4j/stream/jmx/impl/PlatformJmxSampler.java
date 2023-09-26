@@ -17,12 +17,12 @@ package com.jkoolcloud.tnt4j.stream.jmx.impl;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import java.util.concurrent.TimeUnit;
+import java.util.Map;
 
 import com.jkoolcloud.tnt4j.TrackingLogger;
-import com.jkoolcloud.tnt4j.source.Source;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeAction;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeCondition;
+import com.jkoolcloud.tnt4j.stream.jmx.conditions.SampleHandler;
 import com.jkoolcloud.tnt4j.stream.jmx.core.JMXServerConnection;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleContext;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
@@ -47,8 +47,8 @@ import com.jkoolcloud.tnt4j.stream.jmx.scheduler.SchedulerImpl;
  */
 public class PlatformJmxSampler implements Sampler {
 	protected Scheduler sampler;
-	protected JMXServerConnection targetServer;
-	protected SamplerFactory sFactory;
+	protected final JMXServerConnection targetServer;
+	protected final SamplerFactory sFactory;
 
 	/**
 	 * Create a default instance with default MBean server instance {@link ManagementFactory#getPlatformMBeanServer()}
@@ -87,42 +87,11 @@ public class PlatformJmxSampler implements Sampler {
 	}
 
 	@Override
-	public Sampler setSchedule(long period) throws IOException {
-		return setSchedule(JMX_FILTER_ALL, period);
-	}
-
-	@Override
-	public Sampler setSchedule(String incFilter, long period) throws IOException {
-		return setSchedule(incFilter, null, period);
-	}
-
-	@Override
-	public Sampler setSchedule(String incFilter, String excFilter, long period) throws IOException {
-		return setSchedule(incFilter, excFilter, period, TimeUnit.MILLISECONDS);
-	}
-
-	@Override
-	public Sampler setSchedule(String incFilter, String excFilter, long period, TimeUnit tUnit) throws IOException {
-		return setSchedule(incFilter, excFilter, period, period, tUnit);
-	}
-
-	@Override
-	public Sampler setSchedule(String incFilter, String excFilter, long initDelay, long period, TimeUnit tUnit)
-			throws IOException {
-		return setSchedule(incFilter, excFilter, initDelay, period, tUnit, null);
-	}
-
-	@Override
-	public Sampler setSchedule(String incFilter, String excFilter, long initDelay, long period, TimeUnit tUnit,
-			SamplerFactory sFactory) throws IOException {
-		return setSchedule(incFilter, excFilter, initDelay, period, tUnit, sFactory, null);
-	}
-
-	@Override
-	public Sampler setSchedule(String incFilter, String excFilter, long initDelay, long period, TimeUnit tUnit,
-			SamplerFactory sFactory, Source source) throws IOException {
+	public Sampler setSchedule(Map<String, Object> samplerCfg) throws IOException {
 		if (sampler == null) {
-			sampler = newScheduler(targetServer, incFilter, excFilter, initDelay, period, tUnit, sFactory, source);
+			samplerCfg.put(SampleHandler.CFG_MBEAN_SERVER, targetServer);
+			samplerCfg.put(Sampler.CFG_SAMPLER_FACTORY, sFactory);
+			sampler = newScheduler(samplerCfg);
 			sampler.open();
 			return this;
 		} else {
@@ -141,99 +110,13 @@ public class PlatformJmxSampler implements Sampler {
 	/**
 	 * Create new instance of {@link Scheduler}. Override this call to return your instance of {@link Scheduler}.
 	 *
-	 * @param mServerConn
-	 *            MBean server connection instance
-	 * @param incFilter
-	 *            MBean include filters semicolon separated
-	 * @param excFilter
-	 *            MBean exclude filters semicolon separated
-	 * @param period
-	 *            time period for sampling
-	 * @param tUnit
-	 *            time units for period
-	 * 
+	 * @param samplerCfg
+	 *            sampler configuration map
 	 * @return new {@link Scheduler} instance
 	 */
-	protected Scheduler newScheduler(JMXServerConnection mServerConn, String incFilter, String excFilter, long period,
-			TimeUnit tUnit) {
-		return newScheduler(mServerConn, incFilter, excFilter, 0, period, tUnit);
-	}
-
-	/**
-	 * Create new instance of {@link Scheduler}. Override this call to return your instance of {@link Scheduler}.
-	 *
-	 * @param mServerConn
-	 *            MBean server connection instance
-	 * @param incFilter
-	 *            MBean include filters semicolon separated
-	 * @param excFilter
-	 *            MBean exclude filters semicolon separated
-	 * @param initDelay
-	 *            initial delay before first sampling
-	 * @param period
-	 *            time period for sampling
-	 * @param tUnit
-	 *            time units for period
-	 *
-	 * @return new {@link Scheduler} instance
-	 */
-	protected Scheduler newScheduler(JMXServerConnection mServerConn, String incFilter, String excFilter,
-			long initDelay, long period, TimeUnit tUnit) {
-		return new SchedulerImpl(this.getClass().getName(),
-				sFactory.newSampleHandler(mServerConn, incFilter, excFilter), incFilter, excFilter, initDelay, period,
-				tUnit);
-	}
-
-	/**
-	 * Create new instance of {@link Scheduler}. Override this call to return your instance of {@link Scheduler}.
-	 *
-	 * @param mServerConn
-	 *            MBean server connection instance
-	 * @param incFilter
-	 *            MBean include filters semicolon separated
-	 * @param excFilter
-	 *            MBean exclude filters semicolon separated
-	 * @param initDelay
-	 *            initial delay before first sampling
-	 * @param period
-	 *            time period for sampling
-	 * @param tUnit
-	 *            time units for period
-	 * @param sFactory
-	 *            sampler factory instance
-	 * @return new {@link Scheduler} instance
-	 */
-	protected Scheduler newScheduler(JMXServerConnection mServerConn, String incFilter, String excFilter,
-			long initDelay, long period, TimeUnit tUnit, SamplerFactory sFactory) {
-		return newScheduler(mServerConn, incFilter, excFilter, initDelay, period, tUnit, sFactory, null);
-	}
-
-	/**
-	 * Create new instance of {@link Scheduler}. Override this call to return your instance of {@link Scheduler}.
-	 *
-	 * @param mServerConn
-	 *            MBean server connection instance
-	 * @param incFilter
-	 *            MBean include filters semicolon separated
-	 * @param excFilter
-	 *            MBean exclude filters semicolon separated
-	 * @param initDelay
-	 *            initial delay before first sampling
-	 * @param period
-	 *            time period for sampling
-	 * @param tUnit
-	 *            time units for period
-	 * @param sFactory
-	 *            sampler factory instance
-	 * @param source
-	 *            sample source
-	 * @return new {@link Scheduler} instance
-	 */
-	protected Scheduler newScheduler(JMXServerConnection mServerConn, String incFilter, String excFilter,
-			long initDelay, long period, TimeUnit tUnit, SamplerFactory sFactory, Source source) {
+	protected Scheduler newScheduler(Map<String, ?> samplerCfg) {
 		SchedulerImpl scheduler = new SchedulerImpl(getClass().getName(),
-				sFactory == null ? null : sFactory.newSampleHandler(mServerConn, incFilter, excFilter, source),
-				incFilter, excFilter, initDelay, period, tUnit, sFactory);
+				sFactory == null ? null : sFactory.newSampleHandler(samplerCfg), samplerCfg, sFactory);
 		return scheduler;
 	}
 
@@ -286,22 +169,6 @@ public class PlatformJmxSampler implements Sampler {
 			throw new IllegalStateException("no schedule set: call setSchedule() first");
 		}
 		return sampler.getName();
-	}
-
-	@Override
-	public String getIncFilter() {
-		if (sampler == null) {
-			throw new IllegalStateException("no schedule set: call setSchedule() first");
-		}
-		return sampler.getIncFilter();
-	}
-
-	@Override
-	public String getExcFilter() {
-		if (sampler == null) {
-			throw new IllegalStateException("no schedule set: call setSchedule() first");
-		}
-		return sampler.getExcFilter();
 	}
 
 	@Override

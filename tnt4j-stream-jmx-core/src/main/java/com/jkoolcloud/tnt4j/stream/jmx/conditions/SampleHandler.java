@@ -18,6 +18,7 @@ package com.jkoolcloud.tnt4j.stream.jmx.conditions;
 import com.jkoolcloud.tnt4j.core.ActivityListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleContext;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
+import com.jkoolcloud.tnt4j.stream.jmx.scheduler.Scheduler;
 
 /**
  * <p>
@@ -30,6 +31,12 @@ import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
  * 
  */
 public interface SampleHandler extends ActivityListener, NestedHandler<SampleHandler, SampleListener> {
+	public static final String CFG_MBEAN_SERVER = "SH_CFG_MBEAN_SERVER_CONNECTION";
+	public static final String CFG_INCLUDE_FILTER = "SH_CFG_INCLUDE_FILTER";
+	public static final String CFG_EXCLUDE_FILTER = "SH_CFG_EXCLUDE_FILTER";
+	public static final String CFG_SOURCE = "SH_CFG_SOURCE";
+	public static final String CFG_BATCH_SIZE = "SH_CFG_BATCH_SIZE";
+
 	/**
 	 * Register and associate condition with an action
 	 * 
@@ -61,4 +68,12 @@ public interface SampleHandler extends ActivityListener, NestedHandler<SampleHan
 	 * Releases handler associated resources.
 	 */
 	void cleanup();
+
+	/**
+	 * Binds scheduler instance to this sample handler.
+	 * 
+	 * @param scheduler
+	 *            scheduler instance to bind
+	 */
+	void setScheduler(Scheduler scheduler);
 }

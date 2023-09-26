@@ -17,7 +17,6 @@ package com.jkoolcloud.tnt4j.stream.jmx.impl;
 
 import java.util.Map;
 
-import com.jkoolcloud.tnt4j.source.Source;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.SampleHandler;
 import com.jkoolcloud.tnt4j.stream.jmx.core.JMXServerConnection;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
@@ -69,12 +68,11 @@ public class WASSamplerFactory extends J2EESamplerFactory {
 	}
 
 	@Override
-	public SampleHandler newSampleHandler(JMXServerConnection mServerConn, String incFilterList, String excFilterList,
-			Source source) {
+	public SampleHandler newSampleHandler(Map<String, ?> config) {
 		if (local && WASSecurityHelper.isServerSecurityEnabled()) {
-			return new WASSampleHandlerImpl(mServerConn, incFilterList, excFilterList, source);
+			return new WASSampleHandlerImpl(config);
 		}
 
-		return super.newSampleHandler(mServerConn, incFilterList, excFilterList, source);
+		return super.newSampleHandler(config);
 	}
 }

@@ -17,7 +17,6 @@ package com.jkoolcloud.tnt4j.stream.jmx.factory;
 
 import java.util.Map;
 
-import com.jkoolcloud.tnt4j.source.Source;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.SampleHandler;
 import com.jkoolcloud.tnt4j.stream.jmx.core.JMXServerConnection;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
@@ -82,29 +81,8 @@ public interface SamplerFactory {
 	/**
 	 * Creates instance of {@link SampleHandler} to be used by {@link Sampler}.
 	 * 
-	 * @param mServerConn
-	 *            MBean server connection instance
-	 * @param incFilterList
-	 *            MBean include filters semicolon separated
-	 * @param excFilterList
-	 *            MBean exclude filters semicolon separated
-	 * @return sample handler instance to use
+	 * @param config
+	 *            configuration map for this sample handler
 	 */
-	SampleHandler newSampleHandler(JMXServerConnection mServerConn, String incFilterList, String excFilterList);
-
-	/**
-	 * Creates instance of {@link SampleHandler} to be used by {@link Sampler}.
-	 *
-	 * @param mServerConn
-	 *            MBean server connection instance
-	 * @param incFilterList
-	 *            MBean include filters semicolon separated
-	 * @param excFilterList
-	 *            MBean exclude filters semicolon separated
-	 * @param source
-	 *            sampler source
-	 * @return sample handler instance to use
-	 */
-	SampleHandler newSampleHandler(JMXServerConnection mServerConn, String incFilterList, String excFilterList,
-			Source source);
+	SampleHandler newSampleHandler(Map<String, ?> config);
 }

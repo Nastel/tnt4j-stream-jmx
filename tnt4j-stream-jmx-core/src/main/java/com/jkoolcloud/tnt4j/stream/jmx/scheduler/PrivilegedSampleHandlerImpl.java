@@ -18,12 +18,11 @@ package com.jkoolcloud.tnt4j.stream.jmx.scheduler;
 
 import java.security.AccessController;
 import java.security.PrivilegedExceptionAction;
+import java.util.Map;
 
 import javax.management.AttributeList;
 
-import com.jkoolcloud.tnt4j.source.Source;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeSample;
-import com.jkoolcloud.tnt4j.stream.jmx.core.JMXServerConnection;
 
 /**
  * Sample handler extension to be used by Java security enabled JVM and performing attributes sampling by invoking
@@ -36,18 +35,11 @@ public class PrivilegedSampleHandlerImpl extends SampleHandlerImpl {
 	/**
 	 * Create new instance of {@code PrivilegedSampleHandlerImpl} with a given MBean server and a set of filters.
 	 *
-	 * @param mServerConn
-	 *            MBean server connection instance
-	 * @param incFilter
-	 *            MBean include filters semicolon separated
-	 * @param excFilter
-	 *            MBean exclude filters semicolon separated
-	 * @param source
-	 *            sampler source
+	 * @param config
+	 *            configuration map for this sample handler
 	 */
-	public PrivilegedSampleHandlerImpl(JMXServerConnection mServerConn, String incFilter, String excFilter,
-			Source source) {
-		super(mServerConn, incFilter, excFilter, source);
+	public PrivilegedSampleHandlerImpl(Map<String, ?> config) {
+		super(config);
 	}
 
 	@Override
