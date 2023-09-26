@@ -27,7 +27,6 @@ import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.security.cert.X509Certificate;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import javax.management.*;
@@ -48,6 +47,7 @@ import com.jkoolcloud.tnt4j.sink.EventSink;
 import com.jkoolcloud.tnt4j.source.Source;
 import com.jkoolcloud.tnt4j.source.SourceFactory;
 import com.jkoolcloud.tnt4j.source.SourceType;
+import com.jkoolcloud.tnt4j.stream.jmx.conditions.SampleHandler;
 import com.jkoolcloud.tnt4j.stream.jmx.core.DefaultSampleListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.JMXServerConnection;
 import com.jkoolcloud.tnt4j.stream.jmx.core.PropertyNameBuilder;
@@ -74,7 +74,8 @@ public class SamplingAgent {
 	private static final EventSink LOGGER = LoggerUtils.getLoggerSink(SamplingAgent.class);
 
 	protected Sampler platformJmx;
-	protected final Map<JMXServerConnection, Sampler> STREAM_SAMPLERS = new ConcurrentHashMap<>(5);
+	protected final Map<JMXServerConnection, Sampler> STREAM_SAMPLERS = Collections
+			.synchronizedMap(new LinkedHashMap<>(5));
 
 	private static final Collection<SamplingAgent> ALL_AGENTS = new ArrayList<>(5);
 
@@ -112,6 +113,7 @@ public class SamplingAgent {
 	private static final String AGENT_ARG_S_TIME = "agent.sample.time";
 	private static final String AGENT_ARG_D_TIME = "agent.sample.delay.time";
 	private static final String AGENT_ARG_W_TIME = "agent.wait.time";
+	private static final String AGENT_ARG_BATCH_SIZE = "agent.batch.size";
 	private static final String AGENT_ARG_DISABLE_SSL = "ssl.disable";
 
 	private static final String AGENT_CONN_PARAMS = "agent.connection.params";
@@ -198,12 +200,13 @@ public class SamplingAgent {
 	 */
 	public static void premain(String options, Instrumentation inst) throws IOException {
 		SamplingArgs sa = SamplingArgs.parse(options);
+		Map<String, Object> samplerCfg = sa.getAsMap();
 		SamplingAgent agent = newSamplingAgent(true);
-		agent.sample(sa.incFilter, sa.excFilter, sa.initDelay, sa.period, TimeUnit.MILLISECONDS);
+		agent.sample(samplerCfg);
 		LOGGER.log(OpLevel.INFO,
-				"SamplingAgent.premain: include.filter={0}, exclude.filter={1}, sample.ms={2}, initDelay.ms={3}, listener.properties={4}, tnt4j.config={5}, jmx.sample.list={6}",
-				sa.incFilter, sa.excFilter, sa.period, sa.initDelay, LISTENER_PROPERTIES,
-				System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY), agent.STREAM_SAMPLERS);
+				"SamplingAgent.premain: sampler.config={0}, listener.properties={1}, tnt4j.config={2}, jmx.sample.list={3}",
+				samplerCfg, LISTENER_PROPERTIES, System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY),
+				agent.STREAM_SAMPLERS);
 	}
 
 	/**
@@ -403,11 +406,20 @@ public class SamplingAgent {
 					long delay_time = Integer
 							.parseInt(clProps.getProperty(AGENT_ARG_D_TIME, String.valueOf(sample_time)));
 					long wait_time = Integer.parseInt(clProps.getProperty(AGENT_ARG_W_TIME, "0"));
+					int batch_size = Integer.parseInt(clProps.getProperty(AGENT_ARG_BATCH_SIZE, "-1"));
 					SamplingAgent samplingAgent = newSamplingAgent();
-					samplingAgent.sample(inclF, exclF, delay_time, sample_time, TimeUnit.MILLISECONDS, null);
+					Map<String, Object> samplerCfg = new HashMap<>(6);
+					samplerCfg.put(SampleHandler.CFG_INCLUDE_FILTER, inclF);
+					samplerCfg.put(SampleHandler.CFG_EXCLUDE_FILTER, exclF);
+					samplerCfg.put(SampleHandler.CFG_BATCH_SIZE, batch_size);
+
+					samplerCfg.put(Sampler.CFG_INITIAL_DELAY, delay_time);
+					samplerCfg.put(Sampler.CFG_SAMPLING_PERIOD, sample_time);
+					samplerCfg.put(Sampler.CFG_TIME_UNIT, TimeUnit.MILLISECONDS);
+					samplingAgent.sample(samplerCfg, null);
 					LOGGER.log(OpLevel.INFO,
-							"SamplingAgent.main: include.filter={0}, exclude.filter={1}, sample.ms={2}, delay.ms={3}, wait.ms={4}, listener.properties={5}, tnt4j.config={6}, jmx.sample.list={7}",
-							inclF, exclF, sample_time, delay_time, wait_time, LISTENER_PROPERTIES,
+							"SamplingAgent.main: sampler.config={0}, wait.ms={1}, listener.properties={2}, tnt4j.config={3}, jmx.sample.list={4}",
+							samplerCfg, wait_time, LISTENER_PROPERTIES,
 							System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY), samplingAgent.STREAM_SAMPLERS);
 
 					synchronized (samplingAgent.platformJmx) {
@@ -435,6 +447,7 @@ public class SamplingAgent {
 					+ "       exclude-filter - MBean exclude name filter defined using object name pattern: domainName:keysSet\n"
 					+ "       sample-ms - MBeans sampling rate in milliseconds\n"
 					+ "       init-delay-ms - MBeans sampling initial delay in milliseconds. Optional, by default it is equal to 'sample-ms' value.\n"
+					+ "       batch-size - number of sampled MBeans to post over single package. Optional, default is `-1` (unlimited).\n"
 					+ "   -cp: - JMX connection parameter string using '=' symbol as delimiter. Defines only one parameter, to define more than one use this argument multiple times. Argument format: -cp:key=value\n"
 					+ "       see https://docs.oracle.com/javase/7/docs/technotes/guides/management/agent.html for more details\n"
 					+ "  -slp: - sampler parameter string using '=' symbol as delimiter. Defines only one parameter, to define more than one use this argument multiple times. Argument format: -slp:key=value\n"
@@ -519,6 +532,15 @@ public class SamplingAgent {
 			}
 		}
 		return samplers;
+	}
+
+	/**
+	 * Returns collection of all currently running sampling agents.
+	 * 
+	 * @return collection of all running sampling agents
+	 */
+	public static Collection<SamplingAgent> getAllAgents() {
+		return ALL_AGENTS;
 	}
 
 	private static boolean parseArgs(Properties props, String... args) {
@@ -669,6 +691,9 @@ public class SamplingAgent {
 			if (args.length > 4) {
 				props.setProperty(AGENT_ARG_D_TIME, args[4]);
 			}
+			if (args.length > 5) {
+				props.setProperty(AGENT_ARG_BATCH_SIZE, args[5]);
+			}
 		}
 
 		return true;
@@ -720,80 +745,21 @@ public class SamplingAgent {
 	 */
 	public void sample() throws IOException {
 		SamplingArgs sa = new SamplingArgs();
+		Map<String, Object> samplerCfg = sa.getAsMap();
 
-		sample(sa.incFilter, sa.excFilter, sa.initDelay, sa.period);
+		sample(samplerCfg);
 	}
 
 	/**
 	 * Schedule sample with default MBean server instance as well as all registered MBean servers within the JVM.
 	 *
-	 * @param incFilter
-	 *            semicolon separated include filter list
-	 * @param period
-	 *            sampling in milliseconds.
-	 *
+	 * @param samplerConfig
+	 *            sampler configuration map
 	 * @throws IOException
 	 *             if IO exception occurs while initializing MBeans sampling
 	 */
-	public void sample(String incFilter, long period) throws IOException {
-		sample(incFilter, null, period);
-	}
-
-	/**
-	 * Schedule sample with default MBean server instance as well as all registered MBean servers within the JVM.
-	 *
-	 * @param incFilter
-	 *            semicolon separated include filter list
-	 * @param excFilter
-	 *            semicolon separated exclude filter list (null if empty)
-	 * @param period
-	 *            sampling in milliseconds.
-	 *
-	 * @throws IOException
-	 *             if IO exception occurs while initializing MBeans sampling
-	 */
-	public void sample(String incFilter, String excFilter, long period) throws IOException {
-		sample(incFilter, excFilter, period, period);
-	}
-
-	/**
-	 * Schedule sample with default MBean server instance as well as all registered MBean servers within the JVM.
-	 *
-	 * @param incFilter
-	 *            semicolon separated include filter list
-	 * @param excFilter
-	 *            semicolon separated exclude filter list (null if empty)
-	 * @param initDelay
-	 *            initial delay before first sampling
-	 * @param period
-	 *            sampling in milliseconds.
-	 *
-	 * @throws IOException
-	 *             if IO exception occurs while initializing MBeans sampling
-	 */
-	public void sample(String incFilter, String excFilter, long initDelay, long period) throws IOException {
-		sample(incFilter, excFilter, initDelay, period, TimeUnit.MILLISECONDS);
-	}
-
-	/**
-	 * Schedule sample with default MBean server instance as well as all registered MBean servers within the JVM.
-	 *
-	 * @param incFilter
-	 *            semicolon separated include filter list
-	 * @param excFilter
-	 *            semicolon separated exclude filter list (null if empty)
-	 * @param initDelay
-	 *            initial delay before first sampling
-	 * @param period
-	 *            sampling time
-	 * @param tUnit
-	 *            time units for sampling period
-	 * @throws IOException
-	 *             if IO exception occurs while initializing MBeans sampling
-	 */
-	public void sample(String incFilter, String excFilter, long initDelay, long period, TimeUnit tUnit)
-			throws IOException {
-		SamplerFactory sFactory = initPlatformJMX(incFilter, excFilter, initDelay, period, tUnit, null);
+	public void sample(Map<String, Object> samplerConfig) throws IOException {
+		SamplerFactory sFactory = initPlatformJMX(samplerConfig, null);
 
 		// find other registered MBean servers and initiate sampling for all
 		ArrayList<MBeanServer> mbsList = MBeanServerFactory.findMBeanServer(null);
@@ -801,7 +767,7 @@ public class SamplingAgent {
 			Sampler jmxSampler = STREAM_SAMPLERS.get(server);
 			if (jmxSampler == null) {
 				jmxSampler = sFactory.newInstance(new JMXMBeanServerConnection(server));
-				scheduleSampler(incFilter, excFilter, initDelay, period, tUnit, sFactory, jmxSampler, STREAM_SAMPLERS);
+				scheduleSampler(samplerConfig, sFactory, jmxSampler, STREAM_SAMPLERS);
 			}
 		}
 	}
@@ -843,30 +809,21 @@ public class SamplingAgent {
 	/**
 	 * Schedule sample using defined JMX connector to get MBean server connection instance to monitored JVM.
 	 *
-	 * @param incFilter
-	 *            semicolon separated include filter list
-	 * @param excFilter
-	 *            semicolon separated exclude filter list (null if empty)
-	 * @param initDelay
-	 *            initial delay before first sampling
-	 * @param period
-	 *            sampling time
-	 * @param tUnit
-	 *            time units for sampling period
+	 * @param samplerConfig
+	 *            sampler configuration map
 	 * @param conn
 	 *            JMX connector to get MBean server connection instance
 	 *
 	 * @throws IOException
 	 *             if IO exception occurs while initializing MBeans sampling
 	 */
-	public void sample(String incFilter, String excFilter, long initDelay, long period, TimeUnit tUnit,
-			JMXConnector conn) throws IOException {
+	public void sample(Map<String, Object> samplerConfig, JMXConnector conn) throws IOException {
 		MBeanServerConnection mbSrvConn = conn.getMBeanServerConnection();
-		initPlatformJMX(incFilter, excFilter, initDelay, period, tUnit, mbSrvConn);
+		initPlatformJMX(samplerConfig, mbSrvConn);
 	}
 
-	private SamplerFactory initPlatformJMX(String incFilter, String excFilter, long initDelay, long period,
-			TimeUnit tUnit, MBeanServerConnection mbSrvConn) throws IOException {
+	private SamplerFactory initPlatformJMX(Map<String, Object> samplerConfig, MBeanServerConnection mbSrvConn)
+			throws IOException {
 		// obtain a default sample factory
 		SamplerFactory sFactory = DefaultSamplerFactory
 				.getInstance(Utils.getConfProperty(DEFAULTS, "com.jkoolcloud.tnt4j.stream.jmx.sampler.factory"));
@@ -877,18 +834,17 @@ public class SamplingAgent {
 				platformJmx = mbSrvConn == null ? sFactory.newInstance()
 						: sFactory.newInstance(new JMXMBeanServerConnection(mbSrvConn));
 				// schedule sample with a given filter and sampling period
-				scheduleSampler(incFilter, excFilter, initDelay, period, tUnit, sFactory, platformJmx, STREAM_SAMPLERS);
+				scheduleSampler(samplerConfig, sFactory, platformJmx, STREAM_SAMPLERS);
 			}
 		}
 
 		return sFactory;
 	}
 
-	private void scheduleSampler(String incFilter, String excFilter, long initDelay, long period, TimeUnit tUnit,
-			SamplerFactory sFactory, Sampler sampler, Map<JMXServerConnection, Sampler> agents) throws IOException {
+	private void scheduleSampler(Map<String, Object> samplerConfig, SamplerFactory sFactory, Sampler sampler,
+			Map<JMXServerConnection, Sampler> agents) throws IOException {
 		agents.put(sampler.getMBeanServer(), sampler);
-		sampler.setSchedule(incFilter, excFilter, initDelay, period, tUnit, sFactory, getSource())
-				.addListener(sFactory.newListener(LISTENER_PROPERTIES));
+		sampler.setSchedule(samplerConfig).addListener(sFactory.newListener(LISTENER_PROPERTIES));
 
 		if (synchronousSamplers) {
 			sampler.run();
@@ -1147,17 +1103,18 @@ public class SamplingAgent {
 
 	private void startSampler(String options, JMXConnector connector) throws Exception {
 		SamplingArgs sa = SamplingArgs.parse(options);
+		Map<String, Object> samplerCfg = sa.getAsMap();
 
 		if (connector == null) {
-			sample(sa.incFilter, sa.excFilter, sa.initDelay, sa.period, TimeUnit.MILLISECONDS);
+			sample(samplerCfg);
 		} else {
-			sample(sa.incFilter, sa.excFilter, sa.initDelay, sa.period, TimeUnit.MILLISECONDS, connector);
+			sample(samplerCfg, connector);
 		}
 
 		LOGGER.log(OpLevel.INFO,
-				"SamplingAgent.startSampler: include.filter={0}, exclude.filter={1}, sample.ms={2}, initDelay.ms={3}, listener.properties={4}, tnt4j.config={5}, jmx.sample.list={6}",
-				sa.incFilter, sa.excFilter, sa.period, sa.initDelay, LISTENER_PROPERTIES,
-				System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY), STREAM_SAMPLERS);
+				"SamplingAgent.startSampler: sampler.config={0}, listener.properties={1}, tnt4j.config={2}, jmx.sample.list={3}",
+				samplerCfg, LISTENER_PROPERTIES, System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY),
+				STREAM_SAMPLERS);
 	}
 
 	/**
@@ -1311,6 +1268,14 @@ public class SamplingAgent {
 		 * Initial sampling delay in milliseconds.
 		 */
 		int initDelay = Integer.getInteger("com.jkoolcloud.tnt4j.stream.jmx.init.delay", period);
+		/**
+		 * Sampled activity snapshots count to post over single batch. {@code -1} means unlimited.
+		 */
+		int batchSize = Integer.getInteger("com.jkoolcloud.tnt4j.stream.jmx.batch.size", -1);
+		/**
+		 * Time units for sampling period and initial delay values.
+		 */
+		TimeUnit timeUnit = TimeUnit.MILLISECONDS;
 
 		private SamplingArgs() {
 		}
@@ -1327,26 +1292,54 @@ public class SamplingAgent {
 			SamplingArgs sa = new SamplingArgs();
 
 			if (options != null) {
+				int nextIdx = 0;
 				String[] args = options.split("!");
-				if (args.length > 0) {
-					sa.incFilter = args[0];
+				try {
+					sa.incFilter = args[nextIdx++];
+				} catch (IndexOutOfBoundsException exc) {
 				}
-				if (args.length > 1) {
-					sa.excFilter = args.length > 2 ? args[1] : sa.excFilter;
+				boolean periodFound = false;
+				try {
+					sa.period = Integer.parseInt(args[nextIdx]);
+					nextIdx++;
+					periodFound = true;
+				} catch (NumberFormatException | IndexOutOfBoundsException exc) {
 					try {
-						sa.period = Integer.parseInt(args.length > 2 ? args[2] : args[1]);
-					} catch (NumberFormatException exc) {
+						sa.excFilter = args[nextIdx++];
+					} catch (IndexOutOfBoundsException bexc) {
 					}
 				}
-				if (args.length > 2) {
+
+				if (!periodFound) {
 					try {
-						sa.initDelay = Integer.parseInt(args.length > 3 ? args[3] : args[2]);
-					} catch (NumberFormatException exc) {
+						sa.period = Integer.parseInt(args[nextIdx++]);
+					} catch (NumberFormatException | IndexOutOfBoundsException exc) {
 					}
+				}
+				try {
+					sa.initDelay = Integer.parseInt(args[nextIdx++]);
+				} catch (NumberFormatException | IndexOutOfBoundsException exc) {
+				}
+				try {
+					sa.batchSize = Integer.parseInt(args[nextIdx++]);
+				} catch (NumberFormatException | IndexOutOfBoundsException exc) {
 				}
 			}
 
 			return sa;
+		}
+
+		private Map<String, Object> getAsMap() {
+			Map<String, Object> cfgMap = new HashMap<>(6);
+			cfgMap.put(SampleHandler.CFG_INCLUDE_FILTER, incFilter);
+			cfgMap.put(SampleHandler.CFG_EXCLUDE_FILTER, excFilter);
+			cfgMap.put(SampleHandler.CFG_BATCH_SIZE, batchSize);
+
+			cfgMap.put(Sampler.CFG_INITIAL_DELAY, initDelay);
+			cfgMap.put(Sampler.CFG_SAMPLING_PERIOD, period);
+			cfgMap.put(Sampler.CFG_TIME_UNIT, timeUnit);
+
+			return cfgMap;
 		}
 	}
 

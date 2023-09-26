@@ -119,13 +119,14 @@ attributes where accessed.
 Arguments definition:
 * `-vm:` - virtual machine descriptor. It can be `PID` or `JVM process name fragment`. `*` value is wildcard to pick all found VMs, running
   on local machine.
-* `-ao:` - agent options string using `!` symbol as delimiter. Options format: `mbean-filter!exclude-filter!sample-ms!init-delay-ms`
+* `-ao:` - agent options string using `!` symbol as delimiter. Options format: `mbean-filter!exclude-filter!sample-ms!init-delay-ms!batch-size`
     * `mbean-filter` - MBean include name filter defined using object name pattern: `domainName:keysSet`. **NOTE:** Multiple filters can be 
-      defined using `;` as delimiter: `domainName1:keysSet1;domainName2:keysSet2;domainName3:keysSet3`.
+      defined using `;` as delimiter: `domainName1:keysSet1;domainName2:keysSet2;domainName3:keysSet3`. Default is `*:*`.
     * `exclude-filter` - MBean exclude name filter defined using object name pattern: `domainName:keysSet`. **NOTE:** Multiple filters can 
-      be defined using `;` as delimiter: `domainName1:keysSet1;domainName2:keysSet2;domainName3:keysSet3`.
-    * `sample-ms` - MBeans sampling rate in milliseconds.
+      be defined using `;` as delimiter: `domainName1:keysSet1;domainName2:keysSet2;domainName3:keysSet3`. Optional, default is ``.
+    * `sample-ms` - MBeans sampling rate in milliseconds. Optional, Default is `30sec.`,
     * `init-delay-ms` - MBeans sampling initial delay in milliseconds. Optional, by default it is equal to `sample-ms` value.
+    * `batch-size` - number of sampled MBeans to post over single package. Optional, default is `-1` (unlimited).
 * `-cp:` - JMX connection parameter string using `=` symbol as delimiter. Defines only one parameter, to define more than one use this
   argument multiple times. Argument format: `-cp:key=value`.
   See [Java SE monitoring and management documentation](https://docs.oracle.com/javase/7/docs/technotes/guides/management/agent.html) for
@@ -842,11 +843,14 @@ See [Generic servlet page features](#generic-servlet-page-features) on what is a
     // create an instance of the sampler that will sample mbeans
     Sampler sampler = factory.newInstance();
     // schedule collection (ping) for given MBean filter and 30000 ms sampling period
-    sampler.setSchedule(Sampler.JMX_FILTER_ALL, 30000).run();
+    Map<String, Object> samplerCfg = new HashMap<>(3);
+    samplerCfg.put(SampleHandler.CFG_INCLUDE_FILTER, Sampler.JMX_FILTER_ALL);
+    samplerCfg.put(Sampler.CFG_SAMPLING_PERIOD, 30000);
+    sampler.setSchedule(samplerCfg).run();
 ```
 
-**NOTE:** `setSchedule(..).run()` sequence must be called to run the schedule. `setSchedule(..)` just sets the scheduling
-parameters, `run()` executes the schedule.
+**NOTE:** `setSchedule(..).run()` sequence must be called to run the schedule. `setSchedule(..)` just sets the scheduling parameters, 
+`run()` executes the schedule.
 
 To schedule metric collection for a specific MBean server:
 ```java
@@ -855,7 +859,10 @@ To schedule metric collection for a specific MBean server:
     // create an instance of the sampler that will sample mbeans
     Sampler sampler = factory.newInstance(ManagementFactory.getPlatformMBeanServer());
     // schedule collection (ping) for given MBean filter and 30000 ms sampling period
-    sampler.setSchedule(Sampler.JMX_FILTER_ALL, 30000).run();
+    Map<String, Object> samplerCfg = new HashMap<>(3);
+    samplerCfg.put(SampleHandler.CFG_INCLUDE_FILTER, Sampler.JMX_FILTER_ALL);
+    samplerCfg.put(Sampler.CFG_SAMPLING_PERIOD, 30000);
+    sampler.setSchedule(samplerCfg).run();
 ```
 Stream-JMX supports inclusion and exclusion filters. To schedule metric collection for a specific MBean server and exclude certain MBeans:
 (Exclusion filters are applied after inclusion filters)
@@ -864,9 +871,12 @@ Stream-JMX supports inclusion and exclusion filters. To schedule metric collecti
     SamplerFactory factory = DefaultSamplerFactory.getInstance();
     // create an instance of the sampler that will sample mbeans
     Sampler sampler = factory.newInstance(ManagementFactory.getPlatformMBeanServer());
-    String excludeMBeanFilter = "mydomain:*";
     // schedule collection (ping) for given MBean filter and 30000 ms sampling period
-    sampler.setSchedule(Sampler.JMX_FILTER_ALL, excludeMBeanFilter, 30000).run();
+    Map<String, Object> samplerCfg = new HashMap<>(3);
+    samplerCfg.put(SampleHandler.CFG_INCLUDE_FILTER, Sampler.JMX_FILTER_ALL);
+    samplerCfg.put(SampleHandler.CFG_EXCLUDE_FILTER, "mydomain:*");
+    samplerCfg.put(Sampler.CFG_SAMPLING_PERIOD, 30000);
+    sampler.setSchedule(samplerCfg).run();
 ```
 Below is an example of how to sample all registered mbean servers:
 ```java
@@ -874,9 +884,12 @@ Below is an example of how to sample all registered mbean servers:
     SamplerFactory factory = DefaultSamplerFactory.getInstance();
     // find other registered mbean servers
     ArrayList<MBeanServer> mlist = MBeanServerFactory.findMBeanServer(null);
+    Map<String, Object> samplerCfg = new HashMap<>(3);
+    samplerCfg.put(SampleHandler.CFG_INCLUDE_FILTER, Sampler.JMX_FILTER_ALL);
+    samplerCfg.put(Sampler.CFG_SAMPLING_PERIOD, 30000);
     for (MBeanServer server: mlist) {
         Sampler jmxp = factory.newInstance(server);
-        jmxp.setSchedule(Sampler.JMX_FILTER_ALL, 30000).run();
+        jmxp.setSchedule(samplerCfg).run();
     }
 ```
 Alternatively, Stream-JMX provides a helper class `SamplingAgent` that lets you schedule sampling for all registered `MBeanServer`
@@ -984,15 +997,16 @@ properties use as many argument definitions as there are required properties. Fo
 
 ### JMX Sampling Agent sampler options
 
-Agent options are defined using format: `mbean-filter!exclude-filter!sample-ms!init-delay-ms`
+Agent options are defined using format: `mbean-filter!exclude-filter!sample-ms!init-delay-ms!batch-size`
 * `mbean-filter` - MBean include name filter defined using object name pattern: `domainName:keysSet`. **NOTE:** Multiple filters can be 
   defined using `;` as delimiter: `domainName1:keysSet1;domainName2:keysSet2;domainName3:keysSet3`.
 * `exclude-filter` - MBean exclude name filter defined using object name pattern: `domainName:keysSet`. **NOTE:** Multiple filters can be 
   defined using `;` as delimiter: `domainName1:keysSet1;domainName2:keysSet2;domainName3:keysSet3`.
-* `sample-ms` - MBeans sampling rate in milliseconds
-* `init-delay-ms` - MBeans sampling initial delay in milliseconds. Optional, by default it is equal to `sample-ms` value
+* `sample-ms` - MBeans sampling rate in milliseconds.
+* `init-delay-ms` - MBeans sampling initial delay in milliseconds. Optional, by default it is equal to `sample-ms` value.
+* `batch-size` - number of sampled MBeans to post over single package. Optional, default is `-1` (unlimited).
 
-Default sampling agent options value is: `*:*!!30000`
+Default sampling agent options value is: `*:*!!30000!30000!-1`
 
 ### TNT4J Source fields configuration
 
@@ -1003,7 +1017,7 @@ Stream-JMS has couple additional features in comparison with basic `TNT4J` when 
    definition. In this case `tnt4j.properties` configuration would be like this:
     ```properties
     ; Remote machine IP address
-    ...                            
+    ...
     source.factory.GENERIC: Streams
     source.factory.DATACENTER: HQDC
     source.factory.SERVICE: broker-01
@@ -1012,7 +1026,7 @@ Stream-JMS has couple additional features in comparison with basic `TNT4J` when 
     ...
 
     ; Remote machine host name
-    ...              
+    ...
     source.factory.GENERIC: Streams
     source.factory.DATACENTER: HQDC
     source.factory.SERVICE: broker-01
@@ -1815,7 +1829,10 @@ is reported/logged. See example below:
 SamplerFactory factory = DefaultSamplerFactory.getInstance();
 // create an instance of the sampler that will sample mbeans
 Sampler sampler = factory.newInstance();
-sampler.setSchedule(Sampler.JMX_FILTER_ALL, 30000).addListener(new MySampleListener())).run();
+Map<String, Object> samplerCfg = new HashMap<>(3);
+samplerCfg.put(SampleHandler.CFG_INCLUDE_FILTER, Sampler.JMX_FILTER_ALL);
+samplerCfg.put(Sampler.CFG_SAMPLING_PERIOD, 30000);
+sampler.setSchedule(samplerCfg).addListener(new MySampleListener())).run();
 ```
 Below is a sample of what `MySampleListener` may look like:
 ```java
@@ -1897,7 +1914,10 @@ Sampler sampler = factory.newInstance();
 // create a condition when ThreadCount > 100
 AttributeCondition myCondition = new SimpleCondition("java.lang:type=Threading", "ThreadCount", 100, ">");
 // schedule collection (ping) for given MBean filter and 30000 ms sampling period
-sampler.setSchedule(Sampler.JMX_FILTER_ALL, 30000).register(myCondition, new MyAttributeAction()).run();
+Map<String, Object> samplerCfg = new HashMap<>(3);
+samplerCfg.put(SampleHandler.CFG_INCLUDE_FILTER, Sampler.JMX_FILTER_ALL);
+samplerCfg.put(Sampler.CFG_SAMPLING_PERIOD, 30000);
+sampler.setSchedule(samplerCfg).register(myCondition, new MyAttributeAction()).run();
 ```
 Below is a sample of what `MyAttributeAction` may look like:
 ```java

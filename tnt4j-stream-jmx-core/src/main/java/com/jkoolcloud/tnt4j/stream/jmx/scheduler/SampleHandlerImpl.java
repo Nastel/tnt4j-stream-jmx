@@ -18,7 +18,6 @@ package com.jkoolcloud.tnt4j.stream.jmx.scheduler;
 import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.management.*;
@@ -26,10 +25,7 @@ import javax.management.relation.MBeanServerNotificationFilter;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.jkoolcloud.tnt4j.core.Activity;
-import com.jkoolcloud.tnt4j.core.OpLevel;
-import com.jkoolcloud.tnt4j.core.PropertySnapshot;
-import com.jkoolcloud.tnt4j.core.Snapshot;
+import com.jkoolcloud.tnt4j.core.*;
 import com.jkoolcloud.tnt4j.source.Source;
 import com.jkoolcloud.tnt4j.stream.jmx.aggregations.AggregationsManager;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.*;
@@ -37,6 +33,7 @@ import com.jkoolcloud.tnt4j.stream.jmx.core.JMXServerConnection;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleContext;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.UnsupportedAttributeException;
+import com.jkoolcloud.tnt4j.tracker.TrackingActivity;
 
 /**
  * <p>
@@ -49,7 +46,7 @@ import com.jkoolcloud.tnt4j.stream.jmx.core.UnsupportedAttributeException;
  * @see AttributeSample
  * @see AttributeCondition
  * 
- * @version $Revision: 1 $
+ * @version $Revision: 2 $
  */
 public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	public static String STAT_NOOP_COUNT = "noop.count";
@@ -67,40 +64,45 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	private final ReentrantLock lock = new ReentrantLock();
 	private final Source source;
 
-	String mbeanIncFilter, mbeanExcFilter;
+	private final String mbeanIncFilter, mbeanExcFilter;
 	long sampleCount = 0, totalMetricCount = 0, totalActionCount = 0;
 	long lastMetricCount = 0, lastSampleTimeUsec = 0;
 	long noopCount = 0, excCount = 0, errorCount = 0;
 
-	JMXServerConnection mbeanServer;
-	SampleContext context;
+	int batchSize = -1;
+
+	final JMXServerConnection mbeanServer;
+	private final SampleContext context;
 	Throwable lastError;
 
-	MBeanServerNotificationFilter MBeanFilter;
-	List<ObjectName> iFilters = new ArrayList<>(5), eFilters = new ArrayList<>(5);
-	Map<AttributeCondition, AttributeAction> conditions = new LinkedHashMap<>(89);
-	Map<ObjectName, MBeanInfo> mbeans = new ConcurrentHashMap<>(89);
+	private MBeanServerNotificationFilter MBeanFilter;
+	private final List<ObjectName> iFilters = new ArrayList<>(5), eFilters = new ArrayList<>(5);
+	private final Map<AttributeCondition, AttributeAction> conditions = new LinkedHashMap<>(89);
+	final Map<ObjectName, MBeanInfo> mbeans = Collections.synchronizedMap(new LinkedHashMap<>(89));
 
-	final List<SampleListener> listeners = new ArrayList<>(5);
+	private final List<SampleListener> listeners = new ArrayList<>(5);
+
+	private Scheduler scheduler;
 
 	/**
 	 * Create new instance of {@code SampleHandlerImpl} with a given MBean server and a set of filters.
 	 *
-	 * @param mServerConn
-	 *            MBean server connection instance
-	 * @param incFilter
-	 *            MBean include filters semicolon separated
-	 * @param excFilter
-	 *            MBean exclude filters semicolon separated
-	 * @param source
-	 *            sampler source
+	 * @param config
+	 *            configuration map for this sample handler
 	 */
-	public SampleHandlerImpl(JMXServerConnection mServerConn, String incFilter, String excFilter, Source source) {
-		mbeanServer = mServerConn;
-		mbeanIncFilter = incFilter;
-		mbeanExcFilter = excFilter;
-		this.source = source;
+	public SampleHandlerImpl(Map<String, ?> config) {
+		mbeanServer = (JMXServerConnection) config.get(CFG_MBEAN_SERVER);
+		mbeanIncFilter = (String) config.get(CFG_INCLUDE_FILTER);
+		mbeanExcFilter = (String) config.get(CFG_EXCLUDE_FILTER);
+		source = (Source) config.get(CFG_SOURCE);
+		batchSize = ((Number) config.get(CFG_BATCH_SIZE)).intValue();
+
 		context = new SampleContextImpl(this);
+	}
+
+	@Override
+	public void setScheduler(Scheduler scheduler) {
+		this.scheduler = scheduler;
 	}
 
 	/**
@@ -222,8 +224,12 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 		}
 
 		int pCount = 0;
-		for (Entry<ObjectName, MBeanInfo> entry : mbeans.entrySet()) {
+		Set<Entry<ObjectName, MBeanInfo>> entrySet = mbeans.entrySet();
+		Iterator<Entry<ObjectName, MBeanInfo>> itr = entrySet.iterator();
+		int i = 0;
+		while (itr.hasNext()) {
 			// TODO: make sampling multi-thread using executor service (configurable).
+			Entry<ObjectName, MBeanInfo> entry = itr.next();
 			ObjectName name = entry.getKey();
 			MBeanInfo info = entry.getValue();
 
@@ -251,13 +257,89 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 
 				pCount += snapshot.size();
 				activity.addSnapshot(snapshot);
+				if (itr.hasNext()) {
+					processBatch(activity);
+				}
 			}
 		}
 		return pCount;
 	}
 
 	/**
-	 * Creates an attribute sample instance.
+	 * Processes sampled MBeans snapshots batch. If activity contained snapshots count is greater or equal to configured
+	 * batch size, then all snapshots are drained from provided activity and posted. Configured batch size equal to
+	 * {@code -1} means not to perform batching.
+	 * <p>
+	 * If aggregations are active, then batch processing is skipped.
+	 * 
+	 * @param activity
+	 *            activity instance for batch processing
+	 */
+	protected void processBatch(Activity activity) {
+		if (AggregationsManager.isActive()) {
+			return;
+		}
+
+		int snapCount = activity.getSnapshotCount();
+		if (batchSize >= 0 && snapCount > 0 && snapCount >= batchSize) {
+			TrackingActivity tActivity = (TrackingActivity) activity;
+			TrackingActivity cActivity = cloneActivity(tActivity);
+			activity.getSnapshots().clear();
+			postActivityBatch(cActivity);
+		}
+	}
+
+	/**
+	 * Posts provided tracking activity.
+	 * 
+	 * @param tActivity
+	 *            activity to post
+	 */
+	protected void postActivityBatch(TrackingActivity tActivity) {
+		SchedulerImpl schedulerImpl = (SchedulerImpl) scheduler;
+		SampleActivityTask activityTask = schedulerImpl.getActivityTask();
+		activityTask.postActivity(tActivity);
+	}
+
+	/**
+	 * Makes clone copy of provided activity.
+	 * 
+	 * @param activity
+	 *            activity to clone
+	 * @return cloned activity instance
+	 */
+	protected synchronized TrackingActivity cloneActivity(TrackingActivity activity) {
+		TrackingActivity tActivity = activity.getTracker().newActivity(activity.getSeverity(), activity.getName());
+		for (Snapshot snap : activity.getSnapshots()) {
+			tActivity.addSnapshot(snap);
+		}
+		for (Property prop : activity.getProperties()) {
+			tActivity.addProperty(prop);
+		}
+		tActivity.setGUID(activity.getGUID());
+		tActivity.setException(activity.getExceptionString());
+		tActivity.setUser(activity.getUser());
+		tActivity.setCompCode(activity.getCompCode());
+		tActivity.setCorrelator(activity.getCorrelator());
+		tActivity.setReasonCode(activity.getReasonCode());
+		tActivity.setTTL(activity.getTTL());
+		tActivity.setLocation(activity.getLocation());
+		tActivity.setPID(activity.getPID());
+		tActivity.setTID(activity.getTID());
+		tActivity.setResource(activity.getResource());
+		tActivity.setTrackingId(activity.getTrackingId());
+		tActivity.setSource(activity.getSource());
+		tActivity.setWaitTimeUsec(activity.getWaitTimeUsec());
+		tActivity.setType(activity.getType());
+		tActivity.setParentId(activity.getParentId());
+		tActivity.setSignature(activity.getSignature());
+		tActivity.setStatus(activity.getStatus());
+
+		return tActivity;
+	}
+
+	/**
+	 * Sample and retrieve the value associated with the MBean attribute.
 	 *
 	 * @param activity
 	 *            associated with current sample
@@ -349,10 +431,10 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 		try {
 			lastError = null; // reset last sample error
 			runPre(activity);
-			if ((!activity.isNoop()) && (mbeans.isEmpty())) {
-				loadMBeans();
-			} else if (activity.isNoop()) {
+			if (activity.isNoop()) {
 				noopCount++;
+			} else if (mbeans.isEmpty()) {
+				loadMBeans();
 			}
 		} finally {
 			lock.unlock();

@@ -17,7 +17,6 @@ package com.jkoolcloud.tnt4j.stream.jmx.impl;
 
 import java.util.Map;
 
-import com.jkoolcloud.tnt4j.source.Source;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.SampleHandler;
 import com.jkoolcloud.tnt4j.stream.jmx.core.DefaultSampleListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.JMXServerConnection;
@@ -70,15 +69,8 @@ public class PlatformSamplerFactory implements SamplerFactory {
 	}
 
 	@Override
-	public SampleHandler newSampleHandler(JMXServerConnection mServerConn, String incFilterList, String excFilterList) {
-		return newSampleHandler(mServerConn, incFilterList, excFilterList, null);
-	}
-
-	@Override
-	public SampleHandler newSampleHandler(JMXServerConnection mServerConn, String incFilterList, String excFilterList,
-			Source source) {
-		return System.getSecurityManager() == null
-				? new SampleHandlerImpl(mServerConn, incFilterList, excFilterList, source)
-				: new PrivilegedSampleHandlerImpl(mServerConn, incFilterList, excFilterList, source);
+	public SampleHandler newSampleHandler(Map<String, ?> config) {
+		return System.getSecurityManager() == null ? new SampleHandlerImpl(config)
+				: new PrivilegedSampleHandlerImpl(config);
 	}
 }
