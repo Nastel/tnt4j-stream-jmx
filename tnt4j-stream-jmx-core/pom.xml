@@ -23,14 +23,14 @@
     <parent>
         <groupId>com.jkoolcloud.tnt4j.stream</groupId>
         <artifactId>tnt4j-stream-jmx</artifactId>
-        <version>1.18.0</version>
+        <version>1.19-SNAPSHOT</version>
     </parent>
     <packaging>jar</packaging>
 
     <artifactId>tnt4j-stream-jmx-core</artifactId>
 
     <properties>
-        <jesl.version>0.11.1</jesl.version>
+        <jesl.version>0.12-SNAPSHOT</jesl.version>
         <gson.version>2.10.1</gson.version>
         <disruptor.version>3.4.4</disruptor.version>
     </properties>
