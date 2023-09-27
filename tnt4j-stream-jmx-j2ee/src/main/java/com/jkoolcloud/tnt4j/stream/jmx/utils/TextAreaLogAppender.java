@@ -18,7 +18,7 @@ package com.jkoolcloud.tnt4j.stream.jmx.utils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
+import java.io.UnsupportedEncodingException;
 import java.util.Properties;
 
 import com.jkoolcloud.tnt4j.format.DefaultFormatter;
@@ -88,7 +88,11 @@ public class TextAreaLogAppender implements SinkLogEventListener {
 
 	public String getCaptured() {
 		if (outStream != null) {
-			return outStream.toString(StandardCharsets.UTF_8);
+			try {
+				return outStream.toString(Utils.UTF8);
+			} catch (UnsupportedEncodingException exc) {
+				return outStream.toString();
+			}
 		} else {
 			return "!!!   Not capturing Log Sink events...   !!!!";
 		}
