@@ -258,7 +258,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 				pCount += snapshot.size();
 				activity.addSnapshot(snapshot);
 				if (itr.hasNext()) {
-					processBatch(activity);
+					mBeanFinish(activity);
 				}
 			}
 		}
@@ -266,7 +266,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	}
 
 	/**
-	 * Processes sampled MBeans snapshots batch. If activity contained snapshots count is greater or equal to configured
+	 * Processes sampled MBean snapshots batch. If activity contained snapshots count is greater or equal to configured
 	 * batch size, then all snapshots are drained from provided activity and posted. Configured batch size equal to
 	 * {@code -1} means not to perform batching.
 	 * <p>
@@ -275,7 +275,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	 * @param activity
 	 *            activity instance for batch processing
 	 */
-	protected void processBatch(Activity activity) {
+	protected void mBeanFinish(Activity activity) {
 		if (AggregationsManager.isActive()) {
 			return;
 		}
