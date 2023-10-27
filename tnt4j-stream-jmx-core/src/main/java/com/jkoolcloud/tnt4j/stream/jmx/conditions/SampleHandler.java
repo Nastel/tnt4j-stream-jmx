@@ -36,6 +36,7 @@ public interface SampleHandler extends ActivityListener, NestedHandler<SampleHan
 	public static final String CFG_EXCLUDE_FILTER = "SH_CFG_EXCLUDE_FILTER";
 	public static final String CFG_SOURCE = "SH_CFG_SOURCE";
 	public static final String CFG_BATCH_SIZE = "SH_CFG_BATCH_SIZE";
+	public static final String CFG_JMX_CONNECTOR = "SH_CFG_JMX_CONNECTOR";
 
 	/**
 	 * Register and associate condition with an action

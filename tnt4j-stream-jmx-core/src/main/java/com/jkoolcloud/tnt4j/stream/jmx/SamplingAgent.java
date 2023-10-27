@@ -1105,6 +1105,7 @@ public class SamplingAgent {
 	private void startSampler(String options, JMXConnector connector) throws Exception {
 		SamplingArgs sa = SamplingArgs.parse(options);
 		Map<String, Object> samplerCfg = sa.getAsMap();
+		samplerCfg.put(SampleHandler.CFG_JMX_CONNECTOR, connector);
 
 		if (connector == null) {
 			sample(samplerCfg);

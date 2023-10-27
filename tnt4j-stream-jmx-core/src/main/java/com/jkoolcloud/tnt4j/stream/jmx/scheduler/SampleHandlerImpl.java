@@ -22,6 +22,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import javax.management.*;
 import javax.management.relation.MBeanServerNotificationFilter;
+import javax.management.remote.JMXConnector;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -70,6 +71,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	long noopCount = 0, excCount = 0, errorCount = 0;
 
 	int batchSize = -1;
+	final JMXConnector serviceConn;
 
 	final JMXServerConnection mbeanServer;
 	private final SampleContext context;
@@ -96,6 +98,7 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 		mbeanExcFilter = (String) config.get(CFG_EXCLUDE_FILTER);
 		source = (Source) config.get(CFG_SOURCE);
 		batchSize = ((Number) config.get(CFG_BATCH_SIZE)).intValue();
+		serviceConn = (JMXConnector) config.get(CFG_JMX_CONNECTOR);
 
 		context = new SampleContextImpl(this);
 	}
