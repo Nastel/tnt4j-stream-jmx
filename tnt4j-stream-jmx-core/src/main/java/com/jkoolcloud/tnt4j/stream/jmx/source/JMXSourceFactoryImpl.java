@@ -30,6 +30,7 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXServiceURL;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hc.core5.net.InetAddressUtils;
 
 import com.jkoolcloud.tnt4j.core.OpLevel;
 import com.jkoolcloud.tnt4j.sink.EventSink;
@@ -216,7 +217,8 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 			if (SOURCE_SERVER_ADDRESS.equals(propName)) {
 				return StringUtils.isEmpty(host) ? Utils.getLocalHostAddress() : Utils.resolveHostNameToAddress(host);
 			} else if (SOURCE_SERVER_NAME.equals(propName)) {
-				return StringUtils.isEmpty(host) ? Utils.getLocalHostName() : Utils.resolveAddressToHostName(host);
+				return StringUtils.isEmpty(host) ? Utils.getLocalHostName()
+						: isInetAddress(host) ? Utils.resolveAddressToHostName(host) : host;
 			}
 		}
 
@@ -244,6 +246,10 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 		}
 
 		return host;
+	}
+
+	private static boolean isInetAddress(String address) {
+		return InetAddressUtils.isIPv4Address(address);
 	}
 
 	@Override
