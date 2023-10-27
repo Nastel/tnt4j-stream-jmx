@@ -2,6 +2,12 @@
 
 -----------------------
 
+**NOTE:** `tnt4j-stream-jmx` version `2.0.0` migrated to Java 11 and bumped SLF4J from `1.7.x` to `2.x`.
+
+Latest Java 8 compliant [tnt4j-stream-jmx](https://github.com/Nastel/tnt4j-stream-jmx/tree/java8) version is `1.18.1`.
+
+-----------------------
+
 **NOTE:** `Stream-JMX` version `0.14` migrated logger to `log4j2`. In case you have changed default `Stream-JMX` logger configuration using
 previous `Stream-JMX` versions, please check new logger configuration file [log4j2.xml](./config/log4j2.xml).
 
