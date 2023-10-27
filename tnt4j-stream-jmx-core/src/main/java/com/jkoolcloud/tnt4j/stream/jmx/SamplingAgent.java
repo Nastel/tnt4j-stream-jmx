@@ -793,12 +793,12 @@ public class SamplingAgent {
 		} catch (IllegalArgumentException e) {
 			// TODO placeholders doesn't fill right
 			LOGGER.log(OpLevel.WARNING,
-					"SamplingAgent.getSource: source descriptor ''{1}'' doesn't match FQN pattern 'SourceType=SourceValue'. Erroneous source type. Valid types ''{0}''. Cause: {2}",
+					"SamplingAgent.getSource: source descriptor ''{1}'' does not match FQN pattern ''SourceType=SourceValue''. Erroneous source type. Valid types ''{0}''. Cause: {2}",
 					Arrays.toString(SourceType.values()), sourceDescriptor, e.getMessage());
 			throw new RuntimeException("Invalid Source configuration");
 		} catch (IndexOutOfBoundsException e) {
 			LOGGER.log(OpLevel.WARNING,
-					"SamplingAgent.getSource: source descriptor ''{0}'' doesn't match FQN pattern 'SourceType=SourceValue'. Defaulting to ''SERVICE={0}''",
+					"SamplingAgent.getSource: source descriptor ''{0}'' does not match FQN pattern ''SourceType=SourceValue''. Defaulting to ''SERVICE={0}''",
 					sourceDescriptor);
 			source = instance.newSource(sourceDescriptor, SourceType.SERVICE);
 		}
@@ -844,6 +844,7 @@ public class SamplingAgent {
 	private void scheduleSampler(Map<String, Object> samplerConfig, SamplerFactory sFactory, Sampler sampler,
 			Map<JMXServerConnection, Sampler> agents) throws IOException {
 		agents.put(sampler.getMBeanServer(), sampler);
+		samplerConfig.put(SampleHandler.CFG_SOURCE, getSource());
 		sampler.setSchedule(samplerConfig).addListener(sFactory.newListener(LISTENER_PROPERTIES));
 
 		if (synchronousSamplers) {
