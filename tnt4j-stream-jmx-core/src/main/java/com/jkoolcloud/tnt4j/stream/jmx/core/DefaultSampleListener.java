@@ -221,7 +221,7 @@ public class DefaultSampleListener implements SampleListener {
 				"Pre: {0}: sample.count={1}, mbean.count={2}, sample.mbeans.count={3}, exclude.user.attr.set={4}, exclude.attr.set={5}, total.noop.count={7}, total.exclude.count={8}, total.error.count={9}, tracking.id={10}, mbean.server={11}",
 				activity.getName(), context.getSampleCount(), getMBeanCount(context), context.getMBeanCount(),
 				userExcAttrs.size(), excAttrs.size(), context.getTotalNoopCount(), context.getExcludeAttrCount(),
-				context.getTotalErrorCount(), activity.getTrackingId(), context.getMBeanServer());
+				context.getTotalErrorCount(), activity.getTrackingId(), context);
 	}
 
 	@Override
@@ -303,7 +303,7 @@ public class DefaultSampleListener implements SampleListener {
 				activity.getSnapshotCount(), activity.getIdCount(), context.getMBeanCount(),
 				context.getLastMetricCount(), context.getLastSampleUsec(), userExcAttrs.size(), excAttrs.size(),
 				context.getTotalNoopCount(), context.getExcludeAttrCount(), context.getTotalErrorCount(),
-				activity.getTrackingId(), context.getMBeanServer());
+				activity.getTrackingId(), context);
 	}
 
 	private static String getMBeanCount(SampleContext context) {
@@ -372,18 +372,22 @@ public class DefaultSampleListener implements SampleListener {
 
 	@Override
 	public void register(SampleContext context, ObjectName oName) {
-		LOGGER.log(OpLevel.DEBUG, "Register MBean: {0}, mbean.server={1}", oName, context.getMBeanServer());
+		LOGGER.log(OpLevel.DEBUG, "Register MBean: {0}, mbean.server={1}", oName, context);
 	}
 
 	@Override
 	public void unregister(SampleContext context, ObjectName oName) {
-		LOGGER.log(OpLevel.DEBUG, "Un-register MBean: {0}, mbean.server={1}", oName, context.getMBeanServer());
+		LOGGER.log(OpLevel.DEBUG, "Un-register MBean: {0}, mbean.server={1}", oName, context);
 	}
 
 	@Override
 	public void error(SampleContext context, Throwable ex) {
-		LOGGER.log(OpLevel.ERROR, "Error: Unexpected error when sampling mbean.server={0}", context.getMBeanServer(),
-				ex);
+		if (ex instanceof InstanceNotFoundException) {
+			LOGGER.log(OpLevel.WARNING, "Warning: Missing mbean.instance={1} when sampling mbean.server={0}", context,
+					ex.getLocalizedMessage());
+		} else {
+			LOGGER.log(OpLevel.ERROR, "Error: Unexpected error when sampling mbean.server={0}", context, ex);
+		}
 	}
 
 	/**
