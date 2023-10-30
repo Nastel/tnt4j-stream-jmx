@@ -15,7 +15,6 @@
  */
 package com.jkoolcloud.tnt4j.stream.jmx.core;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
@@ -67,7 +66,7 @@ public class DefaultSampleListener implements SampleListener {
 	protected final ReentrantLock buildLock = new ReentrantLock();
 
 	/**
-	 * Create an instance of {@code DefaultSampleListener} with a a given print stream and configuration properties.
+	 * Create an instance of {@code DefaultSampleListener} with a given print stream and configuration properties.
 	 *
 	 * @param properties
 	 *            listener configuration properties map
@@ -192,7 +191,7 @@ public class DefaultSampleListener implements SampleListener {
 	 *            MBean object name
 	 * @param ainfo
 	 *            MBean attribute info
-	 * @return {@code true} is attribute is excluded by user defined list, {@code false} - otherwise
+	 * @return {@code true} when attribute is excluded by user defined list, {@code false} - otherwise
 	 */
 	protected boolean isExcludedByUser(Map<ObjectName, Pattern> userExcAttrs, ObjectName objName,
 			MBeanAttributeInfo ainfo) {
@@ -310,7 +309,7 @@ public class DefaultSampleListener implements SampleListener {
 	private static String getMBeanCount(SampleContext context) {
 		try {
 			return String.valueOf(context.getMBeanServer().getMBeanCount());
-		} catch (IOException exc) {
+		} catch (Exception exc) {
 			return Utils.getExceptionMessages(exc);
 		}
 	}
@@ -383,8 +382,12 @@ public class DefaultSampleListener implements SampleListener {
 
 	@Override
 	public void error(SampleContext context, Throwable ex) {
-		LOGGER.log(OpLevel.ERROR, "Error: Unexpected error when sampling mbean.server={0}", context.getMBeanServer(),
-				ex);
+		if (ex instanceof InstanceNotFoundException) {
+			LOGGER.log(OpLevel.WARNING, "Warning: Missing mbean.instance={1} when sampling mbean.server={0}", context.getMBeanServer(),
+					ex.getLocalizedMessage());
+		} else {
+			LOGGER.log(OpLevel.ERROR, "Error: Unexpected error when sampling mbean.server={0}", context.getMBeanServer(), ex);
+		}
 	}
 
 	/**
