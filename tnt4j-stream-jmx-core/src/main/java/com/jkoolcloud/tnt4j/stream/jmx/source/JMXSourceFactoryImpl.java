@@ -16,7 +16,6 @@
 
 package com.jkoolcloud.tnt4j.stream.jmx.source;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.Iterator;
 import java.util.Map;
@@ -26,7 +25,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-import javax.management.*;
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectInstance;
+import javax.management.ObjectName;
 import javax.management.remote.JMXAddressable;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXServiceURL;
@@ -142,8 +143,7 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 		return split.length == 2;
 	}
 
-	private static String getAttributeValue(String oNameStr) throws MBeanException, AttributeNotFoundException,
-			InstanceNotFoundException, ReflectionException, IOException, MalformedObjectNameException {
+	private static String getAttributeValue(String oNameStr) throws Exception {
 		String[] paths = oNameStr.split(Pattern.quote(MBEAN_ATTR_DELIM));
 		if (paths.length != 2) {
 			throw new IllegalArgumentException(Utils.format(
@@ -154,7 +154,7 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 		String attributeNamePart = paths[1];
 
 		MBeanServerConnection mBeanServerConn = getMBeanServerConnection();
-		Set<ObjectInstance> objects = getRepeating(new RepeatingSupplier<>() {
+		Set<ObjectInstance> objects = getRepeating(new RepeatingSupplier<Set<ObjectInstance>>() {
 			@Override
 			public boolean isComplete(Set<ObjectInstance> value) {
 				return !Utils.isEmpty(value);
@@ -195,10 +195,10 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 		throw new IllegalStateException("MBean server connection not found for thread " + thread);
 	}
 
-	private static String getKeyPropertyValue(String oNameStr) throws MalformedObjectNameException, IOException {
+	private static String getKeyPropertyValue(String oNameStr) throws Exception {
 		String queryName = oNameStr.replace("?", "*"); // NON-NLS
 		ObjectName oName = new ObjectName(queryName);
-		Set<ObjectInstance> objects = getRepeating(new RepeatingSupplier<>() {
+		Set<ObjectInstance> objects = getRepeating(new RepeatingSupplier<Set<ObjectInstance>>() {
 			@Override
 			public boolean isComplete(Set<ObjectInstance> value) {
 				return !Utils.isEmpty(value);
@@ -331,7 +331,7 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 				try {
 					Thread.sleep(TimeUnit.SECONDS.toMillis(intervalSec));
 				} catch (InterruptedException exc) {
-}
+				}
 			}
 			try {
 				value = getter.get();
