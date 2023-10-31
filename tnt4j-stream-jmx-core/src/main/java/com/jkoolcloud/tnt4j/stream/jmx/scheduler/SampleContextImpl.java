@@ -30,7 +30,7 @@ import com.jkoolcloud.tnt4j.utils.Utils;
  * @version $Revision: 1 $
  */
 public class SampleContextImpl implements SampleContext {
-	SampleHandlerImpl handle;
+	final SampleHandlerImpl handle;
 
 	protected SampleContextImpl(SampleHandlerImpl lst) {
 		handle = lst;
@@ -94,6 +94,6 @@ public class SampleContextImpl implements SampleContext {
 
 	@Override
 	public String toString() {
-		return Utils.toString(handle.serviceConn);
+		return handle.mbeanServer.hashCode() + "=>" + Utils.toString(handle.serviceConn);
 	}
 }
