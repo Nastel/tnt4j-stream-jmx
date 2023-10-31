@@ -199,6 +199,9 @@ public class SamplingAgent {
 	 *             if IO exception occurs while initializing MBeans sampling
 	 */
 	public static void premain(String options, Instrumentation inst) throws IOException {
+		LOGGER.log(OpLevel.INFO,
+				"meshIQ TNT4J-Stream-JMX v.{0} session starting as JVM agent...\n" + "  Runtime environment: {1}",
+				pkgVersion(), runEnv());
 		SamplingArgs sa = SamplingArgs.parse(options);
 		Map<String, Object> samplerCfg = sa.getAsMap();
 		SamplingAgent agent = newSamplingAgent(true);
@@ -251,6 +254,9 @@ public class SamplingAgent {
 	 * @see #premain(String, Instrumentation)
 	 */
 	public static void agentmain(String agentArgs, Instrumentation inst) throws Exception {
+		LOGGER.log(OpLevel.INFO,
+				"meshIQ TNT4J-Stream-JMX v.{0} session starting as JVM agent...\n" + "  Runtime environment: {1}",
+				pkgVersion(), runEnv());
 		LOGGER.log(OpLevel.INFO, "SamplingAgent.agentmain(): agentArgs={0}", agentArgs);
 		String agentParams = "";
 		String tnt4jProp = System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY);
@@ -366,6 +372,8 @@ public class SamplingAgent {
 	 *             if exception occurs while initializing MBeans sampling
 	 */
 	public static void main(String... args) throws Exception {
+		LOGGER.log(OpLevel.INFO, "meshIQ TNT4J-Stream-JMX v.{0} session starting as standalone application...\n"
+				+ "  Runtime environment: {1}", pkgVersion(), runEnv());
 		boolean argsValid = parseArgs(clProps, args);
 
 		if (argsValid) {
@@ -1001,7 +1009,8 @@ public class SamplingAgent {
 						public void handleNotification(Notification notification, Object key) {
 							if (notification.getType().contains("closed") || notification.getType().contains("failed")
 									|| notification.getType().contains("lost")) {
-								LOGGER.log(OpLevel.INFO, "SamplingAgent.connect: JMX connection status change: {0}",
+								LOGGER.log(OpLevel.INFO,
+										"NotificationListener.handleNotification: JMX connection status change: {0}",
 										notification.getType());
 								stopSampler();
 							}
@@ -1384,5 +1393,31 @@ public class SamplingAgent {
 		} catch (GeneralSecurityException exc) {
 			LOGGER.log(OpLevel.WARNING, "Failed to disable SSL verification: {0}", exc);
 		}
+	}
+
+	static String pkgVersion() {
+		Package sPkg = SamplingAgent.class.getPackage();
+		return sPkg.getImplementationVersion();
+	}
+
+	static String runEnv() {
+		String[] envProps = new String[] { // set of interesting runtime environment properties
+				"java.version", "java.vendor", "java.vm.name", "java.vm.version", // JVM props
+				"os.name", "os.version" // OS props
+		};
+
+		StringBuilder sb = new StringBuilder();
+		sb.append(System.lineSeparator());
+		sb.append("------------------------------------------------------------------------") // NON-NLS
+				.append(System.lineSeparator());
+		for (String property : envProps) {
+			sb.append(String.format("%20s: %s", // NON-NLS
+					property, System.getProperty(property)));
+			sb.append(System.lineSeparator());
+		}
+		sb.append("------------------------------------------------------------------------") // NON-NLS
+				.append(System.lineSeparator());
+
+		return sb.toString();
 	}
 }
