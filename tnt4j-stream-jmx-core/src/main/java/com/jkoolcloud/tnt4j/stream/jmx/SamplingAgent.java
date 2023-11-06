@@ -39,20 +39,16 @@ import javax.net.ssl.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
-import com.jkoolcloud.tnt4j.config.DefaultConfigFactory;
-import com.jkoolcloud.tnt4j.config.TrackerConfig;
 import com.jkoolcloud.tnt4j.config.TrackerConfigStore;
 import com.jkoolcloud.tnt4j.core.OpLevel;
 import com.jkoolcloud.tnt4j.sink.DefaultEventSinkFactory;
 import com.jkoolcloud.tnt4j.sink.EventSink;
-import com.jkoolcloud.tnt4j.source.Source;
-import com.jkoolcloud.tnt4j.source.SourceFactory;
-import com.jkoolcloud.tnt4j.source.SourceType;
 import com.jkoolcloud.tnt4j.stream.jmx.core.DefaultSampleListener;
 import com.jkoolcloud.tnt4j.stream.jmx.core.PropertyNameBuilder;
 import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
 import com.jkoolcloud.tnt4j.stream.jmx.factory.DefaultSamplerFactory;
 import com.jkoolcloud.tnt4j.stream.jmx.factory.SamplerFactory;
+import com.jkoolcloud.tnt4j.stream.jmx.source.JMXSourceUtils;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.LoggerUtils;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.Utils;
 import com.jkoolcloud.tnt4j.stream.jmx.vm.*;
@@ -833,40 +829,6 @@ public class SamplingAgent {
 		}
 	}
 
-	private Source getSource() {
-		TrackerConfig config = DefaultConfigFactory.getInstance().getConfig(getClass().getName());
-		SourceFactory instance = config.getSourceFactory();
-
-		String sourceDescriptor = null;
-		Thread thread = Thread.currentThread();
-		if (thread instanceof SamplingAgentThread) {
-			sourceDescriptor = ((SamplingAgentThread) thread).getVMSourceFQN();
-		}
-
-		if (sourceDescriptor == null) {
-			return instance.getRootSource();
-		}
-
-		Source source;
-
-		try {
-			source = instance.fromFQN(sourceDescriptor);
-		} catch (IllegalArgumentException e) {
-			// TODO placeholders doesn't fill right
-			LOGGER.log(OpLevel.WARNING,
-					"SamplingAgent.getSource: source descriptor ''{1}'' does not match FQN pattern ''SourceType=SourceValue''. Erroneous source type. Valid types ''{0}''. Cause: {2}",
-					Arrays.toString(SourceType.values()), sourceDescriptor, e.getMessage());
-			throw new RuntimeException("Invalid Source configuration");
-		} catch (IndexOutOfBoundsException e) {
-			LOGGER.log(OpLevel.WARNING,
-					"SamplingAgent.getSource: source descriptor ''{0}'' does not match FQN pattern ''SourceType=SourceValue''. Defaulting to ''SERVICE={0}''",
-					sourceDescriptor);
-			source = instance.newSource(sourceDescriptor, SourceType.SERVICE);
-		}
-
-		return source;
-	}
-
 	/**
 	 * Schedule sample using defined JMX connector to get MBean server connection instance to monitored JVM.
 	 *
@@ -913,7 +875,7 @@ public class SamplingAgent {
 	private void scheduleSampler(String incFilter, String excFilter, long initDelay, long period, TimeUnit tUnit,
 			SamplerFactory sFactory, Sampler sampler, Map<MBeanServerConnection, Sampler> agents) throws IOException {
 		agents.put(sampler.getMBeanServer(), sampler);
-		sampler.setSchedule(incFilter, excFilter, initDelay, period, tUnit, sFactory, getSource())
+		sampler.setSchedule(incFilter, excFilter, initDelay, period, tUnit, sFactory, JMXSourceUtils.getSource(getClass(), LOGGER))
 				.addListener(sFactory.newListener(LISTENER_PROPERTIES));
 
 		if (synchronousSamplers) {
