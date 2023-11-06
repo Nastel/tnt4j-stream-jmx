@@ -29,8 +29,12 @@ import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.management.*;
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
+import javax.management.Notification;
+import javax.management.NotificationListener;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
@@ -67,8 +71,9 @@ import com.jkoolcloud.tnt4j.stream.jmx.vm.*;
 public class SamplingAgent {
 	private static final EventSink LOGGER = LoggerUtils.getLoggerSink(SamplingAgent.class);
 
-	protected Sampler platformJmx;
-	protected final Map<MBeanServerConnection, Sampler> STREAM_SAMPLERS = new ConcurrentHashMap<>(5);
+	private Sampler platformJmx;
+	private final Map<JMXServerConnection, Sampler> STREAM_SAMPLERS = Collections
+			.synchronizedMap(new LinkedHashMap<>(5));
 
 	private static final Collection<SamplingAgent> ALL_AGENTS = new ArrayList<>(5);
 
@@ -130,6 +135,7 @@ public class SamplingAgent {
 	private boolean stopSampling = false;
 	private boolean synchronousSamplers = false;
 	private JMXConnector connector;
+	private AtomicBoolean stopSamplerLatch = new AtomicBoolean(false);
 
 	private SamplingAgent() {
 	}
@@ -848,14 +854,7 @@ public class SamplingAgent {
 	 * @throws IOException
 	 *             if IO exception occurs while initializing MBeans sampling
 	 */
-	public void sample(String incFilter, String excFilter, long initDelay, long period, TimeUnit tUnit,
-			JMXConnector conn) throws IOException {
-		MBeanServerConnection mbSrvConn = conn.getMBeanServerConnection();
-		initPlatformJMX(incFilter, excFilter, initDelay, period, tUnit, mbSrvConn);
-	}
-
-	private SamplerFactory initPlatformJMX(String incFilter, String excFilter, long initDelay, long period,
-			TimeUnit tUnit, MBeanServerConnection mbSrvConn) throws IOException {
+	protected SamplerFactory initPlatformJMX(Map<String, Object> samplerConfig, JMXConnector conn) throws IOException {
 		// obtain a default sample factory
 		SamplerFactory sFactory = DefaultSamplerFactory
 				.getInstance(Utils.getConfProperty(DEFAULTS, "com.jkoolcloud.tnt4j.stream.jmx.sampler.factory"));
@@ -876,7 +875,7 @@ public class SamplingAgent {
 			SamplerFactory sFactory, Sampler sampler, Map<MBeanServerConnection, Sampler> agents) throws IOException {
 		agents.put(sampler.getMBeanServer(), sampler);
 		sampler.setSchedule(incFilter, excFilter, initDelay, period, tUnit, sFactory, JMXSourceUtils.getSource(getClass(), LOGGER))
-				.addListener(sFactory.newListener(LISTENER_PROPERTIES));
+				.addListener(sFactory.newListener(LISTENER_PROPERTIES)).addListener(new SamplerFailureListener(this));
 
 		if (synchronousSamplers) {
 			sampler.run();
@@ -1043,9 +1042,17 @@ public class SamplingAgent {
 
 					startSamplerAndWait(connectionParams.getAgentOptions(), connector);
 
-					shutdownSamplers();
 					connector.removeConnectionNotificationListener(cnl);
+
+					for (Sampler sampler : STREAM_SAMPLERS.values()) {
+						Throwable le = sampler.getContext().getLastError();
+						if (le instanceof IOException) {
+							throw (IOException) le;
+						}
+					}
 				} finally {
+					shutdownSamplers();
+
 					Utils.close(connector);
 				}
 			} catch (IOException exc) {
@@ -1078,10 +1085,12 @@ public class SamplingAgent {
 	 * Releases sampler lock.
 	 */
 	protected void stopSampler() {
+		this.stopSamplerLatch.set(true);
+
 		if (platformJmx != null) {
+			synchronized (platformJmx) {
 			LOGGER.log(OpLevel.INFO, "SamplingAgent.stopSampler: releasing sampler lock: {0}...", platformJmx);
 
-			synchronized (platformJmx) {
 				platformJmx.notifyAll();
 			}
 		}
@@ -1119,10 +1128,15 @@ public class SamplingAgent {
 	}
 
 	private void lockSampler() throws InterruptedException {
+		if (stopSamplerLatch.get()) {
+			stopSamplerLatch.set(false);
+			return;
+		}
+
 		if (platformJmx != null) {
+			synchronized (platformJmx) {
 			LOGGER.log(OpLevel.INFO, "SamplingAgent.startSamplerAndWait: locking on sampler: {0}...", platformJmx);
 
-			synchronized (platformJmx) {
 				platformJmx.wait();
 			}
 		}
@@ -1224,7 +1238,11 @@ public class SamplingAgent {
 
 	private void shutdownSamplers() {
 		cancel();
+		if (platformJmx != null) {
+			synchronized (platformJmx) {
 		platformJmx = null;
+	}
+		}
 	}
 
 	private static void initDefaults(Properties defProps) {
