@@ -46,9 +46,11 @@ import com.jkoolcloud.tnt4j.stream.jmx.scheduler.SchedulerImpl;
  * @see SchedulerImpl
  */
 public class PlatformJmxSampler implements Sampler {
-	protected Scheduler sampler;
-	protected MBeanServerConnection targetServer;
-	protected SamplerFactory sFactory;
+	private Scheduler scheduler;
+	private final JMXServerConnection targetServer;
+	private final SamplerFactory sFactory;
+
+	private final Object schedulerLock = new Object();
 
 	/**
 	 * Create a default instance with default MBean server instance {@link ManagementFactory#getPlatformMBeanServer()}
@@ -80,10 +82,12 @@ public class PlatformJmxSampler implements Sampler {
 
 	@Override
 	public TrackingLogger getLogger() {
-		if (sampler == null) {
+		synchronized (schedulerLock) {
+			if (scheduler == null) {
 			throw new IllegalStateException("no schedule set: call setSchedule() first");
 		}
-		return sampler.getLogger();
+			return scheduler.getLogger();
+	}
 	}
 
 	@Override
@@ -121,21 +125,24 @@ public class PlatformJmxSampler implements Sampler {
 	@Override
 	public Sampler setSchedule(String incFilter, String excFilter, long initDelay, long period, TimeUnit tUnit,
 			SamplerFactory sFactory, Source source) throws IOException {
-		if (sampler == null) {
-			sampler = newScheduler(targetServer, incFilter, excFilter, initDelay, period, tUnit, sFactory, source);
-			sampler.open();
+		synchronized (schedulerLock) {
+			if (scheduler == null) {
+			scheduler = newScheduler(targetServer, incFilter, excFilter, initDelay, period, tUnit, sFactory, source);
+			scheduler.open();
 			return this;
 		} else {
 			throw new IllegalStateException("setSchedule() already called");
 		}
 	}
+	}
 
 	@Override
-	public synchronized void cancel() {
-		if (sampler != null) {
-			sampler.close();
-			sampler = null;
+	public void cancel() {
+		synchronized (schedulerLock) {
+			if (scheduler != null) {
+				scheduler.close();
 		}
+	}
 	}
 
 	/**
@@ -239,53 +246,65 @@ public class PlatformJmxSampler implements Sampler {
 
 	@Override
 	public Sampler addListener(SampleListener listener) {
-		if (sampler == null) {
+		synchronized (schedulerLock) {
+			if (scheduler == null) {
 			throw new IllegalStateException("no schedule set: call setSchedule() first");
 		}
-		sampler.getSampleHandler().addListener(listener);
+			scheduler.getSampleHandler().addListener(listener);
 		return this;
+	}
 	}
 
 	@Override
 	public Sampler removeListener(SampleListener listener) {
-		if (sampler == null) {
+		synchronized (schedulerLock) {
+			if (scheduler == null) {
 			throw new IllegalStateException("no schedule set: call setSchedule() first");
 		}
-		sampler.getSampleHandler().removeListener(listener);
+			scheduler.getSampleHandler().removeListener(listener);
 		return this;
+	}
 	}
 
 	@Override
 	public Sampler register(AttributeCondition cond, AttributeAction action) {
-		if (sampler == null) {
+		synchronized (schedulerLock) {
+			if (scheduler == null) {
 			throw new IllegalStateException("no schedule set: call setSchedule() first");
 		}
-		sampler.register(cond, action);
+			scheduler.register(cond, action);
 		return this;
+	}
 	}
 
 	@Override
 	public void run() {
-		if (sampler == null) {
+		synchronized (schedulerLock) {
+			if (scheduler == null) {
 			throw new IllegalStateException("no schedule set: call setSchedule() first");
 		}
-		sampler.run();
+			scheduler.run();
+	}
 	}
 
 	@Override
 	public SampleContext getContext() {
-		if (sampler == null) {
+		synchronized (schedulerLock) {
+			if (scheduler == null) {
 			throw new IllegalStateException("no schedule set: call setSchedule() first");
 		}
-		return sampler.getSampleHandler().getContext();
+			return scheduler.getSampleHandler().getContext();
+	}
 	}
 
 	@Override
 	public String getName() {
-		if (sampler == null) {
+		synchronized (schedulerLock) {
+			if (scheduler == null) {
 			throw new IllegalStateException("no schedule set: call setSchedule() first");
 		}
-		return sampler.getName();
+			return scheduler.getName();
+	}
 	}
 
 	@Override
@@ -306,9 +325,11 @@ public class PlatformJmxSampler implements Sampler {
 
 	@Override
 	public long getPeriod() {
-		if (sampler == null) {
+		synchronized (schedulerLock) {
+			if (scheduler == null) {
 			throw new IllegalStateException("no schedule set: call setSchedule() first");
 		}
-		return sampler.getPeriod();
+			return scheduler.getPeriod();
 	}
+}
 }

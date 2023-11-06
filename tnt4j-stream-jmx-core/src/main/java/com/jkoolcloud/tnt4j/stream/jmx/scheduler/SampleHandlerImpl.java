@@ -584,14 +584,18 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 
 	@Override
 	public SampleHandler addListener(SampleListener listener) {
-		listeners.add(listener);
-		return this;
+		synchronized (this.listeners) {
+			listeners.add(listener);
+			return this;
+		}
 	}
 
 	@Override
 	public SampleHandler removeListener(SampleListener listener) {
-		listeners.remove(listener);
-		return this;
+		synchronized (this.listeners) {
+			listeners.remove(listener);
+			return this;
+		}
 	}
 
 	@Override
@@ -624,7 +628,9 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 		eFilters.clear();
 		conditions.clear();
 		mbeans.clear();
-		listeners.clear();
+		synchronized (this.listeners) {
+			listeners.clear();
+		}
 	}
 
 }
