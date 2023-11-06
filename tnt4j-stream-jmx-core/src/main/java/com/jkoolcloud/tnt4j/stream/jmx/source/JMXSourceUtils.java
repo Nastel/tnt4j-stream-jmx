@@ -16,6 +16,7 @@
 
 package com.jkoolcloud.tnt4j.stream.jmx.source;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 import com.jkoolcloud.tnt4j.config.DefaultConfigFactory;
@@ -43,7 +44,7 @@ public class JMXSourceUtils {
 	 *            logger instance to log messages
 	 * @return source handle representing the user defined path, or root source if no user defined source path
 	 */
-	public static Source getSource(Class<?> cls, EventSink logger) {
+	public static Source getSource(Class<?> cls, EventSink logger) throws IOException {
 		return getSource(cls.getName(), logger);
 	}
 
@@ -56,9 +57,13 @@ public class JMXSourceUtils {
 	 *            logger instance to log messages
 	 * @return source handle representing the user defined path, or root source if no user defined source path
 	 */
-	public static Source getSource(String className, EventSink logger) {
+	public static Source getSource(String className, EventSink logger) throws IOException {
 		TrackerConfig config = DefaultConfigFactory.getInstance().getConfig(className);
-		SourceFactory instance = config.getSourceFactory();
+		SourceFactory factory = config.getSourceFactory();
+
+		if (factory == null) {
+			factory = JMXSourceFactoryImpl.getInstance();
+		}
 
 		String sourceDescriptor = null;
 		Thread thread = Thread.currentThread();
@@ -67,13 +72,13 @@ public class JMXSourceUtils {
 		}
 
 		if (sourceDescriptor == null) {
-			return instance.getRootSource();
+			return factory.getRootSource();
 		}
 
 		Source source;
 
 		try {
-			source = instance.fromFQN(sourceDescriptor);
+			source = factory.fromFQN(sourceDescriptor);
 		} catch (IllegalArgumentException e) {
 			// TODO placeholders doesn't fill right
 			logger.log(OpLevel.WARNING,
@@ -84,7 +89,9 @@ public class JMXSourceUtils {
 			logger.log(OpLevel.WARNING,
 					"JMXSourceUtils.getSource: source descriptor ''{0}'' does not match FQN pattern ''SourceType=SourceValue''. Defaulting to ''SERVICE={0}''",
 					sourceDescriptor);
-			source = instance.newSource(sourceDescriptor, SourceType.SERVICE);
+			source = factory.newSource(sourceDescriptor, SourceType.SERVICE);
+		} catch (JMXCommunicationException exc) {
+			throw (IOException) exc.getCause();
 		}
 
 		return source;
