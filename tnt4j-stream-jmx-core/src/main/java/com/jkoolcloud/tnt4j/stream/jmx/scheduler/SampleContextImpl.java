@@ -18,6 +18,7 @@ package com.jkoolcloud.tnt4j.stream.jmx.scheduler;
 import javax.management.MBeanServerConnection;
 
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleContext;
+import com.jkoolcloud.tnt4j.stream.jmx.utils.Utils;
 
 /**
  * <p>
@@ -94,6 +95,6 @@ public class SampleContextImpl implements SampleContext {
 
 	@Override
 	public String toString() {
-		return handle.mbeanServer.hashCode() + "=>" + Utils.toString(handle.serviceConn);
+		return Utils.toString(handle.mbeanServer);
 	}
 }

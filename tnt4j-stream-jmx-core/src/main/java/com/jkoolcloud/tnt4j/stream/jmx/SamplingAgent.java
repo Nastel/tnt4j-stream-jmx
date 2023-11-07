@@ -27,14 +27,10 @@ import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.security.cert.X509Certificate;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.management.MBeanServer;
-import javax.management.MBeanServerFactory;
-import javax.management.Notification;
-import javax.management.NotificationListener;
+import javax.management.*;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
@@ -72,7 +68,7 @@ public class SamplingAgent {
 	private static final EventSink LOGGER = LoggerUtils.getLoggerSink(SamplingAgent.class);
 
 	private Sampler platformJmx;
-	private final Map<JMXServerConnection, Sampler> STREAM_SAMPLERS = Collections
+	private final Map<MBeanServerConnection, Sampler> STREAM_SAMPLERS = Collections
 			.synchronizedMap(new LinkedHashMap<>(5));
 
 	private static final Collection<SamplingAgent> ALL_AGENTS = new ArrayList<>(5);
@@ -272,6 +268,7 @@ public class SamplingAgent {
 		LOGGER.log(OpLevel.INFO,
 				"meshIQ TNT4J-Stream-JMX v.{0} session starting as JVM agent...\n" + "  Runtime environment: {1}",
 				pkgVersion(), runEnv());
+
 		LOGGER.log(OpLevel.INFO, "SamplingAgent.agentmain(): agentArgs={0}", agentArgs);
 		String agentParams = "";
 		String tnt4jProp = System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY);
@@ -389,6 +386,7 @@ public class SamplingAgent {
 	public static void main(String... args) throws Exception {
 		LOGGER.log(OpLevel.INFO, "meshIQ TNT4J-Stream-JMX v.{0} session starting as standalone application...\n"
 				+ "  Runtime environment: {1}", pkgVersion(), runEnv());
+
 		boolean argsValid = parseArgs(clProps, args);
 
 		if (argsValid) {
@@ -430,7 +428,7 @@ public class SamplingAgent {
 							.parseInt(clProps.getProperty(AGENT_ARG_D_TIME, String.valueOf(sample_time)));
 					long wait_time = Integer.parseInt(clProps.getProperty(AGENT_ARG_W_TIME, "0"));
 					SamplingAgent samplingAgent = newSamplingAgent();
-					samplingAgent.sample(inclF, exclF, delay_time, sample_time, TimeUnit.MILLISECONDS, null);
+					samplingAgent.initPlatformJMX(inclF, exclF, delay_time, sample_time, TimeUnit.MILLISECONDS, null);
 					LOGGER.log(OpLevel.INFO,
 							"SamplingAgent.main: include.filter={0}, exclude.filter={1}, sample.ms={2}, delay.ms={3}, wait.ms={4}, listener.properties={5}, tnt4j.config={6}, jmx.sample.list={7}",
 							inclF, exclF, sample_time, delay_time, wait_time, LISTENER_PROPERTIES,
@@ -854,7 +852,8 @@ public class SamplingAgent {
 	 * @throws IOException
 	 *             if IO exception occurs while initializing MBeans sampling
 	 */
-	protected SamplerFactory initPlatformJMX(Map<String, Object> samplerConfig, JMXConnector conn) throws IOException {
+	private SamplerFactory initPlatformJMX(String incFilter, String excFilter, long initDelay, long period,
+			TimeUnit tUnit, JMXConnector conn) throws IOException {
 		// obtain a default sample factory
 		SamplerFactory sFactory = DefaultSamplerFactory
 				.getInstance(Utils.getConfProperty(DEFAULTS, "com.jkoolcloud.tnt4j.stream.jmx.sampler.factory"));
@@ -862,7 +861,8 @@ public class SamplingAgent {
 		if (platformJmx == null) {
 			synchronized (STREAM_SAMPLERS) {
 				// create new sampler with default MBeanServer instance
-				platformJmx = mbSrvConn == null ? sFactory.newInstance() : sFactory.newInstance(mbSrvConn);
+				platformJmx = conn == null ? sFactory.newInstance()
+						: sFactory.newInstance(conn.getMBeanServerConnection());
 				// schedule sample with a given filter and sampling period
 				scheduleSampler(incFilter, excFilter, initDelay, period, tUnit, sFactory, platformJmx, STREAM_SAMPLERS);
 			}
@@ -874,8 +874,9 @@ public class SamplingAgent {
 	private void scheduleSampler(String incFilter, String excFilter, long initDelay, long period, TimeUnit tUnit,
 			SamplerFactory sFactory, Sampler sampler, Map<MBeanServerConnection, Sampler> agents) throws IOException {
 		agents.put(sampler.getMBeanServer(), sampler);
-		sampler.setSchedule(incFilter, excFilter, initDelay, period, tUnit, sFactory, JMXSourceUtils.getSource(getClass(), LOGGER))
-				.addListener(sFactory.newListener(LISTENER_PROPERTIES)).addListener(new SamplerFailureListener(this));
+		sampler.setSchedule(incFilter, excFilter, initDelay, period, tUnit, sFactory,
+				JMXSourceUtils.getSource(getClass(), LOGGER)).addListener(sFactory.newListener(LISTENER_PROPERTIES))
+				.addListener(new SamplerFailureListener(this));
 
 		if (synchronousSamplers) {
 			sampler.run();
@@ -1089,7 +1090,7 @@ public class SamplingAgent {
 
 		if (platformJmx != null) {
 			synchronized (platformJmx) {
-			LOGGER.log(OpLevel.INFO, "SamplingAgent.stopSampler: releasing sampler lock: {0}...", platformJmx);
+				LOGGER.log(OpLevel.INFO, "SamplingAgent.stopSampler: releasing sampler lock: {0}...", platformJmx);
 
 				platformJmx.notifyAll();
 			}
@@ -1135,7 +1136,7 @@ public class SamplingAgent {
 
 		if (platformJmx != null) {
 			synchronized (platformJmx) {
-			LOGGER.log(OpLevel.INFO, "SamplingAgent.startSamplerAndWait: locking on sampler: {0}...", platformJmx);
+				LOGGER.log(OpLevel.INFO, "SamplingAgent.startSamplerAndWait: locking on sampler: {0}...", platformJmx);
 
 				platformJmx.wait();
 			}
@@ -1171,7 +1172,7 @@ public class SamplingAgent {
 		if (connector == null) {
 			sample(incFilter, excFilter, initDelay, period, TimeUnit.MILLISECONDS);
 		} else {
-			sample(incFilter, excFilter, initDelay, period, TimeUnit.MILLISECONDS, connector);
+			initPlatformJMX(incFilter, excFilter, initDelay, period, TimeUnit.MILLISECONDS, connector);
 		}
 
 		LOGGER.log(OpLevel.INFO,
@@ -1240,8 +1241,8 @@ public class SamplingAgent {
 		cancel();
 		if (platformJmx != null) {
 			synchronized (platformJmx) {
-		platformJmx = null;
-	}
+				platformJmx = null;
+			}
 		}
 	}
 
