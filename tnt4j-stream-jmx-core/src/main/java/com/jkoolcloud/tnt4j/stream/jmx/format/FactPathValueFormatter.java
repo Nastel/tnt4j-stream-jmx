@@ -290,12 +290,9 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 
 		if (!propsStr.isEmpty()) {
 			propsStr = Utils.replace(propsStr, FIELD_SEP, LF);
-			Reader rdr = new StringReader(propsStr);
-			try {
+			try (Reader rdr = new StringReader(propsStr)) {
 				props.load(rdr);
 			} catch (IOException exc) {
-			} finally {
-				Utils.close(rdr);
 			}
 		}
 	}
