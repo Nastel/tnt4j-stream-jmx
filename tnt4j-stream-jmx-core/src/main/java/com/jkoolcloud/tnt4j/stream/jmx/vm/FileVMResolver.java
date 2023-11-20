@@ -102,7 +102,7 @@ public class FileVMResolver implements VMResolver<String> {
 		String line;
 		while ((line = reader.readLine()) != null) {
 			line = line.trim();
-			if (line.startsWith("#") || line.isEmpty()) {
+			if (isLineStartingWith(line, COMMENTS)) {
 				continue;
 			}
 
@@ -119,6 +119,13 @@ public class FileVMResolver implements VMResolver<String> {
 		}
 
 		return allVMs;
+	}
+
+	private static final String[] COMMENTS = new String[] { ";", "#", "//" }; // NON-NLS
+	private static final String[] COMMENTS_AND_STANZA = new String[] { ";", "#", "//", "{", "}" }; // NON-NLS
+
+	private static boolean isLineStartingWith(String line, String[] symbols) {
+		return line.isEmpty() || StringUtils.startsWithAny(line, symbols);
 	}
 
 	private VMParams<String> readTokensLine(String line, LineNumberReader reader, VMParams<String> baseParams) {
@@ -149,7 +156,7 @@ public class FileVMResolver implements VMResolver<String> {
 			line = reader.readLine();
 			if (line != null) {
 				line = line.trim();
-				if (line.isEmpty() || StringUtils.startsWithAny(line, ";", "#", "//", "{", "}")) { // NON-NLS
+				if (isLineStartingWith(line, COMMENTS_AND_STANZA)) {
 					continue;
 				}
 				int sepIndex = StringUtils.indexOfAny(line, ":="); // NON-NLS

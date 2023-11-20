@@ -17,6 +17,7 @@ package com.jkoolcloud.tnt4j.stream.jmx.scheduler;
 
 import com.jkoolcloud.tnt4j.stream.jmx.core.JMXServerConnection;
 import com.jkoolcloud.tnt4j.stream.jmx.core.SampleContext;
+import com.jkoolcloud.tnt4j.utils.Utils;
 
 /**
  * <p>
@@ -29,7 +30,7 @@ import com.jkoolcloud.tnt4j.stream.jmx.core.SampleContext;
  * @version $Revision: 1 $
  */
 public class SampleContextImpl implements SampleContext {
-	SampleHandlerImpl handle;
+	final SampleHandlerImpl handle;
 
 	protected SampleContextImpl(SampleHandlerImpl lst) {
 		handle = lst;
@@ -89,5 +90,10 @@ public class SampleContextImpl implements SampleContext {
 	@Override
 	public long getTotalErrorCount() {
 		return handle.errorCount;
+	}
+
+	@Override
+	public String toString() {
+		return handle.mbeanServer.hashCode() + "=>" + Utils.toString(handle.serviceConn);
 	}
 }

@@ -16,8 +16,11 @@
 
 package com.jkoolcloud.tnt4j.stream.jmx.source;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import javax.management.ObjectInstance;
@@ -97,6 +100,8 @@ import com.jkoolcloud.tnt4j.utils.Utils;
 public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 	private static final EventSink LOGGER = LoggerUtils.getLoggerSink(JMXSourceFactoryImpl.class);
 
+	private static JMXSourceFactoryImpl factory = new JMXSourceFactoryImpl();
+
 	public static final String SOURCE_SERVER_ADDRESS = "sjmx.serverAddress";
 	public static final String SOURCE_SERVER_NAME = "sjmx.serverName";
 	public static final String SOURCE_SERVICE_ID = "sjmx.serviceId";
@@ -105,12 +110,28 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 	private static final String MBEAN_PREFIX = "@bean:";
 	private static final String MBEAN_ATTR_DELIM = "/?";
 
+	/**
+	 * Constructs a new instance of JMXSourceFactoryImpl.
+	 */
 	public JMXSourceFactoryImpl() {
 		super();
 	}
 
+	/**
+	 * Obtain a default instance of this source factory.
+	 * 
+	 * @return default instance of this factory
+	 */
+	public static JMXSourceFactoryImpl getInstance() {
+		return factory;
+	}
+
 	@Override
 	protected String getNameFromType(String name, SourceType type) {
+		return getNameFromType(name, type, false);
+	}
+
+	protected String getNameFromType(String name, SourceType type, boolean throwFailure) {
 		if (name.startsWith(MBEAN_PREFIX)) {
 			String beanAttrName = name.substring(MBEAN_PREFIX.length());
 
@@ -121,8 +142,17 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 					return getKeyPropertyValue(beanAttrName);
 				}
 			} catch (Exception e) {
-				LOGGER.log(OpLevel.ERROR, "Failed to resolve MBean attribute ''{0}'' value for source field {1}", name,
-						type, e);
+				if (e instanceof IOException) {
+					LOGGER.log(OpLevel.ERROR,
+							"Failed to resolve MBean attribute ''{0}'' value for source field {1}, reason: {2}", name,
+							type, Utils.getExceptionMessages(e));
+					if (throwFailure) {
+						throw new JMXCommunicationException(e);
+					}
+				} else {
+					LOGGER.log(OpLevel.ERROR, "Failed to resolve MBean attribute ''{0}'' value for source field {1}",
+							name, type, e);
+				}
 			}
 
 			return UNKNOWN_SOURCE;
@@ -149,7 +179,21 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 		String attributeNamePart = paths[1];
 
 		JMXServerConnection mBeanServerConn = getMBeanServerConnection();
-		Set<ObjectInstance> objects = mBeanServerConn.queryMBeans(new ObjectName(objectNamePart), null);
+		Set<ObjectInstance> objects = getRepeating(new RepeatingSupplier<Set<ObjectInstance>>() {
+			@Override
+			public boolean isComplete(Set<ObjectInstance> value) {
+				return !Utils.isEmpty(value);
+			}
+
+			@Override
+			public Set<ObjectInstance> get() throws ExecutionException {
+				try {
+					return mBeanServerConn.queryMBeans(new ObjectName(objectNamePart), null);
+				} catch (Exception exc) {
+					throw new ExecutionException("Unrecoverable MBean query exception", exc);
+				}
+			}
+		});
 
 		if (Utils.isEmpty(objects)) {
 			return UNKNOWN_SOURCE;
@@ -183,7 +227,21 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 	private static String getKeyPropertyValue(String oNameStr) throws Exception {
 		String queryName = oNameStr.replace("?", "*"); // NON-NLS
 		ObjectName oName = new ObjectName(queryName);
-		Set<ObjectInstance> objects = getMBeanServerConnection().queryMBeans(oName, null);
+		Set<ObjectInstance> objects = getRepeating(new RepeatingSupplier<Set<ObjectInstance>>() {
+			@Override
+			public boolean isComplete(Set<ObjectInstance> value) {
+				return !Utils.isEmpty(value);
+			}
+
+			@Override
+			public Set<ObjectInstance> get() throws ExecutionException {
+				try {
+					return getMBeanServerConnection().queryMBeans(oName, null);
+				} catch (Exception exc) {
+					throw new ExecutionException("Unrecoverable MBean query exception", exc);
+				}
+			}
+		});
 
 		if (!Utils.isEmpty(objects)) {
 			ObjectInstance first = objects.iterator().next();
@@ -279,8 +337,8 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 			String typeS = sName.substring(0, firstEqSign);
 			String valueS = sName.substring(++firstEqSign);
 			SourceType type = SourceType.valueOf(typeS);
-			DefaultSource source = new DefaultSource(this, getNameFromType(valueS, type), type, null,
-					getNameFromType("?", SourceType.USER));
+			DefaultSource source = new DefaultSource(this, getNameFromType(valueS, type, true), type, null,
+					getNameFromType("?", SourceType.USER, true));
 			if (child != null) {
 				child.setSource(source);
 			}
@@ -296,4 +354,34 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 
 		return root;
 	}
+
+	private static <T> T getRepeating(RepeatingSupplier<T> getter) throws Exception {
+		int intervalSec = 1;
+		int retryCount = 0;
+		T value = null;
+
+		do {
+			if (retryCount > 0) {
+				LOGGER.log(OpLevel.INFO, "Will retry to query MBeans after {0} sec.", intervalSec);
+				try {
+					Thread.sleep(TimeUnit.SECONDS.toMillis(intervalSec));
+				} catch (InterruptedException exc) {
+				}
+			}
+			try {
+				value = getter.get();
+			} catch (ExecutionException exc) {
+				throw (Exception) exc.getCause();
+			}
+		} while (!getter.isComplete(value) && retryCount < 3);
+
+		return value;
+	}
+
+	private interface RepeatingSupplier<T> {
+		T get() throws ExecutionException;
+
+		boolean isComplete(T value);
+	}
+
 }
