@@ -37,7 +37,7 @@
             --add-opens=jdk.attach/sun.tools.attach=ALL-UNNAMED
         </maven.compiler.args>
 
-        <jesl.version>1.1-SNAPSHOT</jesl.version>
+        <jesl.version>1.2-SNAPSHOT</jesl.version>
         <gson.version>2.10.1</gson.version>
         <disruptor.version>3.4.4</disruptor.version>
     </properties>
