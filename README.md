@@ -129,7 +129,7 @@ Arguments definition:
     * `batch-size` - number of sampled MBeans to post over single package. Optional, default is `-1` (unlimited).
 * `-cp:` - JMX connection parameter string using `=` symbol as delimiter. Defines only one parameter, to define more than one use this
   argument multiple times. Argument format: `-cp:key=value`.
-  See [Java SE monitoring and management documentation](https://docs.oracle.com/javase/7/docs/technotes/guides/management/agent.html) for
+  See [Java SE monitoring and management documentation](https://docs.oracle.com/javase/8/docs/technotes/guides/management/agent.html) for
   more details.
 * `-slp:` - sampler parameter string using `=` symbol as delimiter. Defines only one parameter, to define more than one use this argument
   multiple times. Argument format: `-slp:key=value`
@@ -296,7 +296,7 @@ states:
 * `-cp:java.naming.security.authentication=simple -cp:java.naming.factory.initial=com.sun.jndi.ldap.LdapCtxFactory` - is JMX connector
   parameters definitions in properties format `key=value`. JMX connector parameters are optional and can be defined multiple times - as many
   as there are required JMX connector parameters.
-  See [Java API Context class documentation](https://docs.oracle.com/javase/7/docs/api/javax/naming/Context.html)
+  See [Java API Context class documentation](https://docs.oracle.com/javase/8/docs/api/javax/naming/Context.html)
   for available properties naming. **NOTE:** If you are using some API extending JNDI, check documentation if it provides some additional
   connection configuration properties.
 * `-cri:30` - is connection retry interval in seconds. In this case it is `30sec` between connect retry attempts. Connection retry interval
