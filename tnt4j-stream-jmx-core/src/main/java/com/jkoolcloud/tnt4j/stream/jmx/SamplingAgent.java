@@ -458,7 +458,7 @@ public class SamplingAgent {
 					+ "       init-delay-ms - MBeans sampling initial delay in milliseconds. Optional, by default it is equal to 'sample-ms' value.\n"
 					+ "       batch-size - number of sampled MBeans to post over single package. Optional, default is `-1` (unlimited).\n"
 					+ "   -cp: - JMX connection parameter string using '=' symbol as delimiter. Defines only one parameter, to define more than one use this argument multiple times. Argument format: -cp:key=value\n"
-					+ "       see https://docs.oracle.com/javase/8/docs/technotes/guides/management/agent.html for more details\n"
+					+ "       see https://docs.oracle.com/en/java/javase/11/management/monitoring-and-management-using-jmx-technology.html for more details\n"
 					+ "  -slp: - sampler parameter string using '=' symbol as delimiter. Defines only one parameter, to define more than one use this argument multiple times. Argument format: -slp:key=value\n"
 					+ "       trace - flag indicating whether the sample listener should print trace entries to print stream. Default value - 'false'.\n"
 					+ "       forceObjectName - flag indicating to forcibly add 'objectName' attribute if such is not present for a MBean. Default value - 'false'.\n"

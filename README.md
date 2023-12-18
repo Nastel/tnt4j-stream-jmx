@@ -135,8 +135,8 @@ Arguments definition:
     * `batch-size` - number of sampled MBeans to post over single package. Optional, default is `-1` (unlimited).
 * `-cp:` - JMX connection parameter string using `=` symbol as delimiter. Defines only one parameter, to define more than one use this
   argument multiple times. Argument format: `-cp:key=value`.
-  See [Java SE monitoring and management documentation](https://docs.oracle.com/javase/8/docs/technotes/guides/management/agent.html) for
-  more details.
+  See [Java SE monitoring and management documentation](https://docs.oracle.com/en/java/javase/11/management/monitoring-and-management-using-jmx-technology.html) 
+  for more details.
 * `-slp:` - sampler parameter string using `=` symbol as delimiter. Defines only one parameter, to define more than one use this argument
   multiple times. Argument format: `-slp:key=value`
     * `trace` - flag indicating whether the sample listener should print trace entries to print stream. Default value - `false`.
@@ -302,7 +302,7 @@ states:
 * `-cp:java.naming.security.authentication=simple -cp:java.naming.factory.initial=com.sun.jndi.ldap.LdapCtxFactory` - is JMX connector
   parameters definitions in properties format `key=value`. JMX connector parameters are optional and can be defined multiple times - as many
   as there are required JMX connector parameters.
-  See [Java API Context class documentation](https://docs.oracle.com/javase/8/docs/api/javax/naming/Context.html)
+  See [Java API Context class documentation](https://docs.oracle.com/en/java/javase/11/docs/api/java.naming/javax/naming/Context.html)
   for available properties naming. **NOTE:** If you are using some API extending JNDI, check documentation if it provides some additional
   connection configuration properties.
 * `-cri:30` - is connection retry interval in seconds. In this case it is `30sec` between connect retry attempts. Connection retry interval
@@ -661,9 +661,9 @@ And complete set of `stream-jmx` program arguments:
  -cp:java.naming.security.credentials=password
  ```
 
-For more information, see [Programming WebLogic JNDI](https://docs.oracle.com/middleware/12212/wls/WJNDI/jndi.htm#WJNDI118),
+For more information, see [Programming WebLogic JNDI](https://docs.oracle.com/en/middleware/fusion-middleware/weblogic-server/12.2.1.4/wjndi/jndi.html#GUID-392163D5-7C99-4888-8E97-05E90AD5D0E3),
 [WebLogic API Environment class documentation](https://docs.oracle.com/middleware/12212/wls/WLAPI/weblogic/jndi/Environment.html) and
-[Accessing WebLogic Server MBeans with JMX](https://docs.oracle.com/cd/E24329_01/web.1211/e24415/accesswls.htm#JMXCU144).
+[Accessing WebLogic Server MBeans with JMX](https://docs.oracle.com/en/middleware/fusion-middleware/weblogic-server/12.2.1.4/jmxcu/accesswls.html).
 
 ### Coding into API
 
@@ -1414,15 +1414,15 @@ Aggregator configuration schema is:
 * `snapshots` - aggregator implementation specific configuration array defining values aggregation into snapshots. **Required**:
     * `name` - aggregation snapshot name RegEx string. It can be Activity contained snapshot name (to append properties) or any other (to
       create new snapshot and add it to Activity). To define Activity contained snapshot name use
-      [ObjectName](https://docs.oracle.com/javase/8/docs/api/javax/management/ObjectName.html) notation syntax, see attribute `beanId` as a
-      sample. **Required**.
+      [ObjectName](https://docs.oracle.com/en/java/javase/11/docs/api/java.management/javax/management/ObjectName.html) notation syntax, see 
+      attribute `beanId` as a sample. **Required**.
     * `category` - aggregation snapshot category RegEx string. **Optional**, if aggregation snapshot `name` has it defined like
       this `category:beanId` or sets default value `jmx.aggregated` in any other case if ommited.
     * `enabled` - flag indicating if snapshot aggregation shall be used. **Optional**, default value -`true`.
     * `properties` - list of snapshot properties to aggregate and store MBean attribute values. **Required**:
         * `beanId` - property bound bean identifier, it can have variable expression like `varName=?` or object name pattern. To
-          define `beanId` use [ObjectName](https://docs.oracle.com/javase/8/docs/api/javax/management/ObjectName.html) notation syntax. When
-          ommited, aggregations target snapshot is used to resolve property values. **Optional**.
+          define `beanId` use [ObjectName](https://docs.oracle.com/en/java/javase/11/docs/api/java.management/javax/management/ObjectName.html) 
+          notation syntax. When ommited, aggregations target snapshot is used to resolve property values. **Optional**.
         * `attribute` - property bound bean attribute name to get value, it can have variable expression like `${attrName1}-${attrName2}`.
           **Required**. **NOTE:** when all variables resolve `null` value, aggregated value also gets `null`.
         * `default` - defines default value(s) mapping for `attribute` defined variables or unresolved aggregated value in general.
