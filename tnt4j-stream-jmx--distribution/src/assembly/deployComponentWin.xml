@@ -63,8 +63,8 @@
                         <directory>${project.build.directory}</directory>
                         <includes>
                             <include>*-all.jar</include>
-                            <!--include>*.war</include>
-                               <include>*.ear</include-->
+                            <include>*.war</include>
+                            <include>*.ear</include>
                         </includes>
                     </fileSet>
                     <!-- configuration -->

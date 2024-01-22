@@ -753,7 +753,7 @@ Bellow you can see Stream-JMX console output. Refresh page or click `Update` but
 
 ### WebSphere Application Server (WAS)
 
-Build Stream-JMX and find tnt4j-stream-jmx-was-*.ear in distribution build directory or archives produced.
+Build Stream-JMX and find `opt/tnt4j-stream-jmx-was-*.ear` in distribution build directory or archives produced.
 
 Login to WebSphere Integrated Solutions Console and install TNT4J-Stream-JMX ear you've built:
 * Navigate Applications->New application and choose New Enterprise Application. Choose file you have built and install Stream-JMX
@@ -776,7 +776,7 @@ See [Generic servlet page features](#generic-servlet-page-features).
 
 ### WebSphere Liberty Server
 
-Build Stream-JMX and find tnt4j-stream-jmx-liberty-war-*.war in distribution build directory or archives produced.
+Build Stream-JMX and find `opt/tnt4j-stream-jmx-liberty-war-*.war` in distribution build directory or archives produced.
 
 There is a simple Liberty `server.xml` configuration required to run Stream-JMX servlet:
 ```xml
