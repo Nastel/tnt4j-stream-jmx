@@ -16,10 +16,12 @@
 
 package com.jkoolcloud.tnt4j.stream.jmx.vm;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.management.remote.JMXServiceURL;
 
-import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
+import com.google.gson.Gson;
 import com.jkoolcloud.tnt4j.core.OpLevel;
 import com.jkoolcloud.tnt4j.sink.EventSink;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.LoggerUtils;
@@ -61,21 +63,25 @@ public class KafkaZKVMResolver extends ZKVMResolver {
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	VMParams<JMXServiceURL> nodeToConnection(String path) throws Exception {
 		logger().log(OpLevel.DEBUG, "KafkaZKVMResolver.nodeToConnection: accessing node: {0}", path);
 		byte[] data = zk().getData(path, watcher, null);
 		String dataStr = new String(data);
 		logger().log(OpLevel.DEBUG, "KafkaZKVMResolver.nodeToConnection: received data: {0}", dataStr);
-		DocumentContext doc = JsonPath.parse(dataStr);
-		Object host = doc.read("$.host"); // NON-NLS
-		Object port = doc.read("$.jmx_port"); // NON-NLS
 
-		if (port instanceof Integer && (Integer) port != -1) {
+		Gson gson = new Gson(); // NOTE: by default Gson de-serializes numbers as doubles
+		Map<String, ?> jsonMap = gson.fromJson(dataStr, HashMap.class);
+		Object host = jsonMap.get("host"); // NON-NLS
+		Object jmx_port = jsonMap.get("jmx_port"); // NON-NLS
+		int portNumber = jmx_port instanceof Number ? ((Number) jmx_port).intValue() : -1;
+
+		if (portNumber != -1) {
 			logger().log(OpLevel.INFO, "KafkaZKVMResolver.nodeToConnection: found exposed JMX: {0}:{1,number,#####0}",
-					host, port);
+					host, portNumber);
 
 			String serviceName = path.substring(path.lastIndexOf("/") + 1);
-			String serviceURL = Utils.format(getURLPattern(), host, port);
+			String serviceURL = Utils.format(getURLPattern(), host, portNumber);
 
 			return buildURLConnectionParams(serviceName, serviceURL);
 		}
