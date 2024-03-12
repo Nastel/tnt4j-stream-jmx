@@ -7,10 +7,10 @@ updates:
     open-pull-requests-limit: 10
     ignore:
       - dependency-name: "com.lmax:disruptor"
-        versions: "[4.x,)"    
+        versions: "[4.x,)"
       # Maven plugins
-      - dependency-name: "org.apache.maven.plugins:maven-assembly-plugin"
-        versions: "[3.1.1,)"
+  #      - dependency-name: "org.apache.maven.plugins:maven-assembly-plugin"
+  #        versions: "[3.1.1,)"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
