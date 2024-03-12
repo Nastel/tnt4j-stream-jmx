@@ -36,6 +36,10 @@
                         </excludes>
                     </dependencySet>
                 </dependencySets>
+                <excludes>
+                    <exclude>*:war</exclude>
+                    <exclude>*:ear</exclude>
+                </excludes>
             </binaries>
             <!-- NOTE: <sources> allows to copy anything from module dir to assembly -->
             <!-- module contents: samples, source/test/javadoc jars -->
@@ -70,7 +74,7 @@
                     <!-- configuration -->
                     <fileSet>
                         <outputDirectory>config</outputDirectory>
-                        <directory>/config</directory>
+                        <directory>config</directory>
                         <includes>
                             <include>**/*.*</include>
                         </includes>
