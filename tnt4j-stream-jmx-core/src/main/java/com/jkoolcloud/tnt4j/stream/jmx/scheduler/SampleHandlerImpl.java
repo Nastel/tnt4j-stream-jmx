@@ -715,19 +715,21 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	@Override
 	public void handleNotification(Notification notification, Object handback) {
 		if (notification instanceof MBeanServerNotification) {
+			String eType = notification.getType();
 			MBeanServerNotification mbeanEvent = (MBeanServerNotification) notification;
-			if (notification.getType().equalsIgnoreCase(MBeanServerNotification.REGISTRATION_NOTIFICATION)) {
+			ObjectName mBeanName = mbeanEvent.getMBeanName();
+			if (eType.equalsIgnoreCase(MBeanServerNotification.REGISTRATION_NOTIFICATION)) {
 				try {
-					if (isFilterIncluded(mbeanEvent.getMBeanName())) {
-						mbeans.put(mbeanEvent.getMBeanName(), mbeanServer.getMBeanInfo(mbeanEvent.getMBeanName()));
-						runRegister(mbeanEvent.getMBeanName());
+					if (isFilterIncluded(mBeanName)) {
+						mbeans.put(mBeanName, mbeanServer.getMBeanInfo(mBeanName));
+						runRegister(mBeanName);
 					}
 				} catch (Throwable ex) {
 					doError(ex);
 				}
-			} else if (notification.getType().equalsIgnoreCase(MBeanServerNotification.UNREGISTRATION_NOTIFICATION)) {
-				mbeans.remove(mbeanEvent.getMBeanName());
-				runUnRegister(mbeanEvent.getMBeanName());
+			} else if (eType.equalsIgnoreCase(MBeanServerNotification.UNREGISTRATION_NOTIFICATION)) {
+				mbeans.remove(mBeanName);
+				runUnRegister(mBeanName);
 			}
 		}
 	}
