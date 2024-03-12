@@ -23,7 +23,7 @@
     <parent>
         <groupId>com.jkoolcloud.tnt4j.stream</groupId>
         <artifactId>tnt4j-stream-jmx-was</artifactId>
-        <version>2.1.0</version>
+        <version>2.2-SNAPSHOT</version>
     </parent>
     <packaging>ear</packaging>
 
