@@ -23,6 +23,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
+import javax.management.AttributeNotFoundException;
+import javax.management.InstanceNotFoundException;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.remote.JMXAddressable;
@@ -220,7 +222,26 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 			return UNKNOWN_SOURCE;
 		} else {
 			ObjectName objectName = objects.iterator().next().getObjectName();
-			Object attribute = mBeanServerConn.getAttribute(objectName, attributeNamePart);
+			Object attribute = getWithRetry(retryIntervalSec, maxRetryAttempts, new RetrySupplier<>() {
+				@Override
+				public boolean isComplete(Object value) {
+					return value != FAIL;
+				}
+
+				@Override
+				public Object get() throws ExecutionException {
+					try {
+						return mBeanServerConn.getAttribute(objectName, attributeNamePart);
+					} catch (AttributeNotFoundException | InstanceNotFoundException exc) {
+						if (isLastAttempt()) {
+							throw new ExecutionException("MBean attribute unresolved within timely manner", exc);
+						}
+						return FAIL;
+					} catch (Exception exc) {
+						throw new ExecutionException("Unrecoverable MBean attribute access exception", exc);
+					}
+				}
+			});
 			return Utils.toString(attribute);
 		}
 	}
@@ -392,20 +413,33 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 				} catch (InterruptedException exc) {
 				}
 			}
+			getter.setLastAttempt(retryCount++ >= maxRetryCount);
 			try {
 				value = getter.get();
 			} catch (ExecutionException exc) {
 				throw (Exception) exc.getCause();
 			}
-		} while (!getter.isComplete(value) && retryCount < maxRetryCount);
+		} while (!getter.isComplete(value) && !getter.isLastAttempt());
 
 		return value;
 	}
 
-	private interface RetrySupplier<T> {
-		T get() throws ExecutionException;
+	private abstract class RetrySupplier<T> {
+		final Object FAIL = new Object();
 
-		boolean isComplete(T value);
+		private boolean lastAttempt = false;
+
+		abstract T get() throws ExecutionException;
+
+		abstract boolean isComplete(T value);
+
+		void setLastAttempt(boolean lastAttempt) {
+			this.lastAttempt = lastAttempt;
+		}
+
+		boolean isLastAttempt() {
+			return lastAttempt;
+		}
 	}
 
 }
