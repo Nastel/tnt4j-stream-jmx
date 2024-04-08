@@ -1029,7 +1029,7 @@ public class SamplingAgent {
 
 		if (platformJmx != null) {
 			synchronized (platformJmx) {
-			LOGGER.log(OpLevel.INFO, "SamplingAgent.stopSampler: releasing sampler lock: {0}...", platformJmx);
+				LOGGER.log(OpLevel.INFO, "SamplingAgent.stopSampler: releasing sampler lock: {0}...", platformJmx);
 
 				platformJmx.notifyAll();
 			}
@@ -1075,7 +1075,7 @@ public class SamplingAgent {
 
 		if (platformJmx != null) {
 			synchronized (platformJmx) {
-			LOGGER.log(OpLevel.INFO, "SamplingAgent.startSamplerAndWait: locking on sampler: {0}...", platformJmx);
+				LOGGER.log(OpLevel.INFO, "SamplingAgent.startSamplerAndWait: locking on sampler: {0}...", platformJmx);
 
 				platformJmx.wait();
 			}
@@ -1165,8 +1165,8 @@ public class SamplingAgent {
 		cancel();
 		if (platformJmx != null) {
 			synchronized (platformJmx) {
-		platformJmx = null;
-	}
+				platformJmx = null;
+			}
 		}
 	}
 
