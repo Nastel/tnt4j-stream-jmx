@@ -15,9 +15,9 @@
   ~ limitations under the License.
   -->
 
-<component xmlns="http://maven.apache.org/ASSEMBLY-COMPONENT/2.1.1"
+<component xmlns="http://maven.apache.org/ASSEMBLY-COMPONENT/2.2.0"
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-           xsi:schemaLocation="http://maven.apache.org/ASSEMBLY-COMPONENT/2.1.1 http://maven.apache.org/xsd/assembly-component-2.1.1.xsd">
+           xsi:schemaLocation="http://maven.apache.org/ASSEMBLY-COMPONENT/2.2.0 http://maven.apache.org/xsd/assembly-component-2.2.0.xsd">
     <moduleSets>
         <moduleSet>
             <useAllReactorProjects>true</useAllReactorProjects>
@@ -37,6 +37,11 @@
                     </dependencySet>
                 </dependencySets>
             </binaries>
+            <!-- binaries exclude does not work - that is why doing this workaround: excluding modules completely and picking binaries as files -->
+            <excludes>
+                <exclude>*:war</exclude>
+                <exclude>*:ear</exclude>
+            </excludes>
             <!-- NOTE: <sources> allows to copy anything from module dir to assembly -->
             <!-- module contents: samples, source/test/javadoc jars -->
             <sources>
@@ -63,14 +68,14 @@
                         <directory>${project.build.directory}</directory>
                         <includes>
                             <include>*-all.jar</include>
-                            <!--include>*.war</include>
-                               <include>*.ear</include-->
+                            <!--<include>*.war</include>-->
+                            <!--<include>*.ear</include>-->
                         </includes>
                     </fileSet>
                     <!-- configuration -->
                     <fileSet>
                         <outputDirectory>config</outputDirectory>
-                        <directory>/config</directory>
+                        <directory>config</directory>
                         <includes>
                             <include>**/*.*</include>
                         </includes>
@@ -131,6 +136,28 @@
             </includes>
             <outputDirectory></outputDirectory>
             <lineEnding>crlf</lineEnding>
+        </fileSet>
+        <!-- binaries exclude does not work - that is why doing this workaround: excluding modules completely and picking binaries as files -->
+        <fileSet>
+            <directory>../tnt4j-stream-jmx-was/tnt4j-stream-jmx-was-war/target</directory>
+            <includes>
+                <include>*.war</include>
+            </includes>
+            <outputDirectory>opt</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>../tnt4j-stream-jmx-was/tnt4j-stream-jmx-was-ear/target</directory>
+            <includes>
+                <include>*.ear</include>
+            </includes>
+            <outputDirectory>opt</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>../tnt4j-stream-jmx-liberty/tnt4j-stream-jmx-liberty-war/target</directory>
+            <includes>
+                <include>*.war</include>
+            </includes>
+            <outputDirectory>opt</outputDirectory>
         </fileSet>
 
         <!-- JavaDocs -->

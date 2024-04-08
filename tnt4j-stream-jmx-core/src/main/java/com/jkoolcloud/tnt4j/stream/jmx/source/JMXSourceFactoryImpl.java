@@ -31,6 +31,7 @@ import javax.management.remote.JMXServiceURL;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.core5.net.InetAddressUtils;
 
+import com.jkoolcloud.tnt4j.config.ConfigException;
 import com.jkoolcloud.tnt4j.core.OpLevel;
 import com.jkoolcloud.tnt4j.sink.EventSink;
 import com.jkoolcloud.tnt4j.source.DefaultSource;
@@ -78,6 +79,8 @@ import com.jkoolcloud.tnt4j.utils.Utils;
  * 	source.factory.SERVER: @bean:JMImplementation:type=MBeanServerDelegate/?MBeanServerId
  * 	source.factory.SERVICE: @bean:org.apache.activemq:type=Broker,brokerName=localhost/?BrokerId
  * 	source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?#GENERIC=?
+ * 	source.factory.RepeatIntervalSec: 1
+ * 	source.factory.MaxRepeatCount: 5
  * }
  * </pre>
  *
@@ -92,10 +95,12 @@ import com.jkoolcloud.tnt4j.utils.Utils;
  *  source.factory.SERVER: @sjmx.serverName
  *  source.factory.SERVICE: @bean:org.apache.activemq:type=Broker,brokerName=localhost/?BrokerId
  *  source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?#GENERIC=?
+ *  source.factory.RepeatIntervalSec: 1
+ * 	source.factory.MaxRepeatCount: 5
  * }
  * </pre>
  *
- * @version $Revision: 2 $
+ * @version $Revision: 3 $
  */
 public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 	private static final EventSink LOGGER = LoggerUtils.getLoggerSink(JMXSourceFactoryImpl.class);
@@ -109,6 +114,11 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 	private static final String SJMX_PROP_PREFIX = "@sjmx.";
 	private static final String MBEAN_PREFIX = "@bean:";
 	private static final String MBEAN_ATTR_DELIM = "/?";
+
+	private static final int DEFAULT_RETRY_INTERVAL_SEC = 1;
+
+	private int retryIntervalSec = DEFAULT_RETRY_INTERVAL_SEC;
+	private int maxRetryAttempts = 5;
 
 	/**
 	 * Constructs a new instance of JMXSourceFactoryImpl.
@@ -124,6 +134,17 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 	 */
 	public static JMXSourceFactoryImpl getInstance() {
 		return factory;
+	}
+
+	@Override
+	public void setConfiguration(Map<String, ?> settings) throws ConfigException {
+		super.setConfiguration(settings);
+
+		retryIntervalSec = Utils.getInt("RetryIntervalSec", settings, retryIntervalSec);
+		if (retryIntervalSec < 0) {
+			retryIntervalSec = DEFAULT_RETRY_INTERVAL_SEC;
+		}
+		maxRetryAttempts = Utils.getInt("MaxRetryAttempts", settings, maxRetryAttempts);
 	}
 
 	@Override
@@ -168,7 +189,7 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 		return split.length == 2;
 	}
 
-	private static String getAttributeValue(String oNameStr) throws Exception {
+	private String getAttributeValue(String oNameStr) throws Exception {
 		String[] paths = oNameStr.split(Pattern.quote(MBEAN_ATTR_DELIM));
 		if (paths.length != 2) {
 			throw new IllegalArgumentException(Utils.format(
@@ -179,7 +200,7 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 		String attributeNamePart = paths[1];
 
 		JMXServerConnection mBeanServerConn = getMBeanServerConnection();
-		Set<ObjectInstance> objects = getRepeating(new RepeatingSupplier<Set<ObjectInstance>>() {
+		Set<ObjectInstance> objects = getWithRetry(retryIntervalSec, maxRetryAttempts, new RetrySupplier<Set<ObjectInstance>>() {
 			@Override
 			public boolean isComplete(Set<ObjectInstance> value) {
 				return !Utils.isEmpty(value);
@@ -224,10 +245,10 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 		throw new IllegalStateException("MBean server connection not found for thread " + thread);
 	}
 
-	private static String getKeyPropertyValue(String oNameStr) throws Exception {
+	private String getKeyPropertyValue(String oNameStr) throws Exception {
 		String queryName = oNameStr.replace("?", "*"); // NON-NLS
 		ObjectName oName = new ObjectName(queryName);
-		Set<ObjectInstance> objects = getRepeating(new RepeatingSupplier<Set<ObjectInstance>>() {
+		Set<ObjectInstance> objects = getWithRetry(retryIntervalSec, maxRetryAttempts, new RetrySupplier<Set<ObjectInstance>>() {
 			@Override
 			public boolean isComplete(Set<ObjectInstance> value) {
 				return !Utils.isEmpty(value);
@@ -355,16 +376,19 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 		return root;
 	}
 
-	private static <T> T getRepeating(RepeatingSupplier<T> getter) throws Exception {
-		int intervalSec = 1;
+	private static <T> T getWithRetry(int retryIntervalSec, int maxRetryCount, RetrySupplier<T> getter)
+			throws Exception {
+		if (maxRetryCount < 0) {
+			maxRetryCount = Integer.MAX_VALUE;
+		}
 		int retryCount = 0;
 		T value = null;
 
 		do {
 			if (retryCount > 0) {
-				LOGGER.log(OpLevel.INFO, "Will retry to query MBeans after {0} sec.", intervalSec);
+				LOGGER.log(OpLevel.INFO, "Will retry to query MBeans after {0} sec.", retryIntervalSec);
 				try {
-					Thread.sleep(TimeUnit.SECONDS.toMillis(intervalSec));
+					Thread.sleep(TimeUnit.SECONDS.toMillis(retryIntervalSec));
 				} catch (InterruptedException exc) {
 				}
 			}
@@ -373,12 +397,12 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 			} catch (ExecutionException exc) {
 				throw (Exception) exc.getCause();
 			}
-		} while (!getter.isComplete(value) && retryCount < 3);
+		} while (!getter.isComplete(value) && retryCount < maxRetryCount);
 
 		return value;
 	}
 
-	private interface RepeatingSupplier<T> {
+	private interface RetrySupplier<T> {
 		T get() throws ExecutionException;
 
 		boolean isComplete(T value);
