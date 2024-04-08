@@ -66,7 +66,7 @@ It is simple, do one of the following:
       <dependency>
           <groupId>com.jkoolcloud.tnt4j.stream</groupId>
           <artifactId>tnt4j-stream-jmx-core</artifactId>
-          <version>1.18.3</version>
+          <version>1.18.4</version>
       </dependency>
   ```
 
@@ -184,7 +184,7 @@ System properties `-Dxxxxx` defines Stream-JMX configuration. For details see [S
 * `-vm:activemq` - is JVM descriptor. In this case it is running JVM name fragment `activemq`. But it also may be JVM process identifier -
   PID. Mandatory argument.
 * `-ap:tnt4j-stream-jmx-core-all.jar` - is agent library name. If it is class path - then only name should be sufficient. In any other case
-  define full or relative path, e.g., `..\build\tnt4j-stream-jmx\tnt4j-stream-jmx-1.18.3\tnt4j-stream-jmx-core-all.jar`. Mandatory argument.
+  define full or relative path, e.g., `..\build\tnt4j-stream-jmx\tnt4j-stream-jmx-1.18.4\tnt4j-stream-jmx-core-all.jar`. Mandatory argument.
 * `-ao:*:*!10000` - is JMX sampler options stating to include all MBeans and schedule sampling every 10 seconds. Sampler options are
   optional - default value is `*:*!30000`. Initial sampler delay can be configured by adding numeric parameter `*:*!30000!1000` defining
   initial sampler delay as 1 second. Default sampler delay value is equal to sampling period value. See
@@ -817,7 +817,7 @@ There is a simple Liberty `server.xml` configuration required to run Stream-JMX 
     <!-- Configure Stream-JMX logging level, e.g. to get DEBUG entries -->
     <logging traceSpecification="*=info:com.jkoolcloud.tnt4j.stream.jmx.*=finer" />
 
-    <application contextRoot="tnt-jmx" location="tnt4j-stream-jmx-liberty-war-1.18.3.war" type="war" id="tnt-jmx" name="tnt-jmx">
+    <application contextRoot="tnt-jmx" location="tnt4j-stream-jmx-liberty-war-1.18.4.war" type="war" id="tnt-jmx" name="tnt-jmx">
         <application-bnd>
             <security-role name="StreamJmxManager">
                 <user name="JMXManager" />
@@ -1963,7 +1963,7 @@ Modules list:
      <dependency>
          <groupId>com.jkoolcloud.tnt4j.stream</groupId>
          <artifactId>tnt4j-stream-jmx-core</artifactId>
-         <version>1.18.3</version>
+         <version>1.18.4</version>
      </dependency>
   ```
 * `J2EE` (O) - J2EE API addition to handle J2EE API defined attributes and implements abstract Stream-JMX servlet API. Maven dependency:
@@ -1971,7 +1971,7 @@ Modules list:
      <dependency>
          <groupId>com.jkoolcloud.tnt4j.stream</groupId>
          <artifactId>tnt4j-stream-jmx-j2ee</artifactId>
-         <version>1.18.3</version>
+         <version>1.18.4</version>
      </dependency>
   ```
 * `WAS` (O, requires `J2EE`) - IBM WebSphere Application Server (WAS) root module.
@@ -1980,7 +1980,7 @@ Modules list:
          <dependency>
              <groupId>com.jkoolcloud.tnt4j.stream</groupId>
              <artifactId>tnt4j-stream-jmx-was-api</artifactId>
-             <version>1.18.3</version>
+             <version>1.18.4</version>
           </dependency>
       ```
     * `War` (O) - builds WAS compliant web application package (war). Maven dependency:
@@ -1988,7 +1988,7 @@ Modules list:
          <dependency>
              <groupId>com.jkoolcloud.tnt4j.stream</groupId>
              <artifactId>tnt4j-stream-jmx-was-war</artifactId>
-             <version>1.18.3</version>
+             <version>1.18.4</version>
           </dependency>
       ```
     * `Ear` (O) - builds WAS compliant enterprise application package (ear). Maven dependency:
@@ -1996,7 +1996,7 @@ Modules list:
          <dependency>
              <groupId>com.jkoolcloud.tnt4j.stream</groupId>
              <artifactId>tnt4j-stream-jmx-was-ear</artifactId>
-             <version>1.18.3</version>
+             <version>1.18.4</version>
           </dependency>
       ```
 * `Liberty` (O, requires `J2EE`)  - IBM WebSphere Liberty root module.
@@ -2005,7 +2005,7 @@ Modules list:
          <dependency>
              <groupId>com.jkoolcloud.tnt4j.stream</groupId>
              <artifactId>tnt4j-stream-jmx-liberty-api</artifactId>
-             <version>1.18.3</version>
+             <version>1.18.4</version>
           </dependency>
       ```
     * `War` (O) - builds Liberty compliant web application package (war). Maven dependency:
@@ -2013,7 +2013,7 @@ Modules list:
          <dependency>
              <groupId>com.jkoolcloud.tnt4j.stream</groupId>
              <artifactId>tnt4j-stream-jmx-liberty-war</artifactId>
-             <version>1.18.3</version>
+             <version>1.18.4</version>
           </dependency>
       ```
 * `ZK` (O) - JMX connections resolution for VMs orchestrated by ZooKeeper. Maven dependency:
@@ -2021,7 +2021,7 @@ Modules list:
      <dependency>
          <groupId>com.jkoolcloud.tnt4j.stream</groupId>
          <artifactId>tnt4j-stream-jmx-zk</artifactId>
-         <version>1.18.3</version>
+         <version>1.18.4</version>
       </dependency>
   ```
 * `Distribution` (OU) - build distribution packages. After running, see `build/` directory.
