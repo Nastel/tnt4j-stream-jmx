@@ -1043,6 +1043,9 @@ Stream-JMS has couple additional features in comparison with basic `TNT4J` when 
           one is running on same JVM, but usually it should be only one) ZooKeeper service instance.
         * **MBean key property** descriptor pattern is `@bean:MBean_ObjectName:PropertyKey=?(,OtherProperties)` (part within `()` is
           optional), e.g.: `@bean:kafka.server:id=?,type=app-info`.
+    3. Since MBean initialization may take some time on server side (usually it may happen after some server component restart) MBean 
+       attribute value may not be resolvable at that time. To overcome such case, you can define MBean value resolution retry interval in 
+       seconds (property `RetryIntervalSec`) and maximum retry attempts count (property `MaxRetryAttempts`).
 
    then putting all together, `tnt4j.properties` configuration will be like this:
    ```properties
@@ -1053,6 +1056,8 @@ Stream-JMS has couple additional features in comparison with basic `TNT4J` when 
    source.factory.SERVICE: @bean:org.apache.activemq:type=Broker,brokerName=localhost/?BrokerId
    source.factory.SERVER: @bean:JMImplementation:type=MBeanServerDelegate/?MBeanServerId
    source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?#GENERIC=?
+   source.factory.RetryIntervalSec: 1
+   source.factory.MaxRetryAttempts: 10
    ...
    ```
 
@@ -1574,6 +1579,8 @@ Below is an example of TNT4J stream configuration writing collected JMX samples 
     source.factory.SERVICE: $sjmx.serviceId
     source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?#GEOADDR=?#GENERIC=?
     source.factory.RootSSN: tnt4j-stream-jmx
+    source.factory.RetryIntervalSec: 1
+    source.factory.MaxRetryAttempts: 10
 
     tracker.factory: com.jkoolcloud.tnt4j.tracker.DefaultTrackerFactory
     dump.sink.factory: com.jkoolcloud.tnt4j.dump.DefaultDumpSinkFactory
@@ -1612,6 +1619,8 @@ Below is an example of TNT4J stream configuration writing collected JMX samples 
     source.factory.SERVICE: $sjmx.serviceId
     source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?#GEOADDR=?#GENERIC=?
     source.factory.RootSSN: tnt4j-stream-jmx
+    source.factory.RetryIntervalSec: 1
+    source.factory.MaxRetryAttempts: 10
 
     tracker.factory: com.jkoolcloud.tnt4j.tracker.DefaultTrackerFactory
     dump.sink.factory: com.jkoolcloud.tnt4j.dump.DefaultDumpSinkFactory
@@ -1672,6 +1681,8 @@ Below is an example of TNT4J stream configuration writing collected JMX samples 
     source.factory.SERVICE: $sjmx.serviceId
     source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?#GEOADDR=?#GENERIC=?
     source.factory.RootSSN: tnt4j-stream-jmx
+    source.factory.RetryIntervalSec: 1
+    source.factory.MaxRetryAttempts: 10
 
     tracker.factory: com.jkoolcloud.tnt4j.tracker.DefaultTrackerFactory
     dump.sink.factory: com.jkoolcloud.tnt4j.dump.DefaultDumpSinkFactory
@@ -1741,6 +1752,8 @@ sample data formatted by `FactNameValueFormatter` and to jKool repo defined by a
     source.factory.SERVICE: $sjmx.serviceId
     source.factory.RootFQN: SERVICE=?#SERVER=?#DATACENTER=?#GEOADDR=?#GENERIC=?
     source.factory.RootSSN: tnt4j-stream-jmx
+    source.factory.RetryIntervalSec: 1
+    source.factory.MaxRetryAttempts: 10
 
     tracker.factory: com.jkoolcloud.tnt4j.tracker.DefaultTrackerFactory
     dump.sink.factory: com.jkoolcloud.tnt4j.dump.DefaultDumpSinkFactory
