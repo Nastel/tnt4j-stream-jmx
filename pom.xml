@@ -78,7 +78,6 @@
         <project.java.version>11</project.java.version>
         <maven.compiler.source>${project.java.version}</maven.compiler.source>
         <maven.compiler.target>${project.java.version}</maven.compiler.target>
-        <maven.compiler.version>${project.java.version}</maven.compiler.version>
         <maven.compiler.release>${project.java.version}</maven.compiler.release>
         <maven.compiler.debuglevel>source,lines,vars</maven.compiler.debuglevel>
         <maven.compiler.verbose>false</maven.compiler.verbose>
@@ -164,7 +163,6 @@
                 <version>3.13.0</version>
                 <configuration>
                     <verbose>${maven.compiler.verbose}</verbose>
-                    <compilerVersion>${maven.compiler.version}</compilerVersion>
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
                     <debuglevel>${maven.compiler.debuglevel}</debuglevel>
@@ -217,7 +215,7 @@
                 <version>3.2.5</version>
                 <inherited>true</inherited>
                 <configuration>
-                    <systemProperties>
+                    <systemPropertyVariables>
                         <property>
                             <name>tnt4j.config</name>
                             <value>../config/tnt4j.properties</value>
@@ -226,7 +224,7 @@
                             <name>log4j2.configurationFile</name>
                             <value>file:../config/log4j2.xml</value>
                         </property>
-                    </systemProperties>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
             <plugin>
@@ -431,6 +429,8 @@
         <module>tnt4j-stream-jmx-was</module>
         <module>tnt4j-stream-jmx-liberty</module>
         <module>tnt4j-stream-jmx-zk</module>
+        <module>tnt4j-stream-jmx-kafka</module>
+        <module>tnt4j-stream-jmx-os-monitor</module>
         <module>tnt4j-stream-jmx--distribution</module>
     </modules>
 </project>
