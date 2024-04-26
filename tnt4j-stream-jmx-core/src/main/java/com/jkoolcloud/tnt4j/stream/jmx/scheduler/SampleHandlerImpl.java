@@ -718,29 +718,39 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 			String eType = notification.getType();
 			MBeanServerNotification mbeanEvent = (MBeanServerNotification) notification;
 			ObjectName mBeanName = mbeanEvent.getMBeanName();
-			if (eType.equalsIgnoreCase(MBeanServerNotification.REGISTRATION_NOTIFICATION)) {
-				try {
-					if (isFilterIncluded(mBeanName)) {
-						mbeans.put(mBeanName, mbeanServer.getMBeanInfo(mBeanName));
-						runRegister(mBeanName);
+			lock.lock();
+			try {
+				if (eType.equalsIgnoreCase(MBeanServerNotification.REGISTRATION_NOTIFICATION)) {
+					try {
+						if (isFilterIncluded(mBeanName)) {
+							mbeans.put(mBeanName, mbeanServer.getMBeanInfo(mBeanName));
+							runRegister(mBeanName);
+						}
+					} catch (Throwable ex) {
+						doError(ex);
 					}
-				} catch (Throwable ex) {
-					doError(ex);
+				} else if (eType.equalsIgnoreCase(MBeanServerNotification.UNREGISTRATION_NOTIFICATION)) {
+					mbeans.remove(mBeanName);
+					runUnRegister(mBeanName);
 				}
-			} else if (eType.equalsIgnoreCase(MBeanServerNotification.UNREGISTRATION_NOTIFICATION)) {
-				mbeans.remove(mBeanName);
-				runUnRegister(mBeanName);
+			} finally {
+				lock.unlock();
 			}
 		}
 	}
 
 	@Override
 	public void cleanup() {
-		eFilters.clear();
-		conditions.clear();
-		mbeans.clear();
-		synchronized (this.listeners) {
-			listeners.clear();
+		lock.lock();
+		try {
+			eFilters.clear();
+			conditions.clear();
+			mbeans.clear();
+			synchronized (this.listeners) {
+				listeners.clear();
+			}
+		} finally {
+			lock.unlock();
 		}
 	}
 
