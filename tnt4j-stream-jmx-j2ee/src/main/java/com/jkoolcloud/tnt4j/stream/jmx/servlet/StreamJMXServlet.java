@@ -350,9 +350,9 @@ public abstract class StreamJMXServlet extends HttpServlet {
 		}
 
 		@SuppressWarnings("unchecked")
-		Enumeration<String> initParameterNames = (Enumeration<String>) servletConfig.getInitParameterNames();
+		Enumeration<String> initParameterNames = servletConfig.getInitParameterNames();
 		while (initParameterNames.hasMoreElements()) {
-			String initParamName = (String) initParameterNames.nextElement();
+			String initParamName = initParameterNames.nextElement();
 			logger().log(OpLevel.DEBUG, "==> Servlet init parameter found: {0}={1}", initParamName,
 					servletConfig.getInitParameter(initParamName));
 		}

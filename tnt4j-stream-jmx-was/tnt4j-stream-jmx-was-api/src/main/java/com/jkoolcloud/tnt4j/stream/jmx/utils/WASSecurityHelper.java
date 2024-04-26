@@ -20,7 +20,6 @@ import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Set;
 
 import javax.security.auth.Subject;
@@ -151,10 +150,10 @@ public class WASSecurityHelper {
 		try {
 			Subject runAsSubject = WSSubject.getRunAsSubject();
 			if (runAsSubject != null) {
-				Iterator<Principal> iterator = runAsSubject.getPrincipals().iterator();
+				Set<Principal> principals = runAsSubject.getPrincipals();
 				LOGGER.log(OpLevel.DEBUG, "Running as: ");
-				while (iterator.hasNext()) {
-					LOGGER.log(OpLevel.DEBUG, iterator.next().getName() + ", ");
+				for (Principal principal : principals) {
+					LOGGER.log(OpLevel.DEBUG, principal.getName() + ", ");
 				}
 			} else {
 				LOGGER.log(OpLevel.DEBUG, "!!!!   Security failure - no subject!..   !!!!");
