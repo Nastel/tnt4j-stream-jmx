@@ -242,8 +242,12 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 					}
 				}
 			});
-			return Utils.toString(attribute);
+			return handleValue(Utils.toString(attribute));
 		}
+	}
+
+	private static String handleValue(String value) {
+		return StringUtils.isEmpty(value) ? UNKNOWN_SOURCE : value;
 	}
 
 	private static JMXServerConnection getMBeanServerConnection() {
@@ -293,7 +297,7 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 				String key = kProp.getKey();
 				String value = kProp.getValue();
 				if ("?".equals(value) && oName.isPropertyValuePattern(key)) { // NON-NLS
-					return first.getObjectName().getKeyProperty(key);
+					return handleValue(first.getObjectName().getKeyProperty(key));
 				}
 			}
 		}
