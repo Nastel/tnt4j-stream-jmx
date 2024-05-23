@@ -217,11 +217,15 @@ public class DefaultSampleListener implements SampleListener {
 
 	@Override
 	public void pre(SampleContext context, Activity activity) {
-		LOGGER.log(OpLevel.DEBUG,
-				"Pre: {0}: sample.count={1}, mbean.count={2}, sample.mbeans.count={3}, exclude.user.attr.set={4}, exclude.attr.set={5}, total.noop.count={7}, total.exclude.count={8}, total.error.count={9}, tracking.id={10}, mbean.server={11}",
-				activity.getName(), context.getSampleCount(), getMBeanCount(context), context.getMBeanCount(),
-				userExcAttrs.size(), excAttrs.size(), context.getTotalNoopCount(), context.getExcludeAttrCount(),
-				context.getTotalErrorCount(), activity.getTrackingId(), context);
+		LOGGER.log(OpLevel.DEBUG, "Pre: {0}:" //
+				+ " sample.count={1}, mbean.count={2}, sample.mbeans.count={3}" //
+				+ ", exclude.user.attr.set={4}, exclude.attr.set={5}, total.noop.count={6}" //
+				+ ", total.exclude.count={7}, total.error.count={8}, tracking.id={9}" //
+				+ ", mbean.server={10}", //
+				activity.getName(), context.getSampleCount(), getMBeanCount(context), context.getMBeanCount(), //
+				userExcAttrs.size(), excAttrs.size(), context.getTotalNoopCount(), //
+				context.getExcludeAttrCount(), context.getTotalErrorCount(), activity.getTrackingId(), //
+				context);
 	}
 
 	@Override
@@ -297,13 +301,17 @@ public class DefaultSampleListener implements SampleListener {
 
 	@Override
 	public void post(SampleContext context, Activity activity) {
-		LOGGER.log(OpLevel.DEBUG,
-				"Post: {0}: sample.count={1}, mbean.count={2}, elapsed.usec={3}, snap.count={4}, id.count={5}, sample.mbeans.count={6}, sample.metric.count={7}, sample.time.usec={8}, exclude.user.attr.set={9}, exclude.attr.set={10}, total.noop.count={12}, total.exclude.count={13}, total.error.count={14}, tracking.id={15}, mbean.server={16}",
-				activity.getName(), context.getSampleCount(), getMBeanCount(context), activity.getElapsedTimeUsec(),
-				activity.getSnapshotCount(), activity.getIdCount(), context.getMBeanCount(),
-				context.getLastMetricCount(), context.getLastSampleUsec(), userExcAttrs.size(), excAttrs.size(),
-				context.getTotalNoopCount(), context.getExcludeAttrCount(), context.getTotalErrorCount(),
-				activity.getTrackingId(), context);
+		LOGGER.log(OpLevel.DEBUG, "Post: {0}:" //
+				+ " sample.count={1}, mbean.count={2}, elapsed.usec={3}" //
+				+ ", snap.count={4}, id.count={5}, sample.mbeans.count={6}" //
+				+ ", sample.metric.count={7}, sample.time.usec={8}, exclude.user.attr.set={9}" //
+				+ ", exclude.attr.set={10}, total.noop.count={11}, total.exclude.count={12}" //
+				+ ", total.error.count={13}, tracking.id={14}, mbean.server={15}", //
+				activity.getName(), context.getSampleCount(), getMBeanCount(context), activity.getElapsedTimeUsec(), //
+				activity.getSnapshotCount(), activity.getIdCount(), context.getMBeanCount(), //
+				context.getLastMetricCount(), context.getLastSampleUsec(), userExcAttrs.size(), //
+				excAttrs.size(), context.getTotalNoopCount(), context.getExcludeAttrCount(), //
+				context.getTotalErrorCount(), activity.getTrackingId(), context);
 	}
 
 	private static String getMBeanCount(SampleContext context) {

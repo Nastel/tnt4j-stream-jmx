@@ -51,7 +51,7 @@ public class JMXURLConnectionParams extends VMParams<JMXServiceURL> {
 	 * @param serviceURL
 	 *            JMX service connection URL string
 	 * @throws MalformedURLException
-	 *             if provided string defines malformd JMX service URL
+	 *             if provided string defines malformed JMX service URL
 	 */
 	public JMXURLConnectionParams(String serviceURL) throws MalformedURLException {
 		super(serviceURL == null ? null : new JMXServiceURL(serviceURL));
