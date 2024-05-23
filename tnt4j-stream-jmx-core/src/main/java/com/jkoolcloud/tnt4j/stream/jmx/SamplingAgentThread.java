@@ -19,6 +19,7 @@ import java.util.Map;
 
 import javax.management.remote.JMXServiceURL;
 
+import com.jkoolcloud.tnt4j.stream.jmx.vm.VMConstants;
 import com.jkoolcloud.tnt4j.stream.jmx.vm.VMParams;
 
 /**
@@ -56,7 +57,7 @@ public class SamplingAgentThread extends Thread {
 			}
 		};
 
-		vmSourceFQN = cp.getAdditionalSourceFQN();
+		vmSourceFQN = cp.getOption(VMConstants.PROP_SOURCE_FQN);
 
 		setName("SamplerAgentThread-" + getId());
 	}

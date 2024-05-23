@@ -22,21 +22,21 @@ import java.io.IOException;
 import java.io.LineNumberReader;
 import java.net.URI;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.jkoolcloud.tnt4j.core.OpLevel;
 import com.jkoolcloud.tnt4j.sink.EventSink;
+import com.jkoolcloud.tnt4j.stream.jmx.StreamJMXConstants;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.LoggerUtils;
+import com.jkoolcloud.tnt4j.stream.jmx.utils.Utils;
 
 /**
  * Resolves VM descriptors and sampling context parameters from configuration file.
  *
- * @version $Revision: 1 $
+ * @version $Revision: 2 $
  */
 public class FileVMResolver implements VMResolver<String> {
 	private static final EventSink LOGGER = LoggerUtils.getLoggerSink(FileVMResolver.class);
@@ -47,7 +47,6 @@ public class FileVMResolver implements VMResolver<String> {
 	public static final String PREFIX = "file:"; // NON-NLS
 
 	private static final String GENERAL_PROPS_KEY = "*"; // NON-NLS
-	private static final String OTHER_OPTIONS_PTREFIX = "other."; // NON-NLS
 
 	/**
 	 * Constructs new instance of VM descriptors resolver from file.
@@ -118,6 +117,8 @@ public class FileVMResolver implements VMResolver<String> {
 			}
 		}
 
+		postProcessVMs(allVMs);
+
 		return allVMs;
 	}
 
@@ -141,10 +142,18 @@ public class FileVMResolver implements VMResolver<String> {
 
 		String vm = getByIndex(split, 0);
 		VMParams<String> jmxConnectionParams = new VMDescriptorParams(vm)
-				.setAgentOptions(getByIndex(split, 1, baseParams.getAgentOptions()))
-				.setUser(getByIndex(split, 2, baseParams.getUser())).setPass(getByIndex(split, 3, baseParams.getPass()))
-				.setAdditionalSourceFQN(getByIndex(split, 4, baseParams.getAdditionalSourceFQN()))
-				.setAdditionalOptions(getByIndex(split, 5, baseParams.getAdditionalOptions()));
+				.setOption(VMConstants.PROP_AGENT_OPTIONS,
+						getByIndex(split, 1, baseParams.getOption(VMConstants.PROP_AGENT_OPTIONS))) //
+				.setOption(VMConstants.PROP_VM_USER,
+						getByIndex(split, 2, baseParams.getOption(VMConstants.PROP_VM_USER))) //
+				.setPass(getByIndex(split, 3, baseParams.getPass())) //
+				.setOption(VMConstants.PROP_SOURCE_FQN,
+						getByIndex(split, 4, baseParams.getOption(VMConstants.PROP_SOURCE_FQN))) //
+				.setOptionsLine(getByIndex(split, 5, baseParams.getOption(VMConstants.PROP_VM_ADDITIONAL_OPTIONS))) //
+				.setOption(VMConstants.PROP_VM_HOST,
+						getByIndex(split, 6, baseParams.getOption(VMConstants.PROP_VM_HOST))) //
+				.setOption(VMConstants.PROP_VM_PORT,
+						getByIndex(split, 7, baseParams.getOption(VMConstants.PROP_VM_PORT)));
 
 		return jmxConnectionParams;
 	}
@@ -184,37 +193,35 @@ public class FileVMResolver implements VMResolver<String> {
 
 				for (Map.Entry<String, String> pe : props.entrySet()) {
 					switch (pe.getKey().toLowerCase()) {
-					case "vm": // NON-NLS
-					case "vm.url": // NON-NLS
+					case VMConstants.PROP_VM_VM:
+					case VMConstants.PROP_VM_URL:
 						params.setVMRef(pe.getValue());
 						break;
-					case "vm.user": // NON-NLS
-						params.setUser(pe.getValue());
+					case VMConstants.PROP_VM_HOST:
+					case VMConstants.PROP_VM_HOSTS:
+						params.setOption(VMConstants.PROP_VM_HOST, pe.getValue());
 						break;
-					case "vm.pass": // NON-NLS
-					case "vm.password": // NON-NLS
+					case VMConstants.PROP_VM_PORT:
+					case VMConstants.PROP_VM_PORTS:
+						params.setOption(VMConstants.PROP_VM_PORT, pe.getValue());
+						break;
+					case VMConstants.PROP_VM_PASS:
+					case VMConstants.PROP_VM_PASSWORD:
 						params.setPass(pe.getValue());
 						break;
-					case "agent.options":// NON-NLS
-						params.setAgentOptions(pe.getValue());
-						break;
-					case "source.fqn":// NON-NLS
-						params.setAdditionalSourceFQN(pe.getValue());
-						break;
-					case "vm.reconnect": // NON-NLS
+					case VMConstants.PROP_VM_RECONNECT:
 						boolean reconnect = Boolean.parseBoolean(pe.getValue());
 						params.setReconnectRule(reconnect ? VMParams.RECONNECT : VMParams.DONT_RECONNECT);
 						break;
-					case "vm.reconnect.sec": // NON-NLS
+					case VMConstants.PROP_VM_RECONNECT_SEC:
 						long cri = Long.parseLong(pe.getValue());
 						params.setReconnectInterval(cri);
 						break;
+					case VMConstants.PROP_VM_USER:
+					case VMConstants.PROP_AGENT_OPTIONS:
+					case VMConstants.PROP_SOURCE_FQN:
 					default:
-						String aok = pe.getKey();
-						if (aok.startsWith(OTHER_OPTIONS_PTREFIX)) {
-							aok = aok.substring(OTHER_OPTIONS_PTREFIX.length());
-						}
-						params.addAdditionalOption(aok, pe.getValue());
+						params.setOption(pe.getKey().toLowerCase(), pe.getValue());
 						break;
 					}
 				}
@@ -247,5 +254,94 @@ public class FileVMResolver implements VMResolver<String> {
 		Map<String, String> props = propsMap.computeIfAbsent(gKey, k -> new HashMap<>());
 
 		props.put(vKey.trim(), value);
+	}
+
+	/**
+	 * Performs post-processing of provided VM descriptor parameters list {@code vmList}.
+	 * <p>
+	 * Now post-processing performs VM descriptor parameters variable expressions evaluation.
+	 *
+	 * @param vmList
+	 *            list of VM descriptor parameters
+	 * @return list of post-processed VM descriptor parameters
+	 */
+	protected List<VMParams<String>> postProcessVMs(List<VMParams<String>> vmList) {
+		if (CollectionUtils.isNotEmpty(vmList)) {
+			int vmCount = vmList.size();
+			for (int i = 0; i < vmCount; i++) {
+				VMParams<String> vm = vmList.get(i);
+
+				if (Utils.isVariableExpression(vm.getVMRef())) {
+					List<VMParams<String>> vmListVar = fillVMVariables(vm);
+					if (CollectionUtils.isNotEmpty(vmListVar)) {
+						vmList.addAll(vmListVar);
+						vmList.remove(i--);
+					}
+				}
+			}
+		}
+
+		return vmList;
+	}
+
+	/**
+	 * Fills in VM descriptor parameters variable expressions with corresponding values.
+	 *
+	 * @param varVM
+	 *            VM descriptor parameters having variable expressions
+	 * @return list of VM descriptor parameters having filled in variable expressions
+	 */
+	protected List<VMParams<String>> fillVMVariables(VMParams<String> varVM) {
+		List<String> vmVariables = new ArrayList<>();
+		Utils.resolveExpressionVariables(vmVariables, varVM.getVMRef());
+
+		LinkedHashMap<String, String[]> varValuesMap = new LinkedHashMap<>(vmVariables.size());
+
+		int maxValuesCount = 0;
+		Set<Integer> vLengthSet = new HashSet<>();
+
+		for (String varAttr : vmVariables) {
+			String value = varVM.getOption(Utils.getVarName(varAttr));
+			if (value != null) {
+				String[] values = value.split(StreamJMXConstants.MULTI_VALUE_DELIM);
+				varValuesMap.put(varAttr, values);
+
+				maxValuesCount = Math.max(maxValuesCount, values.length);
+				vLengthSet.add(values.length);
+			}
+		}
+
+		int totalValues = 1;
+
+		for (Integer vl : vLengthSet) {
+			totalValues *= vl;
+		}
+
+		for (Map.Entry<String, String[]> vme : varValuesMap.entrySet()) {
+			String[] values = vme.getValue();
+			if (values.length < totalValues) {
+				String[] varMatrixLine = new String[totalValues];
+				int dp = 0;
+				do {
+					System.arraycopy(values, 0, varMatrixLine, dp, values.length);
+					dp += values.length;
+				} while (dp < totalValues);
+
+				vme.setValue(varMatrixLine);
+			}
+		}
+
+		List<VMParams<String>> varVMs = new ArrayList<>(5);
+
+		for (int i = 0; i < totalValues; i++) {
+			VMParams<String> vmParams = new VMDescriptorParams(varVM.getVMRef());
+			vmParams.setBaseVMParams(varVM);
+			for (Map.Entry<String, String[]> vme : varValuesMap.entrySet()) {
+				vmParams.setVMRef(vmParams.getVMRef().replace(vme.getKey(), vme.getValue()[i]));
+			}
+			varVMs.add(vmParams);
+		}
+
+		return varVMs;
 	}
 }

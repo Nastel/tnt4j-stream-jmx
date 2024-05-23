@@ -16,8 +16,14 @@
 
 package com.jkoolcloud.tnt4j.stream.jmx.vm;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.StringJoiner;
 
+import com.jkoolcloud.tnt4j.core.OpLevel;
+import com.jkoolcloud.tnt4j.sink.EventSink;
+import com.jkoolcloud.tnt4j.stream.jmx.StreamJMXConstants;
+import com.jkoolcloud.tnt4j.stream.jmx.utils.LoggerUtils;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.Utils;
 import com.jkoolcloud.tnt4j.utils.SecurityUtils;
 
@@ -33,6 +39,7 @@ import com.jkoolcloud.tnt4j.utils.SecurityUtils;
  * @see com.jkoolcloud.tnt4j.stream.jmx.vm.JMXURLConnectionParams
  */
 public abstract class VMParams<T> {
+	private static final EventSink LOGGER = LoggerUtils.getLoggerSink(VMParams.class);
 
 	/**
 	 * Constant defining default VM reconnect interval in seconds: {@value}.
@@ -41,14 +48,11 @@ public abstract class VMParams<T> {
 
 	private T vmRef;
 
-	private String user;
 	private String pass;
-	private String agentOptions;
-	private String additionalSourceFQN;
 	private ReconnectRule reconnectRule = RECONNECT;
 	private long reconnectInterval = CONN_RETRY_INTERVAL;
 
-	private String additionalOptions;
+	private Map<String, String> optionsMap = new HashMap<>(5);
 
 	/**
 	 * Constructs a new instance of VM descriptor parameters package.
@@ -89,28 +93,6 @@ public abstract class VMParams<T> {
 	}
 
 	/**
-	 * Sets VM access user login name.
-	 *
-	 * @param user
-	 *            VM access user login name
-	 *
-	 * @return instance of this VM descriptor parameters package
-	 */
-	public VMParams<T> setUser(String user) {
-		this.user = user;
-		return this;
-	}
-
-	/**
-	 * Returns VM access user login name.
-	 *
-	 * @return VM access user login name
-	 */
-	public String getUser() {
-		return user;
-	}
-
-	/**
 	 * Sets VM access user password.
 	 *
 	 * @param pass
@@ -130,50 +112,6 @@ public abstract class VMParams<T> {
 	 */
 	public String getPass() {
 		return pass;
-	}
-
-	/**
-	 * Sets VM sampling agent options.
-	 *
-	 * @param agentOptions
-	 *            VM sampling agent options
-	 *
-	 * @return instance of this VM descriptor parameters package
-	 */
-	public VMParams<T> setAgentOptions(String agentOptions) {
-		this.agentOptions = agentOptions;
-		return this;
-	}
-
-	/**
-	 * Returns VM sampling agent options.
-	 *
-	 * @return VM sampling agent options
-	 */
-	public String getAgentOptions() {
-		return agentOptions;
-	}
-
-	/**
-	 * Sets additional source fqn.
-	 *
-	 * @param additionalSourceFQN
-	 *            the additional source fqn
-	 *
-	 * @return instance of this VM descriptor parameters package
-	 */
-	public VMParams<T> setAdditionalSourceFQN(String additionalSourceFQN) {
-		this.additionalSourceFQN = additionalSourceFQN;
-		return this;
-	}
-
-	/**
-	 * Returns additional source fqn.
-	 *
-	 * @return the additional source fqn
-	 */
-	public String getAdditionalSourceFQN() {
-		return additionalSourceFQN;
 	}
 
 	/**
@@ -223,43 +161,68 @@ public abstract class VMParams<T> {
 	}
 
 	/**
-	 * Sets VM descriptor additional options.
+	 * Sets VM descriptor options line.
 	 *
-	 * @param additionalOptions
-	 *            VM descriptor additional options
+	 * @param optionsLine
+	 *            VM descriptor options line
 	 *
 	 * @return instance of this VM descriptor parameters package
 	 */
-	public VMParams<T> setAdditionalOptions(String additionalOptions) {
-		this.additionalOptions = additionalOptions;
+	public VMParams<T> setOptionsLine(String optionsLine) {
+		if (optionsLine != null) {
+			String[] opts = optionsLine.split(StreamJMXConstants.MULTI_VALUE_DELIM);
+			for (String opt : opts) {
+				String[] optionTokens = opt.split(StreamJMXConstants.KV_DELIM);
+
+				if (optionTokens.length == 2) {
+					String optKey = optionTokens[0];
+					optionsMap.put(optKey, optionTokens[1]);
+				} else {
+					LOGGER.log(OpLevel.WARNING, "VMParams.setOptionsLine: invalid property definition ''{0}''", opt);
+				}
+			}
+		}
+
+		return this;
+	}
+
+	public Map<String, String> getOptionsScopeMap(String scope) {
+		Map<String, String> optionsScopeMap = new HashMap<>(5);
+
+		String optKey;
+		for (Map.Entry<String, String> ome : optionsMap.entrySet()) {
+			if (ome.getKey().startsWith(scope)) {
+				optKey = ome.getKey().substring(scope.length());
+				optionsScopeMap.put(optKey, ome.getValue());
+			}
+		}
+
+		return optionsScopeMap;
+	}
+
+	/**
+	 * Sets VM descriptor option value.
+	 *
+	 * @param opName
+	 *            name of the option to set
+	 * @param opValue
+	 *            option value
+	 * @return instance of this VM descriptor parameters package
+	 */
+	public VMParams<T> setOption(String opName, String opValue) {
+		optionsMap.put(opName, opValue);
 		return this;
 	}
 
 	/**
-	 * Returns VM descriptor additional options.
+	 * Returns VM descriptor option value.
 	 *
-	 * @return VM descriptor additional options
+	 * @param opName
+	 *            name of the option to get
+	 * @return VM descriptor option value
 	 */
-	public String getAdditionalOptions() {
-		return additionalOptions;
-	}
-
-	/**
-	 * Adds VM descriptor additional option to additional options list.
-	 * 
-	 * @param key
-	 *            additional option key
-	 * @param value
-	 *            additional option value
-	 */
-	public void addAdditionalOption(String key, String value) {
-		if (additionalOptions == null) {
-			additionalOptions = "";
-		} else {
-			additionalOptions += VMConstants.OTHER_OPTIONS_DELIM;
-		}
-
-		additionalOptions += key + VMConstants.OTHER_OPTIONS_KV_DELIM + value;
+	public String getOption(String opName) {
+		return optionsMap.get(opName);
 	}
 
 	/**
@@ -272,13 +235,10 @@ public abstract class VMParams<T> {
 	 */
 	protected VMParams<T> setBaseVMParams(VMParams<?> bvmp) {
 		if (bvmp != null) {
-			this.user = bvmp.user;
 			this.pass = bvmp.pass;
-			this.agentOptions = bvmp.agentOptions;
-			this.additionalSourceFQN = bvmp.additionalSourceFQN;
 			this.reconnectRule = bvmp.reconnectRule;
 			this.reconnectInterval = bvmp.reconnectInterval;
-			this.additionalOptions = bvmp.additionalOptions;
+			this.optionsMap = optionsMap;
 		}
 
 		return this;
@@ -288,13 +248,10 @@ public abstract class VMParams<T> {
 	public String toString() {
 		return new StringJoiner(", ", getClass().getSimpleName() + "[", "]") // NON-NLS
 				.add("vmRef=" + vmRef) // NON-NLS
-				.add("user='" + user + "'") // NON-NLS
+				.add("optionsMap='" + optionsMap + "'") // NON-NLS
 				.add("pass='" + Utils.hideEnd(pass, "*", 0) + "'") // NON-NLS
-				.add("agentOptions='" + agentOptions + "'") // NON-NLS
-				.add("additionalSourceFQN='" + additionalSourceFQN + "'") // NON-NLS
 				.add("reconnectRule=" + reconnectRule) // NON-NLS
 				.add("reconnectInterval=" + reconnectInterval) // NON-NLS
-				.add("additionalOptions='" + additionalOptions + "'") // NON-NLS
 				.toString();
 	}
 

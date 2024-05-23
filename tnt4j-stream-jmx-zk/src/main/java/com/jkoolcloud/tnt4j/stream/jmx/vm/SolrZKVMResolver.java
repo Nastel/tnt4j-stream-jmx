@@ -72,7 +72,6 @@ public class SolrZKVMResolver extends ZKVMResolver {
 
 		if (matcher.matches()) {
 			String host = matcher.group("host"); // NON-NLS
-
 			String portProp = getAdditionalOption(OO_PORT);
 			if (StringUtils.isEmpty(portProp)) {
 				throw new RuntimeException("Apache Solr JMX port number is not defined");

@@ -29,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.jkoolcloud.tnt4j.core.*;
 import com.jkoolcloud.tnt4j.sink.EventSink;
+import com.jkoolcloud.tnt4j.stream.jmx.StreamJMXConstants;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.AttributeSample;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.LoggerUtils;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.Utils;
@@ -97,7 +98,6 @@ public class DefaultSampleListener implements SampleListener {
 			return;
 		}
 
-		String FILTER_TOKENS_DELIM = ";";
 		String MBEAN_DELIM = "@";
 		String ATTRS_DELIM = ",";
 		String WILDCARD = "*";
@@ -105,7 +105,7 @@ public class DefaultSampleListener implements SampleListener {
 		String RE_DWB = "\\b\\b";
 		String RE_ANJ = "\\b|\\b";
 
-		StringTokenizer itk = new StringTokenizer(attrExcludes, FILTER_TOKENS_DELIM);
+		StringTokenizer itk = new StringTokenizer(attrExcludes, StreamJMXConstants.MULTI_VALUE_DELIM);
 		while (itk.hasMoreTokens()) {
 			String attrsFilter = itk.nextToken().trim();
 			if (StringUtils.isNotEmpty(attrsFilter)) {
@@ -149,12 +149,12 @@ public class DefaultSampleListener implements SampleListener {
 	 *
 	 * @param objName
 	 *            MBean object name
-	 * @param ainfo
+	 * @param aInfo
 	 *            MBean attribute info
 	 * @return {@code true} when attribute should be excluded, {@code false} - otherwise
 	 */
-	protected boolean isExcluded(ObjectName objName, MBeanAttributeInfo ainfo) {
-		return isInCollection(excAttrs, ainfo) || isExcludedByUser(userExcAttrs, objName, ainfo);
+	protected boolean isExcluded(ObjectName objName, MBeanAttributeInfo aInfo) {
+		return isInCollection(excAttrs, aInfo) || isExcludedByUser(userExcAttrs, objName, aInfo);
 	}
 
 	/**
@@ -189,23 +189,23 @@ public class DefaultSampleListener implements SampleListener {
 	 *            user excluded attributes map
 	 * @param objName
 	 *            MBean object name
-	 * @param ainfo
+	 * @param aInfo
 	 *            MBean attribute info
 	 * @return {@code true} when attribute is excluded by user defined list, {@code false} - otherwise
 	 */
 	protected boolean isExcludedByUser(Map<ObjectName, Pattern> userExcAttrs, ObjectName objName,
-			MBeanAttributeInfo ainfo) {
+			MBeanAttributeInfo aInfo) {
 		if (!Utils.isEmpty(userExcAttrs)) {
-			for (Map.Entry<ObjectName, Pattern> ueae : userExcAttrs.entrySet()) {
-				boolean apply = ueae.getKey().apply(objName);
+			for (Map.Entry<ObjectName, Pattern> uee : userExcAttrs.entrySet()) {
+				boolean apply = uee.getKey().apply(objName);
 
 				if (apply) {
-					Pattern attributeNamePattern = ueae.getValue();
-					Matcher fMatcher = attributeNamePattern.matcher(ainfo.getName());
+					Pattern attributeNamePattern = uee.getValue();
+					Matcher fMatcher = attributeNamePattern.matcher(aInfo.getName());
 					if (fMatcher.matches()) {
 						LOGGER.log(OpLevel.DEBUG, "UserExclude: Excluding user defined MBean attribute: {1}@{0}",
-								objName, ainfo.getName());
-						exclude(ainfo);
+								objName, aInfo.getName());
+						exclude(aInfo);
 						return true;
 					}
 				}
@@ -217,11 +217,11 @@ public class DefaultSampleListener implements SampleListener {
 
 	@Override
 	public void pre(SampleContext context, Activity activity) {
-		LOGGER.log(OpLevel.DEBUG, "Pre: {0}:" //
-				+ " sample.count={1}, mbean.count={2}, sample.mbeans.count={3}" //
-				+ ", exclude.user.attr.set={4}, exclude.attr.set={5}, total.noop.count={6}" //
-				+ ", total.exclude.count={7}, total.error.count={8}, tracking.id={9}" //
-				+ ", mbean.server={10}", //
+		LOGGER.log(OpLevel.DEBUG, "Pre: {}:" //
+				+ " sample.count={}, mbean.count={}, sample.mbeans.count={}" //
+				+ ", exclude.user.attr.set={}, exclude.attr.set={}, total.noop.count={}" //
+				+ ", total.exclude.count={}, total.error.count={}, tracking.id={}" //
+				+ ", mbean.server={}", //
 				activity.getName(), context.getSampleCount(), getMBeanCount(context), context.getMBeanCount(), //
 				userExcAttrs.size(), excAttrs.size(), context.getTotalNoopCount(), //
 				context.getExcludeAttrCount(), context.getTotalErrorCount(), activity.getTrackingId(), //
@@ -231,11 +231,11 @@ public class DefaultSampleListener implements SampleListener {
 	@Override
 	public void pre(SampleContext context, AttributeSample sample) {
 		Map<String, MBeanAttributeInfo> aInfoMap = sample.getAttributesInfo();
-		for (Map.Entry<String, MBeanAttributeInfo> ainfo : aInfoMap.entrySet()) {
-			boolean exclude = !ainfo.getValue().isReadable() || isExcluded(sample.getObjectName(), ainfo.getValue());
+		for (Map.Entry<String, MBeanAttributeInfo> aie : aInfoMap.entrySet()) {
+			boolean exclude = !aie.getValue().isReadable() || isExcluded(sample.getObjectName(), aie.getValue());
 
 			if (exclude) {
-				sample.exclude(ainfo.getValue());
+				sample.exclude(aie.getValue());
 			}
 		}
 	}
@@ -301,12 +301,12 @@ public class DefaultSampleListener implements SampleListener {
 
 	@Override
 	public void post(SampleContext context, Activity activity) {
-		LOGGER.log(OpLevel.DEBUG, "Post: {0}:" //
-				+ " sample.count={1}, mbean.count={2}, elapsed.usec={3}" //
-				+ ", snap.count={4}, id.count={5}, sample.mbeans.count={6}" //
-				+ ", sample.metric.count={7}, sample.time.usec={8}, exclude.user.attr.set={9}" //
-				+ ", exclude.attr.set={10}, total.noop.count={11}, total.exclude.count={12}" //
-				+ ", total.error.count={13}, tracking.id={14}, mbean.server={15}", //
+		LOGGER.log(OpLevel.DEBUG, "Post: {}:" //
+				+ " sample.count={}, mbean.count={}, elapsed.usec={}" //
+				+ ", snap.count={}, id.count={}, sample.mbeans.count={}" //
+				+ ", sample.metric.count={}, sample.time.usec={}, exclude.user.attr.set={}" //
+				+ ", exclude.attr.set={}, total.noop.count={}, total.exclude.count={}" //
+				+ ", total.error.count={}, tracking.id={}, mbean.server={}", //
 				activity.getName(), context.getSampleCount(), getMBeanCount(context), activity.getElapsedTimeUsec(), //
 				activity.getSnapshotCount(), activity.getIdCount(), context.getMBeanCount(), //
 				context.getLastMetricCount(), context.getLastSampleUsec(), userExcAttrs.size(), //
@@ -427,9 +427,9 @@ public class DefaultSampleListener implements SampleListener {
 			TabularData[] tdArray = (TabularData[]) value;
 
 			for (int i = 0; i < tdArray.length; i++) {
-				TabularData tdata = tdArray[i];
+				TabularData tData = tdArray[i];
 
-				processAttrValue(snapshot, mbAttrInfo, propName.append(padNumber(i + 1)), tdata);
+				processAttrValue(snapshot, mbAttrInfo, propName.append(padNumber(i + 1)), tData);
 				propName.popLevel();
 			}
 			propName.popLevel();
@@ -526,8 +526,8 @@ public class DefaultSampleListener implements SampleListener {
 		 */
 		USER_EXCLUDED_ATTRIBUTES("excludedAttributes");
 
-		private String pName;
-		private String apName;
+		private final String pName;
+		private final String apName;
 
 		private ListenerProperties(String pName) {
 			this.pName = pName;
