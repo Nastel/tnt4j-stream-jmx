@@ -276,6 +276,7 @@ public class FileVMResolver implements VMResolver<String> {
 					if (CollectionUtils.isNotEmpty(vmListVar)) {
 						vmList.addAll(vmListVar);
 						vmList.remove(i--);
+						vmCount--;
 					}
 				}
 			}
@@ -289,7 +290,8 @@ public class FileVMResolver implements VMResolver<String> {
 	 *
 	 * @param varVM
 	 *            VM descriptor parameters having variable expressions
-	 * @return list of VM descriptor parameters having filled in variable expressions
+	 * @return list of VM descriptor parameters having filled in variable expressions, or {@code null} if no defined
+	 *         variables could be resolved
 	 */
 	protected List<VMParams<String>> fillVMVariables(VMParams<String> varVM) {
 		List<String> vmVariables = new ArrayList<>();
@@ -309,6 +311,10 @@ public class FileVMResolver implements VMResolver<String> {
 				maxValuesCount = Math.max(maxValuesCount, values.length);
 				vLengthSet.add(values.length);
 			}
+		}
+
+		if (varValuesMap.isEmpty()) {
+			return null;
 		}
 
 		int totalValues = 1;

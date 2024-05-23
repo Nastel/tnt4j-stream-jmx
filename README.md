@@ -406,14 +406,14 @@ properties divided into stanzas. One stanza defines one VM descriptor (connectio
 }
 ##############################################################################################################################################################
 {
-    solr.vm:                solr:zk://172.16.6.208:2181
-    solr.vm.user:           admin
-    solr.vm.pass:           admin
-    solr.vm.reconnect.sec:  10
-    solr.agent.options:     java.lang:*!!5000
-    solr.source.fqn:        SERVER=@bean:solr:dom1=core,dom2=?,dom3=*,reporter=*,category=*,scope=core,name=*
-    solr.other.urlPattern:  service:jmx:rmi:///jndi/rmi://{0}:{1,number,######}/jmxrmi
-    solr.other.port:        18983
+    solr.vm:                 solr:zk://172.16.6.208:2181
+    solr.vm.user:            admin
+    solr.vm.pass:            admin
+    solr.vm.reconnect.sec:   10
+    solr.agent.options:      java.lang:*!!5000
+    solr.source.fqn:         SERVER=@bean:solr:dom1=core,dom2=?,dom3=*,reporter=*,category=*,scope=core,name=*
+    solr.custom.urlPattern:  service:jmx:rmi:///jndi/rmi://{0}:{1,number,######}/jmxrmi
+    solr.custom.port:        18983
 }
 ##############################################################################################################################################################
 ```
@@ -427,13 +427,43 @@ descriptor properties:
   reconnect.
 * `agent.options` - defines agent sampling options.
 * `source.fqn` - defines TNT4J Source FQN values mapping used by VM descriptor.
-* `other` - defines group of additional custom VM descriptor properties:
+* `custom` - defines group of additional custom VM descriptor properties:
     * `urlPattern` - defines JMX service URL pattern to be filled in by ZooKeeper orchestrated VMs resolver. Default value -
       `service:jmx:rmi:///jndi/rmi://{0}:{1,number,######}/jmxrmi`, where `{0}` is replaced with JMX service runner machine host name/IP and
       `{1}` is replaced with JMX service runner machine port number.
     * `port` - defines JMX service port number to be used by ZooKeeper orchestrated VMs resolver. Some services (like Apache Solr) does not
       provide JMX service port to ZooKeeper, so it is needed to define it manually. Apache Kafka for instance - does provide JMX connection
       port, so there is no need to define it additionally - it is picked automatically from ZooKeeper node provided data.
+
+You can use variable expressions within `vm` or `vm.url` property definition. Array values are delimited using `;` symbol. For example:
+```properties
+    zk.vm:                 service:jmx:rmi:///jndi/rmi://${vm.host}:${vm.port}/jmxrmi
+    zk.vm.host:            172.16.6.208
+    zk.vm.port:            9995;9996;9997
+```
+will produce 3 VM definitions by combining defined single `vm.host` value and array of 3 `vm.port` values:
+```
+    service:jmx:rmi:///jndi/rmi://172.16.6.208:9995/jmxrmi
+    service:jmx:rmi:///jndi/rmi://172.16.6.208:9996/jmxrmi
+    service:jmx:rmi:///jndi/rmi://172.16.6.208:9997/jmxrmi
+```
+Yet if size of both `vm.host` and `vm.port` values are same, like this:
+```properties
+    zk.vm:                 service:jmx:rmi:///jndi/rmi://${vm.host}:${vm.port}/jmxrmi
+    zk.vm.host:            172.16.6.208;172.16.6.210;172.16.6.212
+    zk.vm.port:            9995;9996;9997
+```
+then it will produce 3 VM definitions by mapping array values `1:1` as this:
+```
+    service:jmx:rmi:///jndi/rmi://172.16.6.208:9995/jmxrmi
+    service:jmx:rmi:///jndi/rmi://172.16.6.210:9996/jmxrmi
+    service:jmx:rmi:///jndi/rmi://172.16.6.212:9997/jmxrmi
+```
+Another way to get same result would be as this:
+```properties
+    zk.vm:                 service:jmx:rmi:///jndi/rmi://${vm.address}/jmxrmi
+    zk.vm.address:         172.16.6.208:9995;172.16.6.210:9996;172.16.6.212:9997
+```
 
 ##### Multiple VM's monitoring notes for Source
 
@@ -500,7 +530,7 @@ Stream-JMX connects/disconnects JMX services of these brokers on runtime.
 Sample configuration:
 ```
 ############################################################################################################################################################################################################################################
-#            VM connection string                         #    Agent options        #  User name    #    Password       #                Source addition                                                        #      Other options       #
+#            VM connection string                         #    Agent options        #  User name    #    Password       #                Source addition                                                        #      Custom options      #
 ############################################################################################################################################################################################################################################
  service:jmx:rmi:///jndi/rmi://localhost:9995/jmxrmi        *:*!!60000                 admin            admin              SERVICE=@bean:org.apache.ZooKeeperService:name0=*/?ClientPort#SERVER=@bean:java.lang:type=Runtime/?Name
  kafka:zk://127.0.0.1:2181                                  *:*!!60000                 .                .                  SERVICE=@bean:java.lang:type=Runtime/?Name#SERVER=@bean:kafka.server:id=?,type=app-info#DATACENTER=@bean:kafka.server:type=KafkaServer,name=ClusterId/?Value
