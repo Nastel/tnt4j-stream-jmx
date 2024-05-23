@@ -42,6 +42,7 @@ import com.jkoolcloud.tnt4j.source.SourceFactoryImpl;
 import com.jkoolcloud.tnt4j.source.SourceType;
 import com.jkoolcloud.tnt4j.stream.jmx.SamplingAgent;
 import com.jkoolcloud.tnt4j.stream.jmx.SamplingAgentThread;
+import com.jkoolcloud.tnt4j.stream.jmx.StreamJMXConstants;
 import com.jkoolcloud.tnt4j.stream.jmx.core.JMXServerConnection;
 import com.jkoolcloud.tnt4j.stream.jmx.core.Sampler;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.LoggerUtils;
@@ -379,7 +380,7 @@ public class JMXSourceFactoryImpl extends SourceFactoryImpl {
 
 		while (tk.hasMoreTokens()) {
 			String sName = tk.nextToken();
-			int firstEqSign = sName.indexOf("=");
+			int firstEqSign = sName.indexOf(StreamJMXConstants.KV_DELIM);
 			String typeS = sName.substring(0, firstEqSign);
 			String valueS = sName.substring(++firstEqSign);
 			SourceType type = SourceType.valueOf(typeS);

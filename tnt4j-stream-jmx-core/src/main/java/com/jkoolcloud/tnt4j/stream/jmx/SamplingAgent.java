@@ -269,44 +269,44 @@ public class SamplingAgent {
 			for (String arg : args) {
 				if (arg.startsWith(SYS_PROP_TNT4J_CFG)) {
 					if (StringUtils.isEmpty(tnt4jProp)) {
-						String[] prop = arg.split("=", 2);
+						String[] prop = arg.split(StreamJMXConstants.KV_DELIM, 2);
 						tnt4jProp = prop.length > 1 ? prop[1] : null;
 
 						System.setProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY, tnt4jProp);
 					}
 				} else if (arg.startsWith(SYS_PROP_AGENT_PATH)) {
-					String[] prop = arg.split("=", 2);
+					String[] prop = arg.split(StreamJMXConstants.KV_DELIM, 2);
 					agentLibPath = prop.length > 1 ? prop[1] : null;
 				}
 				if (arg.startsWith(SYS_PROP_LOG4J_CFG)) {
 					if (StringUtils.isEmpty(log4jProp)) {
-						String[] prop = arg.split("=", 2);
+						String[] prop = arg.split(StreamJMXConstants.KV_DELIM, 2);
 						log4jProp = prop.length > 1 ? prop[1] : null;
 
 						System.setProperty(LOG4J_PROPERTIES_KEY, log4jProp);
 					}
-				} else if (arg.startsWith(FORCE_OBJECT_NAME.pName() + "=")) {
-					String[] prop = arg.split("=", 2);
+				} else if (arg.startsWith(FORCE_OBJECT_NAME.pName() + StreamJMXConstants.KV_DELIM)) {
+					String[] prop = arg.split(StreamJMXConstants.KV_DELIM, 2);
 					if (prop.length > 1) {
 						LISTENER_PROPERTIES.put(FORCE_OBJECT_NAME.pName(), prop[1]);
 					}
-				} else if (arg.startsWith(COMPOSITE_DELIMITER.pName() + "=")) {
-					String[] prop = arg.split("=", 2);
+				} else if (arg.startsWith(COMPOSITE_DELIMITER.pName() + StreamJMXConstants.KV_DELIM)) {
+					String[] prop = arg.split(StreamJMXConstants.KV_DELIM, 2);
 					if (prop.length > 1) {
 						LISTENER_PROPERTIES.put(COMPOSITE_DELIMITER.pName(), prop[1]);
 					}
-				} else if (arg.startsWith(USE_OBJECT_NAME_PROPERTIES.pName() + "=")) {
-					String[] prop = arg.split("=", 2);
+				} else if (arg.startsWith(USE_OBJECT_NAME_PROPERTIES.pName() + StreamJMXConstants.KV_DELIM)) {
+					String[] prop = arg.split(StreamJMXConstants.KV_DELIM, 2);
 					if (prop.length > 1) {
 						LISTENER_PROPERTIES.put(USE_OBJECT_NAME_PROPERTIES.pName(), prop[1]);
 					}
-				} else if (arg.startsWith(EXCLUDE_ON_ERROR.pName() + "=")) {
-					String[] prop = arg.split("=", 2);
+				} else if (arg.startsWith(EXCLUDE_ON_ERROR.pName() + StreamJMXConstants.KV_DELIM)) {
+					String[] prop = arg.split(StreamJMXConstants.KV_DELIM, 2);
 					if (prop.length > 1) {
 						LISTENER_PROPERTIES.put(EXCLUDE_ON_ERROR.pName(), prop[1]);
 					}
-				} else if (arg.startsWith(USER_EXCLUDED_ATTRIBUTES.pName() + "=")) {
-					String[] prop = arg.split("=", 2);
+				} else if (arg.startsWith(USER_EXCLUDED_ATTRIBUTES.pName() + StreamJMXConstants.KV_DELIM)) {
+					String[] prop = arg.split(StreamJMXConstants.KV_DELIM, 2);
 					if (prop.length > 1) {
 						LISTENER_PROPERTIES.put(USER_EXCLUDED_ATTRIBUTES.pName(), prop[1]);
 					}
@@ -490,8 +490,10 @@ public class SamplingAgent {
 		long cri = Long.parseLong(criProp);
 
 		VMParams<String> vmdp = new VMDescriptorParams(props.getProperty(AGENT_ARG_VM))
-				.setUser(props.getProperty(AGENT_ARG_USER)).setPass(props.getProperty(AGENT_ARG_PASS))
-				.setAgentOptions(props.getProperty(AGENT_ARG_OPTIONS, DEFAULT_AGENT_OPTIONS)).setReconnectInterval(cri);
+				.setOption(VMConstants.PROP_VM_USER, props.getProperty(AGENT_ARG_USER)) // NON-NLS
+				.setPass(props.getProperty(AGENT_ARG_PASS)) //
+				.setOption(VMConstants.PROP_AGENT_OPTIONS, props.getProperty(AGENT_ARG_OPTIONS, DEFAULT_AGENT_OPTIONS)) // NON-NLS
+				.setReconnectInterval(cri);
 
 		return vmResolverFactory.getJmxServiceURLs(vmdp);
 	}
@@ -715,7 +717,7 @@ public class SamplingAgent {
 			return null;
 		}
 
-		String[] slp = argValue.split("=", 2);
+		String[] slp = argValue.split(StreamJMXConstants.KV_DELIM, 2);
 
 		if (slp.length < 2) {
 			LOGGER.log(OpLevel.WARNING, "SamplingAgent.parseArgs: malformed argument [{0}] value [{1}]", argName,
@@ -862,20 +864,20 @@ public class SamplingAgent {
 		String agentPath = pathFile.getAbsolutePath();
 
 		for (Map.Entry<String, Object> lpe : LISTENER_PROPERTIES.entrySet()) {
-			agentOptions += "!" + lpe.getKey() + "=" + String.valueOf(lpe.getValue());
+			agentOptions += "!" + lpe.getKey() + StreamJMXConstants.KV_DELIM + lpe.getValue();
 		}
 
-		agentOptions += "!" + SYS_PROP_AGENT_PATH + "=" + agentPath;
+		agentOptions += "!" + SYS_PROP_AGENT_PATH + StreamJMXConstants.KV_DELIM + agentPath;
 
 		String tnt4jConf = System.getProperty(TrackerConfigStore.TNT4J_PROPERTIES_KEY);
 		if (StringUtils.isNotEmpty(tnt4jConf)) {
 			String tnt4jPropPath = new File(tnt4jConf).getAbsolutePath();
-			agentOptions += "!" + SYS_PROP_TNT4J_CFG + "=" + tnt4jPropPath;
+			agentOptions += "!" + SYS_PROP_TNT4J_CFG + StreamJMXConstants.KV_DELIM + tnt4jPropPath;
 		}
 		String log4jConf = System.getProperty(LOG4J_PROPERTIES_KEY);
 		if (StringUtils.isNotEmpty(log4jConf)) {
 			String log4jPropPath = new File(log4jConf).getAbsolutePath();
-			agentOptions += "!" + SYS_PROP_LOG4J_CFG + "=" + log4jPropPath;
+			agentOptions += "!" + SYS_PROP_LOG4J_CFG + StreamJMXConstants.KV_DELIM + log4jPropPath;
 		}
 
 		LOGGER.log(OpLevel.INFO,
@@ -911,7 +913,7 @@ public class SamplingAgent {
 	 * @see #connectAll(java.util.List, java.util.Properties)
 	 */
 	public void connect(String vmDescr, String options) throws Exception {
-		VMParams<String> cp = new VMDescriptorParams(vmDescr).setAgentOptions(options);
+		VMParams<String> cp = new VMDescriptorParams(vmDescr).setOption(VMConstants.PROP_AGENT_OPTIONS, options);
 		List<VMParams<JMXServiceURL>> jmxConns = vmResolverFactory.getJmxServiceURLs(cp);
 
 		connectAll(jmxConns, null);
@@ -934,8 +936,9 @@ public class SamplingAgent {
 	public void connect(VMParams<JMXServiceURL> connectionParams, Map<String, ?> connParams) throws Exception {
 		LOGGER.log(OpLevel.INFO,
 				"SamplingAgent.connect(): url={0}, user={1}, pass={2}, options={3}, connParams={4}, connRetryInterval={5}",
-				connectionParams.getVMRef(), connectionParams.getUser(),
-				Utils.hideEnd(connectionParams.getPass(), "*", 0), connectionParams.getAgentOptions(), connParams,
+				connectionParams.getVMRef(), connectionParams.getOption(VMConstants.PROP_VM_USER),
+				Utils.hideEnd(connectionParams.getPass(), "*", 0),
+				connectionParams.getOption(VMConstants.PROP_AGENT_OPTIONS), connParams,
 				connectionParams.getReconnectInterval());
 
 		if (connectionParams.getVMRef() == null) {
@@ -944,10 +947,12 @@ public class SamplingAgent {
 
 		Map<String, Object> params = new HashMap<>(connParams == null ? 1 : connParams.size() + 1);
 
-		if (StringUtils.isNotEmpty(connectionParams.getUser()) && StringUtils.isNotEmpty(connectionParams.getPass())) {
+		if (StringUtils.isNotEmpty(connectionParams.getOption(VMConstants.PROP_VM_USER))
+				&& StringUtils.isNotEmpty(connectionParams.getPass())) {
 			LOGGER.log(OpLevel.INFO,
 					"SamplingAgent.connect: adding user login and password to connection credentials...");
-			String[] credentials = new String[] { connectionParams.getUser(), connectionParams.getPass() };
+			String[] credentials = new String[] { connectionParams.getOption(VMConstants.PROP_VM_USER),
+					connectionParams.getPass() };
 			params.put(JMXConnector.CREDENTIALS, credentials);
 		}
 
@@ -980,7 +985,7 @@ public class SamplingAgent {
 					};
 					connector.addConnectionNotificationListener(cnl, null, null);
 
-					startSamplerAndWait(connectionParams.getAgentOptions(), connector);
+					startSamplerAndWait(connectionParams.getOption(VMConstants.PROP_AGENT_OPTIONS), connector);
 
 					connector.removeConnectionNotificationListener(cnl);
 

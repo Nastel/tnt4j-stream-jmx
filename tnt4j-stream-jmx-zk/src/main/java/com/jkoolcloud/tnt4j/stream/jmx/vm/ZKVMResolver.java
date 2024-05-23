@@ -175,6 +175,7 @@ public abstract class ZKVMResolver implements VMResolver<JMXServiceURL>, Closeab
 			case None:
 			case DataWatchRemoved:
 			case ChildWatchRemoved:
+			case PersistentWatchRemoved:
 			default:
 				break;
 			}
@@ -300,20 +301,7 @@ public abstract class ZKVMResolver implements VMResolver<JMXServiceURL>, Closeab
 			additionalOptions = new HashMap<>();
 
 			if (baseVMDescrParams != null) {
-				String otherOptions = baseVMDescrParams.getAdditionalOptions();
-				if (otherOptions != null) {
-					String[] opts = otherOptions.split(VMConstants.OTHER_OPTIONS_DELIM);
-					for (String opt : opts) {
-						String[] optionTokens = opt.split(VMConstants.OTHER_OPTIONS_KV_DELIM);
-
-						if (optionTokens.length == 2) {
-							additionalOptions.put(optionTokens[0], optionTokens[1]);
-						} else {
-							logger().log(OpLevel.WARNING,
-									"ZKVMResolver.getAdditionalOption: invalid property definition ''{0}''", opt);
-						}
-					}
-				}
+				additionalOptions.putAll(baseVMDescrParams.getOptionsScopeMap(VMConstants.CUSTOM_OPTIONS_PREFIX));
 			}
 		}
 
@@ -333,13 +321,13 @@ public abstract class ZKVMResolver implements VMResolver<JMXServiceURL>, Closeab
 	 */
 	protected VMParams<JMXServiceURL> buildURLConnectionParams(String serviceName, String serviceURL)
 			throws IOException {
-		String additionalSourceFQN = baseVMDescrParams.getAdditionalSourceFQN();
+		String additionalSourceFQN = baseVMDescrParams.getOption(VMConstants.PROP_SOURCE_FQN);
 		if (StringUtils.isEmpty(additionalSourceFQN) || EMPTY.equals(additionalSourceFQN)) {
 			additionalSourceFQN = "SERVICE=" + serviceName; // NON-NLS
 		}
 
 		VMParams<JMXServiceURL> connectionParam = new JMXURLConnectionParams(serviceURL)
-				.setBaseVMParams(baseVMDescrParams).setAdditionalSourceFQN(additionalSourceFQN);
+				.setBaseVMParams(baseVMDescrParams).setOption(VMConstants.PROP_SOURCE_FQN, additionalSourceFQN);
 
 		connectionRegistry.put(serviceName, connectionParam);
 		logger().log(OpLevel.INFO, "ZKVMResolver.buildURLConnectionParams: Made remote JVM JMX connection URL: {0}",

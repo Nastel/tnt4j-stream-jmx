@@ -31,6 +31,7 @@ import com.jkoolcloud.tnt4j.core.OpLevel;
 import com.jkoolcloud.tnt4j.core.PropertySnapshot;
 import com.jkoolcloud.tnt4j.core.Snapshot;
 import com.jkoolcloud.tnt4j.sink.EventSink;
+import com.jkoolcloud.tnt4j.stream.jmx.StreamJMXConstants;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.LoggerUtils;
 import com.jkoolcloud.tnt4j.stream.jmx.utils.Utils;
 
@@ -257,7 +258,8 @@ public class SnapshotAggregator implements ActivityAggregator {
 							for (String varValue : varValues) {
 								MutablePair<String, String> varProperty = new MutablePair<>();
 								if (beanId != null && beanId.contains(beanIdVarToken)) {
-									varProperty.setLeft(beanId.replace(beanIdVarToken, varName + "=" + varValue));
+									varProperty.setLeft(beanId.replace(beanIdVarToken,
+											varName + StreamJMXConstants.KV_DELIM + varValue));
 								} else {
 									varProperty.setLeft(beanId);
 								}

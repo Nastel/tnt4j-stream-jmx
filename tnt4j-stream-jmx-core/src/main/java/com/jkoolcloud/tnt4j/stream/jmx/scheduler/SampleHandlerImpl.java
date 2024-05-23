@@ -28,6 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.jkoolcloud.tnt4j.core.*;
 import com.jkoolcloud.tnt4j.source.Source;
+import com.jkoolcloud.tnt4j.stream.jmx.StreamJMXConstants;
 import com.jkoolcloud.tnt4j.stream.jmx.aggregations.AggregationsManager;
 import com.jkoolcloud.tnt4j.stream.jmx.conditions.*;
 import com.jkoolcloud.tnt4j.stream.jmx.core.JMXServerConnection;
@@ -119,17 +120,17 @@ public class SampleHandlerImpl implements SampleHandler, NotificationListener {
 	 *             if filter defined object name is malformed
 	 */
 	private static void tokenizeFilters(String filter, List<ObjectName> filters) throws MalformedObjectNameException {
-		StringTokenizer itk = new StringTokenizer(filter, ";");
+		StringTokenizer itk = new StringTokenizer(filter, StreamJMXConstants.MULTI_VALUE_DELIM);
 		while (itk.hasMoreTokens()) {
 			String objName = itk.nextToken().trim();
 			try {
 				filters.add(new ObjectName(objName));
 			} catch (MalformedObjectNameException exc) {
 				if (!exc.getMessage().contains(objName)) {
-					MalformedObjectNameException mexc = new MalformedObjectNameException(
+					MalformedObjectNameException mExc = new MalformedObjectNameException(
 							exc.getMessage() + " for '" + objName + "'");
-					mexc.setStackTrace(exc.getStackTrace());
-					throw mexc;
+					mExc.setStackTrace(exc.getStackTrace());
+					throw mExc;
 				}
 				throw exc;
 			}
