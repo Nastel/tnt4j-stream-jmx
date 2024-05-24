@@ -65,7 +65,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 
 	private boolean addSelfSnapshot = true;
 	/**
-	 * Flag indicating whether to add AutoPilot fact value type prefixes for fact names. Default {@value}.
+	 * Flag indicating whether to add AutoPilot fact value type prefixes for fact names. Default is {@code false}.
 	 */
 	protected boolean addAPValueTypePrefix = false;
 

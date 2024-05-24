@@ -43,6 +43,9 @@ public class JMXSourceUtils {
 	 * @param logger
 	 *            logger instance to log messages
 	 * @return source handle representing the user defined path, or root source if no user defined source path
+	 *
+	 * @throws IOException
+	 *             if JMX server communication failure occurs
 	 */
 	public static Source getSource(Class<?> cls, EventSink logger) throws IOException {
 		return getSource(cls.getName(), logger);
@@ -56,6 +59,9 @@ public class JMXSourceUtils {
 	 * @param logger
 	 *            logger instance to log messages
 	 * @return source handle representing the user defined path, or root source if no user defined source path
+	 *
+	 * @throws IOException
+	 *             if JMX server communication failure occurs
 	 */
 	public static Source getSource(String className, EventSink logger) throws IOException {
 		TrackerConfig config = DefaultConfigFactory.getInstance().getConfig(className);

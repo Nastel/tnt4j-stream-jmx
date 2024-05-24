@@ -83,6 +83,7 @@ public interface SamplerFactory {
 	 * 
 	 * @param config
 	 *            configuration map for this sample handler
+	 * @return sample handler instance
 	 */
 	SampleHandler newSampleHandler(Map<String, ?> config);
 }

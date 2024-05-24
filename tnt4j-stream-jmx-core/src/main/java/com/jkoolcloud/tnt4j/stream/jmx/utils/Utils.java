@@ -149,7 +149,7 @@ public class Utils extends com.jkoolcloud.tnt4j.utils.Utils {
 	}
 
 	/**
-	 * Copies property <tt>sKey</tt> value from <tt>sProperties</tt> to <tt>tProperties</tt> using key <tt>tKey</tt>.
+	 * Copies property {@code sKey} value from {@code sProperties} to {@code tProperties} using key {@code tKey}.
 	 * 
 	 * @param sKey
 	 *            source property key
@@ -168,8 +168,8 @@ public class Utils extends com.jkoolcloud.tnt4j.utils.Utils {
 	}
 
 	/**
-	 * Copies property <tt>sKey</tt> value from <tt>sProperties</tt> to <tt>tProperties</tt> using key <tt>tKey</tt>. If
-	 * source property does not exist, default value <tt>defValue</tt> is set.
+	 * Copies property {@code sKey} value from {@code sProperties} to {@code tProperties} using key {@code tKey}. If
+	 * source property does not exist, default value {@code defValue} is set.
 	 *
 	 * @param sKey
 	 *            source property key

@@ -159,14 +159,14 @@ public enum StreamJMXProperties implements StreamJMXProperty {
 	}
 
 	/**
-	 * Finds properties values having display value defined in <tt>filters</tt>.
+	 * Finds properties values having display value defined in {@code filters}.
 	 *
 	 * @param pValues
 	 *            properties values array
 	 * @param filters
 	 *            display values
 	 *
-	 * @return array of properties having <tt>filters</tt> defined display values
+	 * @return array of properties having {@code filters} defined display values
 	 */
 	public static StreamJMXProperty[] values(StreamJMXProperty[] pValues, Display... filters) {
 		List<StreamJMXProperty> result = new ArrayList<>(pValues.length);
@@ -200,15 +200,15 @@ public enum StreamJMXProperties implements StreamJMXProperty {
 	}
 
 	/**
-	 * Finds name <tt>propName</tt> identified property within <tt>pValues</tt> array content.
+	 * Finds name {@code propName} identified property within {@code pValues} array content.
 	 *
 	 * @param pValues
 	 *            properties values array
 	 * @param propName
 	 *            property name to find
 	 *
-	 * @return name <tt>propName</tt> identified property found within <tt>pValues</tt> array, or {@code null} if there
-	 *         is no property with that name within array content
+	 * @return name {@code propName} identified property found within {@code pValues} array, or {@code null} if there is
+	 *         no property with that name within array content
 	 */
 	public static StreamJMXProperty value(StreamJMXProperty[] pValues, String propName) {
 		for (StreamJMXProperty property : pValues) {
@@ -221,14 +221,14 @@ public enum StreamJMXProperties implements StreamJMXProperty {
 	}
 
 	/**
-	 * Removes <tt>propNames</tt> identified properties from <tt>pValues</tt> array.
+	 * Removes {@code propNames} identified properties from {@code pValues} array.
 	 *
 	 * @param pValues
 	 *            properties values array
 	 * @param propNames
 	 *            property names to remove
 	 *
-	 * @return properties values array without name <tt>propName</tt> identified property
+	 * @return properties values array without name {@code propName} identified property
 	 */
 	public static StreamJMXProperty[] remove(StreamJMXProperty[] pValues, String... propNames) {
 		if (ArrayUtils.isEmpty(propNames)) {

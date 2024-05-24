@@ -165,7 +165,6 @@ public class J2EESampleListener extends DefaultSampleListener {
 
 	/**
 	 * Resolves meaningful name for provided stats instance.
-	 * <p>
 	 * <ul>
 	 * <li>for {@link JMSProducerStats} it returns destination</li>
 	 * <li>for {@link JMSConsumerStats} it returns origin</li>
