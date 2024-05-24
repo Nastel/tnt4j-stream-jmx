@@ -790,6 +790,7 @@ public class SamplingAgent {
 	 *            sampler configuration map
 	 * @param conn
 	 *            JMX connector to get MBean server connection instance
+	 * @return sampler factory instance
 	 *
 	 * @throws IOException
 	 *             if IO exception occurs while initializing MBeans sampling
