@@ -50,11 +50,11 @@ public class SamplerFailureListener implements SampleListener {
 	}
 
 	@Override
-	public void register(SampleContext context, ObjectName oname) {
+	public void register(SampleContext context, ObjectName oName) {
 	}
 
 	@Override
-	public void unregister(SampleContext context, ObjectName oname) {
+	public void unregister(SampleContext context, ObjectName oName) {
 	}
 
 	@Override

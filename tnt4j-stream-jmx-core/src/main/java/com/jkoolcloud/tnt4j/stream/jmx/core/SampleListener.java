@@ -43,20 +43,20 @@ public interface SampleListener {
 	 * 
 	 * @param context
 	 *            current sample context
-	 * @param oname
+	 * @param oName
 	 *            MBean object name
 	 */
-	void register(SampleContext context, ObjectName oname);
+	void register(SampleContext context, ObjectName oName);
 
 	/**
 	 * This method is called on a new MBean is removed/unregistered
 	 * 
 	 * @param context
 	 *            current sample context
-	 * @param oname
+	 * @param oName
 	 *            MBean object name
 	 */
-	void unregister(SampleContext context, ObjectName oname);
+	void unregister(SampleContext context, ObjectName oName);
 
 	/**
 	 * This method is called before each attribute is sampled. Throw a runtime exception if you want all further samples

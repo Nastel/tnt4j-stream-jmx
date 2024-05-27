@@ -31,8 +31,8 @@ rem echo %LIBPATH%
 
 rem --- Additional libraries for WebLogic ---
 rem set WL_HOME=C:\Oracle\Middleware\Oracle_Home
-rem set WL_CLINET_LIBS=%WL_HOME%\wlserver\server\lib\wlclient.jar;%WL_HOME%\wlserver\server\lib\wljmxclient.jar;%WL_HOME%\wlserver\server\lib\javax.javaee-api.jar
-rem set TOOLS_PATH=%TOOLS_PATH%;%WL_CLINET_LIBS%
+rem set WL_CLIENT_LIBS=%WL_HOME%\wlserver\server\lib\wlclient.jar;%WL_HOME%\wlserver\server\lib\wljmxclient.jar;%WL_HOME%\wlserver\server\lib\javax.javaee-api.jar
+rem set TOOLS_PATH=%TOOLS_PATH%;%WL_CLIENT_LIBS%
 rem -----------------------------------------
 
 rem set LIBPATH=%LIBPATH%;%RUNDIR%..\lib\*

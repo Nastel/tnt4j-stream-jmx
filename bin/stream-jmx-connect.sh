@@ -53,8 +53,8 @@ echo "$LIBPATH"
 
 ### --- Additional libraries for WebLogic ---
 # WL_HOME="/opt/Oracle/Middleware/Oracle_Home"
-# WL_CLINET_LIBS="$WL_HOME/wlserver/server/lib/wlclient.jar:$WL_HOME/wlserver/server/lib/wljmxclient.jar:$WL_HOME/wlserver/server/lib/javax.javaee-api.jar"
-# TOOLS_PATH="$TOOLS_PATH:$WL_CLINET_LIBS"
+# WL_CLIENT_LIBS="$WL_HOME/wlserver/server/lib/wlclient.jar:$WL_HOME/wlserver/server/lib/wljmxclient.jar:$WL_HOME/wlserver/server/lib/javax.javaee-api.jar"
+# TOOLS_PATH="$TOOLS_PATH:$WL_CLIENT_LIBS"
 ### -----------------------------------------
 
 #LIBPATH="$LIBPATH:$SCRIPTPATH/../lib/*"
