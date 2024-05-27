@@ -126,7 +126,7 @@ public class FactPathValueFormatter extends FactNameValueFormatter {
 	 * <p>
 	 * Note: Custom internal use snapshot property named {@code 'JMX_SNAP_NAME'} is ignored.
 	 * <p>
-	 * In case snapshot properties have same key for "branch" and "leaf" nodes at same path level, than "leaf" node
+	 * In case snapshot properties have same key for "branch" and "leaf" nodes at same path level, then "leaf" node
 	 * property key value is appended by configuration defined (cfg. key {@code "DuplicateKeySuffix"}, default value
 	 * {@value #UNIQUE_SUFFIX}) suffix.
 	 *

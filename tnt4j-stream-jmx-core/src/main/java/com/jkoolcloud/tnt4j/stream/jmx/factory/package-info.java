@@ -15,7 +15,7 @@
  */
 
 /**
- * {@link com.jkoolcloud.tnt4j.stream.jmx.core.Sampler} factory interfaces and and implementation.
+ * {@link com.jkoolcloud.tnt4j.stream.jmx.core.Sampler} factory interfaces and implementation.
  * 
  * @author albert
  * @version 1.0

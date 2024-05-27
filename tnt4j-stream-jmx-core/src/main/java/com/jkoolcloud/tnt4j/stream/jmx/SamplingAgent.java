@@ -533,7 +533,7 @@ public class SamplingAgent {
 	/**
 	 * Returns map of all registered samplers.
 	 *
-	 * @return map of all registered samplers
+	 * @return list of all registered samplers
 	 */
 	public static List<Sampler> getAllSamplers() {
 		List<Sampler> samplers = new ArrayList<>(5);

@@ -37,7 +37,7 @@ import com.jkoolcloud.tnt4j.stream.jmx.utils.Utils;
 
 /**
  * This class provides an aggregator implementation capable to append new attribute values to activity contained
- * snapshot or to create new one and put resolved values as it's properties.
+ * snapshot or to create new one and put resolved values as its properties.
  * <p>
  * JSON configuration of this aggregator can be like this:
  * 

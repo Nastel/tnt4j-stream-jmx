@@ -62,7 +62,7 @@ import com.jkoolcloud.tnt4j.utils.Utils;
  * within {@code ()} is optional), e.g.: {@code "@bean:kafka.server:id=?,type=app-info"}.</li>
  * </ul>
  * <p>
- * Also this factory resolves {@link javax.management.remote.JMXAddressable} provided address host name or IP using
+ * Also, this factory resolves {@link javax.management.remote.JMXAddressable} provided address host name or IP using
  * source value placeholders:
  * <ul>
  * <li>{@code @sjmx.serverAddress} - JMX server IP address</li>

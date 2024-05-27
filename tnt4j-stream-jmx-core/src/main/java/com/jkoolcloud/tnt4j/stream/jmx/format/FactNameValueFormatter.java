@@ -450,7 +450,7 @@ public class FactNameValueFormatter extends DefaultFormatter {
 	}
 
 	/**
-	 * Initializes default set symbol replacements for a attribute keys.
+	 * Initializes default set symbol replacements for an attribute keys.
 	 * <p>
 	 * Default keys string replacements mapping is:
 	 * <ul>
