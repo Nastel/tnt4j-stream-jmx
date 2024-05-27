@@ -25,7 +25,6 @@ import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
-import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -37,11 +36,11 @@ import javax.management.NotificationListener;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
-import javax.net.ssl.*;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
+import com.jkoolcloud.jesl.net.http.HttpClient;
 import com.jkoolcloud.tnt4j.config.TrackerConfigStore;
 import com.jkoolcloud.tnt4j.core.OpLevel;
 import com.jkoolcloud.tnt4j.sink.DefaultEventSinkFactory;
@@ -384,7 +383,11 @@ public class SamplingAgent {
 
 			String disableSSL = clProps.getProperty(AGENT_ARG_DISABLE_SSL);
 			if (StringUtils.equalsIgnoreCase("true", disableSSL)) {
-				disableSslVerification();
+				try {
+					HttpClient.disableSslVerification();
+				} catch (GeneralSecurityException exc) {
+					LOGGER.log(OpLevel.WARNING, "Failed to disable SSL verification: {0}", exc);
+				}
 			}
 
 			String am = clProps.getProperty(AGENT_ARG_MODE);
@@ -1338,47 +1341,6 @@ public class SamplingAgent {
 			cfgMap.put(Sampler.CFG_TIME_UNIT, timeUnit);
 
 			return cfgMap;
-		}
-	}
-
-	/**
-	 * Disables SSL context verification.
-	 */
-	protected static void disableSslVerification() {
-		try {
-			// Create a trust manager that does not validate certificate chains
-			TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
-				@Override
-				public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-					return null;
-				}
-
-				@Override
-				public void checkClientTrusted(X509Certificate[] certs, String authType) {
-				}
-
-				@Override
-				public void checkServerTrusted(X509Certificate[] certs, String authType) {
-				}
-			} };
-
-			// Install the all-trusting trust manager
-			SSLContext sc = SSLContext.getInstance("TLS"); // NON-NLS
-			sc.init(null, trustAllCerts, new java.security.SecureRandom());
-			HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-
-			// Create all-trusting host name verifier
-			HostnameVerifier allHostsValid = new HostnameVerifier() {
-				@Override
-				public boolean verify(String hostname, SSLSession session) {
-					return true;
-				}
-			};
-
-			// Install the all-trusting host verifier
-			HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
-		} catch (GeneralSecurityException exc) {
-			LOGGER.log(OpLevel.WARNING, "Failed to disable SSL verification: {0}", exc);
 		}
 	}
 
