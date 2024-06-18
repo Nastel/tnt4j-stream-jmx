@@ -22,7 +22,7 @@
 
     <groupId>com.jkoolcloud.tnt4j.stream</groupId>
     <artifactId>tnt4j-stream-jmx</artifactId>
-    <version>2.2-SNAPSHOT</version>
+    <version>2.2.0</version>
     <packaging>pom</packaging>
 
     <name>tnt4j-stream-jmx</name>
@@ -76,8 +76,6 @@
             <![CDATA[<font size="-1">Copyright &#169; 2015-2023 ${project.organization.name}. All Rights Reserved.</font>]]></product.copyright.html>
 
         <project.java.version>11</project.java.version>
-        <maven.compiler.source>${project.java.version}</maven.compiler.source>
-        <maven.compiler.target>${project.java.version}</maven.compiler.target>
         <maven.compiler.release>${project.java.version}</maven.compiler.release>
         <maven.compiler.debuglevel>source,lines,vars</maven.compiler.debuglevel>
         <maven.compiler.verbose>false</maven.compiler.verbose>
@@ -163,9 +161,7 @@
                 <version>3.13.0</version>
                 <configuration>
                     <verbose>${maven.compiler.verbose}</verbose>
-                    <source>${maven.compiler.source}</source>
-                    <target>${maven.compiler.target}</target>
-                    <release>${maven.compiler.target}</release>
+                    <release>${maven.compiler.release}</release>
                     <debuglevel>${maven.compiler.debuglevel}</debuglevel>
                     <fork>${maven.compiler.fork}</fork>
                     <compilerArgument>${maven.compiler.args}</compilerArgument>
@@ -200,6 +196,7 @@
                     <nodeprecated>false</nodeprecated>
                     <failOnError>true</failOnError>
                     <doclint>all</doclint>
+                    <release>${maven.compiler.release}</release>
                 </configuration>
                 <executions>
                     <execution>
