@@ -39,7 +39,7 @@
 
         <jesl.version>1.4-SNAPSHOT</jesl.version>
         <gson.version>2.11.0</gson.version>
-        <errorprone.version>2.28.0</errorprone.version>
+        <errorprone.version>2.29.2</errorprone.version>
         <disruptor.version>4.0.0</disruptor.version>
     </properties>
 
